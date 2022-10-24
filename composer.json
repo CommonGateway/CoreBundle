@@ -1,0 +1,59 @@
+{
+	"name" : "commongateway/corebundle",
+	"type" : "library",
+	"description" : "Symfony Bundle for dutch common ground functionality",
+	"keywords" : [
+		"commongateway",
+		"common",
+		"gateway",
+		"conduction",
+		"symfony"
+	],
+	"homepage" : "https://commongatway.nl",
+	"license" : "MIT",
+	"authors" : [{
+			"name" : "Ruben van der Linde",
+			"email" : "ruben@conduction.nl"
+		}, {
+			"name" : "Conduction",
+			"homepage" : "https://conduction.nl"
+		}
+	],
+	"require" : {
+		"php" : "^7.4.0",
+	},
+	"require-dev" : {
+		"cache/integration-tests" : "dev-master",
+		"doctrine/cache" : "~1.6",
+		"doctrine/dbal" : "~2.5",
+		"predis/predis" : "~1.1",
+		"symfony/config" : "^5.1",
+		"symfony/dependency-injection" : "~3.4|~4.1|~5.0",
+		"symfony/var-dumper" : "^4.1.1|^5.1"
+	},
+	"conflict" : {
+		"doctrine/dbal" : "<2.5",
+		"symfony/dependency-injection" : "<3.4",
+		"symfony/var-dumper" : "<3.4"
+	},
+	"autoload" : {
+		"psr-4" : {
+			"CommonGateway\\CoreBundle\\" : ""
+		},
+		"exclude-from-classmap" : [
+			"/Tests/"
+		]
+	},
+	"minimum-stability" : "alpha",
+	"support" : {
+		"email" : "ruben@conduction.nl",
+		"issues" : "https://github.com/CommonGateway/CoreBundle/issues",
+		"source" : "https://github.com/CommonGateway/CoreBundle"
+	},
+	"repositories" : [{
+			"type" : "git",
+			"url" : "https://github.com/CommonGateway/CoreBundle",
+			"name" : "source"
+		}
+	]
+}
