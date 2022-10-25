@@ -9,7 +9,6 @@ use Symfony\Component\Serializer\Encoder\XmlEncoder;
 
 class CallService
 {
-    
     public function call(
         Source $source,
         string $endpoint = '',
@@ -37,6 +36,9 @@ class CallService
         } catch (\GuzzleHttp\Exception\GuzzleException $e) {
             throw $e;
         }
+        else {
+            $response = $this->client->requestAsync('GET', $url, $config);
+        }
 
         return $response;
     }
@@ -63,8 +65,6 @@ class CallService
         bool $asynchronus = false
     ): array
     {
-        $response = $this->call($source, $endpoint, $method, $config, $asynchronus);
-
         // resultaat omzetten
 
         // als geen content-type header dan content-type header is accept header
