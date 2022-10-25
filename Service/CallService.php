@@ -2,9 +2,10 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use App\Entity\Gateway as Source;
 use GuzzleHttp\Client;
-use GuzzleHttp\Responce;
-use App\Entity\Gateway as Source
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
 
 class CallService
 {
@@ -14,8 +15,8 @@ class CallService
         string $endpoint = '',
         string $method ='GET',
         array $config = [],
-        bool $asynchronus = false
-    ): Responce
+        bool $asynchronous = false
+    ): Response
     {
         // Set authenticion if needed
         $config = array_merge($config, $this->getAuthentication($source));
@@ -27,18 +28,30 @@ class CallService
 
         // Lets make the call
         try {
-            if (!$async) {
+            if (!$asynchronous) {
             $response = $this->client->request('GET', $url, $config);
             }
             else {
                 $response = $this->client->requestAsync('GET', $url, $config);
             }
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
-            //                var_dump($e->getResponse()->getBody()->getContents()); //Log::error($e->getResponse()->getBody()->getContents());
+        } catch (\GuzzleHttp\Exception\GuzzleException $e) {
             throw $e;
         }
 
         return $response;
+    }
+
+    private function getContentType(Response $response, Source $source): string
+    {
+
+        // switch voor obejct
+        $contentType = $response->getHeader('content-type')[0];
+
+        if(!$contentType) {
+            $contentType = $source->getAccept();
+        }
+
+        return $contentType;
     }
 
 
@@ -55,29 +68,39 @@ class CallService
         // resultaat omzetten
 
         // als geen content-type header dan content-type header is accept header
-        $responseBody= $response->getBody()->getContents()
+        $responseBody= $response->getBody()->getContents();
         if (!$responseBody) {
             return [];
         }
 
-        // switch voor obejct
-        $contentType = $response->getHeader('content-type')[0];
+        $xmlEncoder = new XmlEncoder(['xml_root_node_name' => $this->configuration['apiSource']['location']['xmlRootNodeName'] ?? 'response']);
+        $contentType = $this->getContentType($response, $source);
         switch ($contentType) {
             case 'text/xml':
             case 'text/xml; charset=utf-8':
             case 'application/xml':
-                $xmlEncoder = new XmlEncoder(['xml_root_node_name' => $this->configuration['apiSource']['location']['xmlRootNodeName'] ?? 'response']);
 
-                return $xmlEncoder->decode($responseBody, 'xml');
+                $result = $xmlEncoder->decode($responseBody, 'xml');
             case 'application/json':
             default:
-                return json_decode($responseBody, true);
+                $result = json_decode($responseBody, true);
+        }
+
+        if($result) {
+           return $result;
+        }
+
+        try{
+            $result = $xmlEncoder->decode($responseBody, 'xml');
+            return $result;
+        } catch (\Exception $exception) {
+            throw new \Exception('Could not decode body, content type could not be determined');
         }
 
         // Als accept ook leeg is, probeer json decode, probeer xml decode, sterf
     }
 
-    private getAuthentication($source): array
+    private function getAuthentication(Source $source): array
     {
 
         return [];
