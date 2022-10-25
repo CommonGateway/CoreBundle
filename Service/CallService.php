@@ -24,7 +24,7 @@ class CallService
         // Lets start up a default client
         $client = new Client($config);
 
-        $url = $source->getLocation().$endpoint
+        $url = $source->getLocation().$endpoint;
 
         // Lets make the call
         try {
