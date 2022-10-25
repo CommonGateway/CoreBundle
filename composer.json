@@ -1,6 +1,6 @@
 {
 	"name" : "commongateway/corebundle",
-	"type" : "library",
+	"type" : "symfony-bundle",
 	"description" : "Symfony Bundle for dutch common ground functionality",
 	"keywords" : [
 		"commongateway",
@@ -20,7 +20,7 @@
 		}
 	],
 	"require" : {
-		"php" : "^7.4.0",
+		"php" : "^7.4.0"
 	},
 	"require-dev" : {
 		"cache/integration-tests" : "dev-master",
