@@ -4,15 +4,18 @@ namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
 use GuzzleHttp\Client;
-use Symfony\Component\HttpFoundation\Response;
+use GuzzleHttp\Psr7\Response;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 
 class CallService
 {
     private AuthenticationService $authenticationService;
+    private Client $client;
 
     public function __construct(AuthenticationService $authenticationService) {
         $this->authenticationService = $authenticationService;
+        $this->client = new Client([]);
+
     }
 
     public function call(
@@ -86,7 +89,7 @@ class CallService
         }
 
         if($result) {
-           return $result;
+            return $result;
         }
 
         // Fallback: if the json_decode didn't work, try to decode XML, if that doesn't work an error is thrown.

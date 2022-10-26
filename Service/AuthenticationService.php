@@ -79,8 +79,8 @@ class AuthenticationService
 
     public function getApplicationId(Source $source): string
     {
-        if ($source->getClientId()) {
-            return $source->getClientId();
+        if ($source->getJwtId()) {
+            return $source->getJwtId();
         } else {
             return $source->getId();
         }
@@ -199,7 +199,7 @@ class AuthenticationService
                 break;
             case 'hmac':
                 $requestOptions['headers']['Authorization'] = $this->getHmacToken($requestOptions, $source);
-              break;
+                break;
             case 'apikey':
                 if ($source->getAuthorizationHeader()) {
                     switch ($source->getAuthorizationPassthroughMethod()) {

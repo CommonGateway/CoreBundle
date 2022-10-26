@@ -7,5 +7,6 @@
         <defaults autowire="true" autoconfigure="true"/>
         <service id="CommonGateway\CoreBundle\Service\CallService"/>
         <service id="CommonGateway\CoreBundle\Service\AuthenticationService"/>
+        <service id="CommonGateway\CoreBundle\Service\FileService"/>
     </services>
 </container>
