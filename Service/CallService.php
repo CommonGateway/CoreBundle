@@ -9,6 +9,12 @@ use Symfony\Component\Serializer\Encoder\XmlEncoder;
 
 class CallService
 {
+    private AuthenticationService $authenticationService;
+
+    public function __construct(AuthenticationService $authenticationService) {
+        $this->authenticationService = $authenticationService;
+    }
+
     public function call(
         Source $source,
         string $endpoint = '',
@@ -28,16 +34,13 @@ class CallService
         // Lets make the call
         try {
             if (!$asynchronous) {
-            $response = $this->client->request('GET', $url, $config);
+                $response = $this->client->request('GET', $url, $config);
             }
             else {
                 $response = $this->client->requestAsync('GET', $url, $config);
             }
         } catch (\GuzzleHttp\Exception\GuzzleException $e) {
             throw $e;
-        }
-        else {
-            $response = $this->client->requestAsync('GET', $url, $config);
         }
 
         return $response;
@@ -57,12 +60,9 @@ class CallService
     }
 
 
-    public function handleCall(
+    public function decodeResponse(
         Source $source,
-        string $endpoint = '',
-        string $method ='GET',
-        array $config = [],
-        bool $asynchronus = false
+        Response $response
     ): array
     {
         // resultaat omzetten
@@ -79,7 +79,6 @@ class CallService
             case 'text/xml':
             case 'text/xml; charset=utf-8':
             case 'application/xml':
-
                 $result = $xmlEncoder->decode($responseBody, 'xml');
             case 'application/json':
             default:
@@ -90,6 +89,7 @@ class CallService
            return $result;
         }
 
+        // Fallback: if the json_decode didn't work, try to decode XML, if that doesn't work an error is thrown.
         try{
             $result = $xmlEncoder->decode($responseBody, 'xml');
             return $result;
@@ -97,12 +97,10 @@ class CallService
             throw new \Exception('Could not decode body, content type could not be determined');
         }
 
-        // Als accept ook leeg is, probeer json decode, probeer xml decode, sterf
     }
 
     private function getAuthentication(Source $source): array
     {
-
-        return [];
+        return $this->authenticationService->getAuthentication($source);
     }
 }
