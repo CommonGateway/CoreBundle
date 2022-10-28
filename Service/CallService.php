@@ -27,7 +27,7 @@ class CallService
     ): Response
     {
         // Set authenticion if needed
-        $config = array_merge($config, $this->getAuthentication($source));
+        $config = array_merge_recursive($config, $this->getAuthentication($source));
 
         // Lets start up a default client
         $client = new Client($config);
