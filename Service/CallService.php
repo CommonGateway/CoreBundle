@@ -37,10 +37,10 @@ class CallService
         // Lets make the call
         try {
             if (!$asynchronous) {
-                $response = $this->client->request('GET', $url, $config);
+                $response = $this->client->request($method, $url, $config);
             }
             else {
-                $response = $this->client->requestAsync('GET', $url, $config);
+                $response = $this->client->requestAsync($method, $url, $config);
             }
         } catch (\GuzzleHttp\Exception\GuzzleException $e) {
             throw $e;
