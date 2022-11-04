@@ -3,7 +3,12 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
+use App\Entity\CallLog;
+use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Response;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 
@@ -11,10 +16,12 @@ class CallService
 {
     private AuthenticationService $authenticationService;
     private Client $client;
+    private EntityManagerInterface $entityManager;
 
-    public function __construct(AuthenticationService $authenticationService) {
+    public function __construct(AuthenticationService $authenticationService, EntityManagerInterface $entityManager) {
         $this->authenticationService = $authenticationService;
         $this->client = new Client([]);
+        $this->entityManager = $entityManager;
 
     }
 
@@ -26,6 +33,12 @@ class CallService
         bool $asynchronous = false
     ): Response
     {
+        $log = new CallLog();
+        $log->setSource($source);
+        $log->setEndpoint($endpoint);
+        $log->setMethod($method);
+        $log->setConfig($config);
+
         // Set authenticion if needed
         $config = array_merge_recursive($config, $this->getAuthentication($source));
 
@@ -34,6 +47,7 @@ class CallService
 
         $url = $source->getLocation().$endpoint;
 
+        $startTimer = microtime(true);
         // Lets make the call
         try {
             if (!$asynchronous) {
@@ -42,9 +56,28 @@ class CallService
             else {
                 $response = $this->client->requestAsync('GET', $url, $config);
             }
-        } catch (\GuzzleHttp\Exception\GuzzleException $e) {
+        } catch (ServerException|ClientException $e) {
+            $log->setResponseStatus('bla');
+            $log->setResponseStatusCode($e->getResponse()->getStatusCode());
+            $log->setResponseBody($e->getResponse()->getBody()->getContents());
+            $log->setResponseTime($stopTimer - $startTimer);
+            $this->entityManager->persist($log);
+            $this->entityManager->flush();
+
             throw $e;
+        } catch (GuzzleException $e) {
+            var_dump($e->getMessage());
         }
+        $stopTimer = microtime(true);
+
+        $responseClone = clone $response;
+
+        $log->setResponseStatus('bla');
+        $log->setResponseStatusCode($responseClone->getStatusCode());
+        $log->setResponseBody('bla');
+        $log->setResponseTime($stopTimer - $startTimer);
+        $this->entityManager->persist($log);
+        $this->entityManager->flush();
 
         return $response;
     }
