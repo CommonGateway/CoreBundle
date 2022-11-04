@@ -57,7 +57,7 @@ class CallService
                 $response = $this->client->requestAsync($method, $url, $config);
             }
         } catch (ServerException|ClientException $e) {
-            $log->setResponseStatus('bla');
+            $log->setResponseStatus('');
             $log->setResponseStatusCode($e->getResponse()->getStatusCode());
             $log->setResponseBody($e->getResponse()->getBody()->getContents());
             $log->setResponseTime($stopTimer - $startTimer);
@@ -72,9 +72,9 @@ class CallService
 
         $responseClone = clone $response;
 
-        $log->setResponseStatus('bla');
+        $log->setResponseStatus('');
         $log->setResponseStatusCode($responseClone->getStatusCode());
-        $log->setResponseBody('bla');
+        $log->setResponseBody('');
         $log->setResponseTime($stopTimer - $startTimer);
         $this->entityManager->persist($log);
         $this->entityManager->flush();
