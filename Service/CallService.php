@@ -57,6 +57,8 @@ class CallService
                 $response = $this->client->requestAsync($method, $url, $config);
             }
         } catch (ServerException|ClientException $e) {
+
+            $stopTimer = microtime(true);
             $log->setResponseStatus('');
             $log->setResponseStatusCode($e->getResponse()->getStatusCode());
             $log->setResponseBody($e->getResponse()->getBody()->getContents());
