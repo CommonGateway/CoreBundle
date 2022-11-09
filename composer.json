@@ -46,7 +46,7 @@
 	},
 	"minimum-stability" : "alpha",
 	"support" : {
-		"email" : "ruben@conduction.nl",
+		"email" : "info@conduction.nl",
 		"issues" : "https://github.com/CommonGateway/CoreBundle/issues",
 		"source" : "https://github.com/CommonGateway/CoreBundle"
 	},
@@ -55,5 +55,10 @@
 			"url" : "https://github.com/CommonGateway/CoreBundle",
 			"name" : "source"
 		}
-	]
+	],
+	"scripts": {
+		"post-package-install": "bin/console commongateway:install CommonGateway\\CoreBundle --install",
+		"post-package-update": "bin/console commongateway:install CommonGateway\\CoreBundle --update",
+		"post-package-uninstall": "bin/console commongateway:install CommonGateway\\CoreBundle --uninstall"
+	}
 }
