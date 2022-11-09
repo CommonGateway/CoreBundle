@@ -15,4 +15,23 @@ services:
             - '../../Resources/'
             - '../../CoreBundle.php'
 
+    CommonGateway\CoreBundle\Service\InstallationService:
+        autowire: true
+        public: true
+        # inject all services tagged with commongateway.action_handlers as first argument
+        arguments:
+            $installers: !tagged_iterator commongateway.installer # Inject all services tagged with "commongateway.action_handlers"
+            $container: '@service_container'
+            
+    # this config only applies to the services created by this file
+    _instanceof:
+        # actionHandlers whose classes are instances of ActionHandlerInterface will be tagged automatically and set to public
+        CommonGateway\CoreBundle\ActionHandler\ActionHandlerInterface:
+            public: true
+            tags: ['commongateway.action_handlers']
+            
+        # installers whose classes are instances of InstallerInterface will be tagged automatically and set to public
+        CommonGateway\CoreBundle\Installer\InstallerInterface:
+            public: true
+            tags: ['commongateway.installer']
     
