@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Response;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
@@ -17,12 +18,55 @@ class CallService
     private AuthenticationService $authenticationService;
     private Client $client;
     private EntityManagerInterface $entityManager;
+    private FileService $fileService;
 
-    public function __construct(AuthenticationService $authenticationService, EntityManagerInterface $entityManager) {
+    public function __construct(AuthenticationService $authenticationService, EntityManagerInterface $entityManager, FileService $fileService) {
         $this->authenticationService = $authenticationService;
         $this->client = new Client([]);
         $this->entityManager = $entityManager;
+        $this->fileService = $fileService;
 
+    }
+
+    /**
+     * Writes the certificate and ssl keys to disk, returns the filenames
+     *
+     * @param   array $config   The configuration as stored in the source
+     * @return  array           The overrides on the configuration with filenames instead of certificate contents
+     */
+    public function getCertificate (array $config): array
+    {
+        $configs = [];
+        if (isset($config['cert'])) {
+            $configs['cert'] = $this->fileService->writeFile('certificate', $config['cert']);
+        }
+        if (isset($config['ssl_key'])) {
+            $configs['ssl_key'] = $this->fileService->writeFile('privateKey', $config['ssl_key']);
+        }
+        if (isset($config['verify']) && is_string($config['verify'])) {
+            $configs['verify'] = $this->fileService->writeFile('verify', $config['ssl_key']);
+        }
+
+        return $configs;
+    }
+
+    /**
+     * Removes certificates and private keys from disk if they are not necessary anymore
+     *
+     * @param   array $config   The configuration with filenames
+     * @return  void
+     */
+    public function removeFiles (array $config): void
+    {
+        if (isset($config['cert'])) {
+            $this->fileService->removeFile($config['cert']);
+        }
+        if (isset($config['ssl_key'])) {
+            $this->fileService->removeFile($config['ssl_key']);
+        }
+        if (isset($config['verify']) && is_string($config['verify'])) {
+            $this->fileService->removeFile($config['verify']);
+        }
     }
 
     public function call(
@@ -41,6 +85,7 @@ class CallService
 
         // Set authenticion if needed
         $config = array_merge_recursive($config, $this->getAuthentication($source));
+        $config = array_merge_recursive($this->getCertificate($config), $config);
 
         // Lets start up a default client
         $client = new Client($config);
@@ -56,7 +101,7 @@ class CallService
             else {
                 $response = $this->client->requestAsync($method, $url, $config);
             }
-        } catch (ServerException|ClientException $e) {
+        } catch (ServerException|ClientException|RequestException $e) {
 
             $stopTimer = microtime(true);
             $log->setResponseStatus('');
@@ -80,6 +125,8 @@ class CallService
         $log->setResponseTime($stopTimer - $startTimer);
         $this->entityManager->persist($log);
         $this->entityManager->flush();
+
+        $this->removeFiles($config);
 
         return $response;
     }
