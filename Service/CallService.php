@@ -116,7 +116,7 @@ class CallService
 
         // Set authenticion if needed
         $config = array_merge_recursive($config, $this->getAuthentication($source));
-        $config = array_merge_recursive($this->getCertificate($config), $config);
+        $config = array_merge($this->getCertificate($config), $config);
 
         // Lets start up a default client
         $client = new Client($config);
