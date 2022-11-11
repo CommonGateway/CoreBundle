@@ -77,6 +77,7 @@ class CallService
         bool $asynchronous = false
     ): Response
     {
+        $config = array_merge_recursive($config, $source->getConfiguration());
         $log = new CallLog();
         $log->setSource($source);
         $log->setEndpoint($endpoint);
