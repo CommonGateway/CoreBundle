@@ -136,8 +136,13 @@ class CallService
 
             $stopTimer = microtime(true);
             $log->setResponseStatus('');
-            $log->setResponseStatusCode($e->getResponse()->getStatusCode());
-            $log->setResponseBody($e->getResponse()->getBody()->getContents());
+            if($e->getResponse()) {
+                $log->setResponseStatusCode($e->getResponse()->getStatusCode());
+                $log->setResponseBody($e->getResponse()->getBody()->getContents());
+            } else {
+                $log->setResponseStatusCode(0);
+                $log->setResponseBody($e->getMessage());
+            }
             $log->setResponseTime($stopTimer - $startTimer);
             $this->entityManager->persist($log);
             $this->entityManager->flush();
