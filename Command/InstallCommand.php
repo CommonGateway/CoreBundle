@@ -25,20 +25,25 @@ class InstallCommand extends Command
     {
         $this
             ->addArgument('bundle', InputArgument::REQUIRED, 'The bundle that you want to install')
-            ->addArgument('data', InputArgument::OPTIONAL, 'Load an (example) data set from the bundle')
-            ->addOption('no-schema', 'ns', InputOption::VALUE_OPTIONAL, 'Skipp the installation or update of the bundles schema\'s', false)
+            ->addArgument('data', InputArgument::OPTIONAL, 'Load (example) data set(s) from the bundle')
+            ->addOption('schema', 'sa', InputOption::VALUE_OPTIONAL, 'Load an (example) data set from the bundle', false)
+            ->addOption('script', 'sp', InputOption::VALUE_OPTIONAL, 'Load an (example) data set from the bundle', false)
+            ->addOption('unsafe', 'u', InputOption::VALUE_OPTIONAL, 'Update existing schema\'s and data sets', false)
             ->setDescription('This command runs the installation service on a commongateway bundle')
-            ->setHelp('This command allows you to create a OAS files for your EAV entities');
+            ->setHelp('This command allows you to run further installation an configuration actions afther installing a plugin');
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        $this->installationService->style(new SymfonyStyle($input, $output));
+
         $bundle = $input->getArgument('bundle');
         $data = $input->getArgument('data');
-        $noSchema = $input->getOption('no-schema');
+        $noSchema = $input->getOption('schema');
+        $script = $input->getOption('script');
+        $unsafe = $input->getOption('unsafe');
 
-        return $this->installationService->install($io, $bundle, $data, $noSchema);
+        return $this->installationService->install($bundle, $data, $noSchema);
     }
 }

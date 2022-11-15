@@ -57,8 +57,8 @@
 		}
 	],
 	"scripts": {
-		"post-package-install": "bin/console commongateway:install CommonGateway\\CoreBundle --install",
-		"post-package-update": "bin/console commongateway:install CommonGateway\\CoreBundle --update",
-		"post-package-uninstall": "bin/console commongateway:install CommonGateway\\CoreBundle --uninstall"
+		"post-package-install": "bin/console commongateway:install CommonGateway\\CoreBundle",
+		"post-package-update": "bin/console commongateway:update CommonGateway\\CoreBundle",
+		"post-package-uninstall": "bin/console commongateway:uninstall CommonGateway\\CoreBundle"
 	}
 }

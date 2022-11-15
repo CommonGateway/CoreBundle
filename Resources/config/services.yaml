@@ -14,14 +14,6 @@ services:
             - '../../Entity/'
             - '../../Resources/'
             - '../../CoreBundle.php'
-
-    CommonGateway\CoreBundle\Service\InstallationService:
-        autowire: true
-        public: true
-        # inject all services tagged with commongateway.action_handlers as first argument
-        arguments:
-            $installers: !tagged_iterator commongateway.installer # Inject all services tagged with "commongateway.action_handlers"
-            $container: '@service_container'
             
     # this config only applies to the services created by this file
     _instanceof:
