@@ -129,17 +129,10 @@ class AuthenticationService
 
     public function getTokenFromUrl(Source $source): string
     {
-        $guzzleConfig = [
-            // Base URI is used with relative requests
-            'http_errors' => false,
-            // You can set any number of default request options.
-            'timeout' => 4000.0,
-            // To work with NLX we need a couple of default headers
+        $guzzleConfig = array_merge($source->getConfiguration(), [
             'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
-            // Do not check certificates
-            'verify' => false,
             'auth'   => [$source->getUsername(), $source->getPassword()],
-        ];
+        ]);
         if ($this->parameterBag->has('app_certificate') && file_exists($this->parameterBag->get('app_certificate'))) {
             $guzzleConfig['cert'] = $this->parameterBag->get('app_certificate');
         }
