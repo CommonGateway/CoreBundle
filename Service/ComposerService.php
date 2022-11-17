@@ -30,6 +30,7 @@ class ComposerService
      */
     private function composerCall(string $call, array $options = [],  string $packadge = ''){
 
+        $optionsList = [];
         // Lets check for valid calls
         switch ($call){
             case 'init':
@@ -165,7 +166,7 @@ class ComposerService
                 //--apcu-autoloader-prefix: Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu-autoloader.x: Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu-autoloader.ard. Appending a + makes it only ignore the upper-bound of the requirements. For example, if a package requires php: ^7, then the option --ignore-platform-req=php+ would allow installing on PHP 8, but installation on PHP 5.6 would still fail.
                 break;
             case 'search':
-                $optionsList = [];
+                $optionsList = ['--format'];
                 // --only-name (-N): Search only in package names.
                 //--only-vendor (-O): Search only for vendor / organization names, returns only "vendor" as a result.
                 //--type (-t): Search for a specific package type.
@@ -238,7 +239,7 @@ class ComposerService
                 //--locked: Audit packages from the lock file, regardless of what is currently in vendor dir.
                 break;
             case 'audit ':
-                $optionsList = [];
+                $optionsList = ['--format'];
                 break;
         }
 
@@ -264,11 +265,13 @@ class ComposerService
 
         // Start the procces
         $process = new Process($cmd);
+        $process->setWorkingDirectory('/srv/api');
         $process->run();
 
         // executes after the command finishes
         if (!$process->isSuccessful()) {
-           // throw new ProcessFailedException($process);
+           //throw new ProcessFailedException($process);
+           // var_dump('error');
         }
 
         $content = $process->getOutput();
@@ -302,9 +305,75 @@ class ComposerService
      * @param array $options
      * @return array
      */
+    public function require(string $packadge, array $options = []): array{
+
+        return $this->composerCall('require', $options, $packadge);
+    }
+
+
+    /**
+     * Show a single packadge installed trough composer
+     *
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     *
+     * @param array $options
+     * @return array
+     */
+    public function upgrade(string $packadge, array $options = []): array{
+
+        return $this->composerCall('upgrade', $options, $packadge);
+    }
+
+    /**
+     * Show a single packadge installed trough composer
+     *
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     *
+     * @param array $options
+     * @return array
+     */
+    public function remove(string $packadge, array $options = []): array{
+
+        return $this->composerCall('remove', $options, $packadge);
+    }
+
+    /**
+     * Show a single packadge installed trough composer
+     *
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     *
+     * @param array $options
+     * @return array
+     */
     public function getSingle(string $packadge, array $options = []): array{
 
         return $this->composerCall('show', $options, $packadge);
+    }
+
+    /**
+     * Search for a given term
+     *
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     *
+     * @param array $options
+     * @return array
+     */
+    public function search(string $search, array $options = []): array{
+
+        return $this->composerCall('search', $options, $search);
+    }
+
+    /**
+     * Search for a given term
+     *
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     *
+     * @param array $options
+     * @return array
+     */
+    public function audit(array $options = []): array{
+
+        return $this->composerCall('audit', $options);
     }
 
 
