@@ -127,22 +127,60 @@ class AuthenticationService
         return $jwsSerializer->serialize($jws, 0);
     }
 
+    /**
+     * Writes the certificate and ssl keys to disk, returns the filenames
+     *
+     * @param   array $config   The configuration as stored in the source
+     * @return  array           The overrides on the configuration with filenames instead of certificate contents
+     */
+    public function getCertificate (array $config): array
+    {
+        $configs = [];
+        if (isset($config['cert'])) {
+            $configs['cert'] = $this->fileService->writeFile('certificate', $config['cert']);
+        }
+        if (isset($config['ssl_key'])) {
+            $configs['ssl_key'] = $this->fileService->writeFile('privateKey', $config['ssl_key']);
+        }
+        if (isset($config['verify']) && is_string($config['verify'])) {
+            $configs['verify'] = $this->fileService->writeFile('verify', $config['ssl_key']);
+        }
+
+        return $configs;
+    }
+
+    /**
+     * Removes certificates and private keys from disk if they are not necessary anymore
+     *
+     * @param   array $config   The configuration with filenames
+     * @return  void
+     */
+    public function removeFiles (array $config): void
+    {
+        if (isset($config['cert'])) {
+            $this->fileService->removeFile($config['cert']);
+        }
+        if (isset($config['ssl_key'])) {
+            $this->fileService->removeFile($config['ssl_key']);
+        }
+        if (isset($config['verify']) && is_string($config['verify'])) {
+            $this->fileService->removeFile($config['verify']);
+        }
+    }
+
     public function getTokenFromUrl(Source $source): string
     {
         $guzzleConfig = array_merge($source->getConfiguration(), [
             'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
             'auth'   => [$source->getUsername(), $source->getPassword()],
         ]);
-        if ($this->parameterBag->has('app_certificate') && file_exists($this->parameterBag->get('app_certificate'))) {
-            $guzzleConfig['cert'] = $this->parameterBag->get('app_certificate');
-        }
-        if ($this->parameterBag->has('app_ssl_key') && file_exists($this->parameterBag->get('app_ssl_key'))) {
-            $guzzleConfig['ssl_key'] = $this->parameterBag->get('app_ssl_key');
-        }
+        $guzzleConfig = array_merge($guzzleConfig, $this->getCertificate($guzzleConfig));
+
         $client = new Client($guzzleConfig);
 
         $response = $client->post($source->getLocation().'/oauth/token', ['form_params' => ['grant_type' => 'client_credentials', 'scope' => 'api']]);
         $body = json_decode($response->getBody()->getContents(), true);
+        $this->removeFiles($guzzleConfig);
 
         return $body['access_token'];
     }
