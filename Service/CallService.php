@@ -112,7 +112,7 @@ class CallService
 
         $log = new CallLog();
         $log->setSource($source);
-        $log->setEndpoint($endpoint);
+        $log->setEndpoint($source->getLocation() . $endpoint);
         $log->setMethod($method);
         $log->setConfig($config);
 
