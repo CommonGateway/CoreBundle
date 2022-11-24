@@ -271,14 +271,19 @@ class ComposerService
         // executes after the command finishes
         if (!$process->isSuccessful()) {
            //throw new ProcessFailedException($process);
-           // var_dump('error');
+           //var_dump('error');
+            $content = $process->getErrorOutput();
+        }
+        else{
+            $content = $process->getOutput();
         }
 
-        $content = $process->getOutput();
-
+        // Turn in into simpethin workable
         if(in_array('--format=json', $options)){
             $content = json_decode($content, true);
-
+        }
+        else{
+            $content = explode(PHP_EOL, $content);
         }
 
         return $content;

@@ -1,6 +1,6 @@
 <?php
 
-// src/Controller/DefaultController.php
+// src/Controller/PluginController.php
 
 namespace CommonGateway\CoreBundle\Controller;
 
