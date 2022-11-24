@@ -38,12 +38,12 @@ class CallService
      * @param EntityManagerInterface $entityManager
      * @param FileService $fileService
      */
-    public function __construct(AuthenticationService $authenticationService, EntityManagerInterface $entityManager, FileService $fileService) {
+    public function __construct(AuthenticationService $authenticationService, EntityManagerInterface $entityManager, FileService $fileService)
+    {
         $this->authenticationService = $authenticationService;
         $this->client = new Client([]);
         $this->entityManager = $entityManager;
         $this->fileService = $fileService;
-
     }
 
     /**
@@ -52,7 +52,7 @@ class CallService
      * @param   array $config   The configuration as stored in the source
      * @return  array           The overrides on the configuration with filenames instead of certificate contents
      */
-    public function getCertificate (array $config): array
+    public function getCertificate(array $config): array
     {
         $configs = [];
         if (isset($config['cert'])) {
@@ -74,7 +74,7 @@ class CallService
      * @param   array $config   The configuration with filenames
      * @return  void
      */
-    public function removeFiles (array $config): void
+    public function removeFiles(array $config): void
     {
         if (isset($config['cert'])) {
             $this->fileService->removeFile($config['cert']);
@@ -85,6 +85,42 @@ class CallService
         if (isset($config['verify']) && is_string($config['verify'])) {
             $this->fileService->removeFile($config['verify']);
         }
+    }
+
+    /**
+     * Filters http:// and https:// from source location
+     *
+     * @param string $location      The source domain
+     *
+     * @return string
+     */
+    private function getHost(string $location): string
+    {
+        $host = str_replace('https://', '', $location);
+        return str_replace('http://', '', $host);
+    }
+
+
+    /**
+     * Removes empty headers and sets array to string values
+     *
+     * @param array $headers      Http headers
+     *
+     * @return string
+     */
+    private function removeEmptyHeaders(array $headers): ?array
+    {
+        foreach ($headers as $key => $header) {
+            if (is_array($header) && count($header) < 2) {
+                if (!empty($header[0])) {
+                    $headers[$key] = $header[0];
+                } else {
+                    unset($headers[$key]);
+                };
+            }
+        }
+
+        return $headers;
     }
 
     /**
@@ -101,11 +137,10 @@ class CallService
     public function call(
         Source $source,
         string $endpoint = '',
-        string $method ='GET',
+        string $method = 'GET',
         array $config = [],
         bool $asynchronous = false
-    ): Response
-    {
+    ): Response {
         if ($source->getConfiguration()) {
             $config = array_merge_recursive($config, $source->getConfiguration());
         }
@@ -119,26 +154,26 @@ class CallService
         // Set authenticion if needed
         $config = array_merge_recursive($config, $this->getAuthentication($source));
         $config = array_merge($config, $this->getCertificate($config));
+        $config['headers']['host'] = $this->getHost($source->getLocation());
+        $config['headers'] = $this->removeEmptyHeaders($config['headers']);
 
         // Lets start up a default client
         $client = new Client($config);
 
-        $url = $source->getLocation().$endpoint;
+        $url = $source->getLocation() . $endpoint;
 
         $startTimer = microtime(true);
         // Lets make the call
         try {
             if (!$asynchronous) {
                 $response = $this->client->request($method, $url, $config);
-            }
-            else {
+            } else {
                 $response = $this->client->requestAsync($method, $url, $config);
             }
-        } catch (ServerException|ClientException|RequestException|Exception $e) {
-
+        } catch (ServerException | ClientException | RequestException | Exception $e) {
             $stopTimer = microtime(true);
             $log->setResponseStatus('');
-            if($e->getResponse()) {
+            if ($e->getResponse()) {
                 $log->setResponseStatusCode($e->getResponse()->getStatusCode());
                 $log->setResponseBody($e->getResponse()->getBody()->getContents());
             } else {
@@ -183,7 +218,7 @@ class CallService
         // switch voor obejct
         $contentType = $response->getHeader('content-type')[0];
 
-        if(!$contentType) {
+        if (!$contentType) {
             $contentType = $source->getAccept();
         }
 
@@ -204,12 +239,11 @@ class CallService
     public function decodeResponse(
         Source $source,
         Response $response
-    ): array
-    {
+    ): array {
         // resultaat omzetten
 
         // als geen content-type header dan content-type header is accept header
-        $responseBody= $response->getBody()->getContents();
+        $responseBody = $response->getBody()->getContents();
         if (!$responseBody) {
             return [];
         }
@@ -226,18 +260,17 @@ class CallService
                 $result = json_decode($responseBody, true);
         }
 
-        if($result) {
+        if (isset($result)) {
             return $result;
         }
 
         // Fallback: if the json_decode didn't work, try to decode XML, if that doesn't work an error is thrown.
-        try{
+        try {
             $result = $xmlEncoder->decode($responseBody, 'xml');
             return $result;
         } catch (\Exception $exception) {
             throw new \Exception('Could not decode body, content type could not be determined');
         }
-
     }
 
     /**
