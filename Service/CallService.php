@@ -100,7 +100,6 @@ class CallService
         return str_replace('http://', '', $host);
     }
 
-
     /**
      * Removes empty headers and sets array to string values
      *
