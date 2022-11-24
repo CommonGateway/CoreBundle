@@ -11,6 +11,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 
 /**
@@ -140,6 +141,9 @@ class CallService
         array $config = [],
         bool $asynchronous = false
     ): Response {
+        if (!$source->getIsEnabled()) {
+            throw new HttpException("409", "This source is not enabled: {$source->getName()}");
+        }
         if ($source->getConfiguration()) {
             $config = array_merge_recursive($config, $source->getConfiguration());
         }
