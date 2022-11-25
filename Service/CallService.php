@@ -153,12 +153,14 @@ class CallService
         $log->setEndpoint($source->getLocation() . $endpoint);
         $log->setMethod($method);
         $log->setConfig($config);
+        $log->setRequestBody($config['body'] ?? null);
 
         // Set authenticion if needed
         $config = array_merge_recursive($config, $this->getAuthentication($source));
         $config = array_merge($config, $this->getCertificate($config));
         $config['headers']['host'] = $this->getHost($source->getLocation());
         $config['headers'] = $this->removeEmptyHeaders($config['headers']);
+        $log->setRequestHeaders($config['headers'] ?? null);
 
         // Lets start up a default client
         $client = new Client($config);
@@ -179,6 +181,7 @@ class CallService
             if ($e->getResponse()) {
                 $log->setResponseStatusCode($e->getResponse()->getStatusCode());
                 $log->setResponseBody($e->getResponse()->getBody()->getContents());
+                $log->setResponseHeaders($e->getResponse()->getHeaders());
             } else {
                 $log->setResponseStatusCode(0);
                 $log->setResponseBody($e->getMessage());
@@ -197,7 +200,7 @@ class CallService
 
         $log->setResponseStatus('');
         $log->setResponseStatusCode($responseClone->getStatusCode());
-        $log->setResponseBody('');
+        $log->setResponseBody($responseClone->getResponse()->getBody()->getContents());
         $log->setResponseTime($stopTimer - $startTimer);
         $this->entityManager->persist($log);
         $this->entityManager->flush();
