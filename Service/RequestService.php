@@ -2,8 +2,8 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
-use ApiPlatform\Core\OpenApi\Model\Response;
 use App\Entity\ObjectEntity;
+use CommonGateway\CoreBundle\Service\CacheService;
 use Doctrine\ORM\EntityManagerInterface;
 use ErrorException;
 use Exception;
@@ -12,8 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 class RequestService
 {
     private EntityManagerInterface $entityManager;
-    private ObjectEntityService $objectEntityService;
-    private SynchronizationService $synchronizationService;
+    private CacheService $cacheService;
     private array $configuration;
     private array $data;
     private ObjectEntity $object;
@@ -21,17 +20,11 @@ class RequestService
 
     /**
      * @param EntityManagerInterface $entityManager
-     * @param SynchronizationService $synchronizationService
-     * @param ObjectEntityService $objectEntityService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        SynchronizationService $synchronizationService,
-        ObjectEntityService $objectEntityService
     ) {
         $this->entityManager = $entityManager;
-        $this->synchronizationService = $synchronizationService;
-        $this->objectEntityService = $objectEntityService;
     }
 
     /**
@@ -80,14 +73,15 @@ class RequestService
         // Lets see if we have an object
         if(array_key_exists('id', $this->data)){
             $this->id = $data['id'];
-            $this->object = $this->entityManager->getRepository('App\Object')->find($this->id);
+            $this->object = $this->cacheService->getObject($data['id']);
         }
 
         switch ($method) {
             case 'GET':
                 break;
             case 'PUT':
-                if($validation = $this->object->validate($content) && $this->object->hydrate($content)){
+
+                if($validation = $this->object->validate($content) && $this->object->hydrate($content, true)){
                     $this->entityManager->persist($this->object);
                 }
                 else{
