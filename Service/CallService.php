@@ -201,7 +201,8 @@ class CallService
         $log->setResponseHeaders($responseClone->getHeaders());
         $log->setResponseStatus('');
         $log->setResponseStatusCode($responseClone->getStatusCode());
-        $log->setResponseBody($responseClone->getBody()->getContents());
+        // Disabled because you cannot getBody after passing it here 
+        // $log->setResponseBody($responseClone->getBody()->getContents());
         $log->setResponseTime($stopTimer - $startTimer);
         $this->entityManager->persist($log);
         $this->entityManager->flush();
