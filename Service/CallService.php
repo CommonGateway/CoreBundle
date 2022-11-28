@@ -198,9 +198,10 @@ class CallService
 
         $responseClone = clone $response;
 
+        $log->setResponseHeaders($responseClone->getHeaders());
         $log->setResponseStatus('');
         $log->setResponseStatusCode($responseClone->getStatusCode());
-        $log->setResponseBody($responseClone->getResponse()->getBody()->getContents());
+        $log->setResponseBody($responseClone->getBody()->getContents());
         $log->setResponseTime($stopTimer - $startTimer);
         $this->entityManager->persist($log);
         $this->entityManager->flush();
