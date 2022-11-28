@@ -43,6 +43,21 @@ class RequestService
 
         switch ($method) {
             case 'GET':
+                $identifiers = [];
+
+                $result = ['total' = count($identifiers), 'results' => []];
+                $results = [];
+
+                $start = 0;
+                $limit = 100;
+                // To do iets met array slicing for pagination
+                $identifiers = array_slice($identifiers, $start, $limit);
+                foreach($identifiers as $identifier){
+                    $results = $this->cacheService->getObject($identifier);
+                }
+
+                $result['results'] = $results;
+
                 break;
             case 'POST':
                 break;
@@ -73,7 +88,9 @@ class RequestService
         // Lets see if we have an object
         if(array_key_exists('id', $this->data)){
             $this->id = $data['id'];
-            $this->object = $this->cacheService->getObject($data['id']);
+            if(!$this->object = $this->cacheService->getObject($data['id'])){
+                // Throw not found
+            };
         }
 
         switch ($method) {

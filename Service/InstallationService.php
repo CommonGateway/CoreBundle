@@ -16,6 +16,7 @@ use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Path;
 use Symfony\Component\Finder\Finder;
+use App\Kernel;
 Use Doctrine\ORM\EntityManagerInterface;
 
 
@@ -24,13 +25,17 @@ class InstallationService
     private ComposerService $composerService;
     private EntityManagerInterface $em;
     private SymfonyStyle $io;
+    private Kernel $kernel;
+    private ContainerInterface $container;
 
     public function __construct(
         ComposerService $composerService,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        Kernel $kernel
     ) {
         $this->composerService = $composerService;
         $this->em = $em;
+        $this->container = $kernel->getContainer();
     }
 
     /**
@@ -85,8 +90,9 @@ class InstallationService
         $filesystem = new Filesystem();
 
         // Handling the schema's
-        $this->io->section('Looking for schema\'s');
         $schemaDir = $vendorFolder.'/'.$bundle.'/Schema';
+        $this->io->section('Looking for schema\'s ');
+        $this->io->writeln('Looking in '.$schemaDir);
 
         if($filesystem->exists($schemaDir)){
             $this->io->writeln('Schema folder found');
@@ -109,8 +115,9 @@ class InstallationService
         }
 
         // Handling the data
-        $this->io->section('Looking for data');
         $dataDir = $vendorFolder.'/'.$bundle.'/Data';
+        $this->io->section('Looking for data');
+        $this->io->writeln('Looking in '.$dataDir);
 
         if($filesystem->exists($dataDir)){
 
@@ -132,15 +139,22 @@ class InstallationService
 
 
         // Handling the installations
-        $this->io->section('Looking for installers');
         $installationDir = $vendorFolder.'/'.$bundle.'/Installation';
+        $this->io->section('Looking for installers');
+        $this->io->writeln('Looking in '.$installationDir);
+
         if($filesystem->exists($installationDir)){
+
             $this->io->writeln('Installation folder found');
-            $installers = $finder->in($installationDir);
-            $this->io->writeln('Files found: '.count($installers));
-            foreach ($installers->files() as $installer){
-                $this->handleInstaller($io, $installer);
+            $installations = New Finder();
+            $installations =  $installations->in($installationDir);
+            $this->io->writeln('Files found: '.count($installations));
+
+            foreach ($installations->files() as $installation){
+                $this->handleInstaller($installation);
             }
+
+            // We need to clear the finder
         }
         else{
             $this->io->writeln('No Installation folder found');
@@ -257,8 +271,7 @@ class InstallationService
                 continue;
             }
 
-            $this->io->writeln([
-                '',
+            $this->io->writeln([                '',
                 '<info> Found data for schema '.$reference.'</info> containing '.count($objects).' object(s)',
             ]);
 
@@ -304,6 +317,25 @@ class InstallationService
 
     public function handleInstaller($file){
 
+        if(!$data = json_decode($file->getContents(), true)){
+            $this->io->writeln($file->getFilename().' is not a valid json opbject');
+            return false;
+        }
+
+        // Check validity
+        if(!array_key_exists('installationService',$data)){
+            $this->io->writeln($file->getFilename().' does not contain an installation service');
+            return false;
+        }
+        $this->io->writeln('Found installation service: '.$data['installationService']);
+
+        if(!$installationService = $this->container->get($data['installationService'], 0)){
+            $this->io->writeln($data['installationService'].' cant be found as a registerd service');
+            return false;
+        }
+
+        return $installationService->install($this->io);
+        // We need to gues the service name
     }
 
 

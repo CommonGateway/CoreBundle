@@ -9,8 +9,7 @@
 		"conduction",
 		"symfony"
 	],
-	"homepage" : "https://commongateway.nl",
-	"version": "1.0",
+	"homepage" : "https://commongatway.nl",
 	"license" : "MIT",
 	"authors" : [{
 			"name" : "Ruben van der Linde",
