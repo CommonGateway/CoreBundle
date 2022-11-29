@@ -171,7 +171,7 @@ class RequestService
      * @param $data
      * @return \CommonGateway\CoreBundle\Service\Response
      */
-    public function createResponce($data): Response
+    public function createResponse($data): Response
     {
         if($data instanceof ObjectEntity){
             $data = $data->toArray();
