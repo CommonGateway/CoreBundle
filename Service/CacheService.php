@@ -2,89 +2,213 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use App\Entity\Endpoint;
+use App\Entity\Entity;
+use App\Entity\Gateway as Source;
 use App\Entity\ObjectEntity;
 use Doctrine\ORM\EntityManagerInterface;
+use MongoDB\Client;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
 
 /**
- * Handles the cashing of object entities
+ * Service to call external sources
+ *
+ * This service provides a guzzle wrapper to work with sources in the common gateway.
+ *
+ * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
+ * @TODO add all backend developers here?
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Service
+ *
  */
+
 class CacheService
 {
+    private Client $client;
     private EntityManagerInterface $entityManager;
     private CacheInterface $cache;
+    private SymfonyStyle $io;
+
 
     /**
+     * @param AuthenticationService $authenticationService
      * @param EntityManagerInterface $entityManager
-     * @param SynchronizationService $synchronizationService
-     * @param ObjectEntityService $objectEntityService
+     * @param FileService $fileService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         CacheInterface $cache
-    ) {
+    )
+    {
+        $this->client = new Client('mongodb://api-platform:!ChangeMe!@mongodb');
         $this->entityManager = $entityManager;
         $this->cache = $cache;
     }
 
+    /**
+     * Set symfony style in order to output to the console
+     *
+     * @param SymfonyStyle $io
+     * @return self
+     */
+    public function setStyle(SymfonyStyle $io):self
+    {
+        $this->io = $io;
+
+        return $this;
+    }
 
     /**
      * Throws all available objects into the cache
      */
-    public function cacheWarmup()
-    {
+    public function warmup(){
+
+        $this->io->writeln([
+            'Common Gateway Cache Warmup',
+            '============',
+            '',
+        ]);
+
+        // Objects
+        $this->io->section('Caching Objects\'s');
         $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
+        $this->io->writeln('Found '.count($objectEntities).' objects\'s');
+
         foreach($objectEntities as $objectEntity){
             $this->cacheObject($objectEntity);
         }
+
+        // Schemas
+        $this->io->section('Caching Schema\'s');
+        $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
+        $this->io->writeln('Found '.count($schemas).' Schema\'s');
+
+        foreach($schemas as $schema){
+            $this->cacheShema($schema);
+        }
+
+        // Endpoints
+        $this->io->section('Caching Endpoint\'s');
+        $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
+        $this->io->writeln('Found '.count($endpoints).' Endpoint\'s');
+
+        foreach($endpoints as $endpoint){
+            $this->cacheEndpoint($schema);
+        }
+
+        return Command::SUCCESS;
     }
 
     /**
-     * Write an object to the cache
+     * Put a single object into the cache
      *
      * @param ObjectEntity $objectEntity
-     *
-     * @return array The array representation of the object
+     * @return ObjectEntity
      */
-    public function cacheObject(ObjectEntity $objectEntity): array
-    {
-        $item = $this->cache->getItem('object_'.$objectEntity->getId());
-        $item->set($objectEntity->toArray(1,['id','self','synchronizations']));
-        $item->tag('object_'.$objectEntity->getId());
-        $item->tag('entity_'.$objectEntity->getEntity()->getId());
+    public function cacheObject(ObjectEntity $objectEntity):ObjectEntity{
+        $collection = $this->client->objects->json;
 
-        // Let make it searchable on synchronysations
-        foreach($objectEntity->getSynchronizations() as $synchronization){
-            $item->tag('synchronization_'.$synchronization->getId());
-            $item->tag('source_'.$synchronization->getSource()->getId());
+        if($collection->findOneAndReplace(
+            ['_id'=>$objectEntity->getID()],
+            $objectEntity->toArray(1, ['id','self','synchronizations','schema']),
+            ['upsert'=>true]
+        )){
+            $this->io->writeln('Updated object '.$objectEntity->getId().' to cache');
+        }
+        else{
+            $this->io->writeln('Wrote object '.$objectEntity->getId().' to cache');
         }
 
-        $this->cache->save($item);
-
-        return $item->get();
+        return $objectEntity;
     }
 
     /**
-     * Get an object from the cache
+     * Get a single object from the cache
      *
-     * @param string $id The id of the object that you're trying to pull from the cache
-     *
-     * @return array The array representation of the object
+     * @param Uuid $id
+     * @return array|null
      */
-    public function getObject(string $id): array|false
-    {
-        // Grap the object
-        $item = $this->cache->getItem('object_'.$id);
-        if ($item->isHit()) {
-            return $item->get();
+    public function getObject(Uuid $id): ?array{
+        $collection = $this->client->objects->json;
+
+        // Check if object is in the cache
+        if($object = $collection ){
+            return $object;
+        }
+        // Fall back tot the entity manager
+        $object = $this->entityManager->getRepository('App:ObjectEntity')->find($id);
+        $object = $this->cacheObject($object)->toArray(1);
+        return $object;
+    }
+
+    /**
+     * Put a single endpoint into the cache
+     *
+     * @param Endpoint $endpoint
+     * @return Endpoint
+     */
+    public function cacheEndpoint(Endpoint $endpoint):Endpoint{
+        $collection = $this->client->endpoints->json;
+
+    }
+
+    /**
+     * Get a single endpoint from the cache
+     *
+     * @param Uuid $id
+     * @return array|null
+     */
+    public function getEndpoint(Uuid $id): ?array{
+        $collection = $this->client->endpoints->json;
+
+    }
+
+    /**
+     *
+     * Put a single schema into the cache.
+     * @param Entity $entity
+     * @return Entity
+     */
+    public function cacheShema(Entity $entity): Entity{
+        $collection = $this->client->schemas->json;
+
+        // Remap the array
+        $array =  $entity->toSchema(null);
+        $array['reference'] = $array['$id'];
+        $array['schema'] = $array['$schema'];
+        unset($array['$id']);
+        unset($array['$schema']);
+
+        if($collection->findOneAndReplace(
+            ['_id'=>$entity->getID()],
+            $entity->toSchema(null),
+            ['upsert'=>true]
+        )){
+            $this->io->writeln('Updated object '.$entity->getId().' to cache');
+        }
+        else{
+            $this->io->writeln('Wrote object '.$entity->getId().' to cache');
         }
 
-        // let create a backup for when we can not get the object
-        if($objectEntity =$this->entityManager->getRepository('App:ObjectEntity')->find($id)){
-            return $this->cacheObject($objectEntity);
-        }
+        return $entity;
 
-        // Ow nooz! We really cant find an object
-        return false;
+    }
+
+    /**
+     * Get a single schema from the cache
+     *
+     * @param Uuid $id
+     * @return array|null
+     */
+    public function getSchema(Uuid $id): ?array{
+        $collection = $this->client->schemas->json;
+
     }
 }
