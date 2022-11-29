@@ -100,8 +100,13 @@ class CacheService
         $this->io->writeln('Found '.count($endpoints).' Endpoint\'s');
 
         foreach($endpoints as $endpoint){
-            $this->cacheEndpoint($schema);
+            $this->cacheEndpoint($endpoint);
         }
+
+        // Created indexes
+        $collection = $this->client->objects->json->createIndex( ["$**"=>"text" ]);
+        $collection = $this->client->schemas->json->createIndex( ["$**"=>"text" ]);
+        $collection = $this->client->endpoints->json->createIndex( ["$**"=>"text" ]);
 
         return Command::SUCCESS;
     }
@@ -149,6 +154,26 @@ class CacheService
     }
 
     /**
+     * Searches the object store for objects containing the search string
+     *
+     * @param string $search
+     * @return array|null
+     */
+    public function searchObjects(string $search): ?array{
+        $collection = $this->client->objects->json;
+
+        $filter  = [
+            '$text' => [
+                '$search'=> $search,
+                '$caseSensitive'=> false
+            ]
+        ];
+
+
+        return $collection->find($filter);
+    }
+
+    /**
      * Put a single endpoint into the cache
      *
      * @param Endpoint $endpoint
@@ -157,6 +182,7 @@ class CacheService
     public function cacheEndpoint(Endpoint $endpoint):Endpoint{
         $collection = $this->client->endpoints->json;
 
+        return $endpoint;
     }
 
     /**
@@ -186,6 +212,10 @@ class CacheService
         unset($array['$id']);
         unset($array['$schema']);
 
+        /*
+        var_dump($array);
+
+
         if($collection->findOneAndReplace(
             ['_id'=>$entity->getID()],
             $entity->toSchema(null),
@@ -196,6 +226,7 @@ class CacheService
         else{
             $this->io->writeln('Wrote object '.$entity->getId().' to cache');
         }
+        */
 
         return $entity;
 
