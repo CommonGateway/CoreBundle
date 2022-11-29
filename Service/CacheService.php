@@ -137,10 +137,10 @@ class CacheService
     /**
      * Get a single object from the cache
      *
-     * @param Uuid $id
+     * @param string $id
      * @return array|null
      */
-    public function getObject(Uuid $id): ?array{
+    public function getObject(string $id){
         $collection = $this->client->objects->json;
 
         // Check if object is in the cache
@@ -150,7 +150,9 @@ class CacheService
         // Fall back tot the entity manager
         $object = $this->entityManager->getRepository('App:ObjectEntity')->find($id);
         $object = $this->cacheObject($object)->toArray(1);
-        return $object;
+
+        var_dump($object);
+        return $object->toArray();
     }
 
     /**
@@ -169,8 +171,9 @@ class CacheService
             ]
         ];
 
+        $filter=[];
 
-        return $collection->find($filter);
+        return $collection->find($filter)->toArray();
     }
 
     /**
