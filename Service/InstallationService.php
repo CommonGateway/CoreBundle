@@ -6,7 +6,7 @@ namespace CommonGateway\CoreBundle\Service;
 use App\Entity\Entity;
 use App\Entity\ObjectEntity;
 use CommonGateway\CoreBundle\Service\ComposerService;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -16,7 +16,6 @@ use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Path;
 use Symfony\Component\Finder\Finder;
-use App\Kernel;
 Use Doctrine\ORM\EntityManagerInterface;
 
 
@@ -25,17 +24,27 @@ class InstallationService
     private ComposerService $composerService;
     private EntityManagerInterface $em;
     private SymfonyStyle $io;
-    private Kernel $kernel;
-    private ContainerInterface $container;
 
     public function __construct(
         ComposerService $composerService,
-        EntityManagerInterface $em,
-        Kernel $kernel
+        EntityManagerInterface $em
     ) {
         $this->composerService = $composerService;
         $this->em = $em;
-        $this->container = $kernel->getContainer();
+        $this->container = New Container;
+    }
+
+    /**
+     * Set symfony style in order to output to the console
+     *
+     * @param SymfonyStyle $io
+     * @return self
+     */
+    public function setStyle(SymfonyStyle $io):self
+    {
+        $this->io = $io;
+
+        return $this;
     }
 
     /**
@@ -90,9 +99,8 @@ class InstallationService
         $filesystem = new Filesystem();
 
         // Handling the schema's
+        $this->io->section('Looking for schema\'s');
         $schemaDir = $vendorFolder.'/'.$bundle.'/Schema';
-        $this->io->section('Looking for schema\'s ');
-        $this->io->writeln('Looking in '.$schemaDir);
 
         if($filesystem->exists($schemaDir)){
             $this->io->writeln('Schema folder found');
@@ -115,9 +123,8 @@ class InstallationService
         }
 
         // Handling the data
-        $dataDir = $vendorFolder.'/'.$bundle.'/Data';
         $this->io->section('Looking for data');
-        $this->io->writeln('Looking in '.$dataDir);
+        $dataDir = $vendorFolder.'/'.$bundle.'/Data';
 
         if($filesystem->exists($dataDir)){
 
@@ -139,22 +146,18 @@ class InstallationService
 
 
         // Handling the installations
-        $installationDir = $vendorFolder.'/'.$bundle.'/Installation';
         $this->io->section('Looking for installers');
-        $this->io->writeln('Looking in '.$installationDir);
-
+        $installationDir = $vendorFolder.'/'.$bundle.'/Installation';
         if($filesystem->exists($installationDir)){
 
             $this->io->writeln('Installation folder found');
-            $installations = New Finder();
-            $installations =  $installations->in($installationDir);
-            $this->io->writeln('Files found: '.count($installations));
+            $installers = New Finder();
+            $installers =  $installers->in($installationDir);
+            $this->io->writeln('Files found: '.count($installers));
 
-            foreach ($installations->files() as $installation){
-                $this->handleInstaller($installation);
+            foreach ($installers->files() as $installer){
+                $this->handleInstaller($installer);
             }
-
-            // We need to clear the finder
         }
         else{
             $this->io->writeln('No Installation folder found');
@@ -162,22 +165,7 @@ class InstallationService
 
         $this->io->success('All Done');
 
-        //$this->io->writeln($this->getComposerService()->show());
-
         return Command::SUCCESS;
-    }
-
-    /**
-     * Set symfony style in order to output to the console
-     *
-     * @param SymfonyStyle $io
-     * @return self
-     */
-    public function style(SymfonyStyle $io):self
-    {
-        $this->io = $io;
-
-        return $this;
     }
 
     public function update(string $bundle, string $data){
@@ -271,7 +259,8 @@ class InstallationService
                 continue;
             }
 
-            $this->io->writeln([                '',
+            $this->io->writeln([
+                '',
                 '<info> Found data for schema '.$reference.'</info> containing '.count($objects).' object(s)',
             ]);
 
@@ -322,20 +311,17 @@ class InstallationService
             return false;
         }
 
-        // Check validity
-        if(!array_key_exists('installationService',$data)){
-            $this->io->writeln($file->getFilename().' does not contain an installation service');
-            return false;
-        }
-        $this->io->writeln('Found installation service: '.$data['installationService']);
-
-        if(!$installationService = $this->container->get($data['installationService'], 0)){
-            $this->io->writeln($data['installationService'].' cant be found as a registerd service');
+        if(!isset($data['installationService']) || !$installationService = $data['installationService']){
+            $this->io->writeln($file->getFilename().' Dosnt contain an installation service');
             return false;
         }
 
-        return $installationService->install($this->io);
-        // We need to gues the service name
+        if(!$installationService = $this->container->get($installationService)){
+            $this->io->writeln($file->getFilename().' Could not be loaded from container');
+            return false;
+        }
+
+        return $installationService->install();
     }
 
 

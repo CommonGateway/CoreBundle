@@ -120,9 +120,14 @@ class CacheService
     public function cacheObject(ObjectEntity $objectEntity):ObjectEntity{
         $collection = $this->client->objects->json;
 
+        // Lets not cash the entire schema
+        $array = $objectEntity->toArray(1, ['id','self','synchronizations','schema']);
+        $array['_schema'] = $array['_schema']['$id'];
+        unset($array['$id']);
+
         if($collection->findOneAndReplace(
             ['_id'=>$objectEntity->getID()],
-            $objectEntity->toArray(1, ['id','self','synchronizations','schema']),
+            $array,
             ['upsert'=>true]
         )){
             $this->io->writeln('Updated object '.$objectEntity->getId().' to cache');
@@ -171,7 +176,7 @@ class CacheService
             ]
         ];
 
-        $filter=[];
+        //$filter=[];
 
         return $collection->find($filter)->toArray();
     }
