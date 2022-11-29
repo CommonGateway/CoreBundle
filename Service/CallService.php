@@ -89,19 +89,6 @@ class CallService
     }
 
     /**
-     * Filters http:// and https:// from source location
-     *
-     * @param string $location      The source domain
-     *
-     * @return string
-     */
-    private function getHost(string $location): string
-    {
-        $host = str_replace('https://', '', $location);
-        return str_replace('http://', '', $host);
-    }
-
-    /**
      * Removes empty headers and sets array to string values
      *
      * @param array $headers      Http headers
@@ -156,14 +143,13 @@ class CallService
         $log->setRequestBody($config['body'] ?? null);
 
         // Set authenticion if needed
+        $parsedUrl = parse_url($source->getLocation());
+
         $config = array_merge_recursive($config, $this->getAuthentication($source));
         $config = array_merge($config, $this->getCertificate($config));
-        $config['headers']['host'] = $this->getHost($source->getLocation());
+        $config['headers']['host'] = $parsedUrl['host'];
         $config['headers'] = $this->removeEmptyHeaders($config['headers']);
         $log->setRequestHeaders($config['headers'] ?? null);
-
-        // Lets start up a default client
-        $client = new Client($config);
 
         $url = $source->getLocation() . $endpoint;
 
