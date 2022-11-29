@@ -17,6 +17,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Path;
 use Symfony\Component\Finder\Finder;
 Use Doctrine\ORM\EntityManagerInterface;
+use App\Kernel;
 
 
 class InstallationService
@@ -24,14 +25,16 @@ class InstallationService
     private ComposerService $composerService;
     private EntityManagerInterface $em;
     private SymfonyStyle $io;
+    private Container $container;
 
     public function __construct(
         ComposerService $composerService,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        Kernel $kernel
     ) {
         $this->composerService = $composerService;
         $this->em = $em;
-        $this->container = New Container;
+        $this->container = $kernel->getContainer();
     }
 
     /**
@@ -316,10 +319,12 @@ class InstallationService
             return false;
         }
 
-        if(!$installationService = $this->container->get($installationService)){
+        if(!$installationService =  $this->container->get($installationService)){
             $this->io->writeln($file->getFilename().' Could not be loaded from container');
             return false;
         }
+
+        $installationService->setStyle($this->io);
 
         return $installationService->install();
     }
