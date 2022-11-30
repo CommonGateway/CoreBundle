@@ -23,8 +23,10 @@ class RequestService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
+        CacheService $cacheService
     ) {
         $this->entityManager = $entityManager;
+        $this->cacheService = $cacheService;
     }
 
     /**
@@ -36,6 +38,7 @@ class RequestService
      */
     public function collectionRequestHandler(array $data, array $configuration): array
     {
+
         $this->data = $data;
         $this->configuration = $configuration;
 
@@ -45,7 +48,7 @@ class RequestService
             case 'GET':
                 $identifiers = [];
 
-                $result = ['total' = count($identifiers), 'results' => []];
+                $result = ['total' => count($identifiers), 'results' => []];
                 $results = [];
 
                 $start = 0;
@@ -180,7 +183,7 @@ class RequestService
           //
         }
 
-        return new new Response(
+        return new Response(
         json_encode($data),
         200,
         ['content-type' => 'application/json']
