@@ -24,7 +24,7 @@ class InstallationService
     private ComposerService $composerService;
     private EntityManagerInterface $em;
     private SymfonyStyle $io;
-    private Container $container;
+    private $container;
 
     public function __construct(
         ComposerService $composerService,
