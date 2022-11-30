@@ -86,7 +86,7 @@ class CacheService
         // Backwards compatablity
         if(!isset($this->client)){
             $this->io->writeln('No cache client found, halting warmup');
-            return Command::SUCCESS; 
+            return Command::SUCCESS;
         }
 
         // Objects
@@ -131,7 +131,7 @@ class CacheService
      * @return ObjectEntity
      */
     public function cacheObject(ObjectEntity $objectEntity):ObjectEntity{
-        // Backwars compatabilit
+        // Backwards compatablity
         if(!isset($this->client)){
             return $objectEntity;
         }
@@ -164,7 +164,7 @@ class CacheService
      * @return void
      */
     public function removeObject(ObjectEntity $objectEntity):void{
-        // Backwars compatablity
+        // Backwards compatablity
         if(!isset($this->client)){
             return;
         }
@@ -181,9 +181,8 @@ class CacheService
      * @param string $id
      * @return array|null
      */
-    public function getObject(string $id)
-    {
-        // Backwars compatablity
+    public function getObject(string $id){
+        // Backwards compatablity
         if(!isset($this->client)){
             return false;
         }
