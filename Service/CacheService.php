@@ -76,41 +76,41 @@ class CacheService
      */
     public function warmup(){
 
-        $this->io->writeln([
+        (isset($this->io)? $this->io->writeln([
             'Common Gateway Cache Warmup',
             '============',
             '',
-        ]);
+        ]): '');
 
 
         // Backwards compatablity
         if(!isset($this->client)){
-            $this->io->writeln('No cache client found, halting warmup');
+            (isset($this->io)?$this->io->writeln('No cache client found, halting warmup'): '');
             return Command::SUCCESS;
         }
 
         // Objects
-        $this->io->section('Caching Objects\'s');
+        (isset($this->io)? $this->io->section('Caching Objects\'s'): '');
         $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
-        $this->io->writeln('Found '.count($objectEntities).' objects\'s');
+        (isset($this->io)? $this->io->writeln('Found '.count($objectEntities).' objects\'s'): '');
 
         foreach($objectEntities as $objectEntity){
             $this->cacheObject($objectEntity);
         }
 
         // Schemas
-        $this->io->section('Caching Schema\'s');
+        (isset($this->io)? $this->io->section('Caching Schema\'s'): '');
         $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
-        $this->io->writeln('Found '.count($schemas).' Schema\'s');
+        (isset($this->io)? $this->io->writeln('Found '.count($schemas).' Schema\'s'): '');
 
         foreach($schemas as $schema){
             $this->cacheShema($schema);
         }
 
         // Endpoints
-        $this->io->section('Caching Endpoint\'s');
+        (isset($this->io)? $this->io->section('Caching Endpoint\'s'): '');
         $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
-        $this->io->writeln('Found '.count($endpoints).' Endpoint\'s');
+        (isset($this->io)? $this->io->writeln('Found '.count($endpoints).' Endpoint\'s'): '');
 
         foreach($endpoints as $endpoint){
             $this->cacheEndpoint($endpoint);
@@ -148,10 +148,10 @@ class CacheService
             $array,
             ['upsert'=>true]
         )){
-            $this->io->writeln('Updated object '.$objectEntity->getId().' to cache');
+            (isset($this->io)? $this->io->writeln('Updated object '.$objectEntity->getId().' to cache'): '');
         }
         else{
-            $this->io->writeln('Wrote object '.$objectEntity->getId().' to cache');
+            (isset($this->io)? $this->io->writeln('Wrote object '.$objectEntity->getId().' to cache'): '');
         }
 
         return $objectEntity;
