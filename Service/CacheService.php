@@ -269,7 +269,7 @@ class CacheService
     public function getEndpoint(Uuid $id): ?array{
         // Backwards compatablity
         if(!isset($this->client)){
-            return;
+            return [];
         }
 
         $collection = $this->client->endpoints->json;
@@ -342,7 +342,7 @@ class CacheService
     public function getSchema(Uuid $id): ?array{
         // Backwards compatablity
         if(!isset($this->client)){
-            return $entity;
+            return [] ;
         }
 
         $collection = $this->client->schemas->json;
