@@ -19,7 +19,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
     private CacheService $cacheService;
 
     public function __construct(
-        CacheService $cacheService,
+        CacheService $cacheService
     ) {
         $this->cacheService = $cacheService;
     }
