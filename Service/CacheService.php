@@ -206,20 +206,24 @@ class CacheService
      * @param string $search
      * @return array|null
      */
-    public function searchObjects(string $search): ?array{
+    public function searchObjects(string $search = null): ?array{
         // Backwards compatablity
         if(!isset($this->client)){
             return [];
         }
 
         $collection = $this->client->objects->json;
+        $filter = [];
 
-        $filter  = [
-            '$text' => [
-                '$search'=> $search,
-                '$caseSensitive'=> false
-            ]
-        ];
+        // Let see if we need a search
+        if(isset($search) and !empty($search)){
+            $filter  = [
+                '$text' => [
+                    '$search'=> $search,
+                    '$caseSensitive'=> false
+                ]
+            ];
+        }
 
         //$filter=[];
 
