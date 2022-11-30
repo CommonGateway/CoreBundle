@@ -197,7 +197,7 @@ class CacheService
         $object = $this->entityManager->getRepository('App:ObjectEntity')->find($id);
         $object = $this->cacheObject($object)->toArray(1);
 
-        return $object->toArray();
+        return $object;
     }
 
     /**
