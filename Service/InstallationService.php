@@ -6,7 +6,6 @@ namespace CommonGateway\CoreBundle\Service;
 use App\Entity\Entity;
 use App\Entity\ObjectEntity;
 use CommonGateway\CoreBundle\Service\ComposerService;
-use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
