@@ -103,6 +103,7 @@ class CacheService
             '',
         ]): '');
 
+        (isset($this->io)?$this->io->writeln('Connecting to'. $this->parameters->get('cache_url')): '');
 
         // Backwards compatablity
         if(!isset($this->client)){

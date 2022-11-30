@@ -148,6 +148,7 @@ class RequestService
                 break;
         }
 
+        $this->entityManager->flush();
         return $this->createResponse($result);
     }
 
