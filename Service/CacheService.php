@@ -14,6 +14,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 /**
  * Service to call external sources
@@ -35,6 +36,7 @@ class CacheService
     private EntityManagerInterface $entityManager;
     private CacheInterface $cache;
     private SymfonyStyle $io;
+    private ParameterBagInterface $parameters;
 
 
     /**
@@ -44,12 +46,14 @@ class CacheService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        CacheInterface $cache
+        CacheInterface $cache,
+        ParameterBagInterface $parameters
     )
     {
-        $this->client = new Client('mongodb://api-platform:!ChangeMe!@mongodb');
         $this->entityManager = $entityManager;
         $this->cache = $cache;
+        $this->parameters = $parameters;
+        $this->client = new Client($this->parameters->get('cache_url'));
     }
 
     /**
