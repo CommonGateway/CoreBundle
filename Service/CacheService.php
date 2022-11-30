@@ -53,7 +53,9 @@ class CacheService
         $this->entityManager = $entityManager;
         $this->cache = $cache;
         $this->parameters = $parameters;
-        $this->client = new Client($this->parameters->get('cache_url'));
+        if($this->parameters->get('cache_url', false)){
+            $this->client = new Client($this->parameters->get('cache_url'));
+        }
     }
 
     /**
@@ -79,6 +81,13 @@ class CacheService
             '============',
             '',
         ]);
+
+
+        // Backwards compatablity
+        if(!isset($this->client)){
+            $this->io->writeln('No cache client found, halting warmup');
+            return Command::SUCCESS; 
+        }
 
         // Objects
         $this->io->section('Caching Objects\'s');
@@ -122,6 +131,11 @@ class CacheService
      * @return ObjectEntity
      */
     public function cacheObject(ObjectEntity $objectEntity):ObjectEntity{
+        // Backwars compatabilit
+        if(!isset($this->client)){
+            return $objectEntity;
+        }
+
         $collection = $this->client->objects->json;
 
         // Lets not cash the entire schema
@@ -144,23 +158,46 @@ class CacheService
     }
 
     /**
+     * Removes an object from the cache
+     *
+     * @param ObjectEntity $objectEntity
+     * @return void
+     */
+    public function removeObject(ObjectEntity $objectEntity):void{
+        // Backwars compatablity
+        if(!isset($this->client)){
+            return;
+        }
+
+        $collection = $this->client->objects->json;
+
+        return;
+    }
+
+
+    /**
      * Get a single object from the cache
      *
      * @param string $id
      * @return array|null
      */
-    public function getObject(string $id){
+    public function getObject(string $id)
+    {
+        // Backwars compatablity
+        if(!isset($this->client)){
+            return false;
+        }
+
         $collection = $this->client->objects->json;
 
         // Check if object is in the cache
-        if($object = $collection ){
+        if ($object = $collection) {
             return $object;
         }
         // Fall back tot the entity manager
         $object = $this->entityManager->getRepository('App:ObjectEntity')->find($id);
         $object = $this->cacheObject($object)->toArray(1);
 
-        var_dump($object);
         return $object->toArray();
     }
 
@@ -171,6 +208,11 @@ class CacheService
      * @return array|null
      */
     public function searchObjects(string $search): ?array{
+        // Backwards compatablity
+        if(!isset($this->client)){
+            return [];
+        }
+
         $collection = $this->client->objects->json;
 
         $filter  = [
@@ -192,9 +234,31 @@ class CacheService
      * @return Endpoint
      */
     public function cacheEndpoint(Endpoint $endpoint):Endpoint{
+        // Backwards compatablity
+        if(!isset($this->client)){
+            return $endpoint;
+        }
+
         $collection = $this->client->endpoints->json;
 
         return $endpoint;
+    }
+
+    /**
+     * Removes an endpoint from the cache
+     *
+     * @param Endpoint $endpoint
+     * @return void
+     */
+    public function removeEndpoint(Endpoint $endpoint):void{
+        // Backwards compatablity
+        if(!isset($this->client)){
+            return;
+        }
+
+        $collection = $this->client->endpoints->json;
+
+        return;
     }
 
     /**
@@ -204,6 +268,11 @@ class CacheService
      * @return array|null
      */
     public function getEndpoint(Uuid $id): ?array{
+        // Backwards compatablity
+        if(!isset($this->client)){
+            return;
+        }
+
         $collection = $this->client->endpoints->json;
 
     }
@@ -215,6 +284,10 @@ class CacheService
      * @return Entity
      */
     public function cacheShema(Entity $entity): Entity{
+        // Backwards compatablity
+        if(!isset($this->client)){
+            return $entity;
+        }
         $collection = $this->client->schemas->json;
 
         // Remap the array
@@ -245,12 +318,34 @@ class CacheService
     }
 
     /**
+     * Removes an Schema from the cache
+     *
+     * @param Entity $entity
+     * @return void
+     */
+    public function removeShema(Entity $entity):void{
+        // Backwards compatablity
+        if(!isset($this->client)){
+            return;
+        }
+
+        $collection = $this->client->schemas->json;
+
+        return;
+    }
+
+    /**
      * Get a single schema from the cache
      *
      * @param Uuid $id
      * @return array|null
      */
     public function getSchema(Uuid $id): ?array{
+        // Backwards compatablity
+        if(!isset($this->client)){
+            return $entity;
+        }
+
         $collection = $this->client->schemas->json;
 
     }

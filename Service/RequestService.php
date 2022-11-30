@@ -68,9 +68,7 @@ class RequestService
                 break;
         }
 
-
-
-       return $this->data;
+        return $this->createResponse($result);
     }
 
     /**
@@ -126,7 +124,7 @@ class RequestService
 
         $this->entityManager->flush();
 
-        return $this->data;
+        return $this->createResponse($this->object);
     }
 
     /**
