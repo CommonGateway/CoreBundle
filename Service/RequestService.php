@@ -43,13 +43,30 @@ class RequestService
         $this->data = $data;
         $this->configuration = $configuration;
 
+        // Try to grap an id
+        if(isset($this->data['query']['id'])) {
+            $this->id = $this->data['path']['id'];
+        }
+        if(isset($this->data['path']['id'])) {
+            $this->id = $this->data['path']['id'];
+        }
+
+        // If we have an ID we can get an entity to work with (except on gets we handle those from cache)
+        if(isset($this->id) and $this->data['method'] != 'GET'){
+            $this->object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id'=>$this->id]);
+        }
+
+        // We might have some content
+        if(isset($this->data['body'])) {
+            $this->content = $this->data['body'];
+        }
+
+        // All prepped so lets go
         switch ($this->data['method']) {
             case 'GET':
                 // We have an id (so single object)
-                if(isset($this->data['path']['id'])) {
-                    $result = $this->cacheService->getObject($this->data['path']['id']);
-
-                    var_dump($result);
+                if(isset($this->id)) {
+                    $result = $this->cacheService->getObject($this->id);
                 }
                 else{
                     // generic search
@@ -74,11 +91,64 @@ class RequestService
                 }
                 break;
             case 'POST':
+
+                // We have an id on a post so die
+                if(isset($this->id)) {
+                    return new Response('','400');
+                }
+
+                break;
+
+            case 'PUT':
+
+                // We dont have an id on a PUT so die
+                if(!isset($this->id)) {
+                    return new Response('','400');
+                }
+
+                //if($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)){
+                if($this->object->hydrate($this->content, true)){
+                    $this->entityManager->persist($this->object);
+                }
+                else{
+                    // Use validation to throw an error
+                }
+
+                $result = $this->object->toArray();
+                break;
+            case 'PATCH':
+
+                // We dont have an id on a PATCH so die
+                if(!isset($this->id)) {
+                    return new Response('','400');
+                }
+
+                //if($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
+                if($this->object->hydrate($this->content)) {
+                    $this->entityManager->persist($this->object);
+                }
+                else{
+                    // Use validation to throw an error
+                }
+
+                $result = $this->object->toArray();
+                break;
+            case 'DELETE':
+
+                // We dont have an id on a DELETE so die
+                if(!isset($this->id)) {
+                    return new Response('','400');
+                }
+
+                $this->entityManager->remove($this->object);
+
+                return new Response('','202');
                 break;
             default:
                 break;
         }
 
+        $this->entityManager->flush();
         return $this->createResponse($result);
     }
 
