@@ -71,6 +71,27 @@ class CacheService
         return $this;
     }
 
+
+    /**
+     * Remov non-exisitng items from the cashe
+     */
+    public function cleanup(){
+
+        (isset($this->io)? $this->io->writeln([
+            'Common Gateway Cache Cleanup',
+            '============',
+            '',
+        ]): '');
+
+        (isset($this->io)?$this->io->section('Cleaning Object\'s'): '');
+        $collection = $this->client->objects->json;
+        $filter = [];
+        $objects = $collection->find($filter)->toArray();
+        (isset($this->io)?$this->io->writeln('Found '.count($objects).''): '');
+
+    }
+
+
     /**
      * Throws all available objects into the cache
      */
@@ -140,11 +161,16 @@ class CacheService
 
         // Lets not cash the entire schema
         $array = $objectEntity->toArray(1, ['id','self','synchronizations','schema']);
-        $array['_schema'] = $array['_schema']['$id'];
-        unset($array['$id']);
+
+        unset($array['_schema']['required']);
+        unset($array['_schema']['properties']);
+
+        $id = (string) $objectEntity->getId();
+
+        $array['id'] = $id;
 
         if($collection->findOneAndReplace(
-            ['_id'=>$objectEntity->getID()],
+            ['_id'=>$id],
             $array,
             ['upsert'=>true]
         )){
@@ -193,9 +219,10 @@ class CacheService
         if ($object = $collection->findOne(['_id'=>$id])) {
             return $object;
         }
+
         // Fall back tot the entity manager
-        $object = $this->entityManager->getRepository('App:ObjectEntity')->find($id);
-        $object = $this->cacheObject($object)->toArray(1);
+        $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id'=>$id]);
+        $object = $this->cacheObject($object)->toArray(1,['id']);
 
         return $object;
     }
