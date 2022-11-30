@@ -7,10 +7,10 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 interface InstallerInterface
 {
 
-    public function install(SymfonyStyle $io);
+    public function install();
 
-    public function update(SymfonyStyle $io);
+    public function update();
 
-    public function uninstall(SymfonyStyle $io);
+    public function uninstall();
 
 }

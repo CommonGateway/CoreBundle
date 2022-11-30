@@ -31,36 +31,47 @@ class RequestService
 
     /**
      *
+     *
      * @param array $data The data from the call
      * @param array $configuration The configuration from the call
      *
      * @return array The modified data
      */
-    public function collectionRequestHandler(array $data, array $configuration): array
+    public function requestHandler(array $data, array $configuration): Response
     {
 
         $this->data = $data;
         $this->configuration = $configuration;
 
-        $method = $this->data['request']->getMethod();
-
-        switch ($method) {
+        switch ($this->data['method']) {
             case 'GET':
-                $identifiers = [];
+                // We have an id (so single object)
+                if(isset($this->data['path']['id'])) {
+                    $result = $this->cacheService->getObject($this->data['path']['id']);
 
-                $result = ['total' => count($identifiers), 'results' => []];
-                $results = [];
-
-                $start = 0;
-                $limit = 100;
-                // To do iets met array slicing for pagination
-                $identifiers = array_slice($identifiers, $start, $limit);
-                foreach($identifiers as $identifier){
-                    $results = $this->cacheService->getObject($identifier);
+                    var_dump($result);
                 }
+                else{
+                    // generic search
+                    $search = null;
+                    if(isset($this->data['query']['_search'])) {
+                        $search = $this->data['query']['_search'];
+                    }
 
-                $result['results'] = $results;
+                    $results = $this->cacheService->searchObjects($search);
 
+                    // Lets build the page
+
+                    $start = 0;
+                    $limit = 100;
+
+                    $result = [
+                        'pages' => $start,
+                        'limit' => $limit,
+                        'total' => count($results),
+                        'results' => $results
+                    ];
+                }
                 break;
             case 'POST':
                 break;

@@ -4,7 +4,7 @@ namespace CommonGateway\CoreBundle\ActionHandler;
 
 use CommonGateway\CoreBundle\Service\RequestService;
 
-class ItemRequestHandler implements ActionHandlerInterface
+class RequestItemHandler implements ActionHandlerInterface
 {
     private RequestService $requestService;
 
