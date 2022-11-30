@@ -48,8 +48,6 @@ class RequestService
                 // We have an id (so single object)
                 if(isset($this->data['path']['id'])) {
                     $result = $this->cacheService->getObject($this->data['path']['id']);
-
-                    var_dump($result);
                 }
                 else{
                     // generic search

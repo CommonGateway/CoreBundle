@@ -189,8 +189,8 @@ class CacheService
 
         $collection = $this->client->objects->json;
 
-        // Check if object is in the cache
-        if ($object = $collection) {
+        // Check if object is in the cache ????
+        if ($object = $collection->findOne(['_id'=>$id])) {
             return $object;
         }
         // Fall back tot the entity manager
