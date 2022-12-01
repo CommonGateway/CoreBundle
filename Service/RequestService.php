@@ -59,6 +59,9 @@ class RequestService
 
         // Try to grap an id
         if(isset($this->data['query']['id'])) {
+            $this->id = $this->data['path']['{id}'];
+        }
+        if(isset($this->data['query']['id'])) {
             $this->id = $this->data['path']['[id]'];
         }
         if(isset($this->data['query']['id'])) {
