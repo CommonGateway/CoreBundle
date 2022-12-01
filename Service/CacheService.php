@@ -163,10 +163,10 @@ class CacheService
         // Lets not cash the entire schema
         $array = $objectEntity->toArray(1, ['id','self','synchronizations','schema']);
 
-        //unset($array['_schema']['required']);
-        //unset($array['_schema']['properties']);
+        unset($array['_schema']['required']);
+        unset($array['_schema']['properties']);
 
-        (isset($array['_schema']['$id'])?$array['_schema'] = $array['_schema']['$id']:'');
+        //(isset($array['_schema']['$id'])?$array['_schema'] = $array['_schema']['$id']:'');
 
         $id = (string) $objectEntity->getId();
 
@@ -241,6 +241,7 @@ class CacheService
      * @return array|null
      */
     public function searchObjects(string $search = null, array $filter = [], array $entities = []): ?array{
+
         // Backwards compatablity
         if(!isset($this->client)){
             return [];
@@ -249,26 +250,23 @@ class CacheService
         $collection = $this->client->objects->json;
 
         // Search for single entity WE WOULD LIKE TO SEACH FOR MULTIPLE ENTITIES
-        /*
         if(!empty($entities)){
             foreach ($entities as $entity){
-                $filter['_schema'] =  $entity->getReference();
+                $filter['_schema.$id'] =  $entity->getReference();
             }
         }
-        */
 
 
         // Let see if we need a search
         if(isset($search) and !empty($search)){
-            $filter  = [
-                '$text' => [
-                    '$search'=> $search,
-                    '$caseSensitive'=> false
-                ]
+            $filter['$text']
+             = [
+                '$search'=> $search,
+                '$caseSensitive'=> false
             ];
         }
 
-        //$filter=[];
+        //$filter['_schema.$id']='https://larping.nl/character.schema.json';
 
         return $collection->find($filter)->toArray();
     }

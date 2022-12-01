@@ -43,7 +43,27 @@ class RequestService
         $this->data = $data;
         $this->configuration = $configuration;
 
+        $filters = [];
+
+        // haat aan de de _
+        if(isset($this->data['querystring'])){
+            $query = explode('&',$this->data['querystring']);
+            foreach($query as $row){
+                $row = explode('=', $row);
+                $key = $row[0];
+                $value = $row[1];
+                $filters[$key] = $value;
+            }
+            unset($filters['_search']);
+        }
+
         // Try to grap an id
+        if(isset($this->data['query']['id'])) {
+            $this->id = $this->data['path']['{id}'];
+        }
+        if(isset($this->data['query']['id'])) {
+            $this->id = $this->data['path']['[id]'];
+        }
         if(isset($this->data['query']['id'])) {
             $this->id = $this->data['path']['id'];
         }
@@ -86,8 +106,8 @@ class RequestService
 
                     //var_dump($this->data['endpoint']->getEntities()->toArray());
 
-                    $this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
-                    $results = $this->cacheService->searchObjects($search, $this->data['query']);
+                    //$this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
+                    $results = $this->cacheService->searchObjects($search, $filters, $this->data['endpoint']->getEntities()->toArray());
 
                     // Lets build the page
 
