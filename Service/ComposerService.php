@@ -13,7 +13,7 @@ class ComposerService
     private function arrayEnum(array $array,array $enum):bool{
         // Lets see if the values in the array arry pressent in the enum
         foreach($array as $value){
-            if(!in_array($value, $enum )){
+            if (!in_array($value, $enum )) {
                 return false;
             }
         }
@@ -246,17 +246,17 @@ class ComposerService
         // Prepare the comand
         $cmd = ['composer', $call];
 
-        if($packadge != ''){
+        if ($packadge != '') {
             $cmd[] = strtolower($packadge);
         }
 
         // Check the enums
-        if($options and !$this->arrayEnum($options,$optionsList)){
+        if ($options and !$this->arrayEnum($options,$optionsList)) {
             // @todo throwException();
         }
 
         // Force JSON output where supported
-        if(in_array('--format', $optionsList) && !in_array('--format json',$options)){
+        if (in_array('--format', $optionsList) && !in_array('--format json',$options)) {
             $options[] = '--format=json';
         }
 
@@ -279,7 +279,7 @@ class ComposerService
         }
 
         // Turn in into simpethin workable
-        if(in_array('--format=json', $options)){
+        if (in_array('--format=json', $options)) {
             $content = json_decode($content, true);
         }
         else{

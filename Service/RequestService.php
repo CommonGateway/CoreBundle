@@ -44,34 +44,42 @@ class RequestService
         $this->configuration = $configuration;
 
         // Try to grap an id
-        if(isset($this->data['query']['id'])) {
+        if (isset($this->data['query']['id'])) {
             $this->id = $this->data['path']['id'];
         }
-        if(isset($this->data['path']['id'])) {
+        if (isset($this->data['path']['id'])) {
             $this->id = $this->data['path']['id'];
         }
 
         // If we have an ID we can get an entity to work with (except on gets we handle those from cache)
-        if(isset($this->id) and $this->data['method'] != 'GET'){
+        if (isset($this->id) and $this->data['method'] != 'GET') {
             $this->object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id'=>$this->id]);
         }
 
         // We might have some content
-        if(isset($this->data['body'])) {
+        if (isset($this->data['body'])) {
             $this->content = $this->data['body'];
         }
+
+        // Bit os savety cleanup
+        unset($this->content['id']);
+        unset($this->content['_id']);
+        unset($this->content['x-commongateway-metadata']);
+        unset($this->content['_schema']);
+
+        /** controlleren of de gebruiker ingelogd is **/
 
         // All prepped so lets go
         switch ($this->data['method']) {
             case 'GET':
                 // We have an id (so single object)
-                if(isset($this->id)) {
+                if (isset($this->id)) {
                     $result = $this->cacheService->getObject($this->id);
                 }
                 else{
                     // generic search
                     $search = null;
-                    if(isset($this->data['query']['_search'])) {
+                    if (isset($this->data['query']['_search'])) {
                         $search = $this->data['query']['_search'];
                     }
 
@@ -91,61 +99,83 @@ class RequestService
                 }
                 break;
             case 'POST':
-
                 // We have an id on a post so die
-                if(isset($this->id)) {
-                    return new Response('','400');
+                if (isset($this->id)) {
+                    return new Response('You can not POST to an (exsisting) id, consider using PUT or PATCH instead','400');
                 }
 
-                break;
-
-            case 'PUT':
-
-                // We dont have an id on a PUT so die
-                if(!isset($this->id)) {
-                    return new Response('','400');
+                // We need to know the type of object that the user is trying to post, so lets look that up
+                if (count($this->data['endpoint']->getEntities())) {
+                    // We can make more gueses do
+                    $entity = $this->data['endpoint']->getEntities()->first();
+                }
+                else{
+                    return new Response('No entity could be established for your post','400');
                 }
 
-                //if($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)){
-                if($this->object->hydrate($this->content, true)){
+                $this->object = New ObjectEntity($entity);
+
+                //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)){
+                if ($this->object->hydrate($this->content, true)) {
                     $this->entityManager->persist($this->object);
+                    $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
                 }
                 else{
                     // Use validation to throw an error
                 }
 
-                $result = $this->object->toArray();
+                $result = $this->cacheService->getObject($this->object->getId());
+                break;
+            case 'PUT':
+
+                // We dont have an id on a PUT so die
+                if (!isset($this->id)) {
+                    return new Response('','400');
+                }
+
+                //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)){
+                if ($this->object->hydrate($this->content, true)) { // This should be an unsafe hydration
+                    $this->entityManager->persist($this->object);
+                    $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
+                } else {
+                    // Use validation to throw an error
+                }
+
+                $result = $this->cacheService->getObject($this->object->getId());
                 break;
             case 'PATCH':
 
                 // We dont have an id on a PATCH so die
-                if(!isset($this->id)) {
+                if (!isset($this->id)) {
                     return new Response('','400');
                 }
 
-                //if($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
-                if($this->object->hydrate($this->content)) {
+                //if ($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
+                if ($this->object->hydrate($this->content)) {
                     $this->entityManager->persist($this->object);
-                }
-                else{
+                    $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
+
+                } else {
                     // Use validation to throw an error
                 }
 
-                $result = $this->object->toArray();
+                $result = $this->cacheService->getObject($this->object->getId());
                 break;
             case 'DELETE':
 
                 // We dont have an id on a DELETE so die
-                if(!isset($this->id)) {
+                if (!isset($this->id)) {
                     return new Response('','400');
                 }
 
                 $this->entityManager->remove($this->object);
-
-                return new Response('','202');
+                $this->cacheService-removeObject($this->id); /* @todo this is hacky, the above schould alredy do this */
+                $this->entityManager->flush();
+                return new Response('Succesfully deleted object','202');
                 break;
             default:
                 break;
+                return new Response('Unkown method'. $this->data['method'],'404');
         }
 
         $this->entityManager->flush();
@@ -168,9 +198,9 @@ class RequestService
         $content = $this->data['request']->getContent();
 
         // Lets see if we have an object
-        if(array_key_exists('id', $this->data)){
+        if (array_key_exists('id', $this->data)) {
             $this->id = $data['id'];
-            if(!$this->object = $this->cacheService->getObject($data['id'])){
+            if (!$this->object = $this->cacheService->getObject($data['id'])) {
                 // Throw not found
             };
         }
@@ -180,7 +210,7 @@ class RequestService
                 break;
             case 'PUT':
 
-                if($validation = $this->object->validate($content) && $this->object->hydrate($content, true)){
+                if ($validation = $this->object->validate($content) && $this->object->hydrate($content, true)){
                     $this->entityManager->persist($this->object);
                 }
                 else{
@@ -188,7 +218,7 @@ class RequestService
                 }
                 break;
             case 'PATCH':
-                if($this->object->hydrate($content) && $validation = $this->object->validate()) {
+                if ($this->object->hydrate($content) && $validation = $this->object->validate()) {
                     $this->entityManager->persist($this->object);
                 }
                 else{
@@ -255,10 +285,9 @@ class RequestService
      */
     public function createResponse($data): Response
     {
-        if($data instanceof ObjectEntity){
+        if ($data instanceof ObjectEntity) {
             $data = $data->toArray();
-        }
-        else{
+        } else {
           //
         }
 
