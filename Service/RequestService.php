@@ -61,7 +61,7 @@ class RequestService
             $this->content = $this->data['body'];
         }
 
-        // Bit os savety cleanup
+        // Bit os savety cleanup <- dit zou eigenlijk in de hydrator moeten gebeuren
         unset($this->content['id']);
         unset($this->content['_id']);
         unset($this->content['x-commongateway-metadata']);
@@ -81,9 +81,10 @@ class RequestService
                     $search = null;
                     if(isset($this->data['query']['_search'])) {
                         $search = $this->data['query']['_search'];
+                        unset($this->data['query']['_search']);
                     }
 
-                    $results = $this->cacheService->searchObjects($search);
+                    $results = $this->cacheService->searchObjects($search, $this->data['query'], $this->data['endpoint']);
 
                     // Lets build the page
 
