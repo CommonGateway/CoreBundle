@@ -30,6 +30,46 @@ class RequestService
     }
 
     /**
+     * A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.
+     * This function will not.
+     *
+     * @param string $method The method of the Request
+     *
+     * @return array An array with all query parameters.
+     */
+    public function realRequestQueryAll(string $method = 'get'): array
+    {
+        $vars = [];
+        if (strtolower($method) === 'get' && empty($this->data['querystring'])) {
+            return $vars;
+        }
+        $pairs = explode('&', strtolower($method) == 'post' ? file_get_contents('php://input') : $_SERVER['QUERY_STRING']);
+        foreach ($pairs as $pair) {
+            $nv = explode('=', $pair);
+            $name = urldecode($nv[0]);
+            $value = '';
+            if (count($nv) == 2) {
+                $value = urldecode($nv[1]);
+            }
+            $matchesCount = preg_match('/(\[.*])/', $name, $matches);
+            if ($matchesCount == 1) {
+                $key = $matches[1];
+                $name = str_replace($key, '', $name);
+                $key = trim($key, '[]');
+                if (!empty($key)) {
+                    $vars[$name][$key] = $value;
+                } else {
+                    $vars[$name][] = $value;
+                }
+                continue;
+            }
+            $vars[$name] = $value;
+        }
+
+        return $vars;
+    }
+
+    /**
      *
      *
      * @param array $data The data from the call
@@ -47,21 +87,22 @@ class RequestService
 
         // haat aan de de _
         if(isset($this->data['querystring'])){
-            $query = explode('&',$this->data['querystring']);
-            foreach($query as $row){
-                $row = explode('=', $row);
-                $key = $row[0];
-                $value = $row[1];
-                $filters[$key] = $value;
-            }
+//            $query = explode('&',$this->data['querystring']);
+//            foreach($query as $row){
+//                $row = explode('=', $row);
+//                $key = $row[0];
+//                $value = $row[1];
+//                $filters[$key] = $value;
+//            }
+            $filters = $this->realRequestQueryAll($this->data['method']);
             unset($filters['_search']);
         }
 
         // Try to grap an id
-        if(isset($this->data['query']['id'])) {
+        if(isset($this->data['path']['{id}'])) {
             $this->id = $this->data['path']['{id}'];
         }
-        if(isset($this->data['query']['id'])) {
+        if(isset($this->data['path']['[id]'])) {
             $this->id = $this->data['path']['[id]'];
         }
         if(isset($this->data['query']['id'])) {
