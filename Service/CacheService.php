@@ -53,7 +53,7 @@ class CacheService
         $this->entityManager = $entityManager;
         $this->cache = $cache;
         $this->parameters = $parameters;
-        if ($this->parameters->get('cache_url', false)) {
+        if($this->parameters->get('cache_url', false)){
             $this->client = new Client($this->parameters->get('cache_url'));
         }
     }
@@ -106,7 +106,7 @@ class CacheService
         (isset($this->io)?$this->io->writeln('Connecting to'. $this->parameters->get('cache_url')): '');
 
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if(!isset($this->client)){
             (isset($this->io)?$this->io->writeln('No cache client found, halting warmup'): '');
             return Command::SUCCESS;
         }
@@ -154,7 +154,7 @@ class CacheService
      */
     public function cacheObject(ObjectEntity $objectEntity):ObjectEntity{
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if(!isset($this->client)){
             return $objectEntity;
         }
 
@@ -163,18 +163,20 @@ class CacheService
         // Lets not cash the entire schema
         $array = $objectEntity->toArray(1, ['id','self','synchronizations','schema']);
 
-        unset($array['_schema']['required']);
-        unset($array['_schema']['properties']);
+        //unset($array['_schema']['required']);
+        //unset($array['_schema']['properties']);
+
+        (isset($array['_schema']['$id'])?$array['_schema'] = $array['_schema']['$id']:'');
 
         $id = (string) $objectEntity->getId();
 
         $array['id'] = $id;
 
-        if ($collection->findOneAndReplace(
+        if($collection->findOneAndReplace(
             ['_id'=>$id],
             $array,
             ['upsert'=>true]
-        )) {
+        )){
             (isset($this->io)? $this->io->writeln('Updated object '.$objectEntity->getId().' to cache'): '');
         }
         else{
@@ -190,10 +192,9 @@ class CacheService
      * @param ObjectEntity $objectEntity
      * @return void
      */
-    public function removeObject($id): void
-    {
+    public function removeObject($id):void{
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if(!isset($this->client)){
             return;
         }
 
@@ -209,10 +210,9 @@ class CacheService
      * @param string $id
      * @return array|null
      */
-    public function getObject(string $id)
-    {
+    public function getObject(string $id){
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if(!isset($this->client)){
             return false;
         }
 
@@ -240,23 +240,26 @@ class CacheService
      *
      * @return array|null
      */
-    public function searchObjects(string $search = null): ?array
-    {
+    public function searchObjects(string $search = null, array $filter = [], array $entities = []): ?array{
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if(!isset($this->client)){
             return [];
         }
 
         $collection = $this->client->objects->json;
 
+        // Search for single entity WE WOULD LIKE TO SEACH FOR MULTIPLE ENTITIES
+        /*
         if(!empty($entities)){
             foreach ($entities as $entity){
-                $filter[] = ['_schema.$id' => $entity->getReference()];
+                $filter['_schema'] =  $entity->getReference();
             }
         }
+        */
+
 
         // Let see if we need a search
-        if (isset($search) and !empty($search)) {
+        if(isset($search) and !empty($search)){
             $filter  = [
                 '$text' => [
                     '$search'=> $search,
@@ -276,10 +279,9 @@ class CacheService
      * @param Endpoint $endpoint
      * @return Endpoint
      */
-    public function cacheEndpoint(Endpoint $endpoint): Endpoint
-    {
+    public function cacheEndpoint(Endpoint $endpoint):Endpoint{
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if(!isset($this->client)){
             return $endpoint;
         }
 
@@ -294,10 +296,9 @@ class CacheService
      * @param Endpoint $endpoint
      * @return void
      */
-    public function removeEndpoint(Endpoint $endpoint): void
-    {
+    public function removeEndpoint(Endpoint $endpoint):void{
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if(!isset($this->client)){
             return;
         }
 
@@ -312,10 +313,9 @@ class CacheService
      * @param Uuid $id
      * @return array|null
      */
-    public function getEndpoint(Uuid $id): ?array
-    {
+    public function getEndpoint(Uuid $id): ?array{
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if(!isset($this->client)){
             return [];
         }
 
@@ -329,10 +329,9 @@ class CacheService
      * @param Entity $entity
      * @return Entity
      */
-    public function cacheShema(Entity $entity): Entity
-    {
+    public function cacheShema(Entity $entity): Entity{
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if(!isset($this->client)){
             return $entity;
         }
         $collection = $this->client->schemas->json;
@@ -346,9 +345,9 @@ class CacheService
 
         /*
         var_dump($array);
-        
 
-        if ($collection->findOneAndReplace(
+
+        if($collection->findOneAndReplace(
             ['_id'=>$entity->getID()],
             $entity->toSchema(null),
             ['upsert'=>true]
@@ -361,6 +360,7 @@ class CacheService
         */
 
         return $entity;
+
     }
 
     /**
@@ -369,10 +369,9 @@ class CacheService
      * @param Entity $entity
      * @return void
      */
-    public function removeShema(Entity $entity): void
-    {
+    public function removeShema(Entity $entity):void{
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if(!isset($this->client)){
             return;
         }
 
@@ -387,10 +386,9 @@ class CacheService
      * @param Uuid $id
      * @return array|null
      */
-    public function getSchema(Uuid $id): ?array
-    {
+    public function getSchema(Uuid $id): ?array{
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if(!isset($this->client)){
             return [] ;
         }
 
