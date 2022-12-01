@@ -255,6 +255,7 @@ class CacheService
                 $filter['_schema.$id'] =  $entity->getReference();
             }
         }
+        unset($filter['order'], $filter['limit'], $filter['start'], $filter['offset'], $filter['page'], $filter['extend']);
 
 
         // Let see if we need a search
