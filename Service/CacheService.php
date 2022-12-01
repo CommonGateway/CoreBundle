@@ -221,6 +221,7 @@ class CacheService
             return $object;
         }
 
+
         // Fall back tot the entity manager
         $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id'=>$id]);
         $object = $this->cacheObject($object)->toArray(1,['id']);
@@ -231,17 +232,25 @@ class CacheService
     /**
      * Searches the object store for objects containing the search string
      *
-     * @param string $search
+     * @param string $search a string to search for within the given context
+     * @param array $filter an array of dot.notation filters for wich to search with
+     * @param array $entities schemas to limit te search to
+     *
      * @return array|null
      */
-    public function searchObjects(string $search = null): ?array{
+    public function searchObjects(string $search = null, array $filter = [], array $entities = []): ?array{
         // Backwards compatablity
         if(!isset($this->client)){
             return [];
         }
 
         $collection = $this->client->objects->json;
-        $filter = [];
+
+        if(!empty($entities)){
+            foreach ($entities as $entity){
+                $filter[] = ['_schema.$id' => $entity->getReference()];
+            }
+        }
 
         // Let see if we need a search
         if(isset($search) and !empty($search)){
