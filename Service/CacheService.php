@@ -190,7 +190,7 @@ class CacheService
      * @param ObjectEntity $objectEntity
      * @return void
      */
-    public function removeObject(ObjectEntity $objectEntity):void{
+    public function removeObject($id):void{
         // Backwards compatablity
         if(!isset($this->client)){
             return;
@@ -198,7 +198,7 @@ class CacheService
 
         $collection = $this->client->objects->json;
 
-        return;
+        $collection->findOneAndDelete(['_id'=>$id]);
     }
 
 
