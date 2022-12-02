@@ -74,7 +74,7 @@ class InstallationService
 
         $packadges = $this->composerService->getAll()['installed'];
 
-        $found = array_filter($packadges,function($v,$k) use ($bundle){
+        $found = array_filter($packadges,function($v,$k) use ($bundle) {
             return $v["name"] == $bundle;
         },ARRAY_FILTER_USE_BOTH); // With latest PHP third parameter is optional.. Available Values:- ARRAY_FILTER_USE_BOTH OR ARRAY_FILTER_USE_KEY
 
@@ -91,8 +91,7 @@ class InstallationService
                 'Source: '.$packadge['source'],
                 'Abandoned: '. ($packadge['abandoned'] ? 'true' : 'false')
             ]);
-        }
-        else{
+        } else {
             $this->io->error($bundle.' not found');
             return Command::FAILURE;
         }
@@ -114,13 +113,12 @@ class InstallationService
             //$progressBar =  $this->io->createProgressBar(count($schemas));
             //$progressBar->start();
 
-            foreach ($schemas->files() as $schema){
+            foreach ($schemas->files() as $schema) {
                 $this->handleSchema($schema);
             }
 
             //$progressBar->finish();
-        }
-        else{
+        } else {
             $this->io->writeln('No schema folder found');
         }
 
@@ -135,14 +133,12 @@ class InstallationService
             $datas =  $datas->in($dataDir);
             $this->io->writeln('Files found: '.count($datas));
 
-            foreach ($datas->files() as $data){
+            foreach ($datas->files() as $data) {
                 $this->handleData($data);
-
             }
 
             // We need to clear the finder
-        }
-        else{
+        } else {
             $this->io->writeln('No data folder found');
         }
 
@@ -157,11 +153,10 @@ class InstallationService
             $installers =  $installers->in($installationDir);
             $this->io->writeln('Files found: '.count($installers));
 
-            foreach ($installers->files() as $installer){
+            foreach ($installers->files() as $installer) {
                 $this->handleInstaller($installer);
             }
-        }
-        else{
+        } else {
             $this->io->writeln('No Installation folder found');
         }
 
@@ -170,8 +165,8 @@ class InstallationService
         return Command::SUCCESS;
     }
 
-    public function update(string $bundle, string $data){
-
+    public function update(string $bundle, string $data)
+    {
         $this->io->writeln([
             'Common Gateway Bundle Updater',
             '============',
@@ -179,11 +174,10 @@ class InstallationService
         ]);
 
         return Command::SUCCESS;
-
     }
 
-    public function uninstall( string $bundle, string $data){
-
+    public function uninstall( string $bundle, string $data)
+    {
         $this->io->writeln([
             'Common Gateway Bundle Uninstaller',
             '============',
@@ -192,7 +186,8 @@ class InstallationService
         return Command::SUCCESS;
     }
 
-    public function handleSchema( $file){
+    public function handleSchema( $file)
+    {
 
         if (!$schema = json_decode($file->getContents(), true)) {
             $this->io->writeln($file->getFilename().' is not a valid json opbject');
@@ -208,8 +203,7 @@ class InstallationService
         if (!$entity = $this->em->getRepository('App:Entity')->findOneBy(['reference'=>$schema['$id']])) {
             $this->io->writeln('Schema not pressent, creating schema '.$schema['title'] .' under reference '.$schema['$id']);
             $entity = New Entity();
-        }
-        else{
+        } else {
             $this->io->writeln('Schema already pressent, looking to update');
             if (array_key_exists('version', $schema) && version_compare($schema['version'], $entity->getVersion()) < 0) {
                 $this->io->writeln('The new schema has a version number equal or lower then the already pressent version');
@@ -246,15 +240,15 @@ class InstallationService
         return false;
     }
 
-    public function handleData( $file){
+    public function handleData( $file)
+    {
 
         if (!$data = json_decode($file->getContents(), true)) {
             $this->io->writeln($file->getFilename().' is not a valid json opbject');
             return false;
         }
 
-        foreach($data as $reference => $objects){
-
+        foreach ($data as $reference => $objects) {
             // Lets see if we actuelly have a shema to upload the objects to
             if (!$entity = $this->em->getRepository('App:Entity')->findOneBy(['reference'=>$reference])) {
                 $this->io->writeln('No Schema found for reference '.$reference);
@@ -267,13 +261,12 @@ class InstallationService
             ]);
 
             // Then we can handle data
-            foreach($objects as $object){
+            foreach ($objects as $object) {
                 // Lets see if we need to update
 
                 if (array_key_exists('_id',$object) && $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id'=>$object['_id']])) {
                     $this->io->writeln(['','Object '.$object['_id'].' already exsists, so updating']);
-                }
-                else{
+                } else {
                     $objectEntity = New ObjectEntity($entity);
                     $this->io->writeln(['','Creating new object']);
 
@@ -306,7 +299,8 @@ class InstallationService
         }
     }
 
-    public function handleInstaller($file){
+    public function handleInstaller($file)
+    {
 
         if (!$data = json_decode($file->getContents(), true)) {
             $this->io->writeln($file->getFilename().' is not a valid json opbject');
@@ -327,7 +321,4 @@ class InstallationService
 
         return $installationService->install();
     }
-
-
-
 }

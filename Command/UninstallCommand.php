@@ -15,7 +15,8 @@ class UninstallCommand extends Command
     protected static $defaultName = 'commongateway:uninstall';
     private InstallationService $installationService;
 
-    public function __construct(InstallationService $installationService){
+    public function __construct(InstallationService $installationService)
+    {
         $this->installationService = $installationService;
 
         parent::__construct();
