@@ -368,7 +368,7 @@ class CacheService
      * @param Entity $entity
      * @return void
      */
-    public function removeShema(Entity $entity):void{
+    public function removeSchema(Entity $entity): void
         // Backwards compatablity
         if(!isset($this->client)){
             return;
