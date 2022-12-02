@@ -232,6 +232,34 @@ class CacheService
     }
 
     /**
+     * Decides the pagination values
+     *
+     * @param int $limit        The resulting limit
+     * @param int $start        The resulting start value
+     * @param array $filters    The filters
+     * @return array
+     */
+    public function setPagination (&$limit, &$start, array $filters): array
+    {
+        if(isset($filters['limit'])) {
+            $limit = intval($filters['limit']);
+        } else {
+            $limit = 30;
+        }
+        if(isset($filters['start']) || isset($filters['offset'])) {
+            $start = isset($filters['start']) ? intval($filters['start']) : intval($filters['offset']);
+        } elseif(isset($filters['page'])) {
+            $start = (intval($filters['page']) - 1) * $limit;
+        } else {
+            $start = 0;
+        }
+
+        unset($filters['start'], $filters['ofsset'], $filters['limit'], $filters['page'], $filters['extend'], $filters['search']);
+        return $filters;
+
+    }
+
+    /**
      * Searches the object store for objects containing the search string
      *
      * @param string $search a string to search for within the given context
@@ -255,21 +283,20 @@ class CacheService
                 $filter['_schema.$id'] =  $entity->getReference();
             }
         }
-        unset($filter['order'], $filter['limit'], $filter['start'], $filter['offset'], $filter['page'], $filter['extend']);
+        $filter = $this->setPagination($limit, $start, $filter);
 
 
         // Let see if we need a search
         if(isset($search) and !empty($search)){
             $filter['$text']
-             = [
+                = [
                 '$search'=> $search,
                 '$caseSensitive'=> false
             ];
         }
 
         //$filter['_schema.$id']='https://larping.nl/character.schema.json';
-
-        return $collection->find($filter)->toArray();
+        return $collection->find($filter, ['limit' => $limit, 'skip' => $start])->toArray();
     }
 
     /**
