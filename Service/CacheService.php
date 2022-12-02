@@ -53,7 +53,7 @@ class CacheService
         $this->entityManager = $entityManager;
         $this->cache = $cache;
         $this->parameters = $parameters;
-        if($this->parameters->get('cache_url', false)){
+        if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }
     }
@@ -75,8 +75,8 @@ class CacheService
     /**
      * Remov non-exisitng items from the cashe
      */
-    public function cleanup(){
-
+    public function cleanup()
+    {
         (isset($this->io)? $this->io->writeln([
             'Common Gateway Cache Cleanup',
             '============',
@@ -88,15 +88,14 @@ class CacheService
         $filter = [];
         $objects = $collection->find($filter)->toArray();
         (isset($this->io)?$this->io->writeln('Found '.count($objects).''): '');
-
     }
 
 
     /**
      * Throws all available objects into the cache
      */
-    public function warmup(){
-
+    public function warmup()
+    {
         (isset($this->io)? $this->io->writeln([
             'Common Gateway Cache Warmup',
             '============',
@@ -106,7 +105,7 @@ class CacheService
         (isset($this->io)?$this->io->writeln('Connecting to'. $this->parameters->get('cache_url')): '');
 
         // Backwards compatablity
-        if(!isset($this->client)){
+        if (!isset($this->client)) {
             (isset($this->io)?$this->io->writeln('No cache client found, halting warmup'): '');
             return Command::SUCCESS;
         }
@@ -116,7 +115,7 @@ class CacheService
         $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
         (isset($this->io)? $this->io->writeln('Found '.count($objectEntities).' objects\'s'): '');
 
-        foreach($objectEntities as $objectEntity){
+        foreach ($objectEntities as $objectEntity) {
             $this->cacheObject($objectEntity);
         }
 
@@ -125,7 +124,7 @@ class CacheService
         $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
         (isset($this->io)? $this->io->writeln('Found '.count($schemas).' Schema\'s'): '');
 
-        foreach($schemas as $schema){
+        foreach ($schemas as $schema) {
             $this->cacheShema($schema);
         }
 
@@ -134,7 +133,7 @@ class CacheService
         $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
         (isset($this->io)? $this->io->writeln('Found '.count($endpoints).' Endpoint\'s'): '');
 
-        foreach($endpoints as $endpoint){
+        foreach ($endpoints as $endpoint) {
             $this->cacheEndpoint($endpoint);
         }
 
@@ -152,9 +151,10 @@ class CacheService
      * @param ObjectEntity $objectEntity
      * @return ObjectEntity
      */
-    public function cacheObject(ObjectEntity $objectEntity):ObjectEntity{
+    public function cacheObject(ObjectEntity $objectEntity):ObjectEntity
+    {
         // Backwards compatablity
-        if(!isset($this->client)){
+        if (!isset($this->client)) {
             return $objectEntity;
         }
 
@@ -172,14 +172,13 @@ class CacheService
 
         $array['id'] = $id;
 
-        if($collection->findOneAndReplace(
+        if ($collection->findOneAndReplace(
             ['_id'=>$id],
             $array,
             ['upsert'=>true]
-        )){
+        )) {
             (isset($this->io)? $this->io->writeln('Updated object '.$objectEntity->getId().' to cache'): '');
-        }
-        else{
+        } else {
             (isset($this->io)? $this->io->writeln('Wrote object '.$objectEntity->getId().' to cache'): '');
         }
 
@@ -192,9 +191,10 @@ class CacheService
      * @param ObjectEntity $objectEntity
      * @return void
      */
-    public function removeObject($id):void{
+    public function removeObject($id): void
+    {
         // Backwards compatablity
-        if(!isset($this->client)){
+        if (!isset($this->client)) {
             return;
         }
 
@@ -210,9 +210,10 @@ class CacheService
      * @param string $id
      * @return array|null
      */
-    public function getObject(string $id){
+    public function getObject(string $id)
+    {
         // Backwards compatablity
-        if(!isset($this->client)){
+        if (!isset($this->client)) {
             return false;
         }
 
@@ -241,22 +242,20 @@ class CacheService
      */
     public function setPagination (&$limit, &$start, array $filters): array
     {
-        if(isset($filters['limit'])) {
+        if (isset($filters['limit'])) {
             $limit = intval($filters['limit']);
         } else {
             $limit = 30;
         }
-        if(isset($filters['start']) || isset($filters['offset'])) {
+        if (isset($filters['start']) || isset($filters['offset'])) {
             $start = isset($filters['start']) ? intval($filters['start']) : intval($filters['offset']);
-        } elseif(isset($filters['page'])) {
+        } elseif (isset($filters['page'])) {
             $start = (intval($filters['page']) - 1) * $limit;
         } else {
             $start = 0;
         }
 
-        unset($filters['start'], $filters['offset'], $filters['limit'], $filters['page'], $filters['extend'], $filters['search']);
         return $filters;
-
     }
 
     /**
@@ -268,35 +267,75 @@ class CacheService
      *
      * @return array|null
      */
-    public function searchObjects(string $search = null, array $filter = [], array $entities = []): ?array{
-
+    public function searchObjects(string $search = null, array $filter = [], array $entities = []): ?array
+    {
         // Backwards compatablity
-        if(!isset($this->client)){
+        if (!isset($this->client)) {
             return [];
         }
-
+    
         $collection = $this->client->objects->json;
-
+    
         // Search for single entity WE WOULD LIKE TO SEACH FOR MULTIPLE ENTITIES
-        if(!empty($entities)){
-            foreach ($entities as $entity){
+        if (!empty($entities)) {
+            foreach ($entities as $entity) {
+                //$filter['_schema.$id']='https://larping.nl/character.schema.json';
                 $filter['_schema.$id'] =  $entity->getReference();
             }
         }
-        $filter = $this->setPagination($limit, $start, $filter);
-
-
+    
         // Let see if we need a search
-        if(isset($search) and !empty($search)){
+        if (isset($search) and !empty($search)) {
             $filter['$text']
                 = [
                 '$search'=> $search,
                 '$caseSensitive'=> false
             ];
         }
+    
+        $paginationFilter = $filter;
+        unset($filter['start'], $filter['offset'], $filter['limit'],
+            $filter['page'], $filter['extend'], $filter['search']);
+    
+        $this->setPagination($limit, $start, $paginationFilter);
+        $results = $collection->find($filter, ['limit' => $limit, 'skip' => $start])->toArray();
+        $total = $collection->count($filter);
+        
+        return $this->handleResultPagination($paginationFilter, $results, $total);
+    }
 
-        //$filter['_schema.$id']='https://larping.nl/character.schema.json';
-        return $collection->find($filter, ['limit' => $limit, 'skip' => $start])->toArray();
+    /**
+     * Adds pagination variables to an array with the results we found with searchObjects()
+     *
+     * @param array $filters
+     * @param array $results
+     * @param int $total
+     *
+     * @return array the result with pagination.
+     */
+    private function handleResultPagination(array $filters, array $results, int $total = 0): array
+    {
+        $start = isset($filter['start']) && is_numeric($filter['start']) ? (int) $filter['start'] : 0;
+        $limit = isset($filter['limit']) && is_numeric($filter['limit']) ? (int) $filter['limit'] : 30;
+        $page = isset($filter['page']) && is_numeric($filter['page']) ? (int) $filter['page'] : 1;
+    
+        // Lets build the page & pagination
+        if ($start > 1) {
+            $offset = $start - 1;
+        } else {
+            $offset = ($page - 1) * $limit;
+        }
+        $pages = ceil($total / $limit);
+    
+        return [
+            'results' => $results,
+            'count' => count($results),
+            'limit' => $limit,
+            'total' => $total,
+            'offset' => $offset,
+            'page' => floor($offset / $limit) + 1,
+            'pages' => $pages == 0 ? 1 : $pages
+        ];
     }
 
     /**
@@ -305,9 +344,10 @@ class CacheService
      * @param Endpoint $endpoint
      * @return Endpoint
      */
-    public function cacheEndpoint(Endpoint $endpoint):Endpoint{
+    public function cacheEndpoint(Endpoint $endpoint): Endpoint
+    {
         // Backwards compatablity
-        if(!isset($this->client)){
+        if (!isset($this->client)) {
             return $endpoint;
         }
 
@@ -322,9 +362,10 @@ class CacheService
      * @param Endpoint $endpoint
      * @return void
      */
-    public function removeEndpoint(Endpoint $endpoint):void{
+    public function removeEndpoint(Endpoint $endpoint): void
+    {
         // Backwards compatablity
-        if(!isset($this->client)){
+        if (!isset($this->client)) {
             return;
         }
 
@@ -339,9 +380,10 @@ class CacheService
      * @param Uuid $id
      * @return array|null
      */
-    public function getEndpoint(Uuid $id): ?array{
+    public function getEndpoint(Uuid $id): ?array
+    {
         // Backwards compatablity
-        if(!isset($this->client)){
+        if (!isset($this->client)) {
             return [];
         }
 
@@ -355,9 +397,10 @@ class CacheService
      * @param Entity $entity
      * @return Entity
      */
-    public function cacheShema(Entity $entity): Entity{
+    public function cacheShema(Entity $entity): Entity
+    {
         // Backwards compatablity
-        if(!isset($this->client)){
+        if (!isset($this->client)) {
             return $entity;
         }
         $collection = $this->client->schemas->json;
@@ -373,14 +416,13 @@ class CacheService
         var_dump($array);
 
 
-        if($collection->findOneAndReplace(
+        if ($collection->findOneAndReplace(
             ['_id'=>$entity->getID()],
             $entity->toSchema(null),
             ['upsert'=>true]
-        )){
+        )) {
             $this->io->writeln('Updated object '.$entity->getId().' to cache');
-        }
-        else{
+        } else {
             $this->io->writeln('Wrote object '.$entity->getId().' to cache');
         }
         */
@@ -395,9 +437,10 @@ class CacheService
      * @param Entity $entity
      * @return void
      */
-    public function removeShema(Entity $entity):void{
+    public function removeShema(Entity $entity): void
+    {
         // Backwards compatablity
-        if(!isset($this->client)){
+        if (!isset($this->client)) {
             return;
         }
 
@@ -412,9 +455,10 @@ class CacheService
      * @param Uuid $id
      * @return array|null
      */
-    public function getSchema(Uuid $id): ?array{
+    public function getSchema(Uuid $id): ?array
+    {
         // Backwards compatablity
-        if(!isset($this->client)){
+        if (!isset($this->client)) {
             return [] ;
         }
 
