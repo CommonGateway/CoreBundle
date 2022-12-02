@@ -139,7 +139,7 @@ class RequestService
                 } else {
                     // generic search
                     $search = null;
-                    if(isset($this->data['query']['_search'])) {
+                    if (isset($this->data['query']['_search'])) {
                         $search = $this->data['query']['_search'];
                         unset($this->data['query']['_search']);
                     }

@@ -272,21 +272,21 @@ class CacheService
     public function searchObjects(string $search = null, array $filter = [], array $entities = []): ?array
     {
         // Backwards compatablity
-        if(!isset($this->client)){
+        if (!isset($this->client)) {
             return [];
         }
     
         $collection = $this->client->objects->json;
     
         // Search for single entity WE WOULD LIKE TO SEACH FOR MULTIPLE ENTITIES
-        if(!empty($entities)){
-            foreach ($entities as $entity){
+        if (!empty($entities)) {
+            foreach ($entities as $entity) {
                 $filter['_schema.$id'] =  $entity->getReference();
             }
         }
     
         // Let see if we need a search
-        if(isset($search) and !empty($search)){
+        if (isset($search) and !empty($search)) {
             $filter['$text']
                 = [
                 '$search'=> $search,
