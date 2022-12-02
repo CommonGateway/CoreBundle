@@ -327,9 +327,6 @@ class RequestService
             $searchEntity = $this->entityManager->getRepository('App:Entity')->findBy($searchEntityId);
             $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
         }
-
-        var_dump(count($objectEntities));
-
         $response = [];
         foreach ($objectEntities as $objectEntity) {
             $response[] = [
