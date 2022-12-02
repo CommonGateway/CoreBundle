@@ -255,9 +255,7 @@ class CacheService
             $start = 0;
         }
 
-        unset($filters['start'], $filters['offset'], $filters['limit'], $filters['page'], $filters['extend'], $filters['search']);
         return $filters;
-
     }
 
     /**
@@ -294,19 +292,18 @@ class CacheService
                 '$caseSensitive'=> false
             ];
         }
-        
-        $filter = $this->setPagination($limit, $start, $filter);
-        
+    
         $paginationFilter = $filter;
         unset($filter['start'], $filter['offset'], $filter['limit'],
             $filter['page'], $filter['extend'], $filter['search']);
-        
-        $total = $collection->count($filter);
+    
+        $this->setPagination($limit, $start, $paginationFilter);
         $results = $collection->find($filter, ['limit' => $limit, 'skip' => $start])->toArray();
+        $total = $collection->count($filter);
         
         return $this->handleResultPagination($paginationFilter, $results, $total);
     }
-    
+
     /**
      * Adds pagination variables to an array with the results we found with searchObjects()
      *
@@ -318,9 +315,9 @@ class CacheService
      */
     private function handleResultPagination(array $filters, array $results, int $total = 0): array
     {
-        $start = isset($filters['start']) && is_numeric($filters['start']) ? (int) $filters['start'] : 0;
-        $limit = isset($filters['limit']) && is_numeric($filters['limit']) ? (int) $filters['limit'] : 30;
-        $page = isset($filters['page']) && is_numeric($filters['page']) ? (int) $filters['page'] : 1;
+        $start = isset($filter['start']) && is_numeric($filter['start']) ? (int) $filter['start'] : 0;
+        $limit = isset($filter['limit']) && is_numeric($filter['limit']) ? (int) $filter['limit'] : 30;
+        $page = isset($filter['page']) && is_numeric($filter['page']) ? (int) $filter['page'] : 1;
     
         // Lets build the page & pagination
         if ($start > 1) {
