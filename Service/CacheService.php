@@ -254,7 +254,7 @@ class CacheService
             $start = 0;
         }
 
-        unset($filters['start'], $filters['ofsset'], $filters['limit'], $filters['page'], $filters['extend'], $filters['search']);
+        unset($filters['start'], $filters['offset'], $filters['limit'], $filters['page'], $filters['extend'], $filters['search']);
         return $filters;
 
     }
