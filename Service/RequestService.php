@@ -152,14 +152,17 @@ class RequestService
 
                     // Lets build the page
 
-                    $start = 0;
+                    $start = 1;
                     $limit = 100;
 
                     $result = [
                         'pages' => $start,
+                        'start' => $start,
                         'limit' => $limit,
                         'total' => count($results),
-                        'results' => $results
+                        'results' => $results,
+                        'count' => count($results),
+                        'page'  => 1
                     ];
                 }
                 break;
@@ -324,9 +327,6 @@ class RequestService
             $searchEntity = $this->entityManager->getRepository('App:Entity')->findBy($searchEntityId);
             $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
         }
-
-        var_dump(count($objectEntities));
-
         $response = [];
         foreach ($objectEntities as $objectEntity) {
             $response[] = [
