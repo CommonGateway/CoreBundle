@@ -151,18 +151,26 @@ class RequestService
                     $results = $this->cacheService->searchObjects($search, $filters, $this->data['endpoint']->getEntities()->toArray());
 
                     // Lets build the page
-
-                    $start = 1;
-                    $limit = 100;
-
+    
+                    // todo: add support for query params start, limit and page
+                    $start = 0;
+                    $limit = 100; // Default this high?!
+                    $page = 1;
+                    if ($start > 1) {
+                        $offset = $start - 1;
+                    } else {
+                        $offset = ($page - 1) * $limit;
+                    }
+                    $total = count($results);
+                    $pages = ceil($total / $limit);
+    
                     $result = [
-                        'pages' => $start,
-                        'start' => $start,
-                        'limit' => $limit,
-                        'total' => count($results),
                         'results' => $results,
-                        'count' => count($results),
-                        'page'  => 1
+                        'limit' => $limit,
+                        'total' => $total,
+                        'offset' => $offset,
+                        'page' => floor($offset / $limit) + 1,
+                        'pages' => $pages == 0 ? 1 : $pages
                     ];
                 }
                 break;
