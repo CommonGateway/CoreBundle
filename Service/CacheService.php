@@ -281,6 +281,7 @@ class CacheService
         // Search for single entity WE WOULD LIKE TO SEACH FOR MULTIPLE ENTITIES
         if (!empty($entities)) {
             foreach ($entities as $entity) {
+                //$filter['_schema.$id']='https://larping.nl/character.schema.json';
                 $filter['_schema.$id'] =  $entity->getReference();
             }
         }
@@ -293,18 +294,50 @@ class CacheService
                 '$caseSensitive'=> false
             ];
         }
-    
-        $countFilter = $filter;
-        unset($countFilter['start'], $countFilter['offset'], $countFilter['limit'],
-            $countFilter['page'], $countFilter['extend'], $countFilter['search']);
-        $total = $collection->count($countFilter);
-    
+        
         $filter = $this->setPagination($limit, $start, $filter);
+        
+        $paginationFilter = $filter;
+        unset($filter['start'], $filter['offset'], $filter['limit'],
+            $filter['page'], $filter['extend'], $filter['search']);
+        
+        $total = $collection->count($filter);
+        $results = $collection->find($filter, ['limit' => $limit, 'skip' => $start])->toArray();
+        
+        return $this->handleResultPagination($paginationFilter, $results, $total);
+    }
     
-        //$filter['_schema.$id']='https://larping.nl/character.schema.json';
+    /**
+     * Adds pagination variables to an array with the results we found with searchObjects()
+     *
+     * @param array $filters
+     * @param array $results
+     * @param int $total
+     *
+     * @return array the result with pagination.
+     */
+    private function handleResultPagination(array $filters, array $results, int $total = 0): array
+    {
+        $start = isset($filters['start']) && is_numeric($filters['start']) ? (int) $filters['start'] : 0;
+        $limit = isset($filters['limit']) && is_numeric($filters['limit']) ? (int) $filters['limit'] : 30;
+        $page = isset($filters['page']) && is_numeric($filters['page']) ? (int) $filters['page'] : 1;
+    
+        // Lets build the page & pagination
+        if ($start > 1) {
+            $offset = $start - 1;
+        } else {
+            $offset = ($page - 1) * $limit;
+        }
+        $pages = ceil($total / $limit);
+    
         return [
-            'results' => $collection->find($filter, ['limit' => $limit, 'skip' => $start])->toArray(),
-            'total' => $total
+            'results' => $results,
+            'count' => count($results),
+            'limit' => $limit,
+            'total' => $total,
+            'offset' => $offset,
+            'page' => floor($offset / $limit) + 1,
+            'pages' => $pages == 0 ? 1 : $pages
         ];
     }
 

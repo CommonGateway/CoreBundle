@@ -144,32 +144,8 @@ class RequestService
                         unset($this->data['query']['_search']);
                     }
     
-                    $start = isset($filters['start']) && is_numeric($filters['start']) ? (int) $filters['start'] : 0;
-                    $limit = isset($filters['limit']) && is_numeric($filters['limit']) ? (int) $filters['limit'] : 30;
-                    $page = isset($filters['page']) && is_numeric($filters['page']) ? (int) $filters['page'] : 1;
-    
                     //$this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
-                    $searchObjects = $this->cacheService->searchObjects($search, $filters, $this->data['endpoint']->getEntities()->toArray());
-                    $results = $searchObjects['results'];
-    
-                    // Lets build the page & pagination
-                    if ($start > 1) {
-                        $offset = $start - 1;
-                    } else {
-                        $offset = ($page - 1) * $limit;
-                    }
-                    $pages = ceil($searchObjects['total'] / $limit);
-//                    $results = array_slice($results, $offset, $limit); // todo remove
-    
-                    $result = [
-                        'results' => $results,
-                        'count' => count($results),
-                        'limit' => $limit,
-                        'total' => $searchObjects['total'],
-                        'offset' => $offset,
-                        'page' => floor($offset / $limit) + 1,
-                        'pages' => $pages == 0 ? 1 : $pages
-                    ];
+                    $result = $this->cacheService->searchObjects($search, $filters, $this->data['endpoint']->getEntities()->toArray());
                 }
                 break;
             case 'POST':
