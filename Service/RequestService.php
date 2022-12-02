@@ -139,34 +139,33 @@ class RequestService
                 } else {
                     // generic search
                     $search = null;
-                    if (isset($this->data['query']['_search'])) {
+                    if(isset($this->data['query']['_search'])) {
                         $search = $this->data['query']['_search'];
                         unset($this->data['query']['_search']);
                     }
-
-                    //var_dump($this->data['endpoint']->getEntities()->toArray());
-
-                    //$this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
-                    $results = $this->cacheService->searchObjects($search, $filters, $this->data['endpoint']->getEntities()->toArray());
-
-                    // Lets build the page
     
-                    // todo: add support for query params start, limit and page
-                    $start = 0;
-                    $limit = 100; // Default this high?!
-                    $page = 1;
+                    $start = isset($filters['start']) && is_numeric($filters['start']) ? (int) $filters['start'] : 0;
+                    $limit = isset($filters['limit']) && is_numeric($filters['limit']) ? (int) $filters['limit'] : 30;
+                    $page = isset($filters['page']) && is_numeric($filters['page']) ? (int) $filters['page'] : 1;
+    
+                    //$this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
+                    $searchObjects = $this->cacheService->searchObjects($search, $filters, $this->data['endpoint']->getEntities()->toArray());
+                    $results = $searchObjects['results'];
+    
+                    // Lets build the page & pagination
                     if ($start > 1) {
                         $offset = $start - 1;
                     } else {
                         $offset = ($page - 1) * $limit;
                     }
-                    $total = count($results);
-                    $pages = ceil($total / $limit);
+                    $pages = ceil($searchObjects['total'] / $limit);
+//                    $results = array_slice($results, $offset, $limit); // todo remove
     
                     $result = [
                         'results' => $results,
+                        'count' => count($results),
                         'limit' => $limit,
-                        'total' => $total,
+                        'total' => $searchObjects['total'],
                         'offset' => $offset,
                         'page' => floor($offset / $limit) + 1,
                         'pages' => $pages == 0 ? 1 : $pages
