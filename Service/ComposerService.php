@@ -286,6 +286,10 @@ class ComposerService
             $content = explode(PHP_EOL, $content);
         }
 
+        if($content == null){
+            $content = [];
+        }
+
         return $content;
     }
 
