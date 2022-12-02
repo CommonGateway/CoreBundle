@@ -307,13 +307,13 @@ class CacheService
     /**
      * Adds pagination variables to an array with the results we found with searchObjects()
      *
-     * @param array $filters
+     * @param array $filter
      * @param array $results
      * @param int $total
      *
      * @return array the result with pagination.
      */
-    private function handleResultPagination(array $filters, array $results, int $total = 0): array
+    private function handleResultPagination(array $filter, array $results, int $total = 0): array
     {
         $start = isset($filter['start']) && is_numeric($filter['start']) ? (int) $filter['start'] : 0;
         $limit = isset($filter['limit']) && is_numeric($filter['limit']) ? (int) $filter['limit'] : 30;
