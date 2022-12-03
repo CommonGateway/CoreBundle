@@ -95,7 +95,7 @@ class InstallationService
 
         $packadges = $this->composerService->getAll();
 
-        $found = array_filter($packadges,function($v,$k) use ($bundle){
+        $found = array_filter($packadges,function($v,$k) use ($bundle) {
             return $v["name"] == $bundle;
         },ARRAY_FILTER_USE_BOTH); // With latest PHP third parameter is optional.. Available Values:- ARRAY_FILTER_USE_BOTH OR ARRAY_FILTER_USE_KEY
 
@@ -110,8 +110,7 @@ class InstallationService
                 'Homepage :'.$packadge['homepage'],
                 'Source: '.$packadge['source']['url']
             ]);
-        }
-        else{
+        } else {
             $this->io->error($bundle.' not found');
             return Command::FAILURE;
         }
@@ -204,8 +203,8 @@ class InstallationService
         return Command::SUCCESS;
     }
 
-    public function update(string $bundle, string $data){
-
+    public function update(string $bundle, string $data)
+    {
         $this->io->writeln([
             'Common Gateway Bundle Updater',
             '============',
@@ -213,11 +212,10 @@ class InstallationService
         ]);
 
         return Command::SUCCESS;
-
     }
 
-    public function uninstall( string $bundle, string $data){
-
+    public function uninstall( string $bundle, string $data)
+    {
         $this->io->writeln([
             'Common Gateway Bundle Uninstaller',
             '============',
@@ -339,15 +337,15 @@ class InstallationService
         return false;
     }
 
-    public function handleData( $file){
+    public function handleData( $file)
+    {
 
         if (!$data = json_decode($file->getContents(), true)) {
             $this->io->writeln($file->getFilename().' is not a valid json opbject');
             return false;
         }
 
-        foreach($data as $reference => $objects){
-
+        foreach ($data as $reference => $objects) {
             // Lets see if we actuelly have a shema to upload the objects to
             if (!$entity = $this->em->getRepository('App:Entity')->findOneBy(['reference'=>$reference])) {
                 $this->io->writeln('No Schema found for reference '.$reference);
@@ -360,13 +358,12 @@ class InstallationService
             ]);
 
             // Then we can handle data
-            foreach($objects as $object){
+            foreach ($objects as $object) {
                 // Lets see if we need to update
 
                 if (array_key_exists('_id',$object) && $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id'=>$object['_id']])) {
                     $this->io->writeln(['','Object '.$object['_id'].' already exsists, so updating']);
-                }
-                else{
+                } else {
                     $objectEntity = New ObjectEntity($entity);
                     $this->io->writeln(['','Creating new object']);
 
@@ -399,7 +396,8 @@ class InstallationService
         }
     }
 
-    public function handleInstaller($file){
+    public function handleInstaller($file)
+    {
 
         if (!$data = json_decode($file->getContents(), true)) {
             $this->io->writeln($file->getFilename().' is not a valid json opbject');
@@ -420,7 +418,4 @@ class InstallationService
 
         return $installationService->install();
     }
-
-
-
 }

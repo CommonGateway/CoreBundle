@@ -12,9 +12,10 @@ use function PHPUnit\Framework\throwException;
 class ComposerService
 {
 
-    private function arrayEnum(array $array,array $enum):bool{
+    private function arrayEnum(array $array,array $enum): bool
+    {
         // Lets see if the values in the array arry pressent in the enum
-        foreach($array as $value){
+        foreach ($array as $value) {
             if (!in_array($value, $enum )) {
                 return false;
             }
@@ -30,11 +31,11 @@ class ComposerService
      * @param array $options
      * @return array|string
      */
-    private function composerCall(string $call, array $options = [],  string $packadge = ''){
-
+    private function composerCall(string $call, array $options = [],  string $packadge = '')
+    {
         $optionsList = [];
         // Lets check for valid calls
-        switch ($call){
+        switch ($call) {
             case 'init':
                 $optionsList = [];
                 // name: Name of the package.
@@ -276,16 +277,14 @@ class ComposerService
            //throw new ProcessFailedException($process);
            //var_dump('error');
             $content = $process->getErrorOutput();
-        }
-        else{
+        } else {
             $content = $process->getOutput();
         }
 
         // Turn in into simpethin workable
         if (in_array('--format=json', $options)) {
             $content = json_decode($content, true);
-        }
-        else{
+        } else {
             $content = explode(PHP_EOL, $content);
         }
 
