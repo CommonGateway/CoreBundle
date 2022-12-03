@@ -50,29 +50,50 @@ class InstallationService
     }
 
     /**
-     * Performs installation actions on a common Gataway bundle
      *
-     * @param SymfonyStyle $io
-     * @param string $bundle
-     * @param string|null $data
-     * @param bool $noSchema
-     * @return int
+     *
      */
-    public function install(string $bundle, ?string $data, bool $noSchema = false):int
+    public function composerupdate():int
     {
+        $plugins = $this->composerService->getAll();
 
         if ($this->io) {
             $this->io->writeln([
                 '',
-                '<info>Common Gateway Bundle Installer</info>',
+                '<info>Common Gateway Bundle Updater</info>',
                 '============',
                 '',
+                'Found: <comment> ' . count($plugins) . ' </comment> to check for updates',
+                '',
+            ]);
+        }
+
+        foreach($plugins as $plugin){
+            $this->install($plugin['name']);
+        }
+
+        return Command::SUCCESS;
+    }
+
+    /**
+     * Performs installation actions on a common Gataway bundle
+     *
+     * @param SymfonyStyle $io
+     * @param string $bundle
+     * @param bool $noSchema
+     * @return int
+     */
+    public function install(string $bundle, bool $noSchema = false):int
+    {
+
+        if ($this->io) {
+            $this->io->writeln([
                 'Trying to install: <comment> ' . $bundle . ' </comment>',
                 '',
             ]);
         }
 
-        $packadges = $this->composerService->getAll()['installed'];
+        $packadges = $this->composerService->getAll();
 
         $found = array_filter($packadges,function($v,$k) use ($bundle){
             return $v["name"] == $bundle;
@@ -86,10 +107,8 @@ class InstallationService
                 'Name: '.$packadge['name'],
                 'Version: '.$packadge['version'],
                 'Description: '.$packadge['description'],
-                'Direct-dependency: '.($packadge['direct-dependency'] ? 'true' : 'false'),
                 'Homepage :'.$packadge['homepage'],
-                'Source: '.$packadge['source'],
-                'Abandoned: '. ($packadge['abandoned'] ? 'true' : 'false')
+                'Source: '.$packadge['source']['url']
             ]);
         }
         else{
