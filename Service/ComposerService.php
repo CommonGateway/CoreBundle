@@ -4,6 +4,7 @@ namespace CommonGateway\CoreBundle\Service;
 
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
+
 use function PHPUnit\Framework\throwException;
 
 
@@ -298,7 +299,49 @@ class ComposerService
      */
     public function getAll(array $options = []): array{
 
-        return $this->composerCall('show', $options);
+        $plugins = $this->composerCall('show', $options)['installed'];
+
+        $result = [];
+
+        foreach($plugins as $key => $plugin) {
+
+            //var_dump($plugin);
+            if(
+                !isset($plugin['version']) ||
+                !isset($plugin['direct-dependency']) ||
+                !$plugin['direct-dependency'] ){
+               continue;
+            }
+
+            $installedVersion = explode(' ',$plugin['version'])[0];
+
+
+            // Let enrich
+            $plugin = $this->getSingle($plugin['name']);
+
+            if (
+                !isset($plugin['name'])
+                //!isset($plugin['versions']) ||
+                //!isset($plugin['versions'][0])
+                //!isset($plugin['versions'][$installedVersion])
+            ) {
+               //continue;
+            }
+
+            // Explode in case of dev tags
+            $plugin = array_merge($plugin, $plugin['versions'][$installedVersion]);
+            unset($plugin['versions']);
+
+            if(!in_array('common-gateway-plugin',$plugin['keywords'])){
+               continue;
+            }
+
+            $result[] = $plugin;
+
+        }
+
+
+        return $result;
     }
 
     /**
@@ -351,7 +394,12 @@ class ComposerService
      */
     public function getSingle(string $packadge, array $options = []): array{
 
-        return $this->composerCall('show', $options, $packadge);
+        $url = 'https://packagist.org/packages/'.$packadge.'.json';
+
+        $client = new \GuzzleHttp\Client();
+        $response = $client->request('GET', $url);
+
+        return json_decode($response->getBody()->getContents(), true)['package'];
     }
 
     /**
@@ -362,9 +410,20 @@ class ComposerService
      * @param array $options
      * @return array
      */
-    public function search(string $search, array $options = []): array{
+    public function search(string $search = null, array $options = []): array{
 
-        return $this->composerCall('search', $options, $search);
+        $url = 'https://packagist.org/search.json';
+        $query = ['tags'=>'common-gateway-plugin'];
+        if($search){
+            $query['q'] = $search;
+        }
+
+        $client = new \GuzzleHttp\Client();
+        $response = $client->request('GET', 'https://packagist.org/search.json', [
+            'query' => $query
+        ]);
+
+        return json_decode($response->getBody()->getContents(), true)['results'];
     }
 
     /**
