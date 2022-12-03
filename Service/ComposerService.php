@@ -2,6 +2,7 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
@@ -267,6 +268,7 @@ class ComposerService
         // Start the procces
         $process = new Process($cmd);
         $process->setWorkingDirectory('/srv/api');
+        $process->setTimeout(3600);
         $process->run();
 
         // executes after the command finishes
@@ -300,47 +302,21 @@ class ComposerService
      */
     public function getAll(array $options = []): array{
 
-        $plugins = $this->composerCall('show', $options)['installed'];
+        $filesystem = new Filesystem();
 
+        $plugins = file_get_contents('../composer.lock');
+        $plugins = json_decode($plugins, true);
         $result = [];
 
-        foreach($plugins as $key => $plugin) {
+        foreach($plugins['packages'] as $key => $plugin) {
 
             //var_dump($plugin);
-            if(
-                !isset($plugin['version']) ||
-                !isset($plugin['direct-dependency']) ||
-                !$plugin['direct-dependency'] ){
-               continue;
-            }
-
-            $installedVersion = explode(' ',$plugin['version'])[0];
-
-
-            // Let enrich
-            $plugin = $this->getSingle($plugin['name']);
-
-            if (
-                !isset($plugin['name'])
-                //!isset($plugin['versions']) ||
-                //!isset($plugin['versions'][0])
-                //!isset($plugin['versions'][$installedVersion])
-            ) {
-               //continue;
-            }
-
-            // Explode in case of dev tags
-            $plugin = array_merge($plugin, $plugin['versions'][$installedVersion]);
-            unset($plugin['versions']);
-
-            if(!in_array('common-gateway-plugin',$plugin['keywords'])){
-               continue;
+            if(!isset($plugin['keywords']) || !in_array('common-gateway-plugin',$plugin['keywords'])){
+                continue;
             }
 
             $result[] = $plugin;
-
         }
-
 
         return $result;
     }
