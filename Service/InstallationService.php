@@ -15,7 +15,7 @@ use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Path;
 use Symfony\Component\Finder\Finder;
-Use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use App\Kernel;
 
 
@@ -121,66 +121,81 @@ class InstallationService
 
         // Handling the schema's
         $this->io->section('Looking for schema\'s');
-        $schemaDir = $vendorFolder.'/'.$bundle.'/Schema';
+        $schemaDir = $vendorFolder . '/' . $bundle . '/Schema';
 
         if ($filesystem->exists($schemaDir)) {
             $this->io->writeln('Schema folder found');
-            $schemas = New Finder();
+            $schemas = new Finder();
             $schemas = $schemas->in($schemaDir);
-            $this->io->writeln('Files found: '.count($schemas));
+            $this->io->writeln('Files found: ' . count($schemas));
 
 
             //$progressBar =  $this->io->createProgressBar(count($schemas));
             //$progressBar->start();
 
-            foreach ($schemas->files() as $schema){
-                $this->handleSchema($schema);
+            if (count($schemas->files() > 0)) {
+                $this->collection = new CollectionEntity();
+                $this->collection->setName($packadge['name']);
+                isset($packadge['description']) && $this->collection->setDescription($packadge['description']);
+            } else {
+                $this->collection = null;
             }
 
+            $schemaRefs = [];
+            foreach ($schemas->files() as $schema) {
+                $this->handleSchema($schema, $schemaRefs);
+            }
+
+            // Connect all $refs together
+            $this->connectRefs($schemaRefs);
+
+            // Persist collection
+            if (isset($this->collection)) {
+                $this->em->persist($this->collection);
+                $this->em->flush();
+            }
+
+
             //$progressBar->finish();
-        }
-        else{
+        } else {
             $this->io->writeln('No schema folder found');
         }
 
         // Handling the data
         $this->io->section('Looking for data');
-        $dataDir = $vendorFolder.'/'.$bundle.'/Data';
+        $dataDir = $vendorFolder . '/' . $bundle . '/Data';
 
         if ($filesystem->exists($dataDir)) {
 
             $this->io->writeln('Data folder found');
-            $datas = New Finder();
+            $datas = new Finder();
             $datas =  $datas->in($dataDir);
-            $this->io->writeln('Files found: '.count($datas));
+            $this->io->writeln('Files found: ' . count($datas));
 
-            foreach ($datas->files() as $data){
+            foreach ($datas->files() as $data) {
                 $this->handleData($data);
-
             }
 
             // We need to clear the finder
-        }
-        else{
+        } else {
             $this->io->writeln('No data folder found');
         }
 
 
         // Handling the installations
         $this->io->section('Looking for installers');
-        $installationDir = $vendorFolder.'/'.$bundle.'/Installation';
+        $installationDir = $vendorFolder . '/' . $bundle . '/Installation';
         if ($filesystem->exists($installationDir)) {
 
             $this->io->writeln('Installation folder found');
-            $installers = New Finder();
+            $installers = new Finder();
             $installers =  $installers->in($installationDir);
-            $this->io->writeln('Files found: '.count($installers));
+            $this->io->writeln('Files found: ' . count($installers));
 
-            foreach ($installers->files() as $installer){
+            foreach ($installers->files() as $installer) {
                 $this->handleInstaller($installer);
             }
-        }
-        else{
+        } else {
             $this->io->writeln('No Installation folder found');
         }
 
@@ -211,37 +226,96 @@ class InstallationService
         return Command::SUCCESS;
     }
 
-    public function handleSchema( $file){
+    private function connectRefs(array $schemaRefs)
+    {
+        if (!isset($this->collection) || empty($schemaRefs)) {
+            return;
+        }
+
+        // Bind objects/properties that are needed from other collections
+        foreach ($schemaRefs as $ref) {
+            $entity = null;
+            $attributes = null;
+
+            // Bind Attribute to the correct Entity by schema
+            if ($ref['type'] == 'attribute') {
+                $entity = $this->em->getRepository('App:Entity')->findOneBy(['schema' => $ref['schema']]);
+                $attribute = $this->em->getRepository('App:Attribute')->find($ref['id']);
+                $entity && $attribute && $this->bindAttributeToEntity($attribute, $entity);
+            } elseif ($ref['type'] == 'entity') {
+                // Bind all Attributes that refer to this Entity by schema
+                $attributes = $this->em->getRepository('App:Attribute')->findBy(['schema' => $ref['schema']]);
+                $entity = $this->em->getRepository('App:Entity')->find($ref['id']);
+
+                if ($entity && $attributes) {
+                    foreach ($attributes as $attribute) {
+                        $this->bindAttributeToEntity($attribute, $entity);
+                    }
+                }
+            }
+        }
+        $this->entityManager->flush();
+    }
+
+    private function bindAttributeToEntity(Attribute $attribute, Entity $entity): void
+    {
+        if ($attribute->getType() !== 'object' && $attribute->getObject() == null) {
+            $attribute->setFormat(null);
+            $attribute->setType('object');
+            $attribute->setObject($entity);
+            $attribute->setCascade(true);
+
+            $this->entityManager->persist($attribute);
+        }
+    }
+
+    public function handleSchema($file, array &$schemaRefs = [])
+    {
 
         if (!$schema = json_decode($file->getContents(), true)) {
-            $this->io->writeln($file->getFilename().' is not a valid json opbject');
+            $this->io->writeln($file->getFilename() . ' is not a valid json opbject');
             return false;
         }
 
         if (!$this->valdiateJsonSchema($schema)) {
-            $this->io->writeln($file->getFilename().' is not a valid json-schema opbject');
+            $this->io->writeln($file->getFilename() . ' is not a valid json-schema opbject');
             return false;
-
         }
 
-        if (!$entity = $this->em->getRepository('App:Entity')->findOneBy(['reference'=>$schema['$id']])) {
-            $this->io->writeln('Schema not pressent, creating schema '.$schema['title'] .' under reference '.$schema['$id']);
-            $entity = New Entity();
-        }
-        else{
+        if (!$entity = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']])) {
+            $this->io->writeln('Schema not pressent, creating schema ' . $schema['title'] . ' under reference ' . $schema['$id']);
+            $entity = new Entity();
+        } else {
             $this->io->writeln('Schema already pressent, looking to update');
             if (array_key_exists('version', $schema) && version_compare($schema['version'], $entity->getVersion()) < 0) {
                 $this->io->writeln('The new schema has a version number equal or lower then the already pressent version');
             }
         }
 
-        $entity->fromSchema($schema);
+        $entity->fromSchema($schema, $schemaRefs);
 
         $this->em->persist($entity);
         $this->em->flush();
 
-        $this->io->writeln('Done with schema '.$entity->getName());
+        $entity->getSchema() !== null && $schemaRefs[] = [
+            'id' => $entity->getId()->toString(),
+            'schema' => $entity->getSchema(),
+            'type' => 'entity'
+        ];
 
+        foreach ($entity->getAttributes() as $attribute) {
+            if ($attribute->getSchema() !== null) {
+                $schemaRefs[] = [
+                    'id' => $attribute->getId()->toString(),
+                    'schema' => $attribute->getSchema(),
+                    'type' => 'attribute'
+                ];
+            }
+        }
+
+        $this->collection->addEntity($entity);
+
+        $this->io->writeln('Done with schema ' . $entity->getName());
     }
 
     /**
