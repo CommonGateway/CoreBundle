@@ -295,7 +295,7 @@ class CacheService
     
         $paginationFilter = $filter;
         unset($filter['start'], $filter['offset'], $filter['limit'],
-            $filter['page'], $filter['extend'], $filter['search']);
+            $filter['page'], $filter['extend'], $filter['search'], $filter['order']);
     
         $this->setPagination($limit, $start, $paginationFilter);
         $results = $collection->find($filter, ['limit' => $limit, 'skip' => $start])->toArray();
@@ -437,7 +437,7 @@ class CacheService
      * @param Entity $entity
      * @return void
      */
-    public function removeShema(Entity $entity): void
+    public function removeSchema(Entity $entity): void
     {
         // Backwards compatablity
         if (!isset($this->client)) {

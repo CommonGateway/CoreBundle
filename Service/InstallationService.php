@@ -5,6 +5,7 @@ namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Entity;
 use App\Entity\ObjectEntity;
+Use App\Entity\CollectionEntity;
 use CommonGateway\CoreBundle\Service\ComposerService;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Command\Command;
@@ -15,7 +16,7 @@ use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Path;
 use Symfony\Component\Finder\Finder;
-Use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use App\Kernel;
 
 
@@ -34,6 +35,7 @@ class InstallationService
         $this->composerService = $composerService;
         $this->em = $em;
         $this->container = $kernel->getContainer();
+        $this->collection = null;
     }
 
     /**
@@ -50,29 +52,50 @@ class InstallationService
     }
 
     /**
-     * Performs installation actions on a common Gataway bundle
      *
-     * @param SymfonyStyle $io
-     * @param string $bundle
-     * @param string|null $data
-     * @param bool $noSchema
-     * @return int
+     *
      */
-    public function install(string $bundle, ?string $data, bool $noSchema = false):int
+    public function composerupdate():int
     {
+        $plugins = $this->composerService->getAll();
 
         if ($this->io) {
             $this->io->writeln([
                 '',
-                '<info>Common Gateway Bundle Installer</info>',
+                '<info>Common Gateway Bundle Updater</info>',
                 '============',
                 '',
+                'Found: <comment> ' . count($plugins) . ' </comment> to check for updates',
+                '',
+            ]);
+        }
+
+        foreach($plugins as $plugin){
+            $this->install($plugin['name']);
+        }
+
+        return Command::SUCCESS;
+    }
+
+    /**
+     * Performs installation actions on a common Gataway bundle
+     *
+     * @param SymfonyStyle $io
+     * @param string $bundle
+     * @param bool $noSchema
+     * @return int
+     */
+    public function install(string $bundle, bool $noSchema = false):int
+    {
+
+        if ($this->io) {
+            $this->io->writeln([
                 'Trying to install: <comment> ' . $bundle . ' </comment>',
                 '',
             ]);
         }
 
-        $packadges = $this->composerService->getAll()['installed'];
+        $packadges = $this->composerService->getAll();
 
         $found = array_filter($packadges,function($v,$k) use ($bundle) {
             return $v["name"] == $bundle;
@@ -86,10 +109,8 @@ class InstallationService
                 'Name: '.$packadge['name'],
                 'Version: '.$packadge['version'],
                 'Description: '.$packadge['description'],
-                'Direct-dependency: '.($packadge['direct-dependency'] ? 'true' : 'false'),
                 'Homepage :'.$packadge['homepage'],
-                'Source: '.$packadge['source'],
-                'Abandoned: '. ($packadge['abandoned'] ? 'true' : 'false')
+                'Source: '.$packadge['source']['url']
             ]);
         } else {
             $this->io->error($bundle.' not found');
@@ -101,21 +122,40 @@ class InstallationService
 
         // Handling the schema's
         $this->io->section('Looking for schema\'s');
-        $schemaDir = $vendorFolder.'/'.$bundle.'/Schema';
+        $schemaDir = $vendorFolder . '/' . $bundle . '/Schema';
 
         if ($filesystem->exists($schemaDir)) {
             $this->io->writeln('Schema folder found');
-            $schemas = New Finder();
+            $schemas = new Finder();
             $schemas = $schemas->in($schemaDir);
-            $this->io->writeln('Files found: '.count($schemas));
+            $this->io->writeln('Files found: ' . count($schemas));
 
 
-            //$progressBar =  $this->io->createProgressBar(count($schemas));
-            //$progressBar->start();
+            // We want each plugin to also be a collection (if it contains schema's that is)
+            if (count($schemas) > 0) {
+                if(! $this->collection = $this->em->getRepository('App:CollectionEntity')->findOneBy(['plugin'=>$packadge['name']])){
+                    $this->io->writeln(['Created a collection for this plugin','']);
+                    $this->collection = new CollectionEntity();
+                    $this->collection->setName($packadge['name']);
+                    $this->collection->setPlugin($packadge['name']);
+                    isset($packadge['description']) && $this->collection->setDescription($packadge['description']);
+                }
+                else{
+                    $this->io->writeln(['Found a collection for this plugin','']);
+                }
+            }
 
             foreach ($schemas->files() as $schema) {
                 $this->handleSchema($schema);
             }
+
+
+            // Persist collection
+            if (isset($this->collection)) {
+                $this->em->persist($this->collection);
+                $this->em->flush();
+            }
+
 
             //$progressBar->finish();
         } else {
@@ -124,14 +164,14 @@ class InstallationService
 
         // Handling the data
         $this->io->section('Looking for data');
-        $dataDir = $vendorFolder.'/'.$bundle.'/Data';
+        $dataDir = $vendorFolder . '/' . $bundle . '/Data';
 
         if ($filesystem->exists($dataDir)) {
 
             $this->io->writeln('Data folder found');
-            $datas = New Finder();
+            $datas = new Finder();
             $datas =  $datas->in($dataDir);
-            $this->io->writeln('Files found: '.count($datas));
+            $this->io->writeln('Files found: ' . count($datas));
 
             foreach ($datas->files() as $data) {
                 $this->handleData($data);
@@ -145,13 +185,13 @@ class InstallationService
 
         // Handling the installations
         $this->io->section('Looking for installers');
-        $installationDir = $vendorFolder.'/'.$bundle.'/Installation';
+        $installationDir = $vendorFolder . '/' . $bundle . '/Installation';
         if ($filesystem->exists($installationDir)) {
 
             $this->io->writeln('Installation folder found');
-            $installers = New Finder();
+            $installers = new Finder();
             $installers =  $installers->in($installationDir);
-            $this->io->writeln('Files found: '.count($installers));
+            $this->io->writeln('Files found: ' . count($installers));
 
             foreach ($installers->files() as $installer) {
                 $this->handleInstaller($installer);
@@ -186,23 +226,22 @@ class InstallationService
         return Command::SUCCESS;
     }
 
-    public function handleSchema( $file)
+    public function handleSchema($file)
     {
 
         if (!$schema = json_decode($file->getContents(), true)) {
-            $this->io->writeln($file->getFilename().' is not a valid json opbject');
+            $this->io->writeln($file->getFilename() . ' is not a valid json opbject');
             return false;
         }
 
         if (!$this->valdiateJsonSchema($schema)) {
-            $this->io->writeln($file->getFilename().' is not a valid json-schema opbject');
+            $this->io->writeln($file->getFilename() . ' is not a valid json-schema opbject');
             return false;
-
         }
 
-        if (!$entity = $this->em->getRepository('App:Entity')->findOneBy(['reference'=>$schema['$id']])) {
-            $this->io->writeln('Schema not pressent, creating schema '.$schema['title'] .' under reference '.$schema['$id']);
-            $entity = New Entity();
+        if (!$entity = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']])) {
+            $this->io->writeln('Schema not pressent, creating schema ' . $schema['title'] . ' under reference ' . $schema['$id']);
+            $entity = new Entity();
         } else {
             $this->io->writeln('Schema already pressent, looking to update');
             if (array_key_exists('version', $schema) && version_compare($schema['version'], $entity->getVersion()) < 0) {
@@ -213,10 +252,14 @@ class InstallationService
         $entity->fromSchema($schema);
 
         $this->em->persist($entity);
+
+        // Add the schema to collection
+        if(isset($this->collection)){
+            $this->collection->addEntity($entity);
+        }
+
         $this->em->flush();
-
-        $this->io->writeln('Done with schema '.$entity->getName());
-
+        $this->io->writeln('Done with schema ' . $entity->getName());
     }
 
     /**

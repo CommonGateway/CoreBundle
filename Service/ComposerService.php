@@ -2,8 +2,10 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
+
 use function PHPUnit\Framework\throwException;
 
 
@@ -267,6 +269,7 @@ class ComposerService
         // Start the procces
         $process = new Process($cmd);
         $process->setWorkingDirectory('/srv/api');
+        $process->setTimeout(3600);
         $process->run();
 
         // executes after the command finishes
@@ -298,7 +301,26 @@ class ComposerService
      */
     public function getAll(array $options = []): array{
 
-        return $this->composerCall('show', $options);
+        $filesystem = new Filesystem();
+
+        if(!$plugins = @file_get_contents('composer.lock')){
+            return [];
+        }
+
+        $plugins = json_decode($plugins, true);
+        $result = [];
+
+        foreach($plugins['packages'] as $key => $plugin) {
+
+            //var_dump($plugin);
+            if(!isset($plugin['keywords']) || !in_array('common-gateway-plugin',$plugin['keywords'])){
+                continue;
+            }
+
+            $result[] = $plugin;
+        }
+
+        return $result;
     }
 
     /**
@@ -351,7 +373,12 @@ class ComposerService
      */
     public function getSingle(string $packadge, array $options = []): array{
 
-        return $this->composerCall('show', $options, $packadge);
+        $url = 'https://packagist.org/packages/'.$packadge.'.json';
+
+        $client = new \GuzzleHttp\Client();
+        $response = $client->request('GET', $url);
+
+        return json_decode($response->getBody()->getContents(), true)['package'];
     }
 
     /**
@@ -362,9 +389,20 @@ class ComposerService
      * @param array $options
      * @return array
      */
-    public function search(string $search, array $options = []): array{
+    public function search(string $search = null, array $options = []): array{
 
-        return $this->composerCall('search', $options, $search);
+        $url = 'https://packagist.org/search.json';
+        $query = ['tags'=>'common-gateway-plugin'];
+        if($search){
+            $query['q'] = $search;
+        }
+
+        $client = new \GuzzleHttp\Client();
+        $response = $client->request('GET', 'https://packagist.org/search.json', [
+            'query' => $query
+        ]);
+
+        return json_decode($response->getBody()->getContents(), true)['results'];
     }
 
     /**
