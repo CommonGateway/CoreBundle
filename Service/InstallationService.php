@@ -5,6 +5,7 @@ namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Entity;
 use App\Entity\ObjectEntity;
+Use App\Entity\CollectionEntity;
 use CommonGateway\CoreBundle\Service\ComposerService;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Command\Command;
@@ -34,6 +35,7 @@ class InstallationService
         $this->composerService = $composerService;
         $this->em = $em;
         $this->container = $kernel->getContainer();
+        $this->collection = null;
     }
 
     /**
@@ -129,24 +131,24 @@ class InstallationService
             $this->io->writeln('Files found: ' . count($schemas));
 
 
-            //$progressBar =  $this->io->createProgressBar(count($schemas));
-            //$progressBar->start();
-
-            if (count($schemas->files() > 0)) {
-                $this->collection = new CollectionEntity();
-                $this->collection->setName($packadge['name']);
-                isset($packadge['description']) && $this->collection->setDescription($packadge['description']);
-            } else {
-                $this->collection = null;
+            // We want each plugin to also be a collection (if it contains schema's that is)
+            if (count($schemas) > 0) {
+                if(! $this->collection = $this->em->getRepository('App:CollectionEntity')->findOneBy(['plugin'=>$packadge['name']])){
+                    $this->io->writeln(['Created a collection for this plugin','']);
+                    $this->collection = new CollectionEntity();
+                    $this->collection->setName($packadge['name']);
+                    $this->collection->setPlugin($packadge['name']);
+                    isset($packadge['description']) && $this->collection->setDescription($packadge['description']);
+                }
+                else{
+                    $this->io->writeln(['Found a collection for this plugin','']);
+                }
             }
 
-            $schemaRefs = [];
             foreach ($schemas->files() as $schema) {
-                $this->handleSchema($schema, $schemaRefs);
+                $this->handleSchema($schema);
             }
 
-            // Connect all $refs together
-            $this->connectRefs($schemaRefs);
 
             // Persist collection
             if (isset($this->collection)) {
@@ -224,50 +226,7 @@ class InstallationService
         return Command::SUCCESS;
     }
 
-    private function connectRefs(array $schemaRefs)
-    {
-        if (!isset($this->collection) || empty($schemaRefs)) {
-            return;
-        }
-
-        // Bind objects/properties that are needed from other collections
-        foreach ($schemaRefs as $ref) {
-            $entity = null;
-            $attributes = null;
-
-            // Bind Attribute to the correct Entity by schema
-            if ($ref['type'] == 'attribute') {
-                $entity = $this->em->getRepository('App:Entity')->findOneBy(['schema' => $ref['schema']]);
-                $attribute = $this->em->getRepository('App:Attribute')->find($ref['id']);
-                $entity && $attribute && $this->bindAttributeToEntity($attribute, $entity);
-            } elseif ($ref['type'] == 'entity') {
-                // Bind all Attributes that refer to this Entity by schema
-                $attributes = $this->em->getRepository('App:Attribute')->findBy(['schema' => $ref['schema']]);
-                $entity = $this->em->getRepository('App:Entity')->find($ref['id']);
-
-                if ($entity && $attributes) {
-                    foreach ($attributes as $attribute) {
-                        $this->bindAttributeToEntity($attribute, $entity);
-                    }
-                }
-            }
-        }
-        $this->entityManager->flush();
-    }
-
-    private function bindAttributeToEntity(Attribute $attribute, Entity $entity): void
-    {
-        if ($attribute->getType() !== 'object' && $attribute->getObject() == null) {
-            $attribute->setFormat(null);
-            $attribute->setType('object');
-            $attribute->setObject($entity);
-            $attribute->setCascade(true);
-
-            $this->entityManager->persist($attribute);
-        }
-    }
-
-    public function handleSchema($file, array &$schemaRefs = [])
+    public function handleSchema($file)
     {
 
         if (!$schema = json_decode($file->getContents(), true)) {
@@ -290,29 +249,16 @@ class InstallationService
             }
         }
 
-        $entity->fromSchema($schema, $schemaRefs);
+        $entity->fromSchema($schema);
 
         $this->em->persist($entity);
-        $this->em->flush();
 
-        $entity->getSchema() !== null && $schemaRefs[] = [
-            'id' => $entity->getId()->toString(),
-            'schema' => $entity->getSchema(),
-            'type' => 'entity'
-        ];
-
-        foreach ($entity->getAttributes() as $attribute) {
-            if ($attribute->getSchema() !== null) {
-                $schemaRefs[] = [
-                    'id' => $attribute->getId()->toString(),
-                    'schema' => $attribute->getSchema(),
-                    'type' => 'attribute'
-                ];
-            }
+        // Add the schema to collection
+        if(isset($this->collection)){
+            $this->collection->addEntity($entity);
         }
 
-        $this->collection->addEntity($entity);
-
+        $this->em->flush();
         $this->io->writeln('Done with schema ' . $entity->getName());
     }
 
