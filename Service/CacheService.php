@@ -302,6 +302,7 @@ class CacheService
         $this->setPagination($limit, $start, $paginationFilter);
     
         // Order
+        // todo ObjectEntityRepository->getOrderParameters() to check if we are allowed to order on the given key, see eavService->handleSearch() $orderCheck
         $order = isset($paginationFilter['order']) ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $paginationFilter['order']) : [];
         !empty($order) && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
     
