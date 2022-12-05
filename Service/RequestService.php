@@ -4,12 +4,15 @@ namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Log;
 use App\Entity\ObjectEntity;
+use App\Service\ObjectEntityService;
+use App\Service\ResponseService;
 use CommonGateway\CoreBundle\Service\CacheService;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use ErrorException;
 use Exception;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 
 class RequestService
@@ -20,16 +23,24 @@ class RequestService
     private array $data;
     private ObjectEntity $object;
     private string $id;
-
+    // todo: we might want to move or rewrite code instead of using these services here:
+    private ResponseService $responseService;
+    private ObjectEntityService $objectEntityService;
+    
     /**
      * @param EntityManagerInterface $entityManager
+     * @param \CommonGateway\CoreBundle\Service\CacheService $cacheService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        CacheService $cacheService
+        CacheService $cacheService,
+        ResponseService $responseService,
+        ObjectEntityService $objectEntityService
     ) {
         $this->entityManager = $entityManager;
         $this->cacheService = $cacheService;
+        $this->responseService = $responseService;
+        $this->objectEntityService = $objectEntityService;
     }
 
     /**
@@ -187,6 +198,9 @@ class RequestService
 
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
                 if ($this->object->hydrate($this->content, true)) { // This should be an unsafe hydration
+                    if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
+                        $this->objectEntityService->setUnread($this->object);
+                    }
                     $this->entityManager->persist($this->object);
                     $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
                 } else {
@@ -249,48 +263,26 @@ class RequestService
             return;
         }
         
-        if ($this->data['method'] === 'GET' && !isset($this->id) && isset($result['results'])) {
+        if (isset($result['results']) && $this->data['method'] === 'GET' && !isset($this->id)) {
             foreach ($result['results'] as &$collectionItem) {
                 $this->handleXCommongatewayMetadata($collectionItem, $xCommongatewayMetadata);
             }
             return;
         }
-    
-        if (array_key_exists('all', $xCommongatewayMetadata) || array_key_exists('dateRead', $xCommongatewayMetadata)) {
-            $value = $this->data['method'] === 'GET' && !isset($this->id)
-                ? new DateTime() : $this->getDateRead($result['id']);
-            $result['x-commongateway-metadata']['dateRead'] = $value;
-        }
-    }
-    
-    /**
-     * Get the last date read for the given ObjectEntity, for the current user. (uses sql to search in logs).
-     *
-     * @param string $objectEntityId
-     *
-     * @return DateTimeInterface|null
-     */
-    private function getDateRead(string $objectEntityId): ?DateTimeInterface
-    {
-        $user = $this->security->getUser(); // todo get user id somehow
-        if ($user === null) {
-            return null;
-        }
         
-        // First, check if there is an Unread object for this Object+User. If so, return null.
-        $unreads = $this->entityManager->getRepository('App:Unread')->findBy(['object' => $objectEntityId, 'userId' => $user->getUserIdentifier()]);
-        if (!empty($unreads)) {
-            return null;
+        if (!Uuid::isValid($result['id'])) {
+            return;
         }
+        $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['id']]);
         
-        // Use sql to find last get item log of the current user for the given object.
-        $logs = $this->entityManager->getRepository('App:Log')->findDateRead($objectEntityId, $user->getUserIdentifier());
-        
-        if (!empty($logs) and $logs[0] instanceof Log) {
-            return $logs[0]->getDateCreated();
+        if (!$objectEntity instanceof ObjectEntity) {
+            return;
         }
-        
-        return null;
+        if ($this->data['method'] === 'GET' && isset($this->id)) {
+            $xCommongatewayMetadata['dateRead'] = 'getItem';
+        }
+        $this->responseService->xCommongatewayMetadata = $xCommongatewayMetadata;
+        $this->responseService->addToMetadata($result['x-commongateway-metadata'], 'dateRead', $objectEntity);
     }
 
     /**
