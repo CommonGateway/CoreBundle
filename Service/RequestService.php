@@ -2,8 +2,11 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use App\Entity\Log;
 use App\Entity\ObjectEntity;
 use CommonGateway\CoreBundle\Service\CacheService;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use ErrorException;
 use Exception;
@@ -228,7 +231,66 @@ class RequestService
         }
 
         $this->entityManager->flush();
+        $this->handleXCommongatewayMetadata($result, $xCommongatewayMetadata);
         return $this->createResponse($result);
+    }
+    
+    /**
+     * @TODO
+     *
+     * @param array $result
+     * @param array $xCommongatewayMetadata
+     *
+     * @return void
+     */
+    private function handleXCommongatewayMetadata(array &$result, array $xCommongatewayMetadata)
+    {
+        if (empty($xCommongatewayMetadata)) {
+            return;
+        }
+        
+        if ($this->data['method'] === 'GET' && !isset($this->id) && isset($result['results'])) {
+            foreach ($result['results'] as &$collectionItem) {
+                $this->handleXCommongatewayMetadata($collectionItem, $xCommongatewayMetadata);
+            }
+            return;
+        }
+    
+        if (array_key_exists('all', $xCommongatewayMetadata) || array_key_exists('dateRead', $xCommongatewayMetadata)) {
+            $value = $this->data['method'] === 'GET' && !isset($this->id)
+                ? new DateTime() : $this->getDateRead($result['id']);
+            $result['x-commongateway-metadata']['dateRead'] = $value;
+        }
+    }
+    
+    /**
+     * Get the last date read for the given ObjectEntity, for the current user. (uses sql to search in logs).
+     *
+     * @param string $objectEntityId
+     *
+     * @return DateTimeInterface|null
+     */
+    private function getDateRead(string $objectEntityId): ?DateTimeInterface
+    {
+        $user = $this->security->getUser(); // todo get user id somehow
+        if ($user === null) {
+            return null;
+        }
+        
+        // First, check if there is an Unread object for this Object+User. If so, return null.
+        $unreads = $this->entityManager->getRepository('App:Unread')->findBy(['object' => $objectEntityId, 'userId' => $user->getUserIdentifier()]);
+        if (!empty($unreads)) {
+            return null;
+        }
+        
+        // Use sql to find last get item log of the current user for the given object.
+        $logs = $this->entityManager->getRepository('App:Log')->findDateRead($objectEntityId, $user->getUserIdentifier());
+        
+        if (!empty($logs) and $logs[0] instanceof Log) {
+            return $logs[0]->getDateCreated();
+        }
+        
+        return null;
     }
 
     /**
