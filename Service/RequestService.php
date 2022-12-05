@@ -128,7 +128,7 @@ class RequestService
         // Bit os savety cleanup <- dit zou eigenlijk in de hydrator moeten gebeuren
         unset($this->content['id']);
         unset($this->content['_id']);
-        $xCommongatewayMetadata = isset($this->content['x-commongateway-metadata']) ?? [];
+        $xCommongatewayMetadata = isset($this->content['x-commongateway-metadata']) ? $this->content['x-commongateway-metadata'] : [];
         unset($this->content['x-commongateway-metadata']);
         unset($this->content['_schema']);
 
