@@ -301,7 +301,7 @@ class CacheService
             $filter['extend'], $filter['search'], $filter['order']);
     
         $this->setPagination($limit, $start, $paginationFilter);
-        $results = $collection->find($filter, ['limit' => $limit, 'skip' => $start])->toArray().sort($order);
+        $results = $collection->find($filter, ['limit' => $limit, 'skip' => $start])->sort($order)->toArray();
         $total = $collection->count($filter);
         
         return $this->handleResultPagination($paginationFilter, $results, $total);
