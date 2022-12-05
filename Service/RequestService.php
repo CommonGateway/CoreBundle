@@ -2,6 +2,7 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use Adbar\Dot;
 use App\Entity\Log;
 use App\Entity\ObjectEntity;
 use App\Service\ObjectEntityService;
@@ -139,9 +140,27 @@ class RequestService
         // Bit os savety cleanup <- dit zou eigenlijk in de hydrator moeten gebeuren
         unset($this->content['id']);
         unset($this->content['_id']);
-        $xCommongatewayMetadata = isset($this->content['x-commongateway-metadata']) ? $this->content['x-commongateway-metadata'] : [];
-        unset($this->content['x-commongateway-metadata']);
+        unset($this->content['x-commongateway-metadata']); // todo: i don't think this does anything useful?
         unset($this->content['_schema']);
+    
+        // todo: make this a function, like eavService->getRequestExtend()
+        if (isset($this->data['query']['extend'])) {
+            $extend = $this->data['query']['extend'];
+        
+            // Lets deal with a comma seperated list
+            if (!is_array($extend)) {
+                $extend = explode(',', $extend);
+            }
+        
+            $dot = new Dot();
+            // Lets turn the from dor attat into an propper array
+            foreach ($extend as $key => $value) {
+                $dot->add($value, true);
+            }
+        
+            $extend = $dot->all();
+        }
+        $xCommongatewayMetadata = $extend['x-commongateway-metadata'] ?? [];
 
         /** controlleren of de gebruiker ingelogd is **/
 
