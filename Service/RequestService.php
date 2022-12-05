@@ -83,18 +83,17 @@ class RequestService
 
         return $vars;
     }
-
+    
     /**
-     *
+     * @TODO
      *
      * @param array $data The data from the call
      * @param array $configuration The configuration from the call
      *
-     * @return array The modified data
+     * @return Response The modified data
      */
     public function requestHandler(array $data, array $configuration): Response
     {
-
         $this->data = $data;
         $this->configuration = $configuration;
 
@@ -283,6 +282,9 @@ class RequestService
         }
         
         if (isset($result['results']) && $this->data['method'] === 'GET' && !isset($this->id)) {
+            array_walk($result['results'], function (&$record) {
+                $record = iterator_to_array($record);
+            });
             foreach ($result['results'] as &$collectionItem) {
                 $this->handleXCommongatewayMetadata($collectionItem, $xCommongatewayMetadata);
             }
@@ -292,7 +294,7 @@ class RequestService
         if (!Uuid::isValid($result['id'])) {
             return;
         }
-        $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['id']]);
+        $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['id']]);
         
         if (!$objectEntity instanceof ObjectEntity) {
             return;
@@ -301,7 +303,9 @@ class RequestService
             $xCommongatewayMetadata['dateRead'] = 'getItem';
         }
         $this->responseService->xCommongatewayMetadata = $xCommongatewayMetadata;
-        $this->responseService->addToMetadata($result['x-commongateway-metadata'], 'dateRead', $objectEntity);
+        $resultMetadata = (array) $result['x-commongateway-metadata'];
+        $this->responseService->addToMetadata($resultMetadata, 'dateRead', $objectEntity);
+        $result['x-commongateway-metadata'] = $resultMetadata;
     }
 
     /**
