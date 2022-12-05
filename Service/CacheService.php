@@ -294,16 +294,21 @@ class CacheService
         }
     
         $paginationFilter = $filter;
-        $order = isset($filter['order']) ?? [];
-        // todo: add some function that transforms this $order array to an array like this: {order_key: 1} (for ASC) {order_key: -1} (for DESC)
-        // todo: see: https://www.folkstalk.com/2022/09/order-by-mongodb-with-code-examples.html
-        unset($filter['start'], $filter['offset'], $filter['limit'], $filter['page'],
-            $filter['extend'], $filter['search'], $filter['order']);
     
+        unset($filter['start'], $filter['offset'], $filter['limit'],
+            $filter['page'], $filter['extend'], $filter['search'], $filter['order']);
+    
+        // Limit & Start
         $this->setPagination($limit, $start, $paginationFilter);
-        $results = $collection->find($filter, ['limit' => $limit, 'skip' => $start])->sort($order)->toArray();
+    
+        // Order
+        $order = isset($paginationFilter['order']) ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $paginationFilter['order']) : [];
+        !empty($order) && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
+    
+        // Find / Search
+        $results = $collection->find($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order])->toArray();
         $total = $collection->count($filter);
-        
+    
         return $this->handleResultPagination($paginationFilter, $results, $total);
     }
 
