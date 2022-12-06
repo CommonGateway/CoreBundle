@@ -289,11 +289,11 @@ class CacheService
                 continue;
             }
             if ($value === 'IS NOT NULL') {
-                $value = [ '$exists' => true ];
+                $value = [ '$ne' => null ];
                 continue;
             }
-            if ($value === 'NULL') {
-                $value = [ '$exists' => false ];
+            if ($value === 'IS NULL') {
+                $value = null;
                 continue;
             }
         }
