@@ -161,7 +161,7 @@ class CacheService
         $collection = $this->client->objects->json;
 
         // Lets not cash the entire schema
-        $array = $objectEntity->toArray(1, ['id','self','synchronizations','schema']);
+        $array = $objectEntity->toArray(1, ['id','self','synchronizations','schema'], false, true);
 
         unset($array['_schema']['required']);
         unset($array['_schema']['properties']);
