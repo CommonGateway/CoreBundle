@@ -276,13 +276,13 @@ class CacheService
     
         $collection = $this->client->objects->json;
         
+        // Make sure we also have all filters stored in $completeFilter before unsetting
         $completeFilter = $filter;
         unset($filter['start'], $filter['offset'], $filter['limit'], $filter['page'],
             $filter['extend'], $filter['search'], $filter['order'], $filter['fields']);
         
         // Filters
-        // todo ObjectEntityRepository->getFilterParameters() to check if we are allowed to filter on the given key, see eavService->handleSearch() $filterCheck
-        foreach ($filter as $key => &$value) {
+        foreach ($filter as &$value) {
             // todo: this works, we should go to php 8.0 later
             if (str_contains($value, '%')) {
                 $regex = str_replace('%', '', $value);
@@ -303,6 +303,19 @@ class CacheService
         // Search for single entity WE WOULD LIKE TO SEACH FOR MULTIPLE ENTITIES
         if (!empty($entities)) {
             foreach ($entities as $entity) {
+                $orderError = $this->handleOrderCheck($entity, $completeFilter['order'] ?? null);
+                $filterError = $this->handleFilterCheck($entity, $filter ?? null);
+                if (!empty($orderError) || !empty($filterError)) {
+                    !empty($orderError) && $data['order'] = $orderError;
+                    !empty($filterError) && $data['filter'] = $filterError;
+                    return [
+                        'message' => 'There are some errors in your query parameters',
+                        'type'    => 'error',
+                        'path'    => $entity->getName(),
+                        'data'    => $data,
+                    ];
+                }
+                
                 //$filter['_schema.$id']='https://larping.nl/character.schema.json';
                 $filter['_schema.$id'] =  $entity->getReference();
             }
@@ -317,13 +330,10 @@ class CacheService
             ];
         }
         
-        $paginationFilter = $filter;
-        
         // Limit & Start
         $this->setPagination($limit, $start, $completeFilter);
         
         // Order
-        // todo ObjectEntityRepository->getOrderParameters() to check if we are allowed to order on the given key, see eavService->handleSearch() $orderCheck
         $order = isset($completeFilter['order']) ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['order']) : [];
         !empty($order) && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
         
@@ -332,6 +342,74 @@ class CacheService
         $total = $collection->count($filter);
         
         return $this->handleResultPagination($completeFilter, $results, $total);
+    }
+    
+    /**
+     * Will check if we are allowed to order with the given $order query param.
+     * Uses ObjectEntityRepository->getOrderParameters() to check if we are allowed to order, see eavService->handleSearch() $orderCheck
+     *
+     * @param Entity $entity The entity we are going to check for allowed attributes to order on.
+     * @param mixed|array|null $order The order query param, should be an array or null. (but could be a string)
+     *
+     * @return string|null Returns null if given order query param is correct/allowed or when it is not present. Else an error message.
+     */
+    private function handleOrderCheck(Entity $entity, $order): ?string
+    {
+        if (empty($order)) {
+            return null;
+        }
+    
+        $orderCheck = $this->entityManager->getRepository('App:ObjectEntity')->getOrderParameters($entity);
+    
+        if (!is_array($order)) {
+            $orderCheckStr = implode(', ', $orderCheck);
+            $message = 'Please give an attribute to order on. Like this: ?order[attributeName]=desc/asc. Supported order query parameters: '.$orderCheckStr;
+        }
+        if (is_array($order) && count($order) > 1) {
+            $message = 'Only one order query param at the time is allowed.';
+        }
+        if (is_array($order) && !in_array(strtoupper(array_values($order)[0]), ['DESC', 'ASC'])) {
+            $message = 'Please use desc or asc as value for your order query param, not: '.array_values($order)[0];
+        }
+        if (is_array($order) && !in_array(array_keys($order)[0], $orderCheck)) {
+            $orderCheckStr = implode(', ', $orderCheck);
+            $message = 'Unsupported order query parameter ('.array_keys($order)[0].'). Supported order query parameters: '.$orderCheckStr;
+        }
+        if (isset($message)) {
+            return $message;
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Will check if we are allowed to filter on the given $filters in the query params.
+     * Uses ObjectEntityRepository->getFilterParameters() to check if we are allowed to filter, see eavService->handleSearch() $filterCheck
+     *
+     * @param Entity $entity The entity we are going to check for allowed attributes to filter on.
+     * @param array|null $filters The filters from query params.
+     *
+     * @return string|null Returns null if all filters are allowed or if none are present. Else an error message.
+     */
+    private function handleFilterCheck(Entity $entity, ?array $filters): ?string
+    {
+        if (empty($filters)) {
+            return null;
+        }
+    
+        $filterCheck = $this->entityManager->getRepository('App:ObjectEntity')->getFilterParameters($entity);
+    
+        foreach ($filters as $param => $value) {
+            if (!in_array($param, $filterCheck)) {
+                $unsupportedParams = !isset($unsupportedParams) ? $param : "$unsupportedParams, $param";
+            }
+        }
+        if (isset($unsupportedParams)) {
+            $filterCheckStr = implode(', ', $filterCheck);
+            return 'Unsupported queryParameters ('.$unsupportedParams.'). Supported queryParameters: '.$filterCheckStr;;
+        }
+        
+        return null;
     }
     
     /**
