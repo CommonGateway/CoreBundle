@@ -177,9 +177,9 @@ class CacheService
             $array,
             ['upsert'=>true]
         )) {
-            (isset($this->io)? $this->io->writeln('Updated object '.$objectEntity->getId().' to cache'): '');
+            (isset($this->io)? $this->io->writeln('Updated object '.$objectEntity->getId().' of type '.$objectEntity->getEntity()->getName().' to cache'): '');
         } else {
-            (isset($this->io)? $this->io->writeln('Wrote object '.$objectEntity->getId().' to cache'): '');
+            (isset($this->io)? $this->io->writeln('Wrote object '.$objectEntity->getId().' of type '.$objectEntity->getEntity()->getName().' to cache'): '');
         }
 
         return $objectEntity;
