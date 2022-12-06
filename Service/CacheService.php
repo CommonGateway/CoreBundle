@@ -275,7 +275,31 @@ class CacheService
         }
     
         $collection = $this->client->objects->json;
-    
+        
+        $completeFilter = $filter;
+        unset($filter['start'], $filter['offset'], $filter['limit'], $filter['page'],
+            $filter['extend'], $filter['search'], $filter['order'], $filter['fields']);
+        
+        // Filters
+        // todo ObjectEntityRepository->getFilterParameters() to check if we are allowed to filter on the given key, see eavService->handleSearch() $filterCheck
+        foreach ($filter as $key => &$value) {
+            // todo: this works, we should go to php 8.0 later
+            if (str_contains($value, '%')) {
+                $regex = str_replace('%', '', $value);
+                $regex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $regex);
+                $value = [ '$regex' => $regex ];
+                continue;
+            }
+            if ($value === 'IS NOT NULL') {
+                $value = [ '$ne' => null ];
+                continue;
+            }
+            if ($value === 'IS NULL') {
+                $value = null;
+                continue;
+            }
+        }
+        
         // Search for single entity WE WOULD LIKE TO SEACH FOR MULTIPLE ENTITIES
         if (!empty($entities)) {
             foreach ($entities as $entity) {
@@ -292,27 +316,24 @@ class CacheService
                 '$caseSensitive'=> false
             ];
         }
-    
+        
         $paginationFilter = $filter;
-    
-        unset($filter['start'], $filter['offset'], $filter['limit'], $filter['page'],
-            $filter['extend'], $filter['search'], $filter['order'], $filter['fields']);
-    
+        
         // Limit & Start
-        $this->setPagination($limit, $start, $paginationFilter);
-    
+        $this->setPagination($limit, $start, $completeFilter);
+        
         // Order
         // todo ObjectEntityRepository->getOrderParameters() to check if we are allowed to order on the given key, see eavService->handleSearch() $orderCheck
-        $order = isset($paginationFilter['order']) ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $paginationFilter['order']) : [];
+        $order = isset($completeFilter['order']) ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['order']) : [];
         !empty($order) && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
-    
+        
         // Find / Search
         $results = $collection->find($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order])->toArray();
         $total = $collection->count($filter);
-    
-        return $this->handleResultPagination($paginationFilter, $results, $total);
+        
+        return $this->handleResultPagination($completeFilter, $results, $total);
     }
-
+    
     /**
      * Adds pagination variables to an array with the results we found with searchObjects()
      *
