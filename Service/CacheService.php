@@ -280,6 +280,8 @@ class CacheService
         unset($filter['start'], $filter['offset'], $filter['limit'], $filter['page'],
             $filter['extend'], $filter['search'], $filter['order'], $filter['fields']);
         
+        // Filters
+        // todo ObjectEntityRepository->getFilterParameters() to check if we are allowed to filter on the given key, see eavService->handleSearch() $filterCheck
         foreach ($filter as $key => &$value) {
             // todo: this works, we should go to php 8.0 later
             if (str_contains($value, '%')) {
