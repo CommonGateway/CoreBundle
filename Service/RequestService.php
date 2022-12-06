@@ -16,6 +16,7 @@ use ErrorException;
 use Exception;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\Session;
 
 class RequestService
 {
@@ -176,6 +177,8 @@ class RequestService
                     
                     // create log
                     $responseLog = new Response($this->content, 200, ['CoreBundle' => 'GetItem']);
+                    $session = new Session();
+                    $session->set('object', $this->id);
                     $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, $this->content);
                 } else {
                     // generic search
