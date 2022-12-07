@@ -303,8 +303,10 @@ class ComposerService
 
         $filesystem = new Filesystem();
 
-        if(!$plugins = @file_get_contents('composer.lock')){
-            return [];
+        if (!$plugins = @file_get_contents('../composer.lock')) {
+            if(!$plugins = @file_get_contents('composer.lock')){
+                return [];
+            }
         }
 
         $plugins = json_decode($plugins, true);
