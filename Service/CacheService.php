@@ -317,8 +317,18 @@ class CacheService
                 $value = [ '$ne' => null ];
                 continue;
             }
-            if ($value === 'IS NULL') {
+            if ($value === 'IS NULL' || $value === 'null') {
                 $value = null;
+                continue;
+            }
+            // todo: if integer in mongodb we can not search with a string.
+            if (is_numeric($value)) {
+                $value = (int) $value;
+                continue;
+            }
+            // todo: if boolean in mongodb we can not search with a string.
+            if (in_array(strtolower($value), ['true', 'false'])) {
+                $value = (bool) $value;
                 continue;
             }
             // todo: make exact match default and case insensitive optional:
