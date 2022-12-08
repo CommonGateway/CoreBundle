@@ -158,6 +158,10 @@ class CacheService
         if (!isset($this->client)) {
             return $objectEntity;
         }
+        
+        if (isset($this->io)) {
+            $this->io->writeln('Start caching object '.$objectEntity->getId().' of type '.$objectEntity->getEntity()->getName());
+        }
 
         $collection = $this->client->objects->json;
 
