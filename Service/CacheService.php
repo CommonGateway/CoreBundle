@@ -6,6 +6,7 @@ use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\Gateway as Source;
 use App\Entity\ObjectEntity;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use MongoDB\Client;
 use Ramsey\Uuid\Uuid;
@@ -282,7 +283,29 @@ class CacheService
             $filter['extend'], $filter['search'], $filter['order'], $filter['fields']);
         
         // Filters
-        foreach ($filter as &$value) {
+        // todo: make this a function?
+        foreach ($filter as $key => &$value) {
+            if (substr($key, 0, 1)) {
+                // todo: deal with filters starting with _ like: _dateCreated
+            }
+            // todo: make this a function?
+            if (is_array($value)) {
+                // todo: handle value is array normally
+                if (!empty(array_intersect_key($value, array_flip(['after', 'before', 'strictly_after', 'strictly_before'])))) {
+                    // Compare datetime
+                    if (!empty(array_intersect_key($value, array_flip(['after', 'strictly_after'])))) {
+                        $after = array_key_exists('strictly_after', $value) ? 'strictly_after' : 'after';
+                        $compareDate = new DateTime($value[$after]);
+                        $compareKey = $after === 'strictly_after' ? '$gt' : '$gte';
+                    } else {
+                        $before = array_key_exists('strictly_before', $value) ? 'strictly_before' : 'before';
+                        $compareDate = new DateTime($value[$before]);
+                        $compareKey = $before === 'strictly_before' ? '$lt' : '$lte';
+                    }
+                    $value = [ "$compareKey" => "{$compareDate->format('c')}" ];
+                }
+                continue;
+            }
             // todo: this works, we should go to php 8.0 later
             if (str_contains($value, '%')) {
                 $regex = str_replace('%', '', $value);
@@ -301,6 +324,7 @@ class CacheService
         }
         
         // Search for single entity WE WOULD LIKE TO SEACH FOR MULTIPLE ENTITIES
+        // todo: make this a function?
         if (!empty($entities)) {
             foreach ($entities as $entity) {
                 $orderError = $this->handleOrderCheck($entity, $completeFilter['order'] ?? null);
