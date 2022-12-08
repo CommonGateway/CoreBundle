@@ -281,16 +281,16 @@ class CacheService
         $completeFilter = $filter;
         unset($filter['start'], $filter['offset'], $filter['limit'], $filter['page'],
             $filter['extend'], $filter['search'], $filter['order'], $filter['fields']);
-        
+    
         // Filters
-        // todo: make this a function?
+        // todo: make this foreach into a function?
         foreach ($filter as $key => &$value) {
             if (substr($key, 0, 1)) {
                 // todo: deal with filters starting with _ like: _dateCreated
             }
-            // todo: make this a function?
+            // todo: make this if into a function?
             if (is_array($value)) {
-                // todo: handle value is array normally
+                // todo: handle filter value = array (example: ?key=a,b)
                 if (!empty(array_intersect_key($value, array_flip(['after', 'before', 'strictly_after', 'strictly_before'])))) {
                     // Compare datetime
                     if (!empty(array_intersect_key($value, array_flip(['after', 'strictly_after'])))) {
@@ -321,10 +321,12 @@ class CacheService
                 $value = null;
                 continue;
             }
+            // todo: make exact match default and case insensitive optional:
+            $value = [ '$regex' => "^$value$", '$options' => 'im' ];
         }
         
         // Search for single entity WE WOULD LIKE TO SEACH FOR MULTIPLE ENTITIES
-        // todo: make this a function?
+        // todo: make this if into a function?
         if (!empty($entities)) {
             foreach ($entities as $entity) {
                 $orderError = $this->handleOrderCheck($entity, $completeFilter['order'] ?? null);
