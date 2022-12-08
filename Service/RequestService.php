@@ -302,8 +302,8 @@ class RequestService
             }
             return;
         }
-        
-        if (!Uuid::isValid($result['id'])) {
+    
+        if (!isset($result['id']) || !Uuid::isValid($result['id'])) {
             return;
         }
         $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['id']]);
