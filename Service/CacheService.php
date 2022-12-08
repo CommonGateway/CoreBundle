@@ -8,6 +8,7 @@ use App\Entity\Gateway as Source;
 use App\Entity\ObjectEntity;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use MongoDB\Client;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
@@ -117,7 +118,12 @@ class CacheService
         (isset($this->io)? $this->io->writeln('Found '.count($objectEntities).' objects\'s'): '');
 
         foreach ($objectEntities as $objectEntity) {
-            $this->cacheObject($objectEntity);
+            try {
+                $this->cacheObject($objectEntity);
+            } catch (Exception $exception) {
+                $this->ioCatchException($exception);
+                continue;
+            }
         }
 
         // Schemas
@@ -126,7 +132,12 @@ class CacheService
         (isset($this->io)? $this->io->writeln('Found '.count($schemas).' Schema\'s'): '');
 
         foreach ($schemas as $schema) {
-            $this->cacheShema($schema);
+            try {
+                $this->cacheShema($schema);
+            } catch (Exception $exception) {
+                $this->ioCatchException($exception);
+                continue;
+            }
         }
 
         // Endpoints
@@ -135,7 +146,12 @@ class CacheService
         (isset($this->io)? $this->io->writeln('Found '.count($endpoints).' Endpoint\'s'): '');
 
         foreach ($endpoints as $endpoint) {
-            $this->cacheEndpoint($endpoint);
+            try {
+                $this->cacheEndpoint($endpoint);
+            } catch (Exception $exception) {
+                $this->ioCatchException($exception);
+                continue;
+            }
         }
 
         // Created indexes
@@ -144,6 +160,19 @@ class CacheService
         $collection = $this->client->endpoints->json->createIndex( ["$**"=>"text" ]);
 
         return Command::SUCCESS;
+    }
+    
+    /**
+     * Writes exception data to symfony IO
+     *
+     * @param Exception $exception The Exception
+     * @return void
+     */
+    private function ioCatchException(Exception $exception)
+    {
+        $this->io->warning($exception->getMessage());
+        $this->io->block("File: {$exception->getFile()}, Line: {$exception->getLine()}");
+        $this->io->block("Trace: {$exception->getTraceAsString()}");
     }
 
     /**
