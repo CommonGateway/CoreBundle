@@ -323,8 +323,12 @@ class CacheService
             }
             // todo: make this if into a function?
             if (is_array($value)) {
-                if (array_key_exists('string_compare', $value)) {
-                    $value = $value['string_compare'];
+                if (array_key_exists('int_compare', $value)) {
+                    $value = (int) $value['int_compare'];
+                    continue;
+                }
+                if (array_key_exists('bool_compare', $value)) {
+                    $value = (bool) $value['bool_compare'];
                     continue;
                 }
                 if (!empty(array_intersect_key($value, array_flip(['after', 'before', 'strictly_after', 'strictly_before'])))) {
@@ -359,17 +363,8 @@ class CacheService
                 $value = null;
                 continue;
             }
-            // todo: if integer in mongodb we can not search with a string.
-            if (is_numeric($value)) {
-                $value = (int) $value;
-                continue;
-            }
-            // todo: if boolean in mongodb we can not search with a string.
-            if (in_array(strtolower($value), ['true', 'false'])) {
-                $value = (bool) $value;
-                continue;
-            }
-            // todo: make exact match default and case insensitive optional:
+            // todo: exact match is default, make case insensitive optional:
+            $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value);
             $value = [ '$regex' => "^$value$", '$options' => 'im' ];
         }
         
