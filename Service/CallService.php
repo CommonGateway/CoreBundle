@@ -153,6 +153,7 @@ class CallService
         $log->setRequestHeaders($config['headers'] ?? null);
 
         $url = $source->getLocation() . $endpoint;
+
         $startTimer = microtime(true);
         // Lets make the call
         try {
