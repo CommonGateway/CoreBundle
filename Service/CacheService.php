@@ -323,7 +323,10 @@ class CacheService
             }
             // todo: make this if into a function?
             if (is_array($value)) {
-                // todo: handle filter value = array (example: ?key=a,b)
+                if (array_key_exists('string_compare', $value)) {
+                    $value = $value['string_compare'];
+                    continue;
+                }
                 if (!empty(array_intersect_key($value, array_flip(['after', 'before', 'strictly_after', 'strictly_before'])))) {
                     // Compare datetime
                     if (!empty(array_intersect_key($value, array_flip(['after', 'strictly_after'])))) {
@@ -336,7 +339,9 @@ class CacheService
                         $compareKey = $before === 'strictly_before' ? '$lt' : '$lte';
                     }
                     $value = [ "$compareKey" => "{$compareDate->format('c')}" ];
+                    continue;
                 }
+                // todo: handle filter value = array (example: ?property=a,b,c)
                 continue;
             }
             // todo: this works, we should go to php 8.0 later
