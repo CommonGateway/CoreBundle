@@ -126,7 +126,8 @@ class CallService
         string $endpoint = '',
         string $method = 'GET',
         array $config = [],
-        bool $asynchronous = false
+        bool $asynchronous = false,
+        bool $createCertificates = true
     ): Response {
         if (!$source->getIsEnabled()) {
             throw new HttpException("409", "This source is not enabled: {$source->getName()}");
@@ -146,7 +147,7 @@ class CallService
         $parsedUrl = parse_url($source->getLocation());
 
         $config = array_merge_recursive($config, $this->getAuthentication($source));
-        $config = array_merge($config, $this->getCertificate($config));
+        $createCertificates && $config = array_merge($config, $this->getCertificate($config));
         $config['headers']['host'] = $parsedUrl['host'];
         $config['headers'] = $this->removeEmptyHeaders($config['headers']);
         $log->setRequestHeaders($config['headers'] ?? null);
@@ -194,7 +195,7 @@ class CallService
         $this->entityManager->persist($log);
         $this->entityManager->flush();
 
-        $this->removeFiles($config);
+        $createCertificates && $this->removeFiles($config);
 
         return $response;
     }
