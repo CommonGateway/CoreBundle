@@ -153,12 +153,7 @@ class CallService
         $log->setRequestHeaders($config['headers'] ?? null);
 
         $url = $source->getLocation() . $endpoint;
-
-        // var_dump($config);
-        // var_dump(file_get_contents($config['ssl']));
-        // var_dump(file_get_contents($config['ssl_key'][0]));
-        // die;
-
+        
         $startTimer = microtime(true);
         // Lets make the call
         try {
