@@ -9,7 +9,6 @@ use App\Service\ObjectEntityService;
 use App\Service\ResponseService;
 use App\Service\LogService;
 use CommonGateway\CoreBundle\Service\CacheService;
-use CommonGateway\CoreBundle\Service\CacheService;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
