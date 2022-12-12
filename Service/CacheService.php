@@ -316,7 +316,7 @@ class CacheService
         // Filters
         // todo: make this foreach into a function?
         foreach ($filter as $key => &$value) {
-            if (substr($key, 0, 1)) {
+            if (substr($key, 0, 1) == '_') {
                 // todo: deal with filters starting with _ like: _dateCreated
             }
             // todo: make this if into a function?
