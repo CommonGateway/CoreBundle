@@ -197,9 +197,6 @@ class CacheService
         // Lets not cash the entire schema
         $array = $objectEntity->toArray(['embedded' => true]);
 
-        unset($array['_schema']['required']);
-        unset($array['_schema']['properties']);
-
         //(isset($array['_schema']['$id'])?$array['_schema'] = $array['_schema']['$id']:'');
 
         $id = (string) $objectEntity->getId();
