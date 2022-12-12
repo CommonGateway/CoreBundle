@@ -30,6 +30,7 @@ class RequestService
     private ResponseService $responseService;
     private ObjectEntityService $objectEntityService;
     private LogService $logService;
+    private CallService $callService;
     
     /**
      * @param EntityManagerInterface $entityManager
@@ -40,13 +41,15 @@ class RequestService
         CacheService $cacheService,
         ResponseService $responseService,
         ObjectEntityService $objectEntityService,
-        LogService $logService
+        LogService $logService,
+        CallService $callService
     ) {
         $this->entityManager = $entityManager;
         $this->cacheService = $cacheService;
         $this->responseService = $responseService;
         $this->objectEntityService = $objectEntityService;
         $this->logService = $logService;
+        $this->callService = $callService;
     }
     
     /**
@@ -88,9 +91,53 @@ class RequestService
         
         return $vars;
     }
-    
+
+
     /**
-     * @TODO
+     * @param array $data The data from the call
+     * @param array $configuration The configuration from the call
+     *
+     * @return Response The data as returned bij the origanal source
+     */
+    public function proxyHandler(array $data, array $configuration): Response
+    {
+        $this->data = $data;
+        $this->configuration = $configuration;
+
+        // We only do proxing if the endpoint forces it
+        if(!$proxy = $data['endpoint']->getProxy()){
+            // @todo throw error
+        }
+
+        // Get clean query paramters without all the symfony shizzle
+        $query = $this->realRequestQueryAll($this->data['method']);
+
+        // Make a guzzle call to the source bassed on the incomming call
+        $result = $this->callService->call(
+            $proxy,
+            $this->data['endpoint'],
+            $this->data['method'],
+            [
+                'query' => $query,
+                'headers' => $this->data['headers'],
+                'body'=>$this->data['crude_body']
+            ]
+        );
+
+        // Let create a responce from the guzle call
+        $responce = new Response(
+            $result->getBody()->getContents(),
+            $result->getStatusCode(),
+            $result->getHeaders()
+        );
+        // @todo the obove might need a try catch
+
+        // And don so lets return what we have
+        return $responce;
+    }
+
+    /**
+     * Handles incomming requests and is responsible for generating a responce
      *
      * @param array $data The data from the call
      * @param array $configuration The configuration from the call
