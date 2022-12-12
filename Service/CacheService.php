@@ -195,10 +195,7 @@ class CacheService
         $collection = $this->client->objects->json;
 
         // Lets not cash the entire schema
-        $array = $objectEntity->toArray(1, ['id','self','synchronizations','schema'], false, true);
-
-        unset($array['_schema']['required']);
-        unset($array['_schema']['properties']);
+        $array = $objectEntity->toArray(['embedded' => true]);
 
         //(isset($array['_schema']['$id'])?$array['_schema'] = $array['_schema']['$id']:'');
 
@@ -261,9 +258,7 @@ class CacheService
 
         // Fall back tot the entity manager
         $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id'=>$id]);
-        $object = $this->cacheObject($object)->toArray(1,['id']);
-
-        return $object;
+        return $this->cacheObject($object)->toArray(['embedded' => true]);
     }
 
     /**
@@ -274,17 +269,17 @@ class CacheService
      * @param array $filters    The filters
      * @return array
      */
-    public function setPagination (&$limit, &$start, array $filters): array
+    public function setPagination(&$limit, &$start, array $filters): array
     {
-        if (isset($filters['limit'])) {
-            $limit = intval($filters['limit']);
+        if (isset($filters['_limit'])) {
+            $limit = intval($filters['_limit']);
         } else {
             $limit = 30;
         }
-        if (isset($filters['start']) || isset($filters['offset'])) {
-            $start = isset($filters['start']) ? intval($filters['start']) : intval($filters['offset']);
-        } elseif (isset($filters['page'])) {
-            $start = (intval($filters['page']) - 1) * $limit;
+        if (isset($filters['_start']) || isset($filters['_offset'])) {
+            $start = isset($filters['_start']) ? intval($filters['_start']) : intval($filters['_offset']);
+        } elseif (isset($filters['_page'])) {
+            $start = (intval($filters['_page']) - 1) * $limit;
         } else {
             $start = 0;
         }
@@ -309,11 +304,14 @@ class CacheService
         }
     
         $collection = $this->client->objects->json;
+    
+        // backwards compatibility
+        $this->queryBackwardsCompatibility($filter);
         
         // Make sure we also have all filters stored in $completeFilter before unsetting
         $completeFilter = $filter;
-        unset($filter['start'], $filter['offset'], $filter['limit'], $filter['page'],
-            $filter['extend'], $filter['search'], $filter['order'], $filter['fields']);
+        unset($filter['_start'], $filter['_offset'], $filter['_limit'], $filter['_page'],
+            $filter['_extend'], $filter['_search'], $filter['_order'], $filter['_fields']);
     
         // Filters
         // todo: make this foreach into a function?
@@ -372,21 +370,21 @@ class CacheService
         // todo: make this if into a function?
         if (!empty($entities)) {
             foreach ($entities as $entity) {
-                $orderError = $this->handleOrderCheck($entity, $completeFilter['order'] ?? null);
+                $orderError = $this->handleOrderCheck($entity, $completeFilter['_order'] ?? null);
                 $filterError = $this->handleFilterCheck($entity, $filter ?? null);
                 if (!empty($orderError) || !empty($filterError)) {
-                    !empty($orderError) && $data['order'] = $orderError;
-                    !empty($filterError) && $data['filter'] = $filterError;
+                    !empty($orderError) && $errorData['order'] = $orderError;
+                    !empty($filterError) && $errorData['filter'] = $filterError;
                     return [
                         'message' => 'There are some errors in your query parameters',
                         'type'    => 'error',
                         'path'    => $entity->getName(),
-                        'data'    => $data,
+                        'data'    => $errorData,
                     ];
                 }
                 
-                //$filter['_schema.$id']='https://larping.nl/character.schema.json';
-                $filter['_schema.$id'] =  $entity->getReference();
+                //$filter['_self.schema.ref']='https://larping.nl/character.schema.json';
+                $filter['_self.schema.ref'] =  $entity->getReference();
             }
         }
     
@@ -403,7 +401,7 @@ class CacheService
         $this->setPagination($limit, $start, $completeFilter);
         
         // Order
-        $order = isset($completeFilter['order']) ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['order']) : [];
+        $order = isset($completeFilter['_order']) ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
         !empty($order) && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
         
         // Find / Search
@@ -411,6 +409,27 @@ class CacheService
         $total = $collection->count($filter);
         
         return $this->handleResultPagination($completeFilter, $results, $total);
+    }
+    
+    /**
+     * Make sure we still support the old query params. By translating them to the new ones with _
+     *
+     * @param array $filter
+     * @return void
+     */
+    private function queryBackwardsCompatibility(array &$filter)
+    {
+        !isset($filter['_limit']) && isset($filter['limit']) && $filter['_limit'] = $filter['limit'];
+        !isset($filter['_start']) && isset($filter['start']) && $filter['_start'] = $filter['start'];
+        !isset($filter['_offset']) && isset($filter['offset']) && $filter['_offset'] = $filter['offset'];
+        !isset($filter['_page']) && isset($filter['page']) && $filter['_page'] = $filter['page'];
+        !isset($filter['_extend']) && isset($filter['extend']) && $filter['_extend'] = $filter['extend'];
+        !isset($filter['_search']) && isset($filter['search']) && $filter['_search'] = $filter['search'];
+        !isset($filter['_order']) && isset($filter['order']) && $filter['_order'] = $filter['order'];
+        !isset($filter['_fields']) && isset($filter['fields']) && $filter['_fields'] = $filter['fields'];
+        
+        unset($filter['start'], $filter['offset'], $filter['limit'], $filter['page'],
+            $filter['extend'], $filter['search'], $filter['order'], $filter['fields']);
     }
     
     /**
@@ -428,11 +447,11 @@ class CacheService
             return null;
         }
     
-        $orderCheck = $this->entityManager->getRepository('App:ObjectEntity')->getOrderParameters($entity);
+        $orderCheck = $this->entityManager->getRepository('App:ObjectEntity')->getOrderParameters($entity, '', 1, true);
     
         if (!is_array($order)) {
             $orderCheckStr = implode(', ', $orderCheck);
-            $message = 'Please give an attribute to order on. Like this: ?order[attributeName]=desc/asc. Supported order query parameters: '.$orderCheckStr;
+            $message = 'Please give an attribute to order on. Like this: ?_order[attributeName]=desc/asc. Supported order query parameters: '.$orderCheckStr;
         }
         if (is_array($order) && count($order) > 1) {
             $message = 'Only one order query param at the time is allowed.';
@@ -466,7 +485,7 @@ class CacheService
             return null;
         }
     
-        $filterCheck = $this->entityManager->getRepository('App:ObjectEntity')->getFilterParameters($entity);
+        $filterCheck = $this->entityManager->getRepository('App:ObjectEntity')->getFilterParameters($entity, '', 1, true);
     
         foreach ($filters as $param => $value) {
             if (!in_array($param, $filterCheck)) {
@@ -492,9 +511,9 @@ class CacheService
      */
     private function handleResultPagination(array $filter, array $results, int $total = 0): array
     {
-        $start = isset($filter['start']) && is_numeric($filter['start']) ? (int) $filter['start'] : 0;
-        $limit = isset($filter['limit']) && is_numeric($filter['limit']) ? (int) $filter['limit'] : 30;
-        $page = isset($filter['page']) && is_numeric($filter['page']) ? (int) $filter['page'] : 1;
+        $start = isset($filter['_start']) && is_numeric($filter['_start']) ? (int) $filter['_start'] : 0;
+        $limit = isset($filter['_limit']) && is_numeric($filter['_limit']) ? (int) $filter['_limit'] : 30;
+        $page = isset($filter['_page']) && is_numeric($filter['_page']) ? (int) $filter['_page'] : 1;
     
         // Lets build the page & pagination
         if ($start > 1) {
