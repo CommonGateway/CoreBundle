@@ -315,9 +315,9 @@ class RequestService
             $xCommongatewayMetadata['dateRead'] = 'getItem';
         }
         $this->responseService->xCommongatewayMetadata = $xCommongatewayMetadata;
-        $resultMetadata = (array) $result['x-commongateway-metadata'];
+        $resultMetadata = (array) $result['_self'];
         $this->responseService->addToMetadata($resultMetadata, 'dateRead', $objectEntity);
-        $result['x-commongateway-metadata'] = $resultMetadata;
+        $result['_self'] = $resultMetadata;
     }
     
     /**
