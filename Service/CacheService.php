@@ -366,7 +366,7 @@ class CacheService
             $value = [ '$regex' => "^$value$", '$options' => 'im' ];
         }
         
-        // Search for single entity WE WOULD LIKE TO SEACH FOR MULTIPLE ENTITIES
+        // Search for single entity WE WOULD LIKE TO SEARCH FOR MULTIPLE ENTITIES
         // todo: make this if into a function?
         if (!empty($entities)) {
             foreach ($entities as $entity) {

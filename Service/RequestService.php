@@ -145,7 +145,7 @@ class RequestService
         // Bit os savety cleanup <- dit zou eigenlijk in de hydrator moeten gebeuren
         unset($this->content['id']);
         unset($this->content['_id']);
-        unset($this->content['x-commongateway-metadata']); // todo: i don't think this does anything useful?
+        unset($this->content['_self']); // todo: i don't think this does anything useful?
         unset($this->content['_schema']);
         
         // todo: make this a function, like eavService->getRequestExtend()
@@ -165,7 +165,7 @@ class RequestService
             
             $extend = $dot->all();
         }
-        $xCommongatewayMetadata = $extend['x-commongateway-metadata'] ?? [];
+        $metadataSelf = $extend['_self'] ?? [];
         
         /** controlleren of de gebruiker ingelogd is **/
         
@@ -275,7 +275,7 @@ class RequestService
         }
         
         $this->entityManager->flush();
-        $this->handleXCommongatewayMetadata($result, $xCommongatewayMetadata);
+        $this->handleMetadataSelf($result, $metadataSelf);
         return $this->createResponse($result);
     }
     
@@ -283,14 +283,14 @@ class RequestService
      * @TODO
      *
      * @param array $result
-     * @param array $xCommongatewayMetadata
+     * @param array $metadataSelf
      *
      * @return void
      */
-    private function handleXCommongatewayMetadata(&$result, array $xCommongatewayMetadata)
+    private function handleMetadataSelf(&$result, array $metadataSelf)
     {
         // todo: Adding type array before &$result will break this function ^^^
-        if (empty($xCommongatewayMetadata)) {
+        if (empty($metadataSelf)) {
             return;
         }
         
@@ -299,7 +299,7 @@ class RequestService
                 $record = iterator_to_array($record);
             });
             foreach ($result['results'] as &$collectionItem) {
-                $this->handleXCommongatewayMetadata($collectionItem, $xCommongatewayMetadata);
+                $this->handleMetadataSelf($collectionItem, $metadataSelf);
             }
             return;
         }
@@ -313,12 +313,12 @@ class RequestService
             return;
         }
         if ($this->data['method'] === 'GET' && isset($this->id)) {
-            $xCommongatewayMetadata['dateRead'] = 'getItem';
+            $metadataSelf['dateRead'] = 'getItem';
         }
-        $this->responseService->xCommongatewayMetadata = $xCommongatewayMetadata;
-        $resultMetadata = (array) $result['_self'];
-        $this->responseService->addToMetadata($resultMetadata, 'dateRead', $objectEntity);
-        $result['_self'] = $resultMetadata;
+        $this->responseService->xCommongatewayMetadata = $metadataSelf;
+        $resultMetadataSelf = (array) $result['_self'];
+        $this->responseService->addToMetadata($resultMetadataSelf, 'dateRead', $objectEntity);
+        $result['_self'] = $resultMetadataSelf;
     }
     
     /**
