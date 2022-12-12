@@ -125,7 +125,7 @@ class RequestService
         );
 
         // Let create a responce from the guzle call
-        $responce = New Response(
+        $responce = new Response(
             $result->getBody()->getContents(),
             $result->getStatusCode(),
             $result->getHeaders()
