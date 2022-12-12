@@ -370,18 +370,19 @@ class CacheService
         // todo: make this if into a function?
         if (!empty($entities)) {
             foreach ($entities as $entity) {
-                $orderError = $this->handleOrderCheck($entity, $completeFilter['_order'] ?? null);
-                $filterError = $this->handleFilterCheck($entity, $filter ?? null);
-                if (!empty($orderError) || !empty($filterError)) {
-                    !empty($orderError) && $errorData['order'] = $orderError;
-                    !empty($filterError) && $errorData['filter'] = $filterError;
-                    return [
-                        'message' => 'There are some errors in your query parameters',
-                        'type'    => 'error',
-                        'path'    => $entity->getName(),
-                        'data'    => $errorData,
-                    ];
-                }
+                // todo: disable this for now, put back later!
+//                $orderError = $this->handleOrderCheck($entity, $completeFilter['_order'] ?? null);
+//                $filterError = $this->handleFilterCheck($entity, $filter ?? null);
+//                if (!empty($orderError) || !empty($filterError)) {
+//                    !empty($orderError) && $errorData['order'] = $orderError;
+//                    !empty($filterError) && $errorData['filter'] = $filterError;
+//                    return [
+//                        'message' => 'There are some errors in your query parameters',
+//                        'type'    => 'error',
+//                        'path'    => $entity->getName(),
+//                        'data'    => $errorData,
+//                    ];
+//                }
                 
                 //$filter['_self.schema.ref']='https://larping.nl/character.schema.json';
                 $filter['_self.schema.ref'] =  $entity->getReference();
