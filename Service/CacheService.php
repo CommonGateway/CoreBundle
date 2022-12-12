@@ -386,8 +386,8 @@ class CacheService
                     ];
                 }
                 
-                //$filter['_schema.$id']='https://larping.nl/character.schema.json';
-                $filter['_schema.$id'] =  $entity->getReference();
+                //$filter['_self.schema.ref']='https://larping.nl/character.schema.json';
+                $filter['_self.schema.ref'] =  $entity->getReference();
             }
         }
     
