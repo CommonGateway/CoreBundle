@@ -447,7 +447,7 @@ class CacheService
             return null;
         }
     
-        $orderCheck = $this->entityManager->getRepository('App:ObjectEntity')->getOrderParameters($entity);
+        $orderCheck = $this->entityManager->getRepository('App:ObjectEntity')->getOrderParameters($entity, '', 1, true);
     
         if (!is_array($order)) {
             $orderCheckStr = implode(', ', $orderCheck);
@@ -485,7 +485,7 @@ class CacheService
             return null;
         }
     
-        $filterCheck = $this->entityManager->getRepository('App:ObjectEntity')->getFilterParameters($entity);
+        $filterCheck = $this->entityManager->getRepository('App:ObjectEntity')->getFilterParameters($entity, '', 1, true);
     
         foreach ($filters as $param => $value) {
             if (!in_array($param, $filterCheck)) {
