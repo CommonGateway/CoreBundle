@@ -274,12 +274,6 @@ class CacheService
      */
     public function setPagination(&$limit, &$start, array $filters): array
     {
-        // backwards compatibility
-        !isset($filters['_limit']) && isset($filters['limit']) && $filters['_limit'] = $filters['limit'];
-        !isset($filters['_start']) && isset($filters['start']) && $filters['_start'] = $filters['start'];
-        !isset($filters['_offset']) && isset($filters['offset']) && $filters['_offset'] = $filters['offset'];
-        !isset($filters['_page']) && isset($filters['page']) && $filters['_page'] = $filters['page'];
-        
         if (isset($filters['_limit'])) {
             $limit = intval($filters['_limit']);
         } else {
@@ -313,6 +307,12 @@ class CacheService
         }
     
         $collection = $this->client->objects->json;
+    
+        // backwards compatibility
+        !isset($filter['_limit']) && isset($filter['limit']) && $filter['_limit'] = $filter['limit'];
+        !isset($filter['_start']) && isset($filter['start']) && $filter['_start'] = $filter['start'];
+        !isset($filter['_offset']) && isset($filter['offset']) && $filter['_offset'] = $filter['offset'];
+        !isset($filter['_page']) && isset($filter['page']) && $filter['_page'] = $filter['page'];
         
         // Make sure we also have all filters stored in $completeFilter before unsetting
         $completeFilter = $filter;
@@ -498,12 +498,6 @@ class CacheService
      */
     private function handleResultPagination(array $filter, array $results, int $total = 0): array
     {
-        // backwards compatibility
-        !isset($filter['_limit']) && isset($filter['limit']) && $filter['_limit'] = $filter['limit'];
-        !isset($filter['_start']) && isset($filter['start']) && $filter['_start'] = $filter['start'];
-//        !isset($filter['_offset']) && isset($filter['offset']) && $filter['_offset'] = $filter['offset'];
-        !isset($filter['_page']) && isset($filter['page']) && $filter['_page'] = $filter['page'];
-        
         $start = isset($filter['_start']) && is_numeric($filter['_start']) ? (int) $filter['_start'] : 0;
         $limit = isset($filter['_limit']) && is_numeric($filter['_limit']) ? (int) $filter['_limit'] : 30;
         $page = isset($filter['_page']) && is_numeric($filter['_page']) ? (int) $filter['_page'] : 1;
