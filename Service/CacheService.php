@@ -309,17 +309,12 @@ class CacheService
         $collection = $this->client->objects->json;
     
         // backwards compatibility
-        !isset($filter['_limit']) && isset($filter['limit']) && $filter['_limit'] = $filter['limit'];
-        !isset($filter['_start']) && isset($filter['start']) && $filter['_start'] = $filter['start'];
-        !isset($filter['_offset']) && isset($filter['offset']) && $filter['_offset'] = $filter['offset'];
-        !isset($filter['_page']) && isset($filter['page']) && $filter['_page'] = $filter['page'];
+        $this->queryBackwardsCompatibility($filter);
         
         // Make sure we also have all filters stored in $completeFilter before unsetting
         $completeFilter = $filter;
         unset($filter['_start'], $filter['_offset'], $filter['_limit'], $filter['_page'],
             $filter['_extend'], $filter['_search'], $filter['_order'], $filter['_fields']);
-        unset($filter['start'], $filter['offset'], $filter['limit'], $filter['page'],
-            $filter['extend'], $filter['search'], $filter['order'], $filter['fields']);
     
         // Filters
         // todo: make this foreach into a function?
@@ -378,16 +373,16 @@ class CacheService
         // todo: make this if into a function?
         if (!empty($entities)) {
             foreach ($entities as $entity) {
-                $orderError = $this->handleOrderCheck($entity, $completeFilter['order'] ?? null);
+                $orderError = $this->handleOrderCheck($entity, $completeFilter['_order'] ?? null);
                 $filterError = $this->handleFilterCheck($entity, $filter ?? null);
                 if (!empty($orderError) || !empty($filterError)) {
-                    !empty($orderError) && $data['order'] = $orderError;
-                    !empty($filterError) && $data['filter'] = $filterError;
+                    !empty($orderError) && $errorData['order'] = $orderError;
+                    !empty($filterError) && $errorData['filter'] = $filterError;
                     return [
                         'message' => 'There are some errors in your query parameters',
                         'type'    => 'error',
                         'path'    => $entity->getName(),
-                        'data'    => $data,
+                        'data'    => $errorData,
                     ];
                 }
                 
@@ -409,7 +404,7 @@ class CacheService
         $this->setPagination($limit, $start, $completeFilter);
         
         // Order
-        $order = isset($completeFilter['order']) ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['order']) : [];
+        $order = isset($completeFilter['_order']) ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
         !empty($order) && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
         
         // Find / Search
@@ -417,6 +412,27 @@ class CacheService
         $total = $collection->count($filter);
         
         return $this->handleResultPagination($completeFilter, $results, $total);
+    }
+    
+    /**
+     * Make sure we still support the old query params. By translating them to the new ones with _
+     *
+     * @param array $filter
+     * @return void
+     */
+    private function queryBackwardsCompatibility(array &$filter)
+    {
+        !isset($filter['_limit']) && isset($filter['limit']) && $filter['_limit'] = $filter['limit'];
+        !isset($filter['_start']) && isset($filter['start']) && $filter['_start'] = $filter['start'];
+        !isset($filter['_offset']) && isset($filter['offset']) && $filter['_offset'] = $filter['offset'];
+        !isset($filter['_page']) && isset($filter['page']) && $filter['_page'] = $filter['page'];
+        !isset($filter['_extend']) && isset($filter['extend']) && $filter['_extend'] = $filter['extend'];
+        !isset($filter['_search']) && isset($filter['search']) && $filter['_search'] = $filter['search'];
+        !isset($filter['_order']) && isset($filter['order']) && $filter['_order'] = $filter['order'];
+        !isset($filter['_fields']) && isset($filter['fields']) && $filter['_fields'] = $filter['fields'];
+        
+        unset($filter['start'], $filter['offset'], $filter['limit'], $filter['page'],
+            $filter['extend'], $filter['search'], $filter['order'], $filter['fields']);
     }
     
     /**
@@ -438,7 +454,7 @@ class CacheService
     
         if (!is_array($order)) {
             $orderCheckStr = implode(', ', $orderCheck);
-            $message = 'Please give an attribute to order on. Like this: ?order[attributeName]=desc/asc. Supported order query parameters: '.$orderCheckStr;
+            $message = 'Please give an attribute to order on. Like this: ?_order[attributeName]=desc/asc. Supported order query parameters: '.$orderCheckStr;
         }
         if (is_array($order) && count($order) > 1) {
             $message = 'Only one order query param at the time is allowed.';
