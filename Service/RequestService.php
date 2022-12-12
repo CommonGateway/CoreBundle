@@ -120,15 +120,16 @@ class RequestService
         // Try to grap an id
         if (isset($this->data['path']['{id}'])) {
             $this->id = $this->data['path']['{id}'];
-        }
-        if (isset($this->data['path']['[id]'])) {
+        } elseif (isset($this->data['path']['[id]'])) {
             $this->id = $this->data['path']['[id]'];
-        }
-        if (isset($this->data['query']['id'])) {
+        } elseif (isset($this->data['query']['id'])) {
+            $this->id = $this->data['query']['id'];
+        } elseif (isset($this->data['path']['id'])) {
             $this->id = $this->data['path']['id'];
-        }
-        if (isset($this->data['path']['id'])) {
-            $this->id = $this->data['path']['id'];
+        } elseif (isset($this->data['path']['{uuid}'])) {
+            $this->id = $this->data['path']['{uuid}'];
+        } elseif (isset($this->data['query']['uuid'])) {
+            $this->id = $this->data['query']['uuid'];
         }
         
         // If we have an ID we can get an entity to work with (except on gets we handle those from cache)
