@@ -10,6 +10,7 @@ use App\Entity\Endpoint;
 use CommonGateway\CoreBundle\Service\CacheService;
 
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
@@ -17,11 +18,14 @@ use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 class CacheDatabaseSubscriber implements EventSubscriberInterface
 {
     private CacheService $cacheService;
+    private EntityManagerInterface $entityManager;
 
     public function __construct(
-        CacheService $cacheService
+        CacheService $cacheService,
+        EntityManagerInterface $entityManager
     ) {
         $this->cacheService = $cacheService;
+        $this->entityManager = $entityManager;
     }
 
     // this method can only return the event names; you cannot define a
@@ -30,8 +34,14 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
     {
         return [
             Events::postPersist,
-            Events::postRemove
+            Events::postRemove,
+            Events::postUpdate,
         ];
+    }
+
+    public function postUpdate (LifecycleEventArgs $args): void
+    {
+        $this->postPersist($args);
     }
 
     /**
@@ -46,6 +56,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
 
         // if this subscriber only applies to certain entity types,
         if ($object instanceof ObjectEntity) {
+            $this->updateParents($object);
             $this->cacheService->cacheObject($object);
             return;
         }
@@ -86,5 +97,18 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         }
 
         return;
+    }
+
+    public function updateParents(ObjectEntity $objectEntity, array $handled = [])
+    {
+        foreach($objectEntity->getSubresourceOf() as $subresourceOf) {
+            if(in_array($subresourceOf->getObjectEntity()->getId(), $handled)) {
+                continue;
+            }
+            $subresourceOf->getObjectEntity()->setDateModified(new \DateTime());
+            $this->entityManager->persist($subresourceOf->getObjectEntity());
+            $handled[] = $subresourceOf->getObjectEntity()->getId();
+        }
+        $this->entityManager->flush();
     }
 }
