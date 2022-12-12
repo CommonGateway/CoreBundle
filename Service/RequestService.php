@@ -5,6 +5,7 @@ namespace CommonGateway\CoreBundle\Service;
 use Adbar\Dot;
 use App\Entity\Log;
 use App\Entity\ObjectEntity;
+use App\Entity\Gateway as Source;
 use App\Service\ObjectEntityService;
 use App\Service\ResponseService;
 use App\Service\LogService;
@@ -106,7 +107,19 @@ class RequestService
 
         // We only do proxing if the endpoint forces it
         if(!$proxy = $data['endpoint']->getProxy()){
-            // @todo throw error
+            return new Response(
+                json_encode(['Message' => "This Endpoint has no Proxy: {$data['endpoint']->getName()}"]),
+                Response::HTTP_OK, // todo: different response type?
+                ['content-type' => 'application/json']
+            );
+        }
+    
+        if ($proxy instanceof Source && !$proxy->getIsEnabled()) {
+            return new Response(
+                json_encode(['Message' => "This Source is not enabled: {$proxy->getName()}"]),
+                Response::HTTP_OK, // This should be ok so we can disable Sources without creating error responses?
+                ['content-type' => 'application/json']
+            );
         }
 
         // Get clean query paramters without all the symfony shizzle
