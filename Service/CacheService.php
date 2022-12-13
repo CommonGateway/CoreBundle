@@ -414,11 +414,15 @@ class CacheService
     private function handleFilterArray($key, &$value): bool
     {
         if (is_array($value)) {
-            if (array_key_exists('int_compare', $value)) {
+            if (array_key_exists('int_compare', $value) && is_array($value['int_compare'])) {
+                $value = array_map('intval', $value['int_compare']);
+            } elseif (array_key_exists('int_compare', $value)) {
                 $value = (int) $value['int_compare'];
                 return true;
             }
-            if (array_key_exists('bool_compare', $value)) {
+            if (array_key_exists('bool_compare', $value) && is_array($value['bool_compare'])) {
+                $value = array_map('boolval', $value['bool_compare']);
+            } elseif (array_key_exists('bool_compare', $value)) {
                 $value = (bool) $value['bool_compare'];
                 return true;
             }
@@ -436,10 +440,8 @@ class CacheService
                 $value = [ "$compareKey" => "{$compareDate->format('c')}" ];
                 return true;
             }
-            // Handle filter value = array (example: ?property=a,b,c)
+            // Handle filter value = array (example: ?property=a,b,c) also works if the property we are filtering on is an array
             $value = [ '$in' => $value ];
-            // todo: what if the attribute/value we are filtering on is an array?
-            // todo: maybe with regex: https://www.mongodb.com/docs/manual/reference/operator/query/in/#use-the--in-operator-with-a-regular-expression
             return true;
         }
         
