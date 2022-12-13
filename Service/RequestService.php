@@ -230,6 +230,7 @@ class RequestService
         /** controlleren of de gebruiker ingelogd is **/
 
         // All prepped so lets go
+        // todo: split these into functions?
         switch ($this->data['method']) {
             case 'GET':
                 // We have an id (so single object)

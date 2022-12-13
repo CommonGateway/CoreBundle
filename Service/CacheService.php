@@ -291,7 +291,7 @@ class CacheService
     
         // Filters
         foreach ($filter as $key => &$value) {
-            $this->handleSearchFilter($key, $value);
+            $this->handleFilter($key, $value);
         }
         
         // Search for single entity WE WOULD LIKE TO SEARCH FOR MULTIPLE ENTITIES
@@ -372,12 +372,13 @@ class CacheService
      *
      * @throws Exception
      */
-    private function handleSearchFilter($key, &$value)
+    private function handleFilter($key, &$value)
     {
         if (substr($key, 0, 1) == '_') {
             // todo: deal with filters starting with _ like: _dateCreated
         }
-        if ($this->handleSearchFilterArray($key, $value)) {
+        // Handle filters that expect $value to be an array
+        if ($this->handleFilterArray($key, $value)) {
             return;
         }
         // todo: this works, we should go to php 8.0 later
@@ -410,7 +411,7 @@ class CacheService
      *
      * @throws Exception
      */
-    private function handleSearchFilterArray($key, &$value): bool
+    private function handleFilterArray($key, &$value): bool
     {
         if (is_array($value)) {
             if (array_key_exists('int_compare', $value)) {
@@ -435,7 +436,10 @@ class CacheService
                 $value = [ "$compareKey" => "{$compareDate->format('c')}" ];
                 return true;
             }
-            // todo: handle filter value = array (example: ?property=a,b,c)
+            // Handle filter value = array (example: ?property=a,b,c)
+            $value = [ '$in' => implode(',', $value) ];
+            // todo: what if the attribute/value we are filtering on is an array?
+            // todo: maybe with regex: https://www.mongodb.com/docs/manual/reference/operator/query/in/#use-the--in-operator-with-a-regular-expression
             return true;
         }
         
