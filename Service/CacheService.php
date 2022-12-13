@@ -437,7 +437,7 @@ class CacheService
                 return true;
             }
             // Handle filter value = array (example: ?property=a,b,c)
-            $value = [ '$in' => implode(',', $value) ];
+            $value = [ '$in' => $value ];
             // todo: what if the attribute/value we are filtering on is an array?
             // todo: maybe with regex: https://www.mongodb.com/docs/manual/reference/operator/query/in/#use-the--in-operator-with-a-regular-expression
             return true;
