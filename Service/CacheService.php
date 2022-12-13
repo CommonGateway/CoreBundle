@@ -369,6 +369,7 @@ class CacheService
         // Search for single entity WE WOULD LIKE TO SEARCH FOR MULTIPLE ENTITIES
         // todo: make this if into a function?
         if (!empty($entities)) {
+            $references = [];
             foreach ($entities as $entity) {
                 // todo: disable this for now, put back later!
 //                $orderError = $this->handleOrderCheck($entity, $completeFilter['_order'] ?? null);
@@ -383,10 +384,11 @@ class CacheService
 //                        'data'    => $errorData,
 //                    ];
 //                }
-                
+
                 //$filter['_self.schema.ref']='https://larping.nl/character.schema.json';
-                $filter['_self.schema.ref'] =  $entity->getReference();
+                $references[] =  $entity->getReference();
             }
+            $filter['_self.schema.ref']['$in'] = implode(',', $references);
         }
     
         // Let see if we need a search
