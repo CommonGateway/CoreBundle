@@ -2,8 +2,8 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
-use App\Entity\Gateway as Source;
 use App\Entity\CallLog;
+use App\Entity\Gateway as Source;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
@@ -15,7 +15,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 
 /**
- * Service to call external sources
+ * Service to call external sources.
  *
  * This service provides a guzzle wrapper to work with sources in the common gateway.
  *
@@ -25,7 +25,6 @@ use Symfony\Component\Serializer\Encoder\XmlEncoder;
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
  * @category Service
- *
  */
 class CallService
 {
@@ -35,9 +34,9 @@ class CallService
     private FileService $fileService;
 
     /**
-     * @param AuthenticationService $authenticationService
+     * @param AuthenticationService  $authenticationService
      * @param EntityManagerInterface $entityManager
-     * @param FileService $fileService
+     * @param FileService            $fileService
      */
     public function __construct(AuthenticationService $authenticationService, EntityManagerInterface $entityManager, FileService $fileService)
     {
@@ -48,10 +47,11 @@ class CallService
     }
 
     /**
-     * Writes the certificate and ssl keys to disk, returns the filenames
+     * Writes the certificate and ssl keys to disk, returns the filenames.
      *
-     * @param   array $config   The configuration as stored in the source
-     * @return  array           The overrides on the configuration with filenames instead of certificate contents
+     * @param array $config The configuration as stored in the source
+     *
+     * @return array The overrides on the configuration with filenames instead of certificate contents
      */
     public function getCertificate(array $config): array
     {
@@ -70,10 +70,11 @@ class CallService
     }
 
     /**
-     * Removes certificates and private keys from disk if they are not necessary anymore
+     * Removes certificates and private keys from disk if they are not necessary anymore.
      *
-     * @param   array $config   The configuration with filenames
-     * @return  void
+     * @param array $config The configuration with filenames
+     *
+     * @return void
      */
     public function removeFiles(array $config): void
     {
@@ -89,9 +90,9 @@ class CallService
     }
 
     /**
-     * Removes empty headers and sets array to string values
+     * Removes empty headers and sets array to string values.
      *
-     * @param array $headers      Http headers
+     * @param array $headers Http headers
      *
      * @return string
      */
@@ -103,7 +104,7 @@ class CallService
                     $headers[$key] = $header[0];
                 } else {
                     unset($headers[$key]);
-                };
+                }
             }
         }
 
@@ -111,13 +112,13 @@ class CallService
     }
 
     /**
-     * Calls a source according to given configuration
+     * Calls a source according to given configuration.
      *
-     * @param Source $source        The source to call
-     * @param string $endpoint      The endpoint on the source to call
-     * @param string $method        The method on which to call the source
-     * @param array  $config        The additional configuration to call the source
-     * @param bool   $asynchronous  Whether or not to call the source asynchronously
+     * @param Source $source       The source to call
+     * @param string $endpoint     The endpoint on the source to call
+     * @param string $method       The method on which to call the source
+     * @param array  $config       The additional configuration to call the source
+     * @param bool   $asynchronous Whether or not to call the source asynchronously
      *
      * @return Response
      */
@@ -130,7 +131,7 @@ class CallService
         bool $createCertificates = true
     ): Response {
         if (!$source->getIsEnabled()) {
-            throw new HttpException("409", "This source is not enabled: {$source->getName()}");
+            throw new HttpException('409', "This source is not enabled: {$source->getName()}");
         }
         if ($source->getConfiguration()) {
             $config = array_merge_recursive($config, $source->getConfiguration());
@@ -138,7 +139,7 @@ class CallService
 
         $log = new CallLog();
         $log->setSource($source);
-        $log->setEndpoint($source->getLocation() . $endpoint);
+        $log->setEndpoint($source->getLocation().$endpoint);
         $log->setMethod($method);
         $log->setConfig($config);
         $log->setRequestBody($config['body'] ?? null);
@@ -152,7 +153,7 @@ class CallService
         $config['headers'] = $this->removeEmptyHeaders($config['headers']);
         $log->setRequestHeaders($config['headers'] ?? null);
 
-        $url = $source->getLocation() . $endpoint;
+        $url = $source->getLocation().$endpoint;
 
         $startTimer = microtime(true);
         // Lets make the call
@@ -162,7 +163,7 @@ class CallService
             } else {
                 $response = $this->client->requestAsync($method, $url, $config);
             }
-        } catch (ServerException | ClientException | RequestException | Exception $e) {
+        } catch (ServerException|ClientException|RequestException|Exception $e) {
             $stopTimer = microtime(true);
             $log->setResponseStatus('');
             if ($e->getResponse()) {
@@ -188,7 +189,7 @@ class CallService
         $log->setResponseHeaders($responseClone->getHeaders());
         $log->setResponseStatus('');
         $log->setResponseStatusCode($responseClone->getStatusCode());
-        // Disabled because you cannot getBody after passing it here 
+        // Disabled because you cannot getBody after passing it here
         // $log->setResponseBody($responseClone->getBody()->getContents());
         $log->setResponseBody('');
         $log->setResponseTime($stopTimer - $startTimer);
@@ -201,7 +202,7 @@ class CallService
     }
 
     /**
-     * Determine the content type of a response
+     * Determine the content type of a response.
      *
      * @param Response $response The response to determine the content type for
      * @param Source   $source   The source that has been called to create the response
@@ -221,16 +222,15 @@ class CallService
         return $contentType;
     }
 
-
     /**
-     * Decodes a response based on the source it belongs to
+     * Decodes a response based on the source it belongs to.
      *
-     * @param Source   $source    The source that has been called
-     * @param Response $response  The response to decode
-     *
-     * @return array The decoded response
+     * @param Source   $source   The source that has been called
+     * @param Response $response The response to decode
      *
      * @throws \Exception Thrown if the response does not fit any supported content type
+     *
+     * @return array The decoded response
      */
     public function decodeResponse(
         Source $source,
@@ -263,6 +263,7 @@ class CallService
         // Fallback: if the json_decode didn't work, try to decode XML, if that doesn't work an error is thrown.
         try {
             $result = $xmlEncoder->decode($responseBody, 'xml');
+
             return $result;
         } catch (\Exception $exception) {
             throw new \Exception('Could not decode body, content type could not be determined');
@@ -270,7 +271,7 @@ class CallService
     }
 
     /**
-     * Determines the authentication procedure based upon a source
+     * Determines the authentication procedure based upon a source.
      *
      * @param Source $source The source to base the authentication procedure on
      *

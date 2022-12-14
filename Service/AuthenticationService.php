@@ -128,12 +128,13 @@ class AuthenticationService
     }
 
     /**
-     * Writes the certificate and ssl keys to disk, returns the filenames
+     * Writes the certificate and ssl keys to disk, returns the filenames.
      *
-     * @param   array $config   The configuration as stored in the source
-     * @return  array           The overrides on the configuration with filenames instead of certificate contents
+     * @param array $config The configuration as stored in the source
+     *
+     * @return array The overrides on the configuration with filenames instead of certificate contents
      */
-    public function getCertificate (array $config): array
+    public function getCertificate(array $config): array
     {
         $configs = [];
         if (isset($config['cert'])) {
@@ -150,12 +151,13 @@ class AuthenticationService
     }
 
     /**
-     * Removes certificates and private keys from disk if they are not necessary anymore
+     * Removes certificates and private keys from disk if they are not necessary anymore.
      *
-     * @param   array $config   The configuration with filenames
-     * @return  void
+     * @param array $config The configuration with filenames
+     *
+     * @return void
      */
-    public function removeFiles (array $config): void
+    public function removeFiles(array $config): void
     {
         if (isset($config['cert'])) {
             $this->fileService->removeFile($config['cert']);
@@ -172,7 +174,7 @@ class AuthenticationService
     {
         $guzzleConfig = array_merge($source->getConfiguration(), [
             'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
-            'auth'   => [$source->getUsername(), $source->getPassword()],
+            'auth'    => [$source->getUsername(), $source->getPassword()],
         ]);
         $guzzleConfig = array_merge($guzzleConfig, $this->getCertificate($guzzleConfig));
 
@@ -248,6 +250,7 @@ class AuthenticationService
             default:
                 break;
         }
+
         return $requestOptions;
     }
 

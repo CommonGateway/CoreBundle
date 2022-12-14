@@ -2,13 +2,13 @@
 
 namespace CommonGateway\CoreBundle\Command;
 
+use CommonGateway\CoreBundle\Service\InstallationService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use CommonGateway\CoreBundle\Service\InstallationService;
 
 class UninstallCommand extends Command
 {
@@ -30,7 +30,6 @@ class UninstallCommand extends Command
             ->addOption('--data', null, InputOption::VALUE_NONE, 'Also remove orphaned data')
             ->setDescription('This command runs the uninstall service on a commongateway bundle')
             ->setHelp('This command allows you to create a OAS files for your EAV entities');
-        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
