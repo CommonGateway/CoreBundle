@@ -66,6 +66,7 @@ class RequestService
         if (strtolower($method) === 'get' && empty($this->data['querystring'])) {
             return $vars;
         }
+
         $pairs = explode('&', strtolower($method) == 'post' ? file_get_contents('php://input') : $_SERVER['QUERY_STRING']);
         foreach ($pairs as $pair) {
             $nv = explode('=', $pair);
@@ -112,6 +113,7 @@ class RequestService
         // Get clean query paramters without all the symfony shizzle
         $query = $this->realRequestQueryAll($this->data['method']);
         $this->data['path'] = '/'.$data['path']['{route}'];
+
         // Make a guzzle call to the source bassed on the incomming call
         $result = $this->callService->call(
             $proxy,
@@ -130,7 +132,8 @@ class RequestService
             $result->getStatusCode(),
             $result->getHeaders()
         );
-        // @todo the obove might need a try catch
+
+        // @todo the above might need a try catch
 
         // And don so lets return what we have
         return $responce;
@@ -216,12 +219,28 @@ class RequestService
         
         /** controlleren of de gebruiker ingelogd is **/
 
+        // Make a list of schema's that are allowed for this endpoint
+        $allowedSchemas = [];
+        foreach ($this->data['endpoint']->getEntities() as $entity){
+            $allowedSchemas[] = $entity->getId();
+        }
+
         // All prepped so lets go
         switch ($this->data['method']) {
             case 'GET':
                 // We have an id (so single object)
                 if (isset($this->id)) {
                     $result = $this->cacheService->getObject($this->id);
+
+                    // If we do not have an object we throw an 404
+                    if(!$result){
+                        return new Response('Object not found','404');
+                    }
+
+                    // Lets see if the found result is allowd for this endpoint
+                    if(!in_array($result['_self']['schema']['id'],$allowedSchemas)){
+                        return new Response('Object is not supported by this endpoint','406');
+                    }
 
                     // create log
                     $responseLog = new Response($this->content, 200, ['CoreBundle' => 'GetItem']);
@@ -273,6 +292,12 @@ class RequestService
                     return new Response('','400');
                 }
 
+
+                // Lets see if the found result is allowd for this endpoint
+                if(!in_array($this->object->getEntity()->getId(),$allowedSchemas)){
+                    return new Response('Object is not supported by this endpoint','406');
+                }
+
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
                 if ($this->object->hydrate($this->content, true)) { // This should be an unsafe hydration
                     if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
@@ -293,6 +318,11 @@ class RequestService
                     return new Response('','400');
                 }
 
+                // Lets see if the found result is allowd for this endpoint
+                if(!in_array($this->object->getEntity()->getId(),$allowedSchemas)){
+                    return new Response('Object is not supported by this endpoint','406');
+                }
+
                 //if ($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
                 if ($this->object->hydrate($this->content)) {
                     $this->entityManager->persist($this->object);
@@ -309,6 +339,11 @@ class RequestService
                 // We dont have an id on a DELETE so die
                 if (!isset($this->id)) {
                     return new Response('','400');
+                }
+                
+                // Lets see if the found result is allowd for this endpoint
+                if(!in_array($this->object->getEntity()->getId(),$allowedSchemas)){
+                    return new Response('Object is not supported by this endpoint','406');
                 }
 
                 $this->entityManager->remove($this->object);
