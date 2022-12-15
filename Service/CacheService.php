@@ -315,6 +315,14 @@ class CacheService
             }
         }
 
+        // todo: make this into a hanldeSearch function
+        // Lets see if we need a search
+        if (isset($completeFilter['_search']) && is_array($filter['_search'])) {
+            // todo: implode on , remove spaces with trim
+            // todo: add these properties to $filter with regex?
+        } elseif (!isset($search) && isset($completeFilter['_search']) && is_string($completeFilter['_search'])) {
+            $search = $completeFilter['_search'];
+        }
         if (isset($search) and !empty($search)) {
             $filter['$text']
                 = [

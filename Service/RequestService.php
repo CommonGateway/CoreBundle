@@ -287,14 +287,6 @@ class RequestService
                     $session->set('object', $this->id);
                     $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, $this->content);
                 } else {
-                    // generic search
-                    $search = null;
-                    if (isset($this->data['query']['_search'])) {
-                        $search = $this->data['query']['_search'];
-                        unset($this->data['query']['_search']);
-                        $search = !is_string($search) ? null : $search;
-                    }
-
                     //$this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
                     $result = $this->cacheService->searchObjects($search, $filters, $this->data['endpoint']->getEntities()->toArray());
                 }
