@@ -182,9 +182,12 @@ class CacheService
         if (!isset($this->client)) {
             return $objectEntity;
         }
+        
+        // todo: temp fix to make sure we have the latest version of this ObjectEntity before we cache it.
+        $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $objectEntity->getId()->toString()]);
 
         if (isset($this->io)) {
-            $this->io->writeln('Start caching object '.$objectEntity->getId().' of type '.$objectEntity->getEntity()->getName());
+            $this->io->writeln('Start caching object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName());
         }
 
         $collection = $this->client->objects->json;
@@ -194,7 +197,7 @@ class CacheService
 
         //(isset($array['_schema']['$id'])?$array['_schema'] = $array['_schema']['$id']:'');
 
-        $id = (string) $objectEntity->getId();
+        $id = $objectEntity->getId()->toString();
 
         $array['id'] = $id;
 
@@ -203,9 +206,9 @@ class CacheService
             $array,
             ['upsert'=>true]
         )) {
-            (isset($this->io) ? $this->io->writeln('Updated object '.$objectEntity->getId().' of type '.$objectEntity->getEntity()->getName().' to cache') : '');
+            (isset($this->io) ? $this->io->writeln('Updated object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache') : '');
         } else {
-            (isset($this->io) ? $this->io->writeln('Wrote object '.$objectEntity->getId().' of type '.$objectEntity->getEntity()->getName().' to cache') : '');
+            (isset($this->io) ? $this->io->writeln('Wrote object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache') : '');
         }
 
         return $objectEntity;
