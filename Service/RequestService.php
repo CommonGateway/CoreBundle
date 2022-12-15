@@ -3,9 +3,9 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use Adbar\Dot;
+use App\Entity\Gateway as Source;
 use App\Entity\Log;
 use App\Entity\ObjectEntity;
-use App\Entity\Gateway as Source;
 use App\Service\ObjectEntityService;
 use App\Service\ResponseService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -46,7 +46,7 @@ class RequestService
         $this->logService = $logService;
         $this->callService = $callService;
     }
-    
+
     /**
      * A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.
      * This function will not.
@@ -70,13 +70,13 @@ class RequestService
             if (count($nv) == 2) {
                 $value = urldecode($nv[1]);
             }
-            
-            $this->recursiveRequestQueryKey($vars, $name, explode('[',$name)[0], $value);
+
+            $this->recursiveRequestQueryKey($vars, $name, explode('[', $name)[0], $value);
         }
-        
+
         return $vars;
     }
-    
+
     /**
      * This function adds a single query param to the given $vars array. ?$name=$value
      * Will check if request query $name has [...] inside the parameter, like this: ?queryParam[$nameKey]=$value.
@@ -85,10 +85,10 @@ class RequestService
      * this function will add given value to an array of [queryParam][$nameKey][] = $value or [queryParam][] = $value.
      * If none of the above this function will just add [queryParam] = $value to $vars.
      *
-     * @param array $vars The vars array we are going to store the query parameter in
-     * @param string $name The full $name of the query param, like this: ?$name=$value
+     * @param array  $vars    The vars array we are going to store the query parameter in
+     * @param string $name    The full $name of the query param, like this: ?$name=$value
      * @param string $nameKey The full $name of the query param, unless it contains [] like: ?queryParam[$nameKey]=$value
-     * @param string $value The full $value of the query param, like this: ?$name=$value
+     * @param string $value   The full $value of the query param, like this: ?$name=$value
      *
      * @return void
      */
@@ -122,14 +122,14 @@ class RequestService
         $this->configuration = $configuration;
 
         // We only do proxing if the endpoint forces it
-        if(!$proxy = $data['endpoint']->getProxy()){
+        if (!$proxy = $data['endpoint']->getProxy()) {
             return new Response(
                 json_encode(['Message' => "This Endpoint has no Proxy: {$data['endpoint']->getName()}"]),
                 Response::HTTP_OK, // todo: different response type?
                 ['content-type' => 'application/json']
             );
         }
-    
+
         if ($proxy instanceof Source && !$proxy->getIsEnabled()) {
             return new Response(
                 json_encode(['Message' => "This Source is not enabled: {$proxy->getName()}"]),
