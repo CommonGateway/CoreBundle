@@ -281,7 +281,8 @@ class RequestService
                     }
 
                     // create log
-                    $responseLog = new Response($this->content, 200, ['CoreBundle' => 'GetItem']);
+                    // todo if $this->content is array and not string/null, cause someone could do a get item call with a body...
+                    $responseLog = new Response(is_string($this->content) || is_null($this->content) ? $this->content : null, 200, ['CoreBundle' => 'GetItem']);
                     $session = new Session();
                     $session->set('object', $this->id);
                     $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, $this->content);
