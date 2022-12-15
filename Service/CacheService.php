@@ -258,17 +258,17 @@ class CacheService
 
         return false;
     }
-    
+
     /**
-     * Searches the object store for objects containing the search string
+     * Searches the object store for objects containing the search string.
      *
      * @param string $search   a string to search for within the given context
      * @param array  $filter   an array of dot.notation filters for wich to search with
      * @param array  $entities schemas to limit te search to
      *
-     * @return array|null
-     *
      * @throws Exception
+     *
+     * @return array|null
      */
     public function searchObjects(string $search = null, array $filter = [], array $entities = []): ?array
     {
@@ -366,9 +366,9 @@ class CacheService
      * @param $key
      * @param $value
      *
-     * @return void
-     *
      * @throws Exception
+     *
+     * @return void
      */
     private function handleFilter($key, &$value)
     {
@@ -383,31 +383,34 @@ class CacheService
         if (str_contains($value, '%')) {
             $regex = str_replace('%', '', $value);
             $regex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $regex);
-            $value = [ '$regex' => $regex ];
+            $value = ['$regex' => $regex];
+
             return;
         }
         if ($value === 'IS NOT NULL') {
-            $value = [ '$ne' => null ];
+            $value = ['$ne' => null];
+
             return;
         }
         if ($value === 'IS NULL' || $value === 'null') {
             $value = null;
+
             return;
         }
         // todo: exact match is default, make case insensitive optional:
         $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value);
-        $value = [ '$regex' => "^$value$", '$options' => 'im' ];
+        $value = ['$regex' => "^$value$", '$options' => 'im'];
     }
-    
+
     /**
      * Handles a single filter used on a get collection api call. Specifically an filter where the value is an array.
      *
      * @param $key
      * @param $value
      *
-     * @return bool
-     *
      * @throws Exception
+     *
+     * @return bool
      */
     private function handleFilterArray($key, &$value): bool
     {
@@ -416,12 +419,14 @@ class CacheService
                 $value = array_map('intval', $value['int_compare']);
             } elseif (array_key_exists('int_compare', $value)) {
                 $value = (int) $value['int_compare'];
+
                 return true;
             }
             if (array_key_exists('bool_compare', $value) && is_array($value['bool_compare'])) {
                 $value = array_map('boolval', $value['bool_compare']);
             } elseif (array_key_exists('bool_compare', $value)) {
                 $value = (bool) $value['bool_compare'];
+
                 return true;
             }
             if (!empty(array_intersect_key($value, array_flip(['after', 'before', 'strictly_after', 'strictly_before'])))) {
@@ -435,17 +440,19 @@ class CacheService
                     $compareDate = new DateTime($value[$before]);
                     $compareKey = $before === 'strictly_before' ? '$lt' : '$lte';
                 }
-                $value = [ "$compareKey" => "{$compareDate->format('c')}" ];
+                $value = ["$compareKey" => "{$compareDate->format('c')}"];
+
                 return true;
             }
             // Handle filter value = array (example: ?property=a,b,c) also works if the property we are filtering on is an array
-            $value = [ '$in' => $value ];
+            $value = ['$in' => $value];
+
             return true;
         }
-        
+
         return false;
     }
-    
+
     /**
      * Will check if we are allowed to order with the given $order query param.
      * Uses ObjectEntityRepository->getOrderParameters() to check if we are allowed to order, see eavService->handleSearch() $orderCheck.
@@ -516,11 +523,12 @@ class CacheService
     }
 
     /**
-     * Decides the pagination values
+     * Decides the pagination values.
      *
-     * @param int $limit        The resulting limit
-     * @param int $start        The resulting start value
-     * @param array $filters    The filters
+     * @param int   $limit   The resulting limit
+     * @param int   $start   The resulting start value
+     * @param array $filters The filters
+     *
      * @return array
      */
     public function setPagination(&$limit, &$start, array $filters): array
@@ -537,12 +545,12 @@ class CacheService
         } else {
             $start = 0;
         }
-        
+
         return $filters;
     }
-    
+
     /**
-     * Adds pagination variables to an array with the results we found with searchObjects()
+     * Adds pagination variables to an array with the results we found with searchObjects().
      *
      * @param array $filter
      * @param array $results
@@ -609,7 +617,6 @@ class CacheService
         }
 
         $collection = $this->client->endpoints->json;
-
     }
 
     /**
@@ -684,7 +691,6 @@ class CacheService
         }
 
         $collection = $this->client->schemas->json;
-
     }
 
     /**
