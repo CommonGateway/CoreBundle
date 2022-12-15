@@ -200,10 +200,7 @@ class CacheService
         // Lets not cash the entire schema
         $array = $objectEntity->toArray(['embedded' => true]);
 
-        //(isset($array['_schema']['$id'])?$array['_schema'] = $array['_schema']['$id']:'');
-
         $id = $objectEntity->getId()->toString();
-
         $array['id'] = $id;
 
         if ($collection->findOneAndReplace(

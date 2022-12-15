@@ -377,7 +377,7 @@ class RequestService
                 }
 
                 $this->entityManager->remove($this->object);
-                $this->cacheService - removeObject($this->id); /* @todo this is hacky, the above schould alredy do this */
+                $this->cacheService->removeObject($this->id); /* @todo this is hacky, the above schould alredy do this */
                 $this->entityManager->flush();
 
                 return new Response('Succesfully deleted object', '202');
