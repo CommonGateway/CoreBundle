@@ -2,23 +2,15 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
-
+use App\Entity\CollectionEntity;
 use App\Entity\Entity;
 use App\Entity\ObjectEntity;
-Use App\Entity\CollectionEntity;
-use CommonGateway\CoreBundle\Service\ComposerService;
-use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\ProgressBar;
-use Symfony\Component\Process\Exception\ProcessFailedException;
-use Symfony\Component\Process\Process;
-use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Filesystem\Path;
-use Symfony\Component\Finder\Finder;
-use Doctrine\ORM\EntityManagerInterface;
 use App\Kernel;
-
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 
 class InstallationService
 {
@@ -39,23 +31,20 @@ class InstallationService
     }
 
     /**
-     * Set symfony style in order to output to the console
+     * Set symfony style in order to output to the console.
      *
      * @param SymfonyStyle $io
+     *
      * @return self
      */
-    public function setStyle(SymfonyStyle $io):self
+    public function setStyle(SymfonyStyle $io): self
     {
         $this->io = $io;
 
         return $this;
     }
 
-    /**
-     *
-     *
-     */
-    public function composerupdate():int
+    public function composerupdate(): int
     {
         $plugins = $this->composerService->getAll();
 
@@ -65,12 +54,12 @@ class InstallationService
                 '<info>Common Gateway Bundle Updater</info>',
                 '============',
                 '',
-                'Found: <comment> ' . count($plugins) . ' </comment> to check for updates',
+                'Found: <comment> '.count($plugins).' </comment> to check for updates',
                 '',
             ]);
         }
 
-        foreach($plugins as $plugin){
+        foreach ($plugins as $plugin) {
             $this->install($plugin['name']);
         }
 
@@ -78,42 +67,43 @@ class InstallationService
     }
 
     /**
-     * Performs installation actions on a common Gataway bundle
+     * Performs installation actions on a common Gataway bundle.
      *
      * @param SymfonyStyle $io
-     * @param string $bundle
-     * @param bool $noSchema
+     * @param string       $bundle
+     * @param bool         $noSchema
+     *
      * @return int
      */
-    public function install(string $bundle, bool $noSchema = false):int
+    public function install(string $bundle, bool $noSchema = false): int
     {
-
         if ($this->io) {
             $this->io->writeln([
-                'Trying to install: <comment> ' . $bundle . ' </comment>',
+                'Trying to install: <comment> '.$bundle.' </comment>',
                 '',
             ]);
         }
 
         $packadges = $this->composerService->getAll();
 
-        $found = array_filter($packadges,function($v,$k) use ($bundle) {
-            return $v["name"] == $bundle;
-        },ARRAY_FILTER_USE_BOTH); // With latest PHP third parameter is optional.. Available Values:- ARRAY_FILTER_USE_BOTH OR ARRAY_FILTER_USE_KEY
+        $found = array_filter($packadges, function ($v, $k) use ($bundle) {
+            return $v['name'] == $bundle;
+        }, ARRAY_FILTER_USE_BOTH); // With latest PHP third parameter is optional.. Available Values:- ARRAY_FILTER_USE_BOTH OR ARRAY_FILTER_USE_KEY
 
         $packadge = reset($found);
         if ($packadge) {
             $this->io->writeln([
-                '<info>Packadge '. $bundle.' found</info>',
+                '<info>Packadge '.$bundle.' found</info>',
                 '',
                 'Name: '.$packadge['name'],
                 'Version: '.$packadge['version'],
                 'Description: '.$packadge['description'],
                 'Homepage :'.$packadge['homepage'],
-                'Source: '.$packadge['source']['url']
+                'Source: '.$packadge['source']['url'],
             ]);
         } else {
             $this->io->error($bundle.' not found');
+
             return Command::FAILURE;
         }
 
@@ -122,26 +112,24 @@ class InstallationService
 
         // Handling the schema's
         $this->io->section('Looking for schema\'s');
-        $schemaDir = $vendorFolder . '/' . $bundle . '/Schema';
+        $schemaDir = $vendorFolder.'/'.$bundle.'/Schema';
 
         if ($filesystem->exists($schemaDir)) {
             $this->io->writeln('Schema folder found');
             $schemas = new Finder();
             $schemas = $schemas->in($schemaDir);
-            $this->io->writeln('Files found: ' . count($schemas));
-
+            $this->io->writeln('Files found: '.count($schemas));
 
             // We want each plugin to also be a collection (if it contains schema's that is)
             if (count($schemas) > 0) {
-                if(! $this->collection = $this->em->getRepository('App:CollectionEntity')->findOneBy(['plugin'=>$packadge['name']])){
-                    $this->io->writeln(['Created a collection for this plugin','']);
+                if (!$this->collection = $this->em->getRepository('App:CollectionEntity')->findOneBy(['plugin'=>$packadge['name']])) {
+                    $this->io->writeln(['Created a collection for this plugin', '']);
                     $this->collection = new CollectionEntity();
                     $this->collection->setName($packadge['name']);
                     $this->collection->setPlugin($packadge['name']);
                     isset($packadge['description']) && $this->collection->setDescription($packadge['description']);
-                }
-                else{
-                    $this->io->writeln(['Found a collection for this plugin','']);
+                } else {
+                    $this->io->writeln(['Found a collection for this plugin', '']);
                 }
             }
 
@@ -149,13 +137,11 @@ class InstallationService
                 $this->handleSchema($schema);
             }
 
-
             // Persist collection
             if (isset($this->collection)) {
                 $this->em->persist($this->collection);
                 $this->em->flush();
             }
-
 
             //$progressBar->finish();
         } else {
@@ -164,14 +150,13 @@ class InstallationService
 
         // Handling the data
         $this->io->section('Looking for data');
-        $dataDir = $vendorFolder . '/' . $bundle . '/Data';
+        $dataDir = $vendorFolder.'/'.$bundle.'/Data';
 
         if ($filesystem->exists($dataDir)) {
-
             $this->io->writeln('Data folder found');
             $datas = new Finder();
-            $datas =  $datas->in($dataDir);
-            $this->io->writeln('Files found: ' . count($datas));
+            $datas = $datas->in($dataDir);
+            $this->io->writeln('Files found: '.count($datas));
 
             foreach ($datas->files() as $data) {
                 $this->handleData($data);
@@ -182,16 +167,14 @@ class InstallationService
             $this->io->writeln('No data folder found');
         }
 
-
         // Handling the installations
         $this->io->section('Looking for installers');
-        $installationDir = $vendorFolder . '/' . $bundle . '/Installation';
+        $installationDir = $vendorFolder.'/'.$bundle.'/Installation';
         if ($filesystem->exists($installationDir)) {
-
             $this->io->writeln('Installation folder found');
             $installers = new Finder();
-            $installers =  $installers->in($installationDir);
-            $this->io->writeln('Files found: ' . count($installers));
+            $installers = $installers->in($installationDir);
+            $this->io->writeln('Files found: '.count($installers));
 
             foreach ($installers->files() as $installer) {
                 $this->handleInstaller($installer);
@@ -216,31 +199,33 @@ class InstallationService
         return Command::SUCCESS;
     }
 
-    public function uninstall( string $bundle, string $data)
+    public function uninstall(string $bundle, string $data)
     {
         $this->io->writeln([
             'Common Gateway Bundle Uninstaller',
             '============',
             '',
         ]);
+
         return Command::SUCCESS;
     }
 
     public function handleSchema($file)
     {
-
         if (!$schema = json_decode($file->getContents(), true)) {
-            $this->io->writeln($file->getFilename() . ' is not a valid json opbject');
+            $this->io->writeln($file->getFilename().' is not a valid json opbject');
+
             return false;
         }
 
         if (!$this->valdiateJsonSchema($schema)) {
-            $this->io->writeln($file->getFilename() . ' is not a valid json-schema opbject');
+            $this->io->writeln($file->getFilename().' is not a valid json-schema opbject');
+
             return false;
         }
 
         if (!$entity = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']])) {
-            $this->io->writeln('Schema not pressent, creating schema ' . $schema['title'] . ' under reference ' . $schema['$id']);
+            $this->io->writeln('Schema not pressent, creating schema '.$schema['title'].' under reference '.$schema['$id']);
             $entity = new Entity();
         } else {
             $this->io->writeln('Schema already pressent, looking to update');
@@ -254,40 +239,42 @@ class InstallationService
         $this->em->persist($entity);
 
         // Add the schema to collection
-        if(isset($this->collection)){
+        if (isset($this->collection)) {
             $this->collection->addEntity($entity);
         }
 
         $this->em->flush();
-        $this->io->writeln('Done with schema ' . $entity->getName());
+        $this->io->writeln('Done with schema '.$entity->getName());
     }
 
     /**
-     * Performce a very basic check to see if a schema file is a valid json-schema file
+     * Performce a very basic check to see if a schema file is a valid json-schema file.
      *
      * @param array $schema
+     *
      * @return bool
      */
     public function valdiateJsonSchema(array $schema): bool
     {
         if (
-            array_key_exists('$id',$schema) &&
-            array_key_exists('$schema',$schema) &&
-            $schema['$schema'] == "https://json-schema.org/draft/2020-12/schema" &&
+            array_key_exists('$id', $schema) &&
+            array_key_exists('$schema', $schema) &&
+            $schema['$schema'] == 'https://json-schema.org/draft/2020-12/schema' &&
             array_key_exists('type', $schema) &&
-            $schema['type'] == "object" &&
+            $schema['type'] == 'object' &&
             array_key_exists('properties', $schema)
         ) {
             return true;
         }
+
         return false;
     }
 
-    public function handleData( $file)
+    public function handleData($file)
     {
-
         if (!$data = json_decode($file->getContents(), true)) {
             $this->io->writeln($file->getFilename().' is not a valid json opbject');
+
             return false;
         }
 
@@ -307,15 +294,14 @@ class InstallationService
             foreach ($objects as $object) {
                 // Lets see if we need to update
 
-                if (array_key_exists('_id',$object) && $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id'=>$object['_id']])) {
-                    $this->io->writeln(['','Object '.$object['_id'].' already exsists, so updating']);
+                if (array_key_exists('_id', $object) && $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id'=>$object['_id']])) {
+                    $this->io->writeln(['', 'Object '.$object['_id'].' already exsists, so updating']);
                 } else {
-                    $objectEntity = New ObjectEntity($entity);
-                    $this->io->writeln(['','Creating new object']);
+                    $objectEntity = new ObjectEntity($entity);
+                    $this->io->writeln(['', 'Creating new object']);
 
                     // We need to do something tricky if we want to overwrite the id (doctrine dosn't alow that)
                     if (array_key_exists('_id', $object)) {
-
                         $this->io->writeln('Forcing id to '.$object['_id']);
 
                         // Force doctrine id creation
@@ -337,26 +323,28 @@ class InstallationService
                 $objectEntity->hydrate($object);
                 $this->em->persist($objectEntity);
                 $this->em->flush();
-                $this->io->writeln('Object saved as ' . $objectEntity->getId());
+                $this->io->writeln('Object saved as '.$objectEntity->getId());
             }
         }
     }
 
     public function handleInstaller($file)
     {
-
         if (!$data = json_decode($file->getContents(), true)) {
             $this->io->writeln($file->getFilename().' is not a valid json opbject');
+
             return false;
         }
 
         if (!isset($data['installationService']) || !$installationService = $data['installationService']) {
             $this->io->writeln($file->getFilename().' Dosnt contain an installation service');
+
             return false;
         }
 
-        if (!$installationService =  $this->container->get($installationService)) {
+        if (!$installationService = $this->container->get($installationService)) {
             $this->io->writeln($file->getFilename().' Could not be loaded from container');
+
             return false;
         }
 

@@ -4,15 +4,10 @@
 
 namespace CommonGateway\CoreBundle\Controller;
 
-use App\Service\AuthenticationService;
 use CommonGateway\CoreBundle\Service\CacheService;
-use Doctrine\ORM\EntityManagerInterface;
-use GuzzleHttp\Exception\ClientException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -36,7 +31,7 @@ class SearchController extends AbstractController
     public function installedAction(Request $request)
     {
         $status = 200;
-        $results = ['bla'];//$this->cacheService->getAll(['--installed'])['installed'];
+        $results = ['bla']; //$this->cacheService->getAll(['--installed'])['installed'];
 
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
     }

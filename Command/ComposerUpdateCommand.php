@@ -4,7 +4,6 @@ namespace CommonGateway\CoreBundle\Command;
 
 use CommonGateway\CoreBundle\Service\InstallationService;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -25,13 +24,12 @@ class ComposerUpdateCommand extends Command
     {
         $this
             ->addOption('bundle', 'b', InputOption::VALUE_OPTIONAL, 'The bundle that you want to install')
-            ->addOption('data', 'd',InputOption::VALUE_OPTIONAL, 'Load (example) data set(s) from the bundle', false)
+            ->addOption('data', 'd', InputOption::VALUE_OPTIONAL, 'Load (example) data set(s) from the bundle', false)
             ->addOption('schema', 'sa', InputOption::VALUE_OPTIONAL, 'Load an (example) data set from the bundle', false)
             ->addOption('script', 'sp', InputOption::VALUE_OPTIONAL, 'Load an (example) data set from the bundle', false)
             ->addOption('unsafe', 'u', InputOption::VALUE_OPTIONAL, 'Update existing schema\'s and data sets', false)
             ->setDescription('This command runs the installation service on a commongateway bundle')
             ->setHelp('This command allows you to run further installation an configuration actions afther installing a plugin');
-        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

@@ -30,7 +30,6 @@ class UpgradeCommand extends Command
             ->addOption('--no-schema', null, InputOption::VALUE_NONE, 'Skipp the installation or update of the bundles schema\'s')
             ->setDescription('This command runs the upgrade service on a commongateway bundle')
             ->setHelp('This command allows you to create a OAS files for your EAV entities');
-        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

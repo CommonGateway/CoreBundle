@@ -3,15 +3,13 @@
 namespace CommonGateway\CoreBundle\Command;
 
 use CommonGateway\CoreBundle\Service\CacheService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Doctrine\ORM\EntityManagerInterface;
-Use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class DataClearCommand extends Command
 {
@@ -24,8 +22,7 @@ class DataClearCommand extends Command
         CacheService $cacheService,
         EntityManagerInterface $entityManagerInterface,
         ParameterBagInterface $parameterBagInterface
-    )
-    {
+    ) {
         $this->cacheService = $cacheService;
         $this->entitymanager = $entityManagerInterface;
         $this->parameterBagInterface = $parameterBagInterface;
@@ -38,7 +35,6 @@ class DataClearCommand extends Command
         $this
             ->setDescription('This command removes all objects from the datbase')
             ->setHelp('use with care, or better don\'t use at all');
-        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -51,12 +47,11 @@ class DataClearCommand extends Command
             '<info>Common Gateway Data Remover</info>',
             '============',
             '',
-            'Trying to remove all data from environment: <comment> ' . $env . ' </comment>',
+            'Trying to remove all data from environment: <comment> '.$env.' </comment>',
             '',
         ]);
 
-        if($env!='dev'){
-
+        if ($env != 'dev') {
             $io->error('Could not remove the data bescouse the environment is not in dev mode');
 
             return Command::FAILURE;
@@ -72,7 +67,7 @@ class DataClearCommand extends Command
         // starts and displays the progress bar
         $progressBar->start();
 
-        foreach($objects as $object){
+        foreach ($objects as $object) {
 
             // advances the progress bar 1 unit
             $progressBar->advance();
@@ -84,7 +79,7 @@ class DataClearCommand extends Command
         // ensures that the progress bar is at 100%
         $progressBar->finish();
         $this->entitymanager->flush();
-        
+
         $io->writeln('');
         $io->success('All done');
 
