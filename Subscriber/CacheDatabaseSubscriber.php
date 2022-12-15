@@ -4,16 +4,14 @@
 
 namespace CommonGateway\CoreBundle\Subscriber;
 
-use App\Entity\ObjectEntity;
-use App\Entity\Entity;
 use App\Entity\Endpoint;
+use App\Entity\Entity;
+use App\Entity\ObjectEntity;
 use CommonGateway\CoreBundle\Service\CacheService;
-
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
-use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 
 class CacheDatabaseSubscriber implements EventSubscriberInterface
 {
@@ -39,15 +37,16 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         ];
     }
 
-    public function postUpdate (LifecycleEventArgs $args): void
+    public function postUpdate(LifecycleEventArgs $args): void
     {
         $this->postPersist($args);
     }
 
     /**
-     * Updates the chache whenever an object is put into the database
+     * Updates the chache whenever an object is put into the database.
      *
      * @param LifecycleEventArgs $args
+     *
      * @return void
      */
     public function postPersist(LifecycleEventArgs $args): void
@@ -58,24 +57,27 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity) {
             $this->updateParents($object);
             $this->cacheService->cacheObject($object);
+
             return;
         }
         if ($object instanceof Entity) {
             $this->cacheService->cacheShema($object);
+
             return;
         }
         if ($object instanceof Endpoint) {
             $this->cacheService->cacheEndpoint($object);
+
             return;
         }
 
-        return;
     }
 
     /**
-     * Remove objects from the cache afther they are removed from the database
+     * Remove objects from the cache afther they are removed from the database.
      *
      * @param LifecycleEventArgs $args
+     *
      * @return void
      */
     public function postRemove(LifecycleEventArgs $args): void
@@ -85,24 +87,26 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         // if this subscriber only applies to certain entity types,
         if ($object instanceof ObjectEntity) {
             $this->cacheService->removeObject($object);
+
             return;
         }
         if ($object instanceof Entity) {
             $this->cacheService->removeSchema($object);
+
             return;
         }
         if ($object instanceof Endpoint) {
             $this->cacheService->removeEndpoint($object);
+
             return;
         }
 
-        return;
     }
 
     public function updateParents(ObjectEntity $objectEntity, array $handled = [])
     {
-        foreach($objectEntity->getSubresourceOf() as $subresourceOf) {
-            if(in_array($subresourceOf->getObjectEntity()->getId(), $handled)) {
+        foreach ($objectEntity->getSubresourceOf() as $subresourceOf) {
+            if (in_array($subresourceOf->getObjectEntity()->getId(), $handled)) {
                 continue;
             }
             $subresourceOf->getObjectEntity()->setDateModified(new \DateTime());
