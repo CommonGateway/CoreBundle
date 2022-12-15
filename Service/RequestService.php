@@ -202,7 +202,6 @@ class RequestService
 //                $filters[$key] = $value;
 //            }
             $filters = $this->realRequestQueryAll($this->data['method']);
-            unset($filters['_search']);
         }
 
         // Try to grap an id
