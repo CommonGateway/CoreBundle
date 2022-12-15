@@ -317,22 +317,9 @@ class CacheService
                 $filter['_self.schema.ref']['$in'][] = $entity->getReference();
             }
         }
-
-        // todo: make this into a hanldeSearch function
+        
         // Lets see if we need a search
-        if (isset($completeFilter['_search']) && is_array($filter['_search'])) {
-            // todo: implode on , remove spaces with trim
-            // todo: add these properties to $filter with regex?
-        } elseif (!isset($search) && isset($completeFilter['_search']) && is_string($completeFilter['_search'])) {
-            $search = $completeFilter['_search'];
-        }
-        if (isset($search) and !empty($search)) {
-            $filter['$text']
-                = [
-                    '$search'       => $search,
-                    '$caseSensitive'=> false,
-                ];
-        }
+        $this->handleSearch($filter, $completeFilter, $search);
 
         // Limit & Start for pagination
         $this->setPagination($limit, $start, $completeFilter);
@@ -531,6 +518,39 @@ class CacheService
         }
 
         return null;
+    }
+    
+    /**
+     * Adds search filter to the query on MongoDB. Will use given $search string to search on entire object, unless
+     * the _search query is present in $completeFilter query params, then we use that instead.
+     * _search query param supports filtering on specific properties with ?_search[property1,property2]=value
+     *
+     * @param array $filter
+     * @param array $completeFilter
+     * @param string|null $search
+     *
+     * @return void
+     */
+    private function handleSearch(array &$filter, array $completeFilter, ?string $search)
+    {
+        if (isset($completeFilter['_search']) && !empty($completeFilter['_search'])) {
+            $search = $completeFilter['_search'];
+        }
+        
+        // Normal search on every property with type text (includes strings)
+        if (is_string($search)) {
+            $filter['$text']
+                = [
+                '$search'       => $search,
+                '$caseSensitive'=> false,
+            ];
+        }
+        // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value
+        elseif (is_array($search)) {
+            var_dump(array_keys($search));
+            // todo: implode on , remove spaces with trim
+            // todo: add these properties to $filter with regex?
+        }
     }
 
     /**
