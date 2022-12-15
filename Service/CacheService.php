@@ -183,8 +183,11 @@ class CacheService
             return $objectEntity;
         }
 
+        // todo: temp fix to make sure we have the latest version of this ObjectEntity before we cache it.
+        $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $objectEntity->getId()->toString()]);
+
         if (isset($this->io)) {
-            $this->io->writeln('Start caching object '.$objectEntity->getId().' of type '.$objectEntity->getEntity()->getName());
+            $this->io->writeln('Start caching object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName());
         }
 
         $collection = $this->client->objects->json;
@@ -194,7 +197,7 @@ class CacheService
 
         //(isset($array['_schema']['$id'])?$array['_schema'] = $array['_schema']['$id']:'');
 
-        $id = (string) $objectEntity->getId();
+        $id = $objectEntity->getId()->toString();
 
         $array['id'] = $id;
 
@@ -203,9 +206,9 @@ class CacheService
             $array,
             ['upsert'=>true]
         )) {
-            (isset($this->io) ? $this->io->writeln('Updated object '.$objectEntity->getId().' of type '.$objectEntity->getEntity()->getName().' to cache') : '');
+            (isset($this->io) ? $this->io->writeln('Updated object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache') : '');
         } else {
-            (isset($this->io) ? $this->io->writeln('Wrote object '.$objectEntity->getId().' of type '.$objectEntity->getEntity()->getName().' to cache') : '');
+            (isset($this->io) ? $this->io->writeln('Wrote object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache') : '');
         }
 
         return $objectEntity;
@@ -279,7 +282,7 @@ class CacheService
 
         $collection = $this->client->objects->json;
 
-        // backwards compatibility
+        // Backwards compatibility
         $this->queryBackwardsCompatibility($filter);
 
         // Make sure we also have all filters stored in $completeFilter before unsetting
@@ -287,12 +290,12 @@ class CacheService
         unset($filter['_start'], $filter['_offset'], $filter['_limit'], $filter['_page'],
             $filter['_extend'], $filter['_search'], $filter['_order'], $filter['_fields']);
 
-        // Filters
+        // 'normal' Filters (not starting with _ )
         foreach ($filter as $key => &$value) {
             $this->handleFilter($key, $value);
         }
 
-        // Search for single entity WE WOULD LIKE TO SEARCH FOR MULTIPLE ENTITIES
+        // Search for the correct entity / entities
         // todo: make this if into a function?
         if (!empty($entities)) {
             foreach ($entities as $entity) {
@@ -315,16 +318,10 @@ class CacheService
             }
         }
 
-        // Let see if we need a search
-        if (isset($search) and !empty($search)) {
-            $filter['$text']
-                = [
-                    '$search'       => $search,
-                    '$caseSensitive'=> false,
-                ];
-        }
+        // Lets see if we need a search
+        $this->handleSearch($filter, $completeFilter, $search);
 
-        // Limit & Start
+        // Limit & Start for pagination
         $this->setPagination($limit, $start, $completeFilter);
 
         // Order
@@ -335,6 +332,7 @@ class CacheService
         $results = $collection->find($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order])->toArray();
         $total = $collection->count($filter);
 
+        // Make sure to add the pagination properties in response
         return $this->handleResultPagination($completeFilter, $results, $total);
     }
 
@@ -520,6 +518,48 @@ class CacheService
         }
 
         return null;
+    }
+
+    /**
+     * Adds search filter to the query on MongoDB. Will use given $search string to search on entire object, unless
+     * the _search query is present in $completeFilter query params, then we use that instead.
+     * _search query param supports filtering on specific properties with ?_search[property1,property2]=value.
+     *
+     * @param array       $filter
+     * @param array       $completeFilter
+     * @param string|null $search
+     *
+     * @return void
+     */
+    private function handleSearch(array &$filter, array $completeFilter, ?string $search)
+    {
+        if (isset($completeFilter['_search']) && !empty($completeFilter['_search'])) {
+            $search = $completeFilter['_search'];
+        }
+        if (empty($search)) {
+            return;
+        }
+
+        // Normal search on every property with type text (includes strings)
+        if (is_string($search)) {
+            $filter['$text']
+                = [
+                    '$search'       => $search,
+                    '$caseSensitive'=> false,
+                ];
+        }
+        // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value
+        elseif (is_array($search)) {
+            $searchRegex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $search[array_key_first($search)]);
+            if (empty($searchRegex)) {
+                return;
+            }
+            $searchRegex = ['$regex' => $searchRegex, '$options' => 'i'];
+            $properties = explode(',', array_key_first($search));
+            foreach ($properties as $property) {
+                $filter[$property] = isset($filter[$property]) ? array_merge($filter[$property], $searchRegex) : $searchRegex;
+            }
+        }
     }
 
     /**
