@@ -257,7 +257,7 @@ class CacheService
 
 
         // Fall back tot the entity manager
-        if($object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id'=>$id])){
+        if ($object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id'=>$id])){
             return $this->cacheObject($object)->toArray(['embedded' => true]);
         }
 
