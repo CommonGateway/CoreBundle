@@ -28,10 +28,14 @@ class RequestService
     private ObjectEntityService $objectEntityService;
     private LogService $logService;
     private CallService $callService;
-
+    
     /**
-     * @param EntityManagerInterface                         $entityManager
-     * @param \CommonGateway\CoreBundle\Service\CacheService $cacheService
+     * @param EntityManagerInterface $entityManager
+     * @param CacheService $cacheService
+     * @param ResponseService $responseService
+     * @param ObjectEntityService $objectEntityService
+     * @param LogService $logService
+     * @param CallService $callService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
