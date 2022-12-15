@@ -315,10 +315,6 @@ class CacheService
             }
         }
 
-        // Let see if we need a search
-        if (!isset($search) && isset($completeFilter['_search']) && is_string($completeFilter['_search'])) {
-            $search = $completeFilter['_search'];
-        }
         if (isset($search) and !empty($search)) {
             $filter['$text']
                 = [

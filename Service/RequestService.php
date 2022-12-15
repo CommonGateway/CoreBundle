@@ -292,6 +292,7 @@ class RequestService
                     if (isset($this->data['query']['_search'])) {
                         $search = $this->data['query']['_search'];
                         unset($this->data['query']['_search']);
+                        $search = !is_string($search) ? null : $search;
                     }
 
                     //$this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
