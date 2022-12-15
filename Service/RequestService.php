@@ -5,15 +5,10 @@ namespace CommonGateway\CoreBundle\Service;
 use Adbar\Dot;
 use App\Entity\Log;
 use App\Entity\ObjectEntity;
+use App\Service\LogService;
 use App\Service\ObjectEntityService;
 use App\Service\ResponseService;
-use App\Service\LogService;
-use CommonGateway\CoreBundle\Service\CacheService;
-use DateTime;
-use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
-use ErrorException;
-use Exception;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
@@ -33,7 +28,7 @@ class RequestService
     private CallService $callService;
 
     /**
-     * @param EntityManagerInterface $entityManager
+     * @param EntityManagerInterface                         $entityManager
      * @param \CommonGateway\CoreBundle\Service\CacheService $cacheService
      */
     public function __construct(
@@ -66,6 +61,7 @@ class RequestService
         if (strtolower($method) === 'get' && empty($this->data['querystring'])) {
             return $vars;
         }
+
         $pairs = explode('&', strtolower($method) == 'post' ? file_get_contents('php://input') : $_SERVER['QUERY_STRING']);
         foreach ($pairs as $pair) {
             $nv = explode('=', $pair);
@@ -92,9 +88,8 @@ class RequestService
         return $vars;
     }
 
-
     /**
-     * @param array $data The data from the call
+     * @param array $data          The data from the call
      * @param array $configuration The configuration from the call
      *
      * @return Response The data as returned bij the origanal source
@@ -105,22 +100,23 @@ class RequestService
         $this->configuration = $configuration;
 
         // We only do proxing if the endpoint forces it
-        if(!$proxy = $data['endpoint']->getProxy()){
+        if (!$proxy = $data['endpoint']->getProxy()) {
             // @todo throw error
         }
 
         // Get clean query paramters without all the symfony shizzle
         $query = $this->realRequestQueryAll($this->data['method']);
         $this->data['path'] = '/'.$data['path']['{route}'];
+
         // Make a guzzle call to the source bassed on the incomming call
         $result = $this->callService->call(
             $proxy,
             $this->data['path'],
             $this->data['method'],
             [
-                'query' => $query,
+                'query'   => $query,
                 'headers' => $this->data['headers'],
-                'body'=>$this->data['crude_body']
+                'body'    => $this->data['crude_body'],
             ]
         );
 
@@ -130,16 +126,17 @@ class RequestService
             $result->getStatusCode(),
             $result->getHeaders()
         );
-        // @todo the obove might need a try catch
+
+        // @todo the above might need a try catch
 
         // And don so lets return what we have
         return $responce;
     }
 
     /**
-     * Handles incomming requests and is responsible for generating a responce
+     * Handles incomming requests and is responsible for generating a responce.
      *
-     * @param array $data The data from the call
+     * @param array $data          The data from the call
      * @param array $configuration The configuration from the call
      *
      * @return Response The modified data
@@ -213,8 +210,14 @@ class RequestService
             $extend = $dot->all();
         }
         $metadataSelf = $extend['_self'] ?? [];
-        
+
         /** controlleren of de gebruiker ingelogd is **/
+
+        // Make a list of schema's that are allowed for this endpoint
+        $allowedSchemas = [];
+        foreach ($this->data['endpoint']->getEntities() as $entity) {
+            $allowedSchemas[] = $entity->getId();
+        }
 
         // All prepped so lets go
         switch ($this->data['method']) {
@@ -222,6 +225,16 @@ class RequestService
                 // We have an id (so single object)
                 if (isset($this->id)) {
                     $result = $this->cacheService->getObject($this->id);
+
+                    // If we do not have an object we throw an 404
+                    if (!$result) {
+                        return new Response('Object not found', '404');
+                    }
+
+                    // Lets see if the found result is allowd for this endpoint
+                    if (!in_array($result['_self']['schema']['id'], $allowedSchemas)) {
+                        return new Response('Object is not supported by this endpoint', '406');
+                    }
 
                     // create log
                     $responseLog = new Response($this->content, 200, ['CoreBundle' => 'GetItem']);
@@ -243,7 +256,7 @@ class RequestService
             case 'POST':
                 // We have an id on a post so die
                 if (isset($this->id)) {
-                    return new Response('You can not POST to an (exsisting) id, consider using PUT or PATCH instead','400');
+                    return new Response('You can not POST to an (exsisting) id, consider using PUT or PATCH instead', '400');
                 }
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
@@ -251,10 +264,10 @@ class RequestService
                     // We can make more gueses do
                     $entity = $this->data['endpoint']->getEntities()->first();
                 } else {
-                    return new Response('No entity could be established for your post','400');
+                    return new Response('No entity could be established for your post', '400');
                 }
 
-                $this->object = New ObjectEntity($entity);
+                $this->object = new ObjectEntity($entity);
 
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
                 if ($this->object->hydrate($this->content, true)) {
@@ -270,7 +283,12 @@ class RequestService
 
                 // We dont have an id on a PUT so die
                 if (!isset($this->id)) {
-                    return new Response('','400');
+                    return new Response('', '400');
+                }
+
+                // Lets see if the found result is allowd for this endpoint
+                if (!in_array($this->object->getEntity()->getId(), $allowedSchemas)) {
+                    return new Response('Object is not supported by this endpoint', '406');
                 }
 
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
@@ -290,14 +308,18 @@ class RequestService
 
                 // We dont have an id on a PATCH so die
                 if (!isset($this->id)) {
-                    return new Response('','400');
+                    return new Response('', '400');
+                }
+
+                // Lets see if the found result is allowd for this endpoint
+                if (!in_array($this->object->getEntity()->getId(), $allowedSchemas)) {
+                    return new Response('Object is not supported by this endpoint', '406');
                 }
 
                 //if ($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
                 if ($this->object->hydrate($this->content)) {
                     $this->entityManager->persist($this->object);
                     $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
-
                 } else {
                     // Use validation to throw an error
                 }
@@ -308,21 +330,29 @@ class RequestService
 
                 // We dont have an id on a DELETE so die
                 if (!isset($this->id)) {
-                    return new Response('','400');
+                    return new Response('', '400');
+                }
+
+                // Lets see if the found result is allowd for this endpoint
+                if (!in_array($this->object->getEntity()->getId(), $allowedSchemas)) {
+                    return new Response('Object is not supported by this endpoint', '406');
                 }
 
                 $this->entityManager->remove($this->object);
-                $this->cacheService-removeObject($this->id); /* @todo this is hacky, the above schould alredy do this */
+                $this->cacheService - removeObject($this->id); /* @todo this is hacky, the above schould alredy do this */
                 $this->entityManager->flush();
-                return new Response('Succesfully deleted object','202');
+
+                return new Response('Succesfully deleted object', '202');
                 break;
             default:
                 break;
-                return new Response('Unkown method'. $this->data['method'],'404');
+
+                return new Response('Unkown method'.$this->data['method'], '404');
         }
 
         $this->entityManager->flush();
         $this->handleMetadataSelf($result, $metadataSelf);
+
         return $this->createResponse($result);
     }
 
@@ -348,6 +378,7 @@ class RequestService
             foreach ($result['results'] as &$collectionItem) {
                 $this->handleMetadataSelf($collectionItem, $metadataSelf);
             }
+
             return;
         }
 
@@ -369,8 +400,7 @@ class RequestService
     }
 
     /**
-     *
-     * @param array $data The data from the call
+     * @param array $data          The data from the call
      * @param array $configuration The configuration from the call
      *
      * @return array The modified data
@@ -388,7 +418,7 @@ class RequestService
             $this->id = $data['id'];
             if (!$this->object = $this->cacheService->getObject($data['id'])) {
                 // Throw not found
-            };
+            }
         }
 
         switch ($method) {
@@ -411,7 +441,8 @@ class RequestService
                 break;
             case 'DELETE':
                 $this->entityManager->remove($this->object);
-                return new Response('','202');
+
+                return new Response('', '202');
                 break;
             default:
                 break;
@@ -423,9 +454,9 @@ class RequestService
     }
 
     /**
-     * This function searches all the objectEntities and formats the data
+     * This function searches all the objectEntities and formats the data.
      *
-     * @param array $data The data from the call
+     * @param array $data          The data from the call
      * @param array $configuration The configuration from the call
      *
      * @return array The modified data
@@ -444,8 +475,8 @@ class RequestService
         $response = [];
         foreach ($objectEntities as $objectEntity) {
             $response[] = [
-                'entity' => $objectEntity->getEntity()->toSchema(null),
-                'objectEntity' => $objectEntity->toArray()
+                'entity'       => $objectEntity->getEntity()->toSchema(null),
+                'objectEntity' => $objectEntity->toArray(),
             ];
         }
 
@@ -459,9 +490,10 @@ class RequestService
     }
 
     /**
-     * Creating the responce object
+     * Creating the responce object.
      *
      * @param $data
+     *
      * @return \CommonGateway\CoreBundle\Service\Response
      */
     public function createResponse($data): Response
