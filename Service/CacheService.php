@@ -279,7 +279,7 @@ class CacheService
 
         $collection = $this->client->objects->json;
 
-        // backwards compatibility
+        // Backwards compatibility
         $this->queryBackwardsCompatibility($filter);
 
         // Make sure we also have all filters stored in $completeFilter before unsetting
@@ -287,12 +287,12 @@ class CacheService
         unset($filter['_start'], $filter['_offset'], $filter['_limit'], $filter['_page'],
             $filter['_extend'], $filter['_search'], $filter['_order'], $filter['_fields']);
 
-        // Filters
+        // 'normal' Filters (not starting with _ )
         foreach ($filter as $key => &$value) {
             $this->handleFilter($key, $value);
         }
 
-        // Search for single entity WE WOULD LIKE TO SEARCH FOR MULTIPLE ENTITIES
+        // Search for the correct entity / entities
         // todo: make this if into a function?
         if (!empty($entities)) {
             foreach ($entities as $entity) {
@@ -316,6 +316,9 @@ class CacheService
         }
 
         // Let see if we need a search
+        if (!isset($search) && isset($completeFilter['_search']) && is_string($completeFilter['_search'])) {
+            $search = $completeFilter['_search'];
+        }
         if (isset($search) and !empty($search)) {
             $filter['$text']
                 = [
@@ -324,7 +327,7 @@ class CacheService
                 ];
         }
 
-        // Limit & Start
+        // Limit & Start for pagination
         $this->setPagination($limit, $start, $completeFilter);
 
         // Order
@@ -334,7 +337,8 @@ class CacheService
         // Find / Search
         $results = $collection->find($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order])->toArray();
         $total = $collection->count($filter);
-
+        
+        // Make sure to add the pagination properties in response
         return $this->handleResultPagination($completeFilter, $results, $total);
     }
 
