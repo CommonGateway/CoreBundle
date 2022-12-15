@@ -182,7 +182,7 @@ class CacheService
         if (!isset($this->client)) {
             return $objectEntity;
         }
-        
+
         // todo: temp fix to make sure we have the latest version of this ObjectEntity before we cache it.
         $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $objectEntity->getId()->toString()]);
 
@@ -317,7 +317,7 @@ class CacheService
                 $filter['_self.schema.ref']['$in'][] = $entity->getReference();
             }
         }
-        
+
         // Lets see if we need a search
         $this->handleSearch($filter, $completeFilter, $search);
 
@@ -331,7 +331,7 @@ class CacheService
         // Find / Search
         $results = $collection->find($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order])->toArray();
         $total = $collection->count($filter);
-        
+
         // Make sure to add the pagination properties in response
         return $this->handleResultPagination($completeFilter, $results, $total);
     }
@@ -519,14 +519,14 @@ class CacheService
 
         return null;
     }
-    
+
     /**
      * Adds search filter to the query on MongoDB. Will use given $search string to search on entire object, unless
      * the _search query is present in $completeFilter query params, then we use that instead.
-     * _search query param supports filtering on specific properties with ?_search[property1,property2]=value
+     * _search query param supports filtering on specific properties with ?_search[property1,property2]=value.
      *
-     * @param array $filter
-     * @param array $completeFilter
+     * @param array       $filter
+     * @param array       $completeFilter
      * @param string|null $search
      *
      * @return void
@@ -539,14 +539,14 @@ class CacheService
         if (empty($search)) {
             return;
         }
-        
+
         // Normal search on every property with type text (includes strings)
         if (is_string($search)) {
             $filter['$text']
                 = [
-                '$search'       => $search,
-                '$caseSensitive'=> false,
-            ];
+                    '$search'       => $search,
+                    '$caseSensitive'=> false,
+                ];
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value
         elseif (is_array($search)) {
