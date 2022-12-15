@@ -260,38 +260,13 @@ class CacheService
     }
 
     /**
-     * Decides the pagination values.
-     *
-     * @param int   $limit   The resulting limit
-     * @param int   $start   The resulting start value
-     * @param array $filters The filters
-     *
-     * @return array
-     */
-    public function setPagination(&$limit, &$start, array $filters): array
-    {
-        if (isset($filters['_limit'])) {
-            $limit = intval($filters['_limit']);
-        } else {
-            $limit = 30;
-        }
-        if (isset($filters['_start']) || isset($filters['_offset'])) {
-            $start = isset($filters['_start']) ? intval($filters['_start']) : intval($filters['_offset']);
-        } elseif (isset($filters['_page'])) {
-            $start = (intval($filters['_page']) - 1) * $limit;
-        } else {
-            $start = 0;
-        }
-
-        return $filters;
-    }
-
-    /**
      * Searches the object store for objects containing the search string.
      *
      * @param string $search   a string to search for within the given context
      * @param array  $filter   an array of dot.notation filters for wich to search with
      * @param array  $entities schemas to limit te search to
+     *
+     * @throws Exception
      *
      * @return array|null
      */
@@ -313,56 +288,8 @@ class CacheService
             $filter['_extend'], $filter['_search'], $filter['_order'], $filter['_fields']);
 
         // Filters
-        // todo: make this foreach into a function?
         foreach ($filter as $key => &$value) {
-            if (substr($key, 0, 1) == '_') {
-                // todo: deal with filters starting with _ like: _dateCreated
-            }
-            // todo: make this if into a function?
-            if (is_array($value)) {
-                if (array_key_exists('int_compare', $value)) {
-                    $value = (int) $value['int_compare'];
-                    continue;
-                }
-                if (array_key_exists('bool_compare', $value)) {
-                    $value = (bool) $value['bool_compare'];
-                    continue;
-                }
-                if (!empty(array_intersect_key($value, array_flip(['after', 'before', 'strictly_after', 'strictly_before'])))) {
-                    // Compare datetime
-                    if (!empty(array_intersect_key($value, array_flip(['after', 'strictly_after'])))) {
-                        $after = array_key_exists('strictly_after', $value) ? 'strictly_after' : 'after';
-                        $compareDate = new DateTime($value[$after]);
-                        $compareKey = $after === 'strictly_after' ? '$gt' : '$gte';
-                    } else {
-                        $before = array_key_exists('strictly_before', $value) ? 'strictly_before' : 'before';
-                        $compareDate = new DateTime($value[$before]);
-                        $compareKey = $before === 'strictly_before' ? '$lt' : '$lte';
-                    }
-                    $value = ["$compareKey" => "{$compareDate->format('c')}"];
-                    continue;
-                }
-                // todo: handle filter value = array (example: ?property=a,b,c)
-                continue;
-            }
-            // todo: this works, we should go to php 8.0 later
-            if (str_contains($value, '%')) {
-                $regex = str_replace('%', '', $value);
-                $regex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $regex);
-                $value = ['$regex' => $regex];
-                continue;
-            }
-            if ($value === 'IS NOT NULL') {
-                $value = ['$ne' => null];
-                continue;
-            }
-            if ($value === 'IS NULL' || $value === 'null') {
-                $value = null;
-                continue;
-            }
-            // todo: exact match is default, make case insensitive optional:
-            $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value);
-            $value = ['$regex' => "^$value$", '$options' => 'im'];
+            $this->handleFilter($key, $value);
         }
 
         // Search for single entity WE WOULD LIKE TO SEARCH FOR MULTIPLE ENTITIES
@@ -431,6 +358,99 @@ class CacheService
 
         unset($filter['start'], $filter['offset'], $filter['limit'], $filter['page'],
             $filter['extend'], $filter['search'], $filter['order'], $filter['fields']);
+    }
+
+    /**
+     * Handles a single filter used on a get collection api call. This function makes sure special filters work correctly.
+     *
+     * @param $key
+     * @param $value
+     *
+     * @throws Exception
+     *
+     * @return void
+     */
+    private function handleFilter($key, &$value)
+    {
+        if (substr($key, 0, 1) == '_') {
+            // todo: deal with filters starting with _ like: _dateCreated
+        }
+        // Handle filters that expect $value to be an array
+        if ($this->handleFilterArray($key, $value)) {
+            return;
+        }
+        // todo: this works, we should go to php 8.0 later
+        if (str_contains($value, '%')) {
+            $regex = str_replace('%', '', $value);
+            $regex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $regex);
+            $value = ['$regex' => $regex];
+
+            return;
+        }
+        if ($value === 'IS NOT NULL') {
+            $value = ['$ne' => null];
+
+            return;
+        }
+        if ($value === 'IS NULL' || $value === 'null') {
+            $value = null;
+
+            return;
+        }
+        // todo: exact match is default, make case insensitive optional:
+        $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value);
+        $value = ['$regex' => "^$value$", '$options' => 'im'];
+    }
+
+    /**
+     * Handles a single filter used on a get collection api call. Specifically an filter where the value is an array.
+     *
+     * @param $key
+     * @param $value
+     *
+     * @throws Exception
+     *
+     * @return bool
+     */
+    private function handleFilterArray($key, &$value): bool
+    {
+        if (is_array($value)) {
+            if (array_key_exists('int_compare', $value) && is_array($value['int_compare'])) {
+                $value = array_map('intval', $value['int_compare']);
+            } elseif (array_key_exists('int_compare', $value)) {
+                $value = (int) $value['int_compare'];
+
+                return true;
+            }
+            if (array_key_exists('bool_compare', $value) && is_array($value['bool_compare'])) {
+                $value = array_map('boolval', $value['bool_compare']);
+            } elseif (array_key_exists('bool_compare', $value)) {
+                $value = (bool) $value['bool_compare'];
+
+                return true;
+            }
+            if (!empty(array_intersect_key($value, array_flip(['after', 'before', 'strictly_after', 'strictly_before'])))) {
+                // Compare datetime
+                if (!empty(array_intersect_key($value, array_flip(['after', 'strictly_after'])))) {
+                    $after = array_key_exists('strictly_after', $value) ? 'strictly_after' : 'after';
+                    $compareDate = new DateTime($value[$after]);
+                    $compareKey = $after === 'strictly_after' ? '$gt' : '$gte';
+                } else {
+                    $before = array_key_exists('strictly_before', $value) ? 'strictly_before' : 'before';
+                    $compareDate = new DateTime($value[$before]);
+                    $compareKey = $before === 'strictly_before' ? '$lt' : '$lte';
+                }
+                $value = ["$compareKey" => "{$compareDate->format('c')}"];
+
+                return true;
+            }
+            // Handle filter value = array (example: ?property=a,b,c) also works if the property we are filtering on is an array
+            $value = ['$in' => $value];
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -503,6 +523,33 @@ class CacheService
     }
 
     /**
+     * Decides the pagination values.
+     *
+     * @param int   $limit   The resulting limit
+     * @param int   $start   The resulting start value
+     * @param array $filters The filters
+     *
+     * @return array
+     */
+    public function setPagination(&$limit, &$start, array $filters): array
+    {
+        if (isset($filters['_limit'])) {
+            $limit = intval($filters['_limit']);
+        } else {
+            $limit = 30;
+        }
+        if (isset($filters['_start']) || isset($filters['_offset'])) {
+            $start = isset($filters['_start']) ? intval($filters['_start']) : intval($filters['_offset']);
+        } elseif (isset($filters['_page'])) {
+            $start = (intval($filters['_page']) - 1) * $limit;
+        } else {
+            $start = 0;
+        }
+
+        return $filters;
+    }
+
+    /**
      * Adds pagination variables to an array with the results we found with searchObjects().
      *
      * @param array $filter
@@ -570,7 +617,6 @@ class CacheService
         }
 
         $collection = $this->client->endpoints->json;
-
     }
 
     /**
@@ -645,7 +691,6 @@ class CacheService
         }
 
         $collection = $this->client->schemas->json;
-
     }
 
     /**
