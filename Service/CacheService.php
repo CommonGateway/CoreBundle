@@ -557,6 +557,7 @@ class CacheService
             $searchRegex = ['$regex' => $searchRegex, '$options' => 'i'];
             $properties = explode(',', array_key_first($search));
             foreach ($properties as $property) {
+                // todo: we might want to check if we are allowed to filter on this property? with $this->handleFilterCheck;
                 $filter[$property] = isset($filter[$property]) ? array_merge($filter[$property], $searchRegex) : $searchRegex;
             }
         }
