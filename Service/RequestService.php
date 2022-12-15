@@ -7,9 +7,9 @@ use App\Entity\Endpoint;
 use App\Entity\Gateway as Source;
 use App\Entity\Log;
 use App\Entity\ObjectEntity;
+use App\Service\LogService;
 use App\Service\ObjectEntityService;
 use App\Service\ResponseService;
-use App\Service\LogService;
 use Doctrine\ORM\EntityManagerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,14 +28,14 @@ class RequestService
     private ObjectEntityService $objectEntityService;
     private LogService $logService;
     private CallService $callService;
-    
+
     /**
      * @param EntityManagerInterface $entityManager
-     * @param CacheService $cacheService
-     * @param ResponseService $responseService
-     * @param ObjectEntityService $objectEntityService
-     * @param LogService $logService
-     * @param CallService $callService
+     * @param CacheService           $cacheService
+     * @param ResponseService        $responseService
+     * @param ObjectEntityService    $objectEntityService
+     * @param LogService             $logService
+     * @param CallService            $callService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
