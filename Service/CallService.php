@@ -147,7 +147,7 @@ class CallService
         // Set authenticion if needed
         $parsedUrl = parse_url($source->getLocation());
 
-        $config = array_merge_recursive($config, $this->getAuthentication($source));
+        $config = array_merge_recursive($this->getAuthentication($source), $config);
         $createCertificates && $config = array_merge($config, $this->getCertificate($config));
         $config['headers']['host'] = $parsedUrl['host'];
         $config['headers'] = $this->removeEmptyHeaders($config['headers']);
