@@ -6,6 +6,7 @@ use Adbar\Dot;
 use App\Entity\Gateway as Source;
 use App\Entity\Log;
 use App\Entity\ObjectEntity;
+use App\Entity\Endpoint;
 use App\Service\ObjectEntityService;
 use App\Service\ResponseService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -122,10 +123,13 @@ class RequestService
         $this->configuration = $configuration;
 
         // We only do proxing if the endpoint forces it
-        if (!$proxy = $data['endpoint']->getProxy()) {
+        if (!$data['endpoint'] instanceof Endpoint || !$proxy = $data['endpoint']->getProxy()) {
+            $message = !$data['endpoint'] instanceof Endpoint ?
+                "No Endpoint in data['endpoint']" :
+                "This Endpoint has no Proxy: {$data['endpoint']->getName()}";
             return new Response(
-                json_encode(['Message' => "This Endpoint has no Proxy: {$data['endpoint']->getName()}"]),
-                Response::HTTP_OK, // todo: different response type?
+                json_encode(['Message' => $message]),
+                Response::HTTP_NOT_FOUND,
                 ['content-type' => 'application/json']
             );
         }
