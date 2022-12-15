@@ -182,12 +182,17 @@ class CacheService
         if (!isset($this->client)) {
             return $objectEntity;
         }
-
-        // todo: temp fix to make sure we have the latest version of this ObjectEntity before we cache it.
-        $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $objectEntity->getId()->toString()]);
-
+    
         if (isset($this->io)) {
             $this->io->writeln('Start caching object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName());
+        }
+
+        // todo: temp fix to make sure we have the latest version of this ObjectEntity before we cache it.
+        $updatedObjectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $objectEntity->getId()->toString()]);
+        if ($updatedObjectEntity instanceof ObjectEntity) {
+            $objectEntity = $updatedObjectEntity;
+        } elseif (isset($this->io)) {
+            $this->io->writeln('Could not find an ObjectEntity with id: '.$objectEntity->getId()->toString());
         }
 
         $collection = $this->client->objects->json;
