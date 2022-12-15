@@ -536,6 +536,9 @@ class CacheService
         if (isset($completeFilter['_search']) && !empty($completeFilter['_search'])) {
             $search = $completeFilter['_search'];
         }
+        if (empty($search)) {
+            return;
+        }
         
         // Normal search on every property with type text (includes strings)
         if (is_string($search)) {
@@ -547,9 +550,15 @@ class CacheService
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value
         elseif (is_array($search)) {
-            var_dump(array_keys($search));
-            // todo: implode on , remove spaces with trim
-            // todo: add these properties to $filter with regex?
+            $searchRegex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $search[array_key_first($search)]);
+            if (empty($searchRegex)) {
+                return;
+            }
+            $searchRegex = ['$regex' => $searchRegex, '$options' => 'i'];
+            $properties = explode(',', array_key_first($search));
+            foreach ($properties as $property) {
+                $filter[$property] = isset($filter[$property]) ? array_merge($filter[$property], $searchRegex) : $searchRegex;
+            }
         }
     }
 
