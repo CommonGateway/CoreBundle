@@ -22,5 +22,4 @@ class CronjobLog
     {
         return $this->id;
     }
-
 }

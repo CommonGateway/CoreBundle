@@ -1,4 +1,5 @@
 <?php
+
 namespace CommonGateway\CoreBundle\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;
