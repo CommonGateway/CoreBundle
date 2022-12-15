@@ -3,10 +3,10 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use Adbar\Dot;
+use App\Entity\Endpoint;
 use App\Entity\Gateway as Source;
 use App\Entity\Log;
 use App\Entity\ObjectEntity;
-use App\Entity\Endpoint;
 use App\Service\ObjectEntityService;
 use App\Service\ResponseService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -127,6 +127,7 @@ class RequestService
             $message = !$data['endpoint'] instanceof Endpoint ?
                 "No Endpoint in data['endpoint']" :
                 "This Endpoint has no Proxy: {$data['endpoint']->getName()}";
+
             return new Response(
                 json_encode(['Message' => $message]),
                 Response::HTTP_NOT_FOUND,
