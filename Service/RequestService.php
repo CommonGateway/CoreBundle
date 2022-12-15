@@ -9,6 +9,7 @@ use App\Entity\Log;
 use App\Entity\ObjectEntity;
 use App\Service\ObjectEntityService;
 use App\Service\ResponseService;
+use App\Service\LogService;
 use Doctrine\ORM\EntityManagerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
