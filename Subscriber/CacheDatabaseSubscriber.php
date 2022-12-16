@@ -32,7 +32,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
     {
         return [
             Events::postPersist,
-            Events::postRemove,
+            Events::preRemove,
             Events::postUpdate,
         ];
     }
@@ -52,7 +52,6 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
     public function postPersist(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
-
         // if this subscriber only applies to certain entity types,
         if ($object instanceof ObjectEntity) {
             $this->updateParents($object);
@@ -70,7 +69,20 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
 
             return;
         }
+    }
 
+    public function preUpdate(LifecycleEventArgs $args): void
+    {
+        $this->prePersist($args);
+    }
+
+    public function prePersist(LifecycleEventArgs $args): void
+    {
+        $object = $args->getObject();
+
+        if ($object instanceof ObjectEntity) {
+            $this->updateParents($object);
+        }
     }
 
     /**
@@ -80,7 +92,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
      *
      * @return void
      */
-    public function postRemove(LifecycleEventArgs $args): void
+    public function preRemove(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
 
@@ -100,7 +112,6 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
 
             return;
         }
-
     }
 
     public function updateParents(ObjectEntity $objectEntity, array $handled = [])
