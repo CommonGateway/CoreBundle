@@ -182,7 +182,7 @@ class CacheService
         if (!isset($this->client)) {
             return $objectEntity;
         }
-    
+
         if (isset($this->io)) {
             $this->io->writeln('Start caching object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName());
         }
@@ -200,7 +200,10 @@ class CacheService
         // Lets not cash the entire schema
         $array = $objectEntity->toArray(['embedded' => true]);
 
+        //(isset($array['_schema']['$id'])?$array['_schema'] = $array['_schema']['$id']:'');
+
         $id = $objectEntity->getId()->toString();
+
         $array['id'] = $id;
 
         if ($collection->findOneAndReplace(
@@ -223,13 +226,14 @@ class CacheService
      *
      * @return void
      */
-    public function removeObject($id): void
+    public function removeObject(ObjectEntity $object): void
     {
         // Backwards compatablity
         if (!isset($this->client)) {
             return;
         }
 
+        $id = $object->getId()->toString();
         $collection = $this->client->objects->json;
 
         $collection->findOneAndDelete(['_id'=>$id]);
@@ -546,9 +550,9 @@ class CacheService
         if (is_string($search)) {
             $filter['$text']
                 = [
-                    '$search'       => $search,
-                    '$caseSensitive'=> false,
-                ];
+                '$search'       => $search,
+                '$caseSensitive'=> false,
+            ];
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value
         elseif (is_array($search)) {
