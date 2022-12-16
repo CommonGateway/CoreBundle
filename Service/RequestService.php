@@ -335,7 +335,7 @@ class RequestService
                         $this->objectEntityService->setUnread($this->object);
                     }
                     $this->entityManager->persist($this->object);
-                    $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
+                    $this->entityManager->flush();
                 } else {
                     // Use validation to throw an error
                 }
@@ -357,7 +357,7 @@ class RequestService
                 //if ($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
                 if ($this->object->hydrate($this->content)) {
                     $this->entityManager->persist($this->object);
-                    $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
+                    $this->entityManager->flush();
                 } else {
                     // Use validation to throw an error
                 }
@@ -377,7 +377,7 @@ class RequestService
                 }
 
                 $this->entityManager->remove($this->object);
-                $this->cacheService->removeObject($this->id); /* @todo this is hacky, the above schould alredy do this */
+//                $this->cacheService - removeObject($this->id); /* @todo this is hacky, the above schould alredy do this */
                 $this->entityManager->flush();
 
                 return new Response('Succesfully deleted object', '202');
