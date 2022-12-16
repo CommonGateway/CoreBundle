@@ -69,7 +69,6 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
 
             return;
         }
-
     }
 
     public function preUpdate(LifecycleEventArgs $args): void
@@ -113,7 +112,6 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
 
             return;
         }
-
     }
 
     public function updateParents(ObjectEntity $objectEntity, array $handled = [])
