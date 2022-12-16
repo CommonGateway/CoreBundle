@@ -521,7 +521,7 @@ class CacheService
 
         return null;
     }
-
+    
     /**
      * Adds search filter to the query on MongoDB. Will use given $search string to search on entire object, unless
      * the _search query is present in $completeFilter query params, then we use that instead.
@@ -541,14 +541,14 @@ class CacheService
         if (empty($search)) {
             return;
         }
-
+        
         // Normal search on every property with type text (includes strings)
         if (is_string($search)) {
             $filter['$text']
                 = [
-                    '$search'       => $search,
-                    '$caseSensitive'=> false,
-                ];
+                '$search'       => $search,
+                '$caseSensitive'=> false,
+            ];
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value
         elseif (is_array($search)) {
@@ -560,7 +560,7 @@ class CacheService
             $properties = explode(',', array_key_first($search));
             foreach ($properties as $property) {
                 // todo: we might want to check if we are allowed to filter on this property? with $this->handleFilterCheck;
-                $filter[$property] = isset($filter[$property]) ? array_merge($filter[$property], $searchRegex) : $searchRegex;
+                $filter['$or'][][$property] = $searchRegex;
             }
         }
     }
