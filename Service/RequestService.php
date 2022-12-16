@@ -335,6 +335,7 @@ class RequestService
                         $this->objectEntityService->setUnread($this->object);
                     }
                     $this->entityManager->persist($this->object);
+                    $this->entityManager->flush();
                 } else {
                     // Use validation to throw an error
                 }
@@ -356,6 +357,7 @@ class RequestService
                 //if ($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
                 if ($this->object->hydrate($this->content)) {
                     $this->entityManager->persist($this->object);
+                    $this->entityManager->flush();
                 } else {
                     // Use validation to throw an error
                 }
