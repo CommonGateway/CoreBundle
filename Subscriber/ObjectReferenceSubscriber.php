@@ -58,6 +58,5 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
             //$this->cacheService->cacheShema($object);
             return;
         }
-
     }
 }
