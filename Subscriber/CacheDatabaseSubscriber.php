@@ -117,7 +117,10 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
     public function updateParents(ObjectEntity $objectEntity, array $handled = [])
     {
         foreach ($objectEntity->getSubresourceOf() as $subresourceOf) {
-            if (in_array($subresourceOf->getObjectEntity()->getId(), $handled)) {
+            if (
+                in_array($subresourceOf->getObjectEntity()->getId(), $handled) ||
+                $subresourceOf->getObjectEntity()->getDateModified()->diff($objectEntity->getDateModified()) < new \DateInterval('30 seconds')
+            ) {
                 continue;
             }
             $subresourceOf->getObjectEntity()->setDateModified($objectEntity->getDateModified());
