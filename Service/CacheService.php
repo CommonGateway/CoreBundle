@@ -464,6 +464,7 @@ class CacheService
                 //$value = array_map('like', $value['like']);
             } elseif (array_key_exists('like', $value)) {
                 $value = ['$regex' => "/$value/", '$options' => 'i'];
+
                 return true;
             }
             // regex
@@ -471,6 +472,7 @@ class CacheService
                 //$value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('>=', $value)) {
                 $value = ['$regex'=> $value];
+
                 return true;
             }
             // >=
@@ -478,6 +480,7 @@ class CacheService
                 //$value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('>=', $value)) {
                 $value = ['$gte'=> (int) $value['like']];
+
                 return true;
             }
             // >
@@ -485,6 +488,7 @@ class CacheService
                 //$value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('>', $value)) {
                 $value = ['$gt'=> (int) $value['like']];
+
                 return true;
             }
             // <=
@@ -492,6 +496,7 @@ class CacheService
                 //$value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('<=', $value)) {
                 $value = ['$lte'=> (int) $value['like']];
+
                 return true;
             }
             // <
@@ -499,6 +504,7 @@ class CacheService
                 //$value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('<', $value)) {
                 $value = ['$lt'=> (int) $value['like']];
+
                 return true;
             }
             // exact
@@ -506,6 +512,7 @@ class CacheService
                 //$value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('exact', $value)) {
                 $value = $value;
+
                 return true;
             }
             // case_insensitive
@@ -513,6 +520,7 @@ class CacheService
                 //$value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('case_insensitive', $value)) {
                 $value = ['$regex' => $value, '$options' => 'i'];
+
                 return true;
             }
             // case_sensitive
@@ -520,6 +528,7 @@ class CacheService
                 //$value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('case_sensitive', $value)) {
                 $value = ['$regex' => $value];
+
                 return true;
             }
 
@@ -600,7 +609,7 @@ class CacheService
 
         return null;
     }
-    
+
     /**
      * Adds search filter to the query on MongoDB. Will use given $search string to search on entire object, unless
      * the _search query is present in $completeFilter query params, then we use that instead.
