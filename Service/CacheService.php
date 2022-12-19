@@ -379,10 +379,12 @@ class CacheService
         if (substr($key, 0, 1) == '_') {
             // todo: deal with filters starting with _ like: _dateCreated
         }
+
         // Handle filters that expect $value to be an array
         if ($this->handleFilterArray($key, $value)) {
             return;
         }
+
         // todo: this works, we should go to php 8.0 later
         if (str_contains($value, '%')) {
             $regex = str_replace('%', '', $value);
@@ -401,6 +403,7 @@ class CacheService
 
             return;
         }
+
         // todo: exact match is default, make case insensitive optional:
         $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value);
         $value = ['$regex' => "^$value$", '$options' => 'im'];
@@ -418,7 +421,9 @@ class CacheService
      */
     private function handleFilterArray($key, &$value): bool
     {
+        // Lets check for the methods like in
         if (is_array($value)) {
+            // int_compare
             if (array_key_exists('int_compare', $value) && is_array($value['int_compare'])) {
                 $value = array_map('intval', $value['int_compare']);
             } elseif (array_key_exists('int_compare', $value)) {
@@ -426,6 +431,7 @@ class CacheService
 
                 return true;
             }
+            // bool_compare
             if (array_key_exists('bool_compare', $value) && is_array($value['bool_compare'])) {
                 $value = array_map('boolval', $value['bool_compare']);
             } elseif (array_key_exists('bool_compare', $value)) {
@@ -433,6 +439,7 @@ class CacheService
 
                 return true;
             }
+            // after, before, strictly_after,strictly_before
             if (!empty(array_intersect_key($value, array_flip(['after', 'before', 'strictly_after', 'strictly_before'])))) {
                 // Compare datetime
                 if (!empty(array_intersect_key($value, array_flip(['after', 'strictly_after'])))) {
@@ -448,6 +455,70 @@ class CacheService
 
                 return true;
             }
+            // like
+            if (array_key_exists('like', $value) && is_array($value['like'])) {
+                //$value = array_map('like', $value['like']);
+            } elseif (array_key_exists('like', $value)) {
+                $value = ['$regex' => "/$value/", '$options' => 'i'];
+                return true;
+            }
+            // regex
+            if (array_key_exists('>=', $value) && is_array($value['>='])) {
+                //$value = array_map('like', $value['like']); @todo
+            } elseif (array_key_exists('>=', $value)) {
+                $value = ['$regex'=> $value];
+                return true;
+            }
+            // >=
+            if (array_key_exists('>=', $value) && is_array($value['>='])) {
+                //$value = array_map('like', $value['like']); @todo
+            } elseif (array_key_exists('>=', $value)) {
+                $value = ['$gte'=> (int) $value['like']];
+                return true;
+            }
+            // >
+            if (array_key_exists('>', $value) && is_array($value['>'])) {
+                //$value = array_map('like', $value['like']); @todo
+            } elseif (array_key_exists('>', $value)) {
+                $value = ['$gt'=> (int) $value['like']];
+                return true;
+            }
+            // <=
+            if (array_key_exists('<=', $value) && is_array($value['<='])) {
+                //$value = array_map('like', $value['like']); @todo
+            } elseif (array_key_exists('<=', $value)) {
+                $value = ['$lte'=> (int) $value['like']];
+                return true;
+            }
+            // <
+            if (array_key_exists('<', $value) && is_array($value['<'])) {
+                //$value = array_map('like', $value['like']); @todo
+            } elseif (array_key_exists('<', $value)) {
+                $value = ['$lt'=> (int) $value['like']];
+                return true;
+            }
+            // exact
+            if (array_key_exists('exact', $value) && is_array($value['exact'])) {
+                //$value = array_map('like', $value['like']); @todo
+            } elseif (array_key_exists('exact', $value)) {
+                $value = $value;
+                return true;
+            }
+            // case_insensitive
+            if (array_key_exists('case_insensitive', $value) && is_array($value['case_insensitive'])) {
+                //$value = array_map('like', $value['like']); @todo
+            } elseif (array_key_exists('case_insensitive', $value)) {
+                $value = ['$regex' => $value, '$options' => 'i'];
+                return true;
+            }
+            // case_sensitive
+            if (array_key_exists('case_sensitive', $value) && is_array($value['case_sensitive'])) {
+                //$value = array_map('like', $value['like']); @todo
+            } elseif (array_key_exists('case_sensitive', $value)) {
+                $value = ['$regex' => $value];
+                return true;
+            }
+
             // Handle filter value = array (example: ?property=a,b,c) also works if the property we are filtering on is an array
             $value = ['$in' => $value];
 

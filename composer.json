@@ -20,7 +20,8 @@
 		}
 	],
 	"require" : {
-		"php" : "^7.4.0"
+		"php" : "^7.4.0",
+		"symfony/monolog-bundle": "^3.8"
 	},
 	"require-dev" : {
 		"cache/integration-tests" : "dev-master",
