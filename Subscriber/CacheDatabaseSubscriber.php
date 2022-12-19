@@ -120,7 +120,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
             if (in_array($subresourceOf->getObjectEntity()->getId(), $handled)) {
                 continue;
             }
-            $subresourceOf->getObjectEntity()->setDateModified(new \DateTime());
+            $subresourceOf->getObjectEntity()->setDateModified($objectEntity->getDateModified());
             $this->entityManager->persist($subresourceOf->getObjectEntity());
             $handled[] = $subresourceOf->getObjectEntity()->getId();
         }
