@@ -14,6 +14,7 @@ use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Service to call external sources.
@@ -34,6 +35,7 @@ class CacheService
     private CacheInterface $cache;
     private SymfonyStyle $io;
     private ParameterBagInterface $parameters;
+    private LoggerInterface $logger;
 
     /**
      * @param AuthenticationService  $authenticationService
@@ -43,7 +45,8 @@ class CacheService
     public function __construct(
         EntityManagerInterface $entityManager,
         CacheInterface $cache,
-        ParameterBagInterface $parameters
+        ParameterBagInterface $parameters,
+        LoggerInterface $cacheLog
     ) {
         $this->entityManager = $entityManager;
         $this->cache = $cache;
@@ -51,6 +54,7 @@ class CacheService
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }
+        $this->logger = $cacheLog;
     }
 
     /**
@@ -616,14 +620,14 @@ class CacheService
         if (empty($search)) {
             return;
         }
-        
+
         // Normal search on every property with type text (includes strings)
         if (is_string($search)) {
             $filter['$text']
                 = [
-                '$search'       => $search,
-                '$caseSensitive'=> false,
-            ];
+                    '$search'       => $search,
+                    '$caseSensitive'=> false,
+                ];
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value
         elseif (is_array($search)) {
