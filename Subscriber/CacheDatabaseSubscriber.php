@@ -119,7 +119,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         foreach ($objectEntity->getSubresourceOf() as $subresourceOf) {
             if (
                 in_array($subresourceOf->getObjectEntity()->getId(), $handled) ||
-                $subresourceOf->getObjectEntity()->getDateModified()->diff($objectEntity->getDateModified()) < new \DateInterval('30 seconds')
+                $subresourceOf->getObjectEntity()->getDateModified()->diff($objectEntity->getDateModified()) < new \DateInterval('PT30S')
             ) {
                 continue;
             }
