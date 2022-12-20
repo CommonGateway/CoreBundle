@@ -309,6 +309,7 @@ class RequestService
 
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
                 if ($this->object->hydrate($this->content, true)) {
+                    $this->session->set('updateDepth', 0);
                     $this->entityManager->persist($this->object);
                     $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
                 } else {
@@ -334,6 +335,7 @@ class RequestService
                     if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
                         $this->objectEntityService->setUnread($this->object);
                     }
+                    $this->session->set('updateDepth', 0);
                     $this->entityManager->persist($this->object);
                     $this->entityManager->flush();
                 } else {
@@ -356,12 +358,12 @@ class RequestService
 
                 //if ($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
                 if ($this->object->hydrate($this->content)) {
+                    $this->session->set('updateDepth', 0);
                     $this->entityManager->persist($this->object);
                     $this->entityManager->flush();
                 } else {
                     // Use validation to throw an error
                 }
-
                 $result = $this->cacheService->getObject($this->object->getId());
                 break;
             case 'DELETE':
