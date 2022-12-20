@@ -14,7 +14,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class RequestService
 {
@@ -29,7 +28,6 @@ class RequestService
     private ObjectEntityService $objectEntityService;
     private LogService $logService;
     private CallService $callService;
-    private SessionInterface $session;
 
     /**
      * @param EntityManagerInterface $entityManager
@@ -46,7 +44,6 @@ class RequestService
         ObjectEntityService $objectEntityService,
         LogService $logService,
         CallService $callService,
-        SessionInterface $session
     ) {
         $this->entityManager = $entityManager;
         $this->cacheService = $cacheService;
@@ -54,7 +51,6 @@ class RequestService
         $this->objectEntityService = $objectEntityService;
         $this->logService = $logService;
         $this->callService = $callService;
-        $this->session = $session;
     }
 
     /**
@@ -313,7 +309,7 @@ class RequestService
 
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
                 if ($this->object->hydrate($this->content, true)) {
-                    $this->session->set('updateDepth', 0);
+                    $session->set('updateDepth', 0);
                     $this->entityManager->persist($this->object);
                     $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
                 } else {
