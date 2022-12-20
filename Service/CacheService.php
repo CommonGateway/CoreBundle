@@ -511,7 +511,7 @@ class CacheService
             // exact
             if (array_key_exists('exact', $value) && is_array($value['exact'])) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('exact', $value['exact'])) {
+            } elseif (array_key_exists('exact', $value)) {
                 $value = $value;
 
                 return true;

@@ -261,7 +261,7 @@ class RequestService
         foreach ($this->data['endpoint']->getEntities() as $entity) {
             $allowedSchemas[] = $entity->getId();
         }
-
+        $session = new Session();
         // All prepped so lets go
         // todo: split these into functions?
         switch ($this->data['method']) {
@@ -283,7 +283,7 @@ class RequestService
                     // create log
                     // todo if $this->content is array and not string/null, cause someone could do a get item call with a body...
                     $responseLog = new Response(is_string($this->content) || is_null($this->content) ? $this->content : null, 200, ['CoreBundle' => 'GetItem']);
-                    $session = new Session();
+
                     $session->set('object', $this->id);
                     $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, $this->content);
                 } else {
@@ -309,6 +309,7 @@ class RequestService
 
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
                 if ($this->object->hydrate($this->content, true)) {
+                    $session->set('updateDepth', 0);
                     $this->entityManager->persist($this->object);
                     $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
                 } else {
@@ -334,6 +335,7 @@ class RequestService
                     if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
                         $this->objectEntityService->setUnread($this->object);
                     }
+                    $session->set('updateDepth', 0);
                     $this->entityManager->persist($this->object);
                     $this->entityManager->flush();
                 } else {
@@ -356,12 +358,12 @@ class RequestService
 
                 //if ($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
                 if ($this->object->hydrate($this->content)) {
+                    $session->set('updateDepth', 0);
                     $this->entityManager->persist($this->object);
                     $this->entityManager->flush();
                 } else {
                     // Use validation to throw an error
                 }
-
                 $result = $this->cacheService->getObject($this->object->getId());
                 break;
             case 'DELETE':

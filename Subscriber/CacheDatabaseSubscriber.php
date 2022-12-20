@@ -12,18 +12,22 @@ use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class CacheDatabaseSubscriber implements EventSubscriberInterface
 {
     private CacheService $cacheService;
     private EntityManagerInterface $entityManager;
+    private SessionInterface $session;
 
     public function __construct(
         CacheService $cacheService,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        SessionInterface $session
     ) {
         $this->cacheService = $cacheService;
         $this->entityManager = $entityManager;
+        $this->session = $session;
     }
 
     // this method can only return the event names; you cannot define a
@@ -116,6 +120,10 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
 
     public function updateParents(ObjectEntity $objectEntity, array $handled = [])
     {
+        if ($this->session->get('updateDepth') > 5) {
+            return;
+        }
+        $this->session->set('updateDepth', $this->session->get('updateDepth') + 1);
         foreach ($objectEntity->getSubresourceOf() as $subresourceOf) {
             if (
                 in_array($subresourceOf->getObjectEntity()->getId(), $handled) ||
