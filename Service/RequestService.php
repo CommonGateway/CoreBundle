@@ -43,7 +43,7 @@ class RequestService
         ResponseService $responseService,
         ObjectEntityService $objectEntityService,
         LogService $logService,
-        CallService $callService,
+        CallService $callService
     ) {
         $this->entityManager = $entityManager;
         $this->cacheService = $cacheService;
