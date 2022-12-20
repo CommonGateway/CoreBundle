@@ -261,7 +261,7 @@ class RequestService
         foreach ($this->data['endpoint']->getEntities() as $entity) {
             $allowedSchemas[] = $entity->getId();
         }
-
+        $session = new Session();
         // All prepped so lets go
         // todo: split these into functions?
         switch ($this->data['method']) {
@@ -283,7 +283,7 @@ class RequestService
                     // create log
                     // todo if $this->content is array and not string/null, cause someone could do a get item call with a body...
                     $responseLog = new Response(is_string($this->content) || is_null($this->content) ? $this->content : null, 200, ['CoreBundle' => 'GetItem']);
-                    $session = new Session();
+
                     $session->set('object', $this->id);
                     $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, $this->content);
                 } else {
@@ -335,7 +335,7 @@ class RequestService
                     if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
                         $this->objectEntityService->setUnread($this->object);
                     }
-                    $this->session->set('updateDepth', 0);
+                    $session->set('updateDepth', 0);
                     $this->entityManager->persist($this->object);
                     $this->entityManager->flush();
                 } else {
@@ -358,7 +358,7 @@ class RequestService
 
                 //if ($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
                 if ($this->object->hydrate($this->content)) {
-                    $this->session->set('updateDepth', 0);
+                    $session->set('updateDepth', 0);
                     $this->entityManager->persist($this->object);
                     $this->entityManager->flush();
                 } else {
