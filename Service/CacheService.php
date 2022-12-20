@@ -463,15 +463,16 @@ class CacheService
             if (array_key_exists('like', $value) && is_array($value['like'])) {
                 //$value = array_map('like', $value['like']);
             } elseif (array_key_exists('like', $value)) {
-                $value = ['$regex' => "/$value/", '$options' => 'i'];
+                $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value['like']);
+                $value = ['$regex' => "^$value$", '$options' => 'im'];
 
                 return true;
             }
             // regex
-            if (array_key_exists('>=', $value) && is_array($value['>='])) {
+            if (array_key_exists('regex', $value) && is_array($value['regex'])) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('>=', $value)) {
-                $value = ['$regex'=> $value];
+            } elseif (array_key_exists('regex', $value)) {
+                $value = ['$regex'=> $value['regex']];
 
                 return true;
             }
@@ -479,7 +480,7 @@ class CacheService
             if (array_key_exists('>=', $value) && is_array($value['>='])) {
                 //$value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('>=', $value)) {
-                $value = ['$gte'=> (int) $value['like']];
+                $value = ['$gte'=> (int) $value['>=']];
 
                 return true;
             }
@@ -487,7 +488,7 @@ class CacheService
             if (array_key_exists('>', $value) && is_array($value['>'])) {
                 //$value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('>', $value)) {
-                $value = ['$gt'=> (int) $value['like']];
+                $value = ['$gt'=> (int) $value['>']];
 
                 return true;
             }
@@ -495,7 +496,7 @@ class CacheService
             if (array_key_exists('<=', $value) && is_array($value['<='])) {
                 //$value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('<=', $value)) {
-                $value = ['$lte'=> (int) $value['like']];
+                $value = ['$lte'=> (int) $value['<=']];
 
                 return true;
             }
@@ -503,14 +504,14 @@ class CacheService
             if (array_key_exists('<', $value) && is_array($value['<'])) {
                 //$value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('<', $value)) {
-                $value = ['$lt'=> (int) $value['like']];
+                $value = ['$lt'=> (int) $value['<']];
 
                 return true;
             }
             // exact
             if (array_key_exists('exact', $value) && is_array($value['exact'])) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('exact', $value)) {
+            } elseif (array_key_exists('exact', $value['exact'])) {
                 $value = $value;
 
                 return true;
@@ -519,7 +520,7 @@ class CacheService
             if (array_key_exists('case_insensitive', $value) && is_array($value['case_insensitive'])) {
                 //$value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('case_insensitive', $value)) {
-                $value = ['$regex' => $value, '$options' => 'i'];
+                $value = ['$regex' => $value['case_insensitive'], '$options' => 'i'];
 
                 return true;
             }
@@ -527,7 +528,7 @@ class CacheService
             if (array_key_exists('case_sensitive', $value) && is_array($value['case_sensitive'])) {
                 //$value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('case_sensitive', $value)) {
-                $value = ['$regex' => $value];
+                $value = ['$regex' => $value['case_sensitive']];
 
                 return true;
             }
