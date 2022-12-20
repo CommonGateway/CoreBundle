@@ -120,7 +120,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
 
     public function updateParents(ObjectEntity $objectEntity, array $handled = [])
     {
-        if($this->session->get('updateDepth') > 5) {
+        if ($this->session->get('updateDepth') > 5) {
             return;
         }
         $this->session->set('updateDepth', $this->session->get('updateDepth') + 1);
