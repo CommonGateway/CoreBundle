@@ -35,7 +35,6 @@ class CacheService
     private CacheInterface $cache;
     private SymfonyStyle $io;
     private ParameterBagInterface $parameters;
-    private LoggerInterface $logger;
 
     /**
      * @param AuthenticationService  $authenticationService
@@ -45,8 +44,7 @@ class CacheService
     public function __construct(
         EntityManagerInterface $entityManager,
         CacheInterface $cache,
-        ParameterBagInterface $parameters,
-        LoggerInterface $cacheLog
+        ParameterBagInterface $parameters
     ) {
         $this->entityManager = $entityManager;
         $this->cache = $cache;
@@ -54,7 +52,6 @@ class CacheService
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }
-        $this->logger = $cacheLog;
     }
 
     /**
@@ -338,6 +335,8 @@ class CacheService
         $order = isset($completeFilter['_order']) ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
         !empty($order) && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
 
+        var_dump($filter);
+
         // Find / Search
         $results = $collection->find($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order])->toArray();
         $total = $collection->count($filter);
@@ -464,7 +463,7 @@ class CacheService
                 //$value = array_map('like', $value['like']);
             } elseif (array_key_exists('like', $value)) {
                 $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value['like']);
-                $value = ['$regex' => "^$value$", '$options' => 'im'];
+                $value = ['$regex' => ".*$value.*", '$options' => 'im'];
 
                 return true;
             }
