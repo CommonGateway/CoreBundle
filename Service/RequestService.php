@@ -14,6 +14,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class RequestService
 {
@@ -28,6 +29,7 @@ class RequestService
     private ObjectEntityService $objectEntityService;
     private LogService $logService;
     private CallService $callService;
+    private SessionInterface $session;
 
     /**
      * @param EntityManagerInterface $entityManager
@@ -43,7 +45,8 @@ class RequestService
         ResponseService $responseService,
         ObjectEntityService $objectEntityService,
         LogService $logService,
-        CallService $callService
+        CallService $callService,
+        SessionInterface $session
     ) {
         $this->entityManager = $entityManager;
         $this->cacheService = $cacheService;
@@ -51,6 +54,7 @@ class RequestService
         $this->objectEntityService = $objectEntityService;
         $this->logService = $logService;
         $this->callService = $callService;
+        $this->session = $session;
     }
 
     /**
