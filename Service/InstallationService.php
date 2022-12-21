@@ -88,7 +88,7 @@ class InstallationService
 
         $found = array_filter($packadges, function ($v, $k) use ($bundle) {
             return $v['name'] == $bundle;
-        }, ARRAY_FILTER_USE_BOTH); // With latest PHP third parameter is optional.. Available Values:- ARRAY_FILTER_USE_BOTH OR ARRAY_FILTER_USE_KEY
+        }, ARRAY_FILTER_USE_BOTH); // With the latest PHP third parameter is optional.. Available Values:- ARRAY_FILTER_USE_BOTH OR ARRAY_FILTER_USE_KEY
 
         $packadge = reset($found);
         if ($packadge) {
@@ -213,24 +213,24 @@ class InstallationService
     public function handleSchema($file)
     {
         if (!$schema = json_decode($file->getContents(), true)) {
-            $this->io->writeln($file->getFilename().' is not a valid json opbject');
+            $this->io->writeln($file->getFilename().' is not a valid json object');
 
             return false;
         }
 
         if (!$this->valdiateJsonSchema($schema)) {
-            $this->io->writeln($file->getFilename().' is not a valid json-schema opbject');
+            $this->io->writeln($file->getFilename().' is not a valid json-schema object');
 
             return false;
         }
 
         if (!$entity = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']])) {
-            $this->io->writeln('Schema not pressent, creating schema '.$schema['title'].' under reference '.$schema['$id']);
+            $this->io->writeln('Schema not present, creating schema '.$schema['title'].' under reference '.$schema['$id']);
             $entity = new Entity();
         } else {
-            $this->io->writeln('Schema already pressent, looking to update');
+            $this->io->writeln('Schema already present, looking to update');
             if (array_key_exists('version', $schema) && version_compare($schema['version'], $entity->getVersion()) < 0) {
-                $this->io->writeln('The new schema has a version number equal or lower then the already pressent version');
+                $this->io->writeln('The new schema has a version number equal or lower then the already present version');
             }
         }
 
@@ -273,7 +273,7 @@ class InstallationService
     public function handleData($file)
     {
         if (!$data = json_decode($file->getContents(), true)) {
-            $this->io->writeln($file->getFilename().' is not a valid json opbject');
+            $this->io->writeln($file->getFilename().' is not a valid json object');
 
             return false;
         }
@@ -295,12 +295,12 @@ class InstallationService
                 // Lets see if we need to update
 
                 if (array_key_exists('_id', $object) && $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id'=>$object['_id']])) {
-                    $this->io->writeln(['', 'Object '.$object['_id'].' already exsists, so updating']);
+                    $this->io->writeln(['', 'Object '.$object['_id'].' already exists, so updating']);
                 } else {
                     $objectEntity = new ObjectEntity($entity);
                     $this->io->writeln(['', 'Creating new object']);
 
-                    // We need to do something tricky if we want to overwrite the id (doctrine dosn't alow that)
+                    // We need to do something tricky if we want to overwrite the id (doctrine doesn't allow that)
                     if (array_key_exists('_id', $object)) {
                         $this->io->writeln('Forcing id to '.$object['_id']);
 
@@ -331,13 +331,13 @@ class InstallationService
     public function handleInstaller($file)
     {
         if (!$data = json_decode($file->getContents(), true)) {
-            $this->io->writeln($file->getFilename().' is not a valid json opbject');
+            $this->io->writeln($file->getFilename().' is not a valid json object');
 
             return false;
         }
 
         if (!isset($data['installationService']) || !$installationService = $data['installationService']) {
-            $this->io->writeln($file->getFilename().' Dosnt contain an installation service');
+            $this->io->writeln($file->getFilename().' Doesnt contain an installation service');
 
             return false;
         }
