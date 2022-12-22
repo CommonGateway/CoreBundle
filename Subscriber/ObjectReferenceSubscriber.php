@@ -8,16 +8,20 @@ use App\Entity\Attribute;
 use App\Entity\Entity;
 use CommonGateway\CoreBundle\Service\EavService;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 
 class ObjectReferenceSubscriber implements EventSubscriberInterface
 {
     private EavService $eavService;
+    private EntityManagerInterface $entityManager;
 
     public function __construct(
+        EntityManagerInterface $entityManager,
         EavService $eavService
     ) {
+        $this->entityManager = $entityManager;
         $this->eavService = $eavService;
     }
 
@@ -31,7 +35,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * Checks wheter we should check atributes and entities for connections.
+     * Checks whether we should check attributes and entities for connections.
      *
      * @param LifecycleEventArgs $args
      *
@@ -43,16 +47,18 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
 
         // Let see if we need to hook an attribute to an entity
         if (
-            $object instanceof Attribute // Its an atribute
-            && $object->getReference() // It has an reference
-            && !$object->getObject() // It isnt currently connected to a schema
+            $object instanceof Attribute // It's an attribute
+            && $object->getReference() // It has a reference
+            && !$object->getObject() // It isn't currently connected to a schema
         ) {
-            //$this->cacheService->cacheObject($object);
+            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $object->getReference()]);
+            $object->setObject($entity);
+//            $this->cacheService->cacheObject($object);
             return;
         }
         if (
             $object instanceof Entity // Is it an antity
-            && $object->getReference() // Does it have an reference
+            && $object->getReference() // Does it have a reference
         ) {
 
             //$this->cacheService->cacheShema($object);

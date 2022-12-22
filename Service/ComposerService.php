@@ -291,15 +291,9 @@ class ComposerService
     }
 
     /**
-     * Show al packadges installed trough composer.
-     *
-     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
-     *
-     * @param array $options
-     *
-     * @return array
+     * Gets all installed plugins from the lock file.
      */
-    public function getAll(array $options = []): array
+    public function getLockFile(): array
     {
         $filesystem = new Filesystem();
 
@@ -310,19 +304,35 @@ class ComposerService
         }
 
         $plugins = json_decode($plugins, true);
-        $result = [];
+        $results = $plugins['packages'];
 
-        foreach ($plugins['packages'] as $key => $plugin) {
+        return $results;
+    }
 
-            //var_dump($plugin);
-            if (!isset($plugin['keywords']) || !in_array('common-gateway-plugin', $plugin['keywords'])) {
+    /**
+     * Show al packadges installed trough composer.
+     *
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     *
+     * @param array $options
+     *
+     * @return array
+     */
+    public function getAll(array $options = []): array
+    {
+        $results = $this->getLockFile();
+        $plugins = [];
+        foreach ($results as $key => $result) {
+
+            // Remove non gateway plugins from the result
+            if (!isset($result['keywords']) || !in_array('common-gateway-plugin', $result['keywords'])) {
                 continue;
             }
 
-            $result[] = $plugin;
+            $plugins[] = array_merge($result, $this->getSingle($result['name']));
         }
 
-        return $result;
+        return $plugins;
     }
 
     /**
@@ -382,8 +392,27 @@ class ComposerService
 
         $client = new \GuzzleHttp\Client();
         $response = $client->request('GET', $url);
+        $plugin = json_decode($response->getBody()->getContents(), true)['package'];
 
-        return json_decode($response->getBody()->getContents(), true)['package'];
+        $installedPlugins = $this->getLockFile();
+
+        foreach ($installedPlugins as $installedPlugin) {
+            if ($installedPlugin['name'] == $plugin['name']) {
+                $plugin = array_merge($installedPlugin, $plugin);
+                $plugin['update'] = false;
+
+                // Lets see if we have newer versions than currently installer
+                foreach ($plugin['versions']  as $version => $versionDetails) {
+                    if (version_compare($plugin['version'], $version) < 0) {
+                        $plugin['update'] = true;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+
+        return $plugin;
     }
 
     /**
@@ -408,7 +437,14 @@ class ComposerService
             'query' => $query,
         ]);
 
-        return json_decode($response->getBody()->getContents(), true)['results'];
+        $plugins = json_decode($response->getBody()->getContents(), true)['results'];
+
+        // Lets pull the online detail datail
+        foreach ($plugins as $key => $plugin) {
+            $plugins[$key] = array_merge($plugin, $this->getSingle($plugin['name']));
+        }
+
+        return $plugins;
     }
 
     /**
