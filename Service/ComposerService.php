@@ -291,9 +291,9 @@ class ComposerService
     }
 
     /**
-     * Gets all installed plugins from the lock file
+     * Gets all installed plugins from the lock file.
      */
-    function getLockFile():array
+    public function getLockFile(): array
     {
         $filesystem = new Filesystem();
 
@@ -322,11 +322,10 @@ class ComposerService
     {
         $results = $this->getLockFile();
         $plugins = [];
-        foreach ($results as $key => $result){
+        foreach ($results as $key => $result) {
 
             // Remove non gateway plugins from the result
             if (!isset($result['keywords']) || !in_array('common-gateway-plugin', $result['keywords'])) {
-
                 continue;
             }
 
@@ -397,14 +396,14 @@ class ComposerService
 
         $installedPlugins = $this->getLockFile();
 
-        foreach ($installedPlugins as $installedPlugin){
-            if($installedPlugin['name'] == $plugin['name']){
+        foreach ($installedPlugins as $installedPlugin) {
+            if ($installedPlugin['name'] == $plugin['name']) {
                 $plugin = array_merge($installedPlugin, $plugin);
                 $plugin['update'] = false;
 
                 // Lets see if we have newer versions than currently installer
-                foreach($plugin['versions']  as $version => $versionDetails){
-                    if(version_compare($plugin['version'], $version) < 0){
+                foreach ($plugin['versions']  as $version => $versionDetails) {
+                    if (version_compare($plugin['version'], $version) < 0) {
                         $plugin['update'] = true;
                         break;
                     }
@@ -441,7 +440,7 @@ class ComposerService
         $plugins = json_decode($response->getBody()->getContents(), true)['results'];
 
         // Lets pull the online detail datail
-        foreach($plugins as $key => $plugin){
+        foreach ($plugins as $key => $plugin) {
             $plugins[$key] = array_merge($plugin, $this->getSingle($plugin['name']));
         }
 

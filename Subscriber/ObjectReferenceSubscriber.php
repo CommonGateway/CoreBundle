@@ -7,11 +7,10 @@ namespace CommonGateway\CoreBundle\Subscriber;
 use App\Entity\Attribute;
 use App\Entity\Entity;
 use CommonGateway\CoreBundle\Service\EavService;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
-use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 
 class ObjectReferenceSubscriber implements EventSubscriberInterface
 {
@@ -31,14 +30,15 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     public function getSubscribedEvents(): array
     {
         return [
-            Events::prePersist
+            Events::prePersist,
         ];
     }
 
     /**
-     * Checks whether we should check attributes and entities for connections
+     * Checks whether we should check attributes and entities for connections.
      *
      * @param LifecycleEventArgs $args
+     *
      * @return void
      */
     public function prePersist(LifecycleEventArgs $args): void
@@ -64,6 +64,6 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
             //$this->cacheService->cacheShema($object);
             return;
         }
-        return;
+
     }
 }
