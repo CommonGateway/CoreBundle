@@ -7,6 +7,7 @@ use App\Entity\Entity;
 use App\Entity\ObjectEntity;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use MongoDB\Client;
 use Ramsey\Uuid\Uuid;
@@ -14,6 +15,7 @@ use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * Service to call external sources.
@@ -34,6 +36,7 @@ class CacheService
     private CacheInterface $cache;
     private SymfonyStyle $io;
     private ParameterBagInterface $parameters;
+    private SerializerInterface $serializer;
 
     /**
      * @param AuthenticationService  $authenticationService
@@ -43,11 +46,13 @@ class CacheService
     public function __construct(
         EntityManagerInterface $entityManager,
         CacheInterface $cache,
-        ParameterBagInterface $parameters
+        ParameterBagInterface $parameters,
+        SerializerInterface $serializer
     ) {
         $this->entityManager = $entityManager;
         $this->cache = $cache;
         $this->parameters = $parameters;
+        $this->serializer = $serializer;
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }
@@ -152,7 +157,21 @@ class CacheService
         $collection = $this->client->schemas->json->createIndex(['$**'=>'text']);
         $collection = $this->client->endpoints->json->createIndex(['$**'=>'text']);
 
+        (isset($this->io) ? $this->io->writeln(['Removing deleted endpoints', '============']) : '');
+        $this->removeEndpointsFromCache($this->client->endpoints->json);
+
         return Command::SUCCESS;
+    }
+
+    private function removeEndpointsFromCache(\MongoDB\Collection $collection): void
+    {
+        $endpoints = $collection->find()->toArray();
+        foreach ($endpoints as $endpoint) {
+            if (!$this->entityManager->find('App:Endpoint', $endpoint['id'])) {
+                $this->io->writeln("removing endpoint {$endpoint['id']} from cache");
+                $collection->findOneAndDelete(['id' => $endpoint['id']]);
+            }
+        }
     }
 
     /**
@@ -725,7 +744,29 @@ class CacheService
             return $endpoint;
         }
 
+        if (isset($this->io)) {
+            $this->io->writeln('Start caching object '.$endpoint->getId()->toString());
+        }
+        $updatedEntity = $this->entityManager->getRepository('App:Endpoint')->find($endpoint->getId());
+        if ($updatedEntity instanceof Endpoint) {
+            $entity = $updatedEntity;
+        } elseif (isset($this->io)) {
+            $this->io->writeln('Could not find an Endpoint with id: '.$objectEntity->getId()->toString());
+        }
+
         $collection = $this->client->endpoints->json;
+
+        $entityArray = $this->serializer->normalize($entity);
+
+        if ($collection->findOneAndReplace(
+            ['id' => $endpoint->getId()->toString()],
+            $entityArray,
+            ['upsert'=>true]
+        )) {
+            (isset($this->io) ? $this->io->writeln('Updated object '.$endpoint->getId()->toString().' of type Endpoint to cache') : '');
+        } else {
+            (isset($this->io) ? $this->io->writeln('Wrote object '.$endpoint->getId()->toString().' of type Endpoint to cache') : '');
+        }
 
         return $endpoint;
     }
@@ -745,6 +786,8 @@ class CacheService
         }
 
         $collection = $this->client->endpoints->json;
+
+        $collection->findOneAndDelete(['id' => $endpoint->getId()->toString()]);
     }
 
     /**
@@ -754,7 +797,7 @@ class CacheService
      *
      * @return array|null
      */
-    public function getEndpoint(Uuid $id): ?array
+    public function getEndpoint(string $id): ?array
     {
         // Backwards compatablity
         if (!isset($this->client)) {
@@ -762,6 +805,40 @@ class CacheService
         }
 
         $collection = $this->client->endpoints->json;
+
+        if ($object = $collection->findOne(['id' => $id])) {
+            return $object;
+        }
+
+        if ($object = $this->entityManager->getRepository('App:Endpoint')->find($id)) {
+            return $this->serializer->normalize($object);
+        }
+
+        return null;
+    }
+
+    public function getEndpoints(array $filter): Endpoint
+    {
+        // Backwards compatablity
+        if (!isset($this->client)) {
+            return [];
+        }
+
+        $collection = $this->client->endpoints->json;
+
+        if (isset($filter['path'])) {
+            $path = $filter['path'];
+            $filter = ['$where' => "\"$path\".match(this.pathRegex)"];
+        }
+
+        $endpoints = $collection->find($filter)->toArray();
+
+        if (count($endpoints) > 1) {
+            throw new NonUniqueResultException();
+        } elseif (count($endpoints) == 1) {
+            //@TODO: We actually want to use the denormalizer, but that breaks on not setting ids
+            return $this->entityManager->find('App\Entity\Endpoint', $endpoints[0]['id']);
+        }
     }
 
     /**
