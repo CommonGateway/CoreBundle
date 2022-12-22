@@ -157,18 +157,17 @@ class CacheService
         $collection = $this->client->schemas->json->createIndex(['$**'=>'text']);
         $collection = $this->client->endpoints->json->createIndex(['$**'=>'text']);
 
-
-        (isset($this->io) ? $this->io->writeln(['Removing deleted endpoints','============']) : '');
+        (isset($this->io) ? $this->io->writeln(['Removing deleted endpoints', '============']) : '');
         $this->removeEndpointsFromCache($this->client->endpoints->json);
 
         return Command::SUCCESS;
     }
 
-    private function removeEndpointsFromCache (\MongoDB\Collection $collection): void
+    private function removeEndpointsFromCache(\MongoDB\Collection $collection): void
     {
         $endpoints = $collection->find()->toArray();
         foreach ($endpoints as $endpoint) {
-            if(!$this->entityManager->find('App:Endpoint', $endpoint['id'])) {
+            if (!$this->entityManager->find('App:Endpoint', $endpoint['id'])) {
                 $this->io->writeln("removing endpoint {$endpoint['id']} from cache");
                 $collection->findOneAndDelete(['id' => $endpoint['id']]);
             }
@@ -651,9 +650,9 @@ class CacheService
         if (is_string($search)) {
             $filter['$text']
                 = [
-                '$search'       => $search,
-                '$caseSensitive'=> false,
-            ];
+                    '$search'       => $search,
+                    '$caseSensitive'=> false,
+                ];
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value
         elseif (is_array($search)) {
@@ -749,7 +748,7 @@ class CacheService
             $this->io->writeln('Start caching object '.$endpoint->getId()->toString());
         }
         $updatedEntity = $this->entityManager->getRepository('App:Endpoint')->find($endpoint->getId());
-        if($updatedEntity instanceof Endpoint) {
+        if ($updatedEntity instanceof Endpoint) {
             $entity = $updatedEntity;
         } elseif (isset($this->io)) {
             $this->io->writeln('Could not find an Endpoint with id: '.$objectEntity->getId()->toString());
@@ -759,7 +758,7 @@ class CacheService
 
         $entityArray = $this->serializer->normalize($entity);
 
-        if($collection->findOneAndReplace(
+        if ($collection->findOneAndReplace(
             ['id' => $endpoint->getId()->toString()],
             $entityArray,
             ['upsert'=>true]
@@ -811,7 +810,7 @@ class CacheService
             return $object;
         }
 
-        if($object = $this->entityManager->getRepository('App:Endpoint')->find($id)) {
+        if ($object = $this->entityManager->getRepository('App:Endpoint')->find($id)) {
             return $this->serializer->normalize($object);
         }
 
@@ -834,9 +833,9 @@ class CacheService
 
         $endpoints = $collection->find($filter)->toArray();
 
-        if(count($endpoints) > 1) {
+        if (count($endpoints) > 1) {
             throw new NonUniqueResultException();
-        } elseif(count($endpoints) == 1) {
+        } elseif (count($endpoints) == 1) {
             //@TODO: We actually want to use the denormalizer, but that breaks on not setting ids
             return $this->entityManager->find('App\Entity\Endpoint', $endpoints[0]['id']);
         }
