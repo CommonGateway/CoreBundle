@@ -158,17 +158,20 @@ class CacheService
         $collection = $this->client->endpoints->json->createIndex(['$**'=>'text']);
 
         (isset($this->io) ? $this->io->writeln(['Removing deleted endpoints', '============']) : '');
-        $this->removeEndpointsFromCache($this->client->endpoints->json);
+        $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
+
+        (isset($this->io) ? $this->io->writeln(['Removing deleted objects', '============']) : '');
+        $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
 
         return Command::SUCCESS;
     }
 
-    private function removeEndpointsFromCache(\MongoDB\Collection $collection): void
+    private function removeDataFromCache(\MongoDB\Collection $collection, string $type): void
     {
         $endpoints = $collection->find()->toArray();
         foreach ($endpoints as $endpoint) {
-            if (!$this->entityManager->find('App:Endpoint', $endpoint['id'])) {
-                $this->io->writeln("removing endpoint {$endpoint['id']} from cache");
+            if (!$this->entityManager->find($type, $endpoint['id'])) {
+                $this->io->writeln("removing {$endpoint['id']} from cache");
                 $collection->findOneAndDelete(['id' => $endpoint['id']]);
             }
         }
@@ -828,7 +831,13 @@ class CacheService
 
         if (isset($filter['path'])) {
             $path = $filter['path'];
-            $filter = ['$where' => "\"$path\".match(this.pathRegex)"];
+            $filter['$where'] = "\"$path\".match(this.pathRegex)";
+            unset($filter['path']);
+        }
+        if (isset($filter['method'])) {
+            $method = $filter['method'];
+            $filter['$or'] = [['methods' => ['$in' => [$method]]], ['method' => $method]];
+            unset($filter['method']);
         }
 
         $endpoints = $collection->find($filter)->toArray();
