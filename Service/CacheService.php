@@ -820,7 +820,7 @@ class CacheService
         return null;
     }
 
-    public function getEndpoints(array $filter): Endpoint
+    public function getEndpoints(array $filter): ?Endpoint
     {
         // Backwards compatablity
         if (!isset($this->client)) {
@@ -847,6 +847,8 @@ class CacheService
         } elseif (count($endpoints) == 1) {
             //@TODO: We actually want to use the denormalizer, but that breaks on not setting ids
             return $this->entityManager->find('App\Entity\Endpoint', $endpoints[0]['id']);
+        } else {
+            return null;
         }
     }
 
