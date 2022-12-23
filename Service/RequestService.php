@@ -306,6 +306,7 @@ class RequestService
                 }
 
                 $this->object = new ObjectEntity($entity);
+                $this->object->setOwner($this->security->getUser()->getUserIdentifier());
 
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
                 if ($this->object->hydrate($this->content, true)) {
