@@ -58,7 +58,6 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         $object = $args->getObject();
         // if this subscriber only applies to certain entity types,
         if ($object instanceof ObjectEntity) {
-            $this->updateParents($object);
             $this->cacheService->cacheObject($object);
 
             return;
@@ -116,21 +115,5 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
 
             return;
         }
-    }
-
-    public function updateParents(ObjectEntity $objectEntity, array $handled = [])
-    {
-        foreach ($objectEntity->getSubresourceOf() as $subresourceOf) {
-            if (
-                in_array($subresourceOf->getObjectEntity()->getId(), $handled) ||
-                $subresourceOf->getObjectEntity()->getDateModified() > new \DateTime('-30 seconds')
-            ) {
-                continue;
-            }
-            $subresourceOf->getObjectEntity()->setDateModified($objectEntity->getDateModified());
-            $this->entityManager->persist($subresourceOf->getObjectEntity());
-            $handled[] = $subresourceOf->getObjectEntity()->getId();
-        }
-        $this->entityManager->flush();
     }
 }

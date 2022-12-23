@@ -356,6 +356,9 @@ class RequestService
 
                 //if ($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
                 if ($this->object->hydrate($this->content)) {
+                    if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
+                        $this->objectEntityService->setUnread($this->object);
+                    }
                     $this->entityManager->persist($this->object);
                     $this->entityManager->flush();
                 } else {
