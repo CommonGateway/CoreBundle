@@ -54,6 +54,7 @@ class RequestService
         $this->objectEntityService = $objectEntityService;
         $this->logService = $logService;
         $this->callService = $callService;
+        $this->security = $security;
     }
 
     /**
