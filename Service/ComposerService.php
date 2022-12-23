@@ -402,10 +402,14 @@ class ComposerService
                 $plugin['update'] = false;
 
                 // Lets see if we have newer versions than currently installer
-                foreach ($plugin['versions']  as $version => $versionDetails) {
-                    if (version_compare($plugin['version'], $version) < 0) {
-                        $plugin['update'] = true;
-                        break;
+                foreach($plugin['versions']  as $version => $versionDetails){
+                    if(version_compare($plugin['version'], $version) < 0 ){
+                        if(!$plugin['update']){
+                            $plugin['update'] = $version;
+                        }
+                        elseif (version_compare($plugin['update'], $version) < 0 ){
+                            $plugin['update'] = $version;
+                        }
                     }
                 }
                 break;
