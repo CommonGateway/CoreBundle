@@ -133,15 +133,15 @@ class InstallationService
                 }
             }
 
-            foreach ($schemas->files() as $schema) {
-                $this->handleSchema($schema);
-            }
-
             // Persist collection
             if (isset($this->collection)) {
                 $this->em->persist($this->collection);
                 $this->em->flush();
             }
+            foreach ($schemas->files() as $schema) {
+                $this->handleSchema($schema);
+            }
+
 
             //$progressBar->finish();
         } else {
@@ -240,7 +240,7 @@ class InstallationService
 
         // Add the schema to collection
         if (isset($this->collection)) {
-            $this->collection->addEntity($entity);
+            $entity->addCollection($this->collection);
         }
 
         $this->em->flush();
