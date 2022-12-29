@@ -84,25 +84,29 @@ class InstallationService
             ]);
         }
 
-        $packadges = $this->composerService->getAll();
+        $packages = $this->composerService->getAll();
 
-        $found = array_filter($packadges, function ($v, $k) use ($bundle) {
-            return $v['name'] == $bundle;
-        }, ARRAY_FILTER_USE_BOTH); // With the latest PHP third parameter is optional.. Available Values:- ARRAY_FILTER_USE_BOTH OR ARRAY_FILTER_USE_KEY
+        $found = array_filter($packages, function ($v, $k) use ($bundle) {
+            return $v["name"] == $bundle;
+        }, ARRAY_FILTER_USE_BOTH); // With latest PHP third parameter is optional.. Available Values:- ARRAY_FILTER_USE_BOTH OR ARRAY_FILTER_USE_KEY
 
-        $packadge = reset($found);
-        if ($packadge) {
+        $package = reset($found);
+        if ($package) {
             $this->io->writeln([
-                '<info>Packadge '.$bundle.' found</info>',
+                '<info>Package ' . $bundle . ' found</info>',
                 '',
                 'Name: '.$packadge['name'],
                 'Version: '.$packadge['version'],
-                'Description: '.$packadge['description'],
                 'Homepage :'.$packadge['homepage'],
                 'Source: '.$packadge['source']['url'],
+                'Name: ' . $package['name'],
+                'Version: ' . $package['version'],
+                'Description: ' . $package['description'],
+                'Homepage :' . $package['homepage'],
+                'Source: ' . $package['source']['url']
             ]);
         } else {
-            $this->io->error($bundle.' not found');
+            $this->io->error($bundle . ' not found');
 
             return Command::FAILURE;
         }
@@ -122,12 +126,12 @@ class InstallationService
 
             // We want each plugin to also be a collection (if it contains schema's that is)
             if (count($schemas) > 0) {
-                if (!$this->collection = $this->em->getRepository('App:CollectionEntity')->findOneBy(['plugin'=>$packadge['name']])) {
+                if (!$this->collection = $this->em->getRepository('App:CollectionEntity')->findOneBy(['plugin' => $package['name']])) {
                     $this->io->writeln(['Created a collection for this plugin', '']);
                     $this->collection = new CollectionEntity();
-                    $this->collection->setName($packadge['name']);
-                    $this->collection->setPlugin($packadge['name']);
-                    isset($packadge['description']) && $this->collection->setDescription($packadge['description']);
+                    $this->collection->setName($package['name']);
+                    $this->collection->setPlugin($package['name']);
+                    isset($package['description']) && $this->collection->setDescription($package['description']);
                 } else {
                     $this->io->writeln(['Found a collection for this plugin', '']);
                 }
@@ -213,19 +217,19 @@ class InstallationService
     public function handleSchema($file)
     {
         if (!$schema = json_decode($file->getContents(), true)) {
-            $this->io->writeln($file->getFilename().' is not a valid json object');
+            $this->io->writeln($file->getFilename() . ' is not a valid json object');
 
             return false;
         }
 
         if (!$this->valdiateJsonSchema($schema)) {
-            $this->io->writeln($file->getFilename().' is not a valid json-schema object');
+            $this->io->writeln($file->getFilename() . ' is not a valid json-schema object');
 
             return false;
         }
 
         if (!$entity = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']])) {
-            $this->io->writeln('Schema not present, creating schema '.$schema['title'].' under reference '.$schema['$id']);
+            $this->io->writeln('Schema not present, creating schema ' . $schema['title'] . ' under reference ' . $schema['$id']);
             $entity = new Entity();
         } else {
             $this->io->writeln('Schema already present, looking to update');
@@ -259,7 +263,7 @@ class InstallationService
         if (
             array_key_exists('$id', $schema) &&
             array_key_exists('$schema', $schema) &&
-            $schema['$schema'] == 'https://json-schema.org/draft/2020-12/schema' &&
+            $schema['$schema'] == "https://json-schema.org/draft/2020-12/schema" &&
             array_key_exists('type', $schema) &&
             $schema['type'] == 'object' &&
             array_key_exists('properties', $schema)
@@ -273,36 +277,36 @@ class InstallationService
     public function handleData($file)
     {
         if (!$data = json_decode($file->getContents(), true)) {
-            $this->io->writeln($file->getFilename().' is not a valid json object');
+            $this->io->writeln($file->getFilename() . ' is not a valid json object');
 
             return false;
         }
 
         foreach ($data as $reference => $objects) {
             // Lets see if we actuelly have a shema to upload the objects to
-            if (!$entity = $this->em->getRepository('App:Entity')->findOneBy(['reference'=>$reference])) {
-                $this->io->writeln('No Schema found for reference '.$reference);
+            if (!$entity = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $reference])) {
+                $this->io->writeln('No Schema found for reference ' . $reference);
                 continue;
             }
 
             $this->io->writeln([
                 '',
-                '<info> Found data for schema '.$reference.'</info> containing '.count($objects).' object(s)',
+                '<info> Found data for schema ' . $reference . '</info> containing ' . count($objects) . ' object(s)',
             ]);
 
             // Then we can handle data
             foreach ($objects as $object) {
                 // Lets see if we need to update
 
-                if (array_key_exists('_id', $object) && $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id'=>$object['_id']])) {
-                    $this->io->writeln(['', 'Object '.$object['_id'].' already exists, so updating']);
+                if (array_key_exists('_id', $object) && $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $object['_id']])) {
+                    $this->io->writeln(['', 'Object ' . $object['_id'] . ' already exsists, so updating']);
                 } else {
                     $objectEntity = new ObjectEntity($entity);
                     $this->io->writeln(['', 'Creating new object']);
 
                     // We need to do something tricky if we want to overwrite the id (doctrine doesn't allow that)
                     if (array_key_exists('_id', $object)) {
-                        $this->io->writeln('Forcing id to '.$object['_id']);
+                        $this->io->writeln('Forcing id to ' . $object['_id']);
 
                         // Force doctrine id creation
                         $this->em->persist($objectEntity);
@@ -315,7 +319,7 @@ class InstallationService
 
                         // Reload the object
                         $this->em->clear('App:ObjectEntity');
-                        $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id'=>$object['_id']]);
+                        $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $object['_id']]);
                     }
                 }
 
@@ -331,19 +335,19 @@ class InstallationService
     public function handleInstaller($file)
     {
         if (!$data = json_decode($file->getContents(), true)) {
-            $this->io->writeln($file->getFilename().' is not a valid json object');
+            $this->io->writeln($file->getFilename() . ' is not a valid json object');
 
             return false;
         }
 
         if (!isset($data['installationService']) || !$installationService = $data['installationService']) {
-            $this->io->writeln($file->getFilename().' Doesnt contain an installation service');
+            $this->io->writeln($file->getFilename() . ' Doesn\'t contain an installation service');
 
             return false;
         }
 
-        if (!$installationService = $this->container->get($installationService)) {
-            $this->io->writeln($file->getFilename().' Could not be loaded from container');
+        if (!$installationService =  $this->container->get($installationService)) {
+            $this->io->writeln($file->getFilename() . ' Could not be loaded from container');
 
             return false;
         }
