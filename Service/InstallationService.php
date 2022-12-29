@@ -95,10 +95,6 @@ class InstallationService
             $this->io->writeln([
                 '<info>Package '.$bundle.' found</info>',
                 '',
-                'Name: '.$packadge['name'],
-                'Version: '.$packadge['version'],
-                'Homepage :'.$packadge['homepage'],
-                'Source: '.$packadge['source']['url'],
                 'Name: '.$package['name'],
                 'Version: '.$package['version'],
                 'Description: '.$package['description'],
