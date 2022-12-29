@@ -84,22 +84,22 @@ class InstallationService
             ]);
         }
 
-        $packadges = $this->composerService->getAll();
+        $packages = $this->composerService->getAll();
 
-        $found = array_filter($packadges, function ($v, $k) use ($bundle) {
+        $found = array_filter($packages, function ($v, $k) use ($bundle) {
             return $v['name'] == $bundle;
         }, ARRAY_FILTER_USE_BOTH); // With the latest PHP third parameter is optional.. Available Values:- ARRAY_FILTER_USE_BOTH OR ARRAY_FILTER_USE_KEY
 
-        $packadge = reset($found);
-        if ($packadge) {
+        $package = reset($found);
+        if ($package) {
             $this->io->writeln([
-                '<info>Packadge '.$bundle.' found</info>',
+                '<info>Package '.$bundle.' found</info>',
                 '',
-                'Name: '.$packadge['name'],
-                'Version: '.$packadge['version'],
-                'Description: '.$packadge['description'],
-                'Homepage :'.$packadge['homepage'],
-                'Source: '.$packadge['source']['url'],
+                'Name: '.$package['name'],
+                'Version: '.$package['version'],
+                'Description: '.$package['description'],
+                'Homepage :'.$package['homepage'],
+                'Source: '.$package['source']['url'],
             ]);
         } else {
             $this->io->error($bundle.' not found');
@@ -122,12 +122,12 @@ class InstallationService
 
             // We want each plugin to also be a collection (if it contains schema's that is)
             if (count($schemas) > 0) {
-                if (!$this->collection = $this->em->getRepository('App:CollectionEntity')->findOneBy(['plugin'=>$packadge['name']])) {
+                if (!$this->collection = $this->em->getRepository('App:CollectionEntity')->findOneBy(['plugin' => $package['name']])) {
                     $this->io->writeln(['Created a collection for this plugin', '']);
                     $this->collection = new CollectionEntity();
-                    $this->collection->setName($packadge['name']);
-                    $this->collection->setPlugin($packadge['name']);
-                    isset($packadge['description']) && $this->collection->setDescription($packadge['description']);
+                    $this->collection->setName($package['name']);
+                    $this->collection->setPlugin($package['name']);
+                    isset($package['description']) && $this->collection->setDescription($package['description']);
                 } else {
                     $this->io->writeln(['Found a collection for this plugin', '']);
                 }
@@ -280,7 +280,7 @@ class InstallationService
 
         foreach ($data as $reference => $objects) {
             // Lets see if we actuelly have a shema to upload the objects to
-            if (!$entity = $this->em->getRepository('App:Entity')->findOneBy(['reference'=>$reference])) {
+            if (!$entity = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $reference])) {
                 $this->io->writeln('No Schema found for reference '.$reference);
                 continue;
             }
@@ -294,7 +294,7 @@ class InstallationService
             foreach ($objects as $object) {
                 // Lets see if we need to update
 
-                if (array_key_exists('_id', $object) && $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id'=>$object['_id']])) {
+                if (array_key_exists('_id', $object) && $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $object['_id']])) {
                     $this->io->writeln(['', 'Object '.$object['_id'].' already exists, so updating']);
                 } else {
                     $objectEntity = new ObjectEntity($entity);
@@ -315,7 +315,7 @@ class InstallationService
 
                         // Reload the object
                         $this->em->clear('App:ObjectEntity');
-                        $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id'=>$object['_id']]);
+                        $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $object['_id']]);
                     }
                 }
 
@@ -337,7 +337,7 @@ class InstallationService
         }
 
         if (!isset($data['installationService']) || !$installationService = $data['installationService']) {
-            $this->io->writeln($file->getFilename().' Doesnt contain an installation service');
+            $this->io->writeln($file->getFilename().' Doesn\'t contain an installation service');
 
             return false;
         }
