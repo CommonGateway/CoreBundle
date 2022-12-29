@@ -31,6 +31,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     {
         return [
             Events::prePersist,
+            Events::preUpdate,
         ];
     }
 
@@ -48,21 +49,34 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
         // Let see if we need to hook an attribute to an entity
         if (
             $object instanceof Attribute // It's an attribute
-            && $object->getReference() // It has a reference
+            && $object->getSchema() // It has a reference
             && !$object->getObject() // It isn't currently connected to a schema
         ) {
-            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $object->getReference()]);
-            $object->setObject($entity);
-//            $this->cacheService->cacheObject($object);
+            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $object->getSchema()]);
+            if ($entity) {
+                $object->setObject($entity);
+            }
+
             return;
         }
         if (
             $object instanceof Entity // Is it an antity
             && $object->getReference() // Does it have a reference
         ) {
+            $attributes = $this->entityManager->getRepository('App:Attribute')->findBy(['schema' => $object->getReference()]);
+            foreach ($attributes as $attribute) {
+                if (!$attribute instanceof Attribute) {
+                    continue;
+                }
+                $attribute->setObject($object);
+            }
 
-            //$this->cacheService->cacheShema($object);
             return;
         }
+    }
+
+    public function preUpdate(LifecycleEventArgs $args): void
+    {
+        $this->prePersist($args);
     }
 }
