@@ -299,7 +299,7 @@ class InstallationService
                 // Lets see if we need to update
 
                 if (array_key_exists('_id', $object) && $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $object['_id']])) {
-                    $this->io->writeln(['', 'Object ' . $object['_id'] . ' already exsists, so updating']);
+                    $this->io->writeln(['', 'Object ' . $object['_id'] . ' already exists, so updating']);
                 } else {
                     $objectEntity = new ObjectEntity($entity);
                     $this->io->writeln(['', 'Creating new object']);
