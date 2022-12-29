@@ -142,7 +142,6 @@ class InstallationService
                 $this->handleSchema($schema);
             }
 
-
             //$progressBar->finish();
         } else {
             $this->io->writeln('No schema folder found');
