@@ -88,7 +88,7 @@ class InstallationService
 
         $found = array_filter($packages, function ($v, $k) use ($bundle) {
             return $v['name'] == $bundle;
-        }, ARRAY_FILTER_USE_BOTH); // With latest PHP third parameter is optional.. Available Values:- ARRAY_FILTER_USE_BOTH OR ARRAY_FILTER_USE_KEY
+        }, ARRAY_FILTER_USE_BOTH); // With the latest PHP third parameter is optional.. Available Values:- ARRAY_FILTER_USE_BOTH OR ARRAY_FILTER_USE_KEY
 
         $package = reset($found);
         if ($package) {
