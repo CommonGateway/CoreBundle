@@ -31,7 +31,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     {
         return [
             Events::prePersist,
-            Events::preUpdate
+            Events::preUpdate,
         ];
     }
 
@@ -53,9 +53,10 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
             && !$object->getObject() // It isn't currently connected to a schema
         ) {
             $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $object->getSchema()]);
-            if($entity) {
+            if ($entity) {
                 $object->setObject($entity);
             }
+
             return;
         }
         if (
@@ -63,12 +64,13 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
             && $object->getReference() // Does it have a reference
         ) {
             $attributes = $this->entityManager->getRepository('App:Attribute')->findBy(['schema' => $object->getReference()]);
-            foreach($attributes as $attribute) {
-                if(!$attribute instanceof Attribute) {
+            foreach ($attributes as $attribute) {
+                if (!$attribute instanceof Attribute) {
                     continue;
                 }
                 $attribute->setObject($object);
             }
+
             return;
         }
     }
