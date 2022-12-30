@@ -15,6 +15,8 @@ use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Security\Core\Security;
+use App\Event\ActionEvent;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class RequestService
 {
@@ -30,14 +32,17 @@ class RequestService
     private LogService $logService;
     private CallService $callService;
     private Security $security;
+    private EventDispatcherInterface $eventDispatcher;
 
     /**
-     * @param EntityManagerInterface $entityManager
-     * @param CacheService           $cacheService
-     * @param ResponseService        $responseService
-     * @param ObjectEntityService    $objectEntityService
-     * @param LogService             $logService
-     * @param CallService            $callService
+     * @param EntityManagerInterface   $entityManager
+     * @param CacheService             $cacheService
+     * @param ResponseService          $responseService
+     * @param ObjectEntityService      $objectEntityService
+     * @param LogService               $logService
+     * @param CallService              $callService
+     * @param Security                 $security
+     * @param EventDispatcherInterface $eventDispatcher
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -46,7 +51,8 @@ class RequestService
         ObjectEntityService $objectEntityService,
         LogService $logService,
         CallService $callService,
-        Security $security
+        Security $security,
+        EventDispatcherInterface $eventDispatcher
     ) {
         $this->entityManager = $entityManager;
         $this->cacheService = $cacheService;
@@ -55,6 +61,7 @@ class RequestService
         $this->logService = $logService;
         $this->callService = $callService;
         $this->security = $security;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -154,7 +161,7 @@ class RequestService
 
         // Get clean query paramters without all the symfony shizzle
         $query = $this->realRequestQueryAll($this->data['method']);
-        $this->data['path'] = '/'.$data['path']['{route}'];
+        $this->data['path'] = '/' . $data['path']['{route}'];
 
         // Make a guzzle call to the source bassed on the incomming call
         $result = $this->callService->call(
@@ -198,13 +205,13 @@ class RequestService
 
         // haat aan de de _
         if (isset($this->data['querystring'])) {
-//            $query = explode('&',$this->data['querystring']);
-//            foreach ($query as $row) {
-//                $row = explode('=', $row);
-//                $key = $row[0];
-//                $value = $row[1];
-//                $filters[$key] = $value;
-//            }
+            //            $query = explode('&',$this->data['querystring']);
+            //            foreach ($query as $row) {
+            //                $row = explode('=', $row);
+            //                $key = $row[0];
+            //                $value = $row[1];
+            //                $filters[$key] = $value;
+            //            }
             $filters = $this->realRequestQueryAll($this->data['method']);
         }
 
@@ -225,7 +232,7 @@ class RequestService
 
         // If we have an ID we can get an entity to work with (except on gets we handle those from cache)
         if (isset($this->id) and $this->data['method'] != 'GET') {
-            $this->object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id'=>$this->id]);
+            $this->object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->id]);
         }
 
         // We might have some content
@@ -296,6 +303,8 @@ class RequestService
                 }
                 break;
             case 'POST':
+                $eventType = 'commongateway.object.create';
+
                 // We have an id on a post so die
                 if (isset($this->id)) {
                     return new Response('You can not POST to an (exsisting) id, consider using PUT or PATCH instead', '400');
@@ -323,6 +332,7 @@ class RequestService
                 $result = $this->cacheService->getObject($this->object->getId());
                 break;
             case 'PUT':
+                $eventType = 'commongateway.object.update';
 
                 // We dont have an id on a PUT so die
                 if (!isset($this->id)) {
@@ -348,6 +358,7 @@ class RequestService
                 $result = $this->cacheService->getObject($this->object->getId());
                 break;
             case 'PATCH':
+                $eventType = 'commongateway.object.update';
 
                 // We dont have an id on a PATCH so die
                 if (!isset($this->id)) {
@@ -385,7 +396,7 @@ class RequestService
                 }
 
                 $this->entityManager->remove($this->object);
-//                $this->cacheService - removeObject($this->id); /* @todo this is hacky, the above schould alredy do this */
+                //                $this->cacheService - removeObject($this->id); /* @todo this is hacky, the above schould alredy do this */
                 $this->entityManager->flush();
 
                 return new Response('Succesfully deleted object', '202');
@@ -393,10 +404,16 @@ class RequestService
             default:
                 break;
 
-                return new Response('Unkown method'.$this->data['method'], '404');
+                return new Response('Unkown method' . $this->data['method'], '404');
         }
 
         $this->entityManager->flush();
+
+        if (isset($eventType) && isset($this->object)) {
+            $event = new ActionEvent($eventType, ['response' => $this->object->toArray(), 'entity' => $this->object->getEntity()->getId()->toString()]);
+            $this->eventDispatcher->dispatch($event, $event->getType());
+        }
+
         $this->handleMetadataSelf($result, $metadataSelf);
 
         return $this->createResponse($result);
