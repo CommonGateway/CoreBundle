@@ -7,16 +7,16 @@ use App\Entity\Endpoint;
 use App\Entity\Gateway as Source;
 use App\Entity\Log;
 use App\Entity\ObjectEntity;
+use App\Event\ActionEvent;
 use App\Service\LogService;
 use App\Service\ObjectEntityService;
 use App\Service\ResponseService;
 use Doctrine\ORM\EntityManagerInterface;
 use Ramsey\Uuid\Uuid;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Security\Core\Security;
-use App\Event\ActionEvent;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class RequestService
 {
@@ -161,7 +161,7 @@ class RequestService
 
         // Get clean query paramters without all the symfony shizzle
         $query = $this->realRequestQueryAll($this->data['method']);
-        $this->data['path'] = '/' . $data['path']['{route}'];
+        $this->data['path'] = '/'.$data['path']['{route}'];
 
         // Make a guzzle call to the source bassed on the incomming call
         $result = $this->callService->call(
@@ -404,7 +404,7 @@ class RequestService
             default:
                 break;
 
-                return new Response('Unkown method' . $this->data['method'], '404');
+                return new Response('Unkown method'.$this->data['method'], '404');
         }
 
         $this->entityManager->flush();
