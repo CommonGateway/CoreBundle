@@ -296,7 +296,7 @@ class RequestService
                     $responseLog = new Response(is_string($this->content) || is_null($this->content) ? $this->content : null, 200, ['CoreBundle' => 'GetItem']);
                     $session = new Session();
                     $session->set('object', $this->id);
-                    $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, $this->content);
+                    $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) ? json_encode($this->content) : $this->content);
                 } else {
                     //$this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
                     $result = $this->cacheService->searchObjects(null, $filters, $this->data['endpoint']->getEntities()->toArray());
