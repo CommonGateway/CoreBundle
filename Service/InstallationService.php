@@ -295,34 +295,22 @@ class InstallationService
 
                 if (array_key_exists('_id', $object) && $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $object['_id']])) {
                     $this->io->writeln(['', 'Object '.$object['_id'].' already exists, so updating']);
+                } elseif(array_key_exists('_id', $object)) {
+                    $this->io->writeln('Set external id to '.$object['_id']);
+                    $objectEntity = new ObjectEntity($entity);
+                    $this->io->writeln('Creating new object with existing id '.$objectEntity->getId());
+
+                    $objectEntity->setExternalId($object['_id']);
                 } else {
                     $objectEntity = new ObjectEntity($entity);
                     $this->io->writeln(['', 'Creating new object']);
-
-                    // We need to do something tricky if we want to overwrite the id (doctrine doesn't allow that)
-                    if (array_key_exists('_id', $object)) {
-                        $this->io->writeln('Forcing id to '.$object['_id']);
-
-                        // Force doctrine id creation
-                        $this->em->persist($objectEntity);
-                        $this->em->flush();
-
-                        // Overwrite that creation
-                        $objectEntity->setId($object['_id']);
-                        $this->em->persist($objectEntity);
-                        $this->em->flush();
-
-                        // Reload the object
-                        $this->em->clear('App:ObjectEntity');
-                        $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $object['_id']]);
-                    }
                 }
 
                 $this->io->writeln('Writing data to the object');
                 $objectEntity->hydrate($object);
                 $this->em->persist($objectEntity);
                 $this->em->flush();
-                $this->io->writeln('Object saved as '.$objectEntity->getId());
+                $this->io->writeln(['Object saved as '.$objectEntity->getId(), '']);
             }
         }
     }
