@@ -230,6 +230,16 @@ class RequestService
             $this->id = $this->data['query']['uuid'];
         }
 
+        foreach ($this->data['path'] as $key => $value) {
+            if (strpos($key, '{') !== false) {
+                if ($key !== '{id}') {
+                    $keyExplodedFilter = explode('{', $key);
+                    $keyFilter = explode('}', $keyExplodedFilter[1]);
+                    $filters['_search'] = $value;
+                }
+            }
+        }
+
         // If we have an ID we can get an entity to work with (except on gets we handle those from cache)
         if (isset($this->id) and $this->data['method'] != 'GET') {
             $this->object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->id]);
@@ -296,7 +306,7 @@ class RequestService
                     $responseLog = new Response(is_string($this->content) || is_null($this->content) ? $this->content : null, 200, ['CoreBundle' => 'GetItem']);
                     $session = new Session();
                     $session->set('object', $this->id);
-                    $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, $this->content);
+                    $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) ? json_encode($this->content) : $this->content);
                 } else {
                     //$this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
                     $result = $this->cacheService->searchObjects(null, $filters, $this->data['endpoint']->getEntities()->toArray());
