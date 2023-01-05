@@ -430,11 +430,12 @@ class RequestService
 
         return $this->createResponse($result);
     }
+
     /**
-     * If embedded should be shown or not
+     * If embedded should be shown or not.
      *
-     * @param object|array   $result  fetched result
-     * @param ?array         $accept  accept header
+     * @param object|array $result fetched result
+     * @param ?array       $accept accept header
      *
      * @return array|null
      */
@@ -460,11 +461,10 @@ class RequestService
         return $result;
     }
 
-
     /**
-     * If embedded should be shown or not
+     * If embedded should be shown or not.
      *
-     * @param object|array $result      fetched result
+     * @param object|array $result fetched result
      *
      * @return array|null
      */
