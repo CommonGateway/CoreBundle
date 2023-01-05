@@ -426,7 +426,55 @@ class RequestService
 
         $this->handleMetadataSelf($result, $metadataSelf);
 
+        $result = $this->shouldWeUnsetEmbedded($result, $this->data['headers']['accept'] ?? null, $isCollection ?? false);
+
         return $this->createResponse($result);
+    }
+
+    /**
+     * If embedded should be shown or not.
+     *
+     * @param object|array $result fetched result
+     * @param ?array       $accept accept header
+     *
+     * @return array|null
+     */
+    public function shouldWeUnsetEmbedded($result = null, ?array $accept, ?bool $isCollection = false)
+    {
+        if (
+            isset($result) &&
+            (isset($accept) &&
+                !in_array('application/json+ld', $accept) &&
+                !in_array('application/ld+json', $accept))
+            ||
+            !isset($accept)
+        ) {
+            if (isset($isCollection) && isset($result['results'])) {
+                foreach ($result['results'] as $key => $item) {
+                    $result['results'][$key] = $this->checkEmbedded($item);
+                }
+            } else {
+                $result = $this->checkEmbedded($result);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * If embedded should be shown or not.
+     *
+     * @param object|array $result fetched result
+     *
+     * @return array|null
+     */
+    public function checkEmbedded($result)
+    {
+        if (isset($result->embedded)) {
+            unset($result->embedded);
+        }
+
+        return $result;
     }
 
     /**
