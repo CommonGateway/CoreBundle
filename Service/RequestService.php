@@ -309,6 +309,7 @@ class RequestService
                     $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) ? json_encode($this->content) : $this->content);
                 } else {
                     //$this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
+                    $isCollection = true;
                     $result = $this->cacheService->searchObjects(null, $filters, $this->data['endpoint']->getEntities()->toArray());
                 }
                 break;
