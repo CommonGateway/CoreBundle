@@ -1,0 +1,9 @@
+<?php
+return (object)[
+    'rootNamespace' => 'Classes',
+    'destDirectory' => 'docs/classes',
+    'format' => 'github',
+    'classes' => [
+        '\CommonGateway\CoreBundle\Service\RequestService'
+    ],
+];
