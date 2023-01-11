@@ -14,6 +14,7 @@ use App\Service\ObjectEntityService;
 use App\Service\ResponseService;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
+use EasyRdf\Literal\Boolean;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,7 +29,7 @@ class RequestService
     private array $data;
     private ObjectEntity $object;
     private string $id;
-    private Entity $schema;
+    private $schema; // todo: cast to Entity|Boolean in php 8
     // todo: we might want to move or rewrite code instead of using these services here:
     private ResponseService $responseService;
     private ObjectEntityService $objectEntityService;
@@ -103,7 +104,7 @@ class RequestService
      * @param array $object
      * @return string|false
      */
-    public function getId(array $object):mixed{
+    public function getId(array $object){
         // Try to grap an id
         if (isset($this->data['path']['{id}'])) {
             $this->id = $this->data['path']['{id}'];
@@ -133,7 +134,7 @@ class RequestService
      * @param array $parameters
      * @return Entity|false
      */
-    public function getSchema(array $parameters):mixed{
+    public function getSchema(array $parameters){
 
         // If we have an object this is easy
         if(isset($this->object)){
@@ -149,7 +150,7 @@ class RequestService
         }
 
         // In normal securmtances we expect a all to com form an endpoint so...
-        if($parameters['endpoint']){
+        if(isset($parameters['endpoint'])){
             // The endpoint contains exactly one schema
             if(count($this->data['endpoint']->getEntities()) == 1){
                 return $this->data['endpoint']->getEntities()->first();
@@ -372,12 +373,12 @@ class RequestService
         switch ($this->data['method']) {
             case 'GET':
                 // We have an id (so single object)
-                if (isset($this->id)) {
+                if (isset($this->id) && $this->id) {
                     $result = $this->cacheService->getObject($this->id);
 
                     // If we do not have an object we throw an 404
                     if (!$result) {
-                        return new Response('Object not found', '404');
+                        return new Response('Object '.$this->id.' not found', '404');
                     }
 
                     // Lets see if the found result is allowd for this endpoint
