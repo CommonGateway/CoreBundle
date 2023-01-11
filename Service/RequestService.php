@@ -98,12 +98,14 @@ class RequestService
     }
 
     /**
-     * Get the ID from given parameters
+     * Get the ID from given parameters.
      *
      * @param array $object
+     *
      * @return string|false
      */
-    public function getId(array $object){
+    public function getId(array $object)
+    {
         // Try to grap an id
         if (isset($this->data['path']['{id}'])) {
             return $this->data['path']['{id}'];
@@ -124,66 +126,67 @@ class RequestService
         }
 
         return false;
-
     }
 
     /**
-     * Get the schema from given parameters returns false if no schema could be established
+     * Get the schema from given parameters returns false if no schema could be established.
      *
      * @param array $parameters
+     *
      * @return Entity|false
      */
-    public function getSchema(array $parameters){
+    public function getSchema(array $parameters)
+    {
 
         // If we have an object this is easy
-        if(isset($this->object)){
+        if (isset($this->object)) {
             return $this->object->getEntity();
         }
 
         // Pull the id or reference from the content
-        if(isset($this->content['_self']['schema']['id'])){
+        if (isset($this->content['_self']['schema']['id'])) {
             $id = $this->content['_self']['schema']['id'];
         }
-        if(isset($this->content['_self']['schema']['ref'])){
+        if (isset($this->content['_self']['schema']['ref'])) {
             $reference = $this->content['_self']['schema']['ref'];
         }
-        if(isset($this->content['_self']['schema']['reference'])){
+        if (isset($this->content['_self']['schema']['reference'])) {
             $reference = $this->content['_self']['schema']['reference'];
         }
 
         // In normal securmtances we expect a all to com form an endpoint so...
-        if(isset($parameters['endpoint'])){
+        if (isset($parameters['endpoint'])) {
             // The endpoint contains exactly one schema
-            if(count($this->data['endpoint']->getEntities()) == 1){
+            if (count($this->data['endpoint']->getEntities()) == 1) {
                 return $this->data['endpoint']->getEntities()->first();
             }
             // The endpoint contains multiple schema's
-            if(count($this->data['endpoint']->getEntities()) >= 1){
+            if (count($this->data['endpoint']->getEntities()) >= 1) {
                 // todo: so right now if we dont have an id or ref and multpile options we "guese" the first, it that smart?
                 $criteria = Criteria::create()->orderBy(['date_created' => Criteria::DESC]);
-                if(isset($id)){
+                if (isset($id)) {
                     $criteria->where(['id' => $id]);
                 }
-                if(isset($reference)){
+                if (isset($reference)) {
                     $criteria->where(['reference' => $reference]);
                 }
+
                 return $this->data['endpoint']->getEntities()->matching($criteria)->first();
             }
             // The  endpoint contains no schema's so there is no limit we dont need to do anything
         }
 
         // We only end up here if there is no endpoint or an unlimited endpoint
-        if(isset($id)){
+        if (isset($id)) {
             return $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $id]);
         }
-        if(isset($reference)){
+        if (isset($reference)) {
             return $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference]);
         }
         // There is no way to establish an schema so
-        else{
+        else {
             return false;
         }
-
     }
 
     /**
@@ -364,7 +367,7 @@ class RequestService
 
         // Make a list of schema's that are allowed for this endpoint
         $allowedSchemas = [];
-        if(isset($this->data['endpoint'])){
+        if (isset($this->data['endpoint'])) {
             foreach ($this->data['endpoint']->getEntities() as $entity) {
                 $allowedSchemas[] = $entity->getId();
             }
