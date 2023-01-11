@@ -408,7 +408,12 @@ class RequestService
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
                 if (!isset($this->schema)) {
-                    return new Response('No schema could be established for your POST', '400');
+                    return new Response('No schema could be established for your request', '400');
+                }
+
+                // Lets see if the found result is allowd for this endpoint
+                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas)) {
+                    return new Response('Object is not supported by this endpoint', '406');
                 }
 
                 $this->object = new ObjectEntity($this->schema);
