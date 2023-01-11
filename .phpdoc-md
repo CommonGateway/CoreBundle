@@ -1,0 +1,16 @@
+<?php
+return (object)[
+    'rootNamespace' => 'CommonGateway\CoreBundle',
+    'destDirectory' => 'docs/classes',
+    'format' => 'github',
+    'classes' => [
+        '\CommonGateway\CoreBundle\Service\AuthenticationService',
+        '\CommonGateway\CoreBundle\Service\CacheService',
+        '\CommonGateway\CoreBundle\Service\CallService',
+        '\CommonGateway\CoreBundle\Service\ComposerService',
+        '\CommonGateway\CoreBundle\Service\EavService',
+        '\CommonGateway\CoreBundle\Service\FileService',
+        '\CommonGateway\CoreBundle\Service\InstallationService',
+        '\CommonGateway\CoreBundle\Service\RequestService'
+    ],
+];
