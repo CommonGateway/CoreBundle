@@ -394,8 +394,7 @@ class RequestService
                     $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) ? json_encode($this->content) : $this->content);
                 } else {
                     //$this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
-                    // todo: this only works with endpoints so wil trigger an error on the generic endpoint
-                    $result = $this->cacheService->searchObjects(null, $filters, $this->data['endpoint']->getEntities()->toArray());
+                    $result = $this->cacheService->searchObjects(null, $filters, $allowedSchemas);
                 }
                 break;
             case 'POST':
