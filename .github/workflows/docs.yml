@@ -14,7 +14,7 @@ jobs:
           php_extensions: redis exif
           version: 2.x
       - name: Build the docs
-        run: /vendor/bin/phpdoc-md
+        run: vendor/bin/phpdoc-md
       - name: Git commit
         run: |
           git config user.name "GitHub Actions"
