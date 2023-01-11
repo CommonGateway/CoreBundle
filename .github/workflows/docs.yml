@@ -13,8 +13,7 @@ jobs:
           php_version: "7.4"
           php_extensions: redis exif
           version: 2.x
-      - name: Get clean/phpdoc-md
-        run: composer require clean/phpdoc-md
+          command: require clean/phpdoc-md
       - name: Build the docs
         run: vendor/bin/phpdoc-md
       - name: Git commit
