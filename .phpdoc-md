@@ -1,6 +1,6 @@
 <?php
 return (object)[
-    'rootNamespace' => '\CommonGateway\CoreBundle\',
+    'rootNamespace' => 'CommonGateway\CoreBundle',
     'destDirectory' => 'docs/classes',
     'format' => 'github',
     'classes' => [
