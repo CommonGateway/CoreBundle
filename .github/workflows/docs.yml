@@ -13,3 +13,5 @@ jobs:
           php_version: "7.4"
           php_extensions: redis exif
           version: 2.x
+      - name: Build the docs
+        run: ./vendor/bin/phpdoc-md

@@ -56,10 +56,5 @@
 			"url" : "https://github.com/CommonGateway/CoreBundle",
 			"name" : "source"
 		}
-	],
-	"scripts": {
-		"post-package-install": "bin/console commongateway:install commongateway/corebundle",
-		"post-package-update": "bin/console commongateway:update commongateway/corebundle",
-		"post-package-uninstall": "bin/console commongateway:uninstall commongateway/corebundle"
-	}
+	]
 }
