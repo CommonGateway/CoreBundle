@@ -16,7 +16,8 @@ jobs:
           pullRequestOpenedComment: |
             👋 @{{ author }}
             Thank you for raising your pull request.
-            Please make sure you have followed our contributing guidelines. We will review it as soon as possible. In the meanwhile make sure your PR checks the following boxes            - [ ] Is bassed on an issue
+            Please make sure you have followed our contributing guidelines. We will review it as soon as possible. In the meanwhile make sure your PR checks the following boxes           
+            - [ ] Is based on an issue
             - [ ] Has been locally tested
             - [ ] Has been tested with the admin UI
             - [ ] Has been discussed with the development team in an open channel
