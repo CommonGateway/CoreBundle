@@ -14,7 +14,6 @@ use App\Service\ObjectEntityService;
 use App\Service\ResponseService;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
-use EasyRdf\Literal\Boolean;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -107,21 +106,21 @@ class RequestService
     public function getId(array $object){
         // Try to grap an id
         if (isset($this->data['path']['{id}'])) {
-            $this->id = $this->data['path']['{id}'];
+            return $this->data['path']['{id}'];
         } elseif (isset($this->data['path']['[id]'])) {
-            $this->id = $this->data['path']['[id]'];
+            return $this->data['path']['[id]'];
         } elseif (isset($this->data['query']['id'])) {
-            $this->id = $this->data['query']['id'];
+            return $this->data['query']['id'];
         } elseif (isset($this->data['path']['id'])) {
-            $this->id = $this->data['path']['id'];
+            return$this->data['path']['id'];
         } elseif (isset($this->data['path']['{uuid}'])) {
-            $this->id = $this->data['path']['{uuid}'];
+            return $this->data['path']['{uuid}'];
         } elseif (isset($this->data['query']['uuid'])) {
-            $this->id = $this->data['query']['uuid'];
+            return$this->data['query']['uuid'];
         } elseif (isset($this->content['id'])) { // the id might also be passed trough the object itself
-            $this->id = $this->content['id'];
+            return $this->content['id'];
         } elseif (isset($this->content['uuid'])) {
-            $this->id = $this->content['uuid'];
+            return $this->content['uuid'];
         }
 
         return false;
@@ -144,6 +143,9 @@ class RequestService
         // Pull the id or reference from the content
         if(isset($this->content['_self']['schema']['id'])){
             $id = $this->content['_self']['schema']['id'];
+        }
+        if(isset($this->content['_self']['schema']['ref'])){
+            $reference = $this->content['_self']['schema']['ref'];
         }
         if(isset($this->content['_self']['schema']['reference'])){
             $reference = $this->content['_self']['schema']['reference'];
@@ -309,7 +311,7 @@ class RequestService
         $this->id = $this->getId($this->data);
 
         // If we have an ID we can get an entity to work with (except on gets we handle those from cache)
-        if (isset($this->id) and $this->data['method'] != 'GET') {
+        if (isset($this->id) && $this->id && $this->data['method'] != 'GET') {
             $this->object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->id]);
         }
 
@@ -401,7 +403,7 @@ class RequestService
                 $eventType = 'commongateway.object.create';
 
                 // We have an id on a post so die
-                if (isset($this->id)) {
+                if (isset($this->id) && $this->id) {
                     return new Response('You can not POST to an (exsisting) id, consider using PUT or PATCH instead', '400');
                 }
 
