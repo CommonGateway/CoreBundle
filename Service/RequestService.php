@@ -14,7 +14,6 @@ use App\Service\ObjectEntityService;
 use App\Service\ResponseService;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
-use phpDocumentor\Reflection\Types\Mixed_;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
