@@ -21,7 +21,7 @@ use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Security\Core\Security;
 
 /**
- * Handles incomming request from endpoints or controllers that relate to the gateways object structure (eav)
+ * Handles incomming request from endpoints or controllers that relate to the gateways object structure (eav).
  */
 class RequestService
 {
