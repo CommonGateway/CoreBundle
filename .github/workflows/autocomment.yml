@@ -10,14 +10,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           issuesOpened: |
             👋 @{{ author }}
-            Thank you for raising an issue. We will will investigate into the matter and get back to you as soon as possible.
+            Thank you for raising an issue. We will investigate the matter and get back to you as soon as possible.
             Please make sure you have given us as much context as possible.
           pullRequestOpenedReactions: 'hooray, +1'
           pullRequestOpenedComment: |
             👋 @{{ author }}
             Thank you for raising your pull request.
-            Please make sure you have followed our contributing guidelines. We will review it as soon as possible. It he mean while make sure your pr checks the following boxes
-            - [ ] Is bassed on an issue
+            Please make sure you have followed our contributing guidelines. We will review it as soon as possible. In the meanwhile make sure your PR checks the following boxes            - [ ] Is bassed on an issue
             - [ ] Has been locally tested
-            - [ ] Has been tested with the admin ui
+            - [ ] Has been tested with the admin UI
             - [ ] Has been discussed with the development team in an open channel
