@@ -342,7 +342,7 @@ class CacheService
 //                }
 
                 //$filter['_self.schema.ref']='https://larping.nl/character.schema.json';
-                $filter['_self.schema.ref']['$in'][] = $entity->getReference();
+                $filter['_self.schema.id']['$in'][] = $entity;
             }
         }
 
