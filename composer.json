@@ -30,8 +30,7 @@
 		"predis/predis" : "~1.1",
 		"symfony/config" : "^5.1",
 		"symfony/dependency-injection" : "~3.4|~4.1|~5.0",
-		"symfony/var-dumper" : "^4.1.1|^5.1",
-		"clean/phpdoc-md": "^0.19.3"
+		"symfony/var-dumper" : "^4.1.1|^5.1"
 	},
 	"conflict" : {
 		"doctrine/dbal" : "<2.5",
