@@ -393,11 +393,11 @@ class RequestService
                     // If we do not have an object we throw an 404
                     if (!$result) {
                         return new Response($this->serializer->serialize([
-                            'message' => 'Could not find an object with id '.$this->id.' of type(s) '.implode(', ', $allowedSchemas['name']),
+                            'message' => 'Could not find an object with id '.$this->id,
                             'type'    => 'Bad Request',
                             'path'    => implode(', ', $allowedSchemas['name']),
                             'data'    => ['id' => $this->id],
-                        ]), Response::HTTP_NOT_FOUND);
+                        ], 'json'), Response::HTTP_NOT_FOUND);
                     }
 
                     // Lets see if the found result is allowd for this endpoint
