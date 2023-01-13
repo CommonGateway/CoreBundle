@@ -41,17 +41,17 @@ class RequestService
     private Security $security;
     private EventDispatcherInterface $eventDispatcher;
     private SerializerInterface $serializer;
-    
+
     /**
-     * @param EntityManagerInterface $entityManager
-     * @param CacheService $cacheService
-     * @param ResponseService $responseService
-     * @param ObjectEntityService $objectEntityService
-     * @param LogService $logService
-     * @param CallService $callService
-     * @param Security $security
+     * @param EntityManagerInterface   $entityManager
+     * @param CacheService             $cacheService
+     * @param ResponseService          $responseService
+     * @param ObjectEntityService      $objectEntityService
+     * @param LogService               $logService
+     * @param CallService              $callService
+     * @param Security                 $security
      * @param EventDispatcherInterface $eventDispatcher
-     * @param SerializerInterface $serializer
+     * @param SerializerInterface      $serializer
      */
     public function __construct(
         EntityManagerInterface $entityManager,
