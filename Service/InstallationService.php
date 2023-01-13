@@ -296,11 +296,11 @@ class InstallationService
                 if (array_key_exists('_id', $object) && $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $object['_id']])) {
                     $this->io->writeln(['', 'Object '.$object['_id'].' already exists, so updating']);
                 } elseif (array_key_exists('_id', $object)) {
-                    $this->io->writeln('Set external id to '.$object['_id']);
+                    $this->io->writeln('Set id to '.$object['_id']);
                     $objectEntity = new ObjectEntity($entity);
                     $this->io->writeln('Creating new object with existing id '.$objectEntity->getId());
 
-                    $objectEntity->setExternalId($object['_id']);
+                    $objectEntity->setId($object['_id']);
                 } else {
                     $objectEntity = new ObjectEntity($entity);
                     $this->io->writeln(['', 'Creating new object']);
