@@ -764,11 +764,11 @@ class CacheService
 
         $collection = $this->client->endpoints->json;
 
-        $entityArray = $this->serializer->normalize($endpoint);
+        $endpointArray = $this->serializer->normalize($endpoint);
 
         if ($collection->findOneAndReplace(
             ['id' => $endpoint->getId()->toString()],
-            $entityArray,
+            $endpointArray,
             ['upsert'=>true]
         )) {
             (isset($this->io) ? $this->io->writeln('Updated endpoint '.$endpoint->getId()->toString().' to cache') : '');
