@@ -301,7 +301,6 @@ class InstallationService
                     // Nice doctrine setId shizzle
                     $objectEntity = new ObjectEntity();
                     $this->em->persist($objectEntity);
-                    $this->em->flush();
                     $objectEntity->setId($object['_id']);
                     $this->em->persist($objectEntity);
                     $this->em->flush();
