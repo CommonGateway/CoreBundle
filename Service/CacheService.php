@@ -200,6 +200,11 @@ class CacheService
      */
     public function cacheObject(ObjectEntity $objectEntity): ObjectEntity
     {
+        // For when we can't generate a schema for an ObjectEntity (for example setting an id on ObjectEntity created with testData)
+        if (!$objectEntity->getEntity()) {
+            return $objectEntity;
+        }
+
         // Backwards compatablity
         if (!isset($this->client)) {
             return $objectEntity;
