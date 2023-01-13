@@ -297,7 +297,7 @@ class InstallationService
                     $this->io->writeln(['', 'Object '.$object['_id'].' already exists, so updating']);
                 } elseif (array_key_exists('_id', $object)) {
                     $this->io->writeln('Set id to '.$object['_id']);
-                    
+
                     // Nice doctrine setId shizzle
                     $objectEntity = new ObjectEntity();
                     $this->em->persist($objectEntity);
@@ -306,11 +306,11 @@ class InstallationService
                     $this->em->persist($objectEntity);
                     $this->em->flush();
                     $this->em->refresh($objectEntity);
-    
+
                     $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $object['_id']]);
-                    
+
                     $objectEntity->setEntity($entity);
-                    
+
                     $this->io->writeln('Creating new object with existing id '.$objectEntity->getId());
                 } else {
                     $objectEntity = new ObjectEntity($entity);

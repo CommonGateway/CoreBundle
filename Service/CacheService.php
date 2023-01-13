@@ -204,7 +204,7 @@ class CacheService
         if (!$objectEntity->getEntity()) {
             return $objectEntity;
         }
-        
+
         // Backwards compatablity
         if (!isset($this->client)) {
             return $objectEntity;
