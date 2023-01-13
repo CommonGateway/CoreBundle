@@ -19,6 +19,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * Handles incomming request from endpoints or controllers that relate to the gateways object structure (eav).
@@ -39,6 +40,7 @@ class RequestService
     private CallService $callService;
     private Security $security;
     private EventDispatcherInterface $eventDispatcher;
+    private SerializerInterface $serializer;
 
     /**
      * @param EntityManagerInterface   $entityManager
@@ -49,6 +51,7 @@ class RequestService
      * @param CallService              $callService
      * @param Security                 $security
      * @param EventDispatcherInterface $eventDispatcher
+     * @param SerializerInterface      $serializer
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -58,7 +61,8 @@ class RequestService
         LogService $logService,
         CallService $callService,
         Security $security,
-        EventDispatcherInterface $eventDispatcher
+        EventDispatcherInterface $eventDispatcher,
+        SerializerInterface $serializer
     ) {
         $this->entityManager = $entityManager;
         $this->cacheService = $cacheService;
@@ -68,6 +72,7 @@ class RequestService
         $this->callService = $callService;
         $this->security = $security;
         $this->eventDispatcher = $eventDispatcher;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -372,7 +377,8 @@ class RequestService
         $allowedSchemas = [];
         if (isset($this->data['endpoint'])) {
             foreach ($this->data['endpoint']->getEntities() as $entity) {
-                $allowedSchemas[] = $entity->getId();
+                $allowedSchemas['id'][] = $entity->getId();
+                $allowedSchemas['name'][] = $entity->getName();
             }
         }
 
@@ -386,11 +392,16 @@ class RequestService
 
                     // If we do not have an object we throw an 404
                     if (!$result) {
-                        return new Response('Object '.$this->id.' not found', '404');
+                        return new Response($this->serializer->serialize([
+                            'message' => 'Could not find an object with id '.$this->id,
+                            'type'    => 'Bad Request',
+                            'path'    => implode(', ', $allowedSchemas['name']),
+                            'data'    => ['id' => $this->id],
+                        ], 'json'), Response::HTTP_NOT_FOUND);
                     }
 
                     // Lets see if the found result is allowd for this endpoint
-                    if (isset($this->data['endpoint']) && !in_array($result['_self']['schema']['id'], $allowedSchemas)) {
+                    if (isset($this->data['endpoint']) && !in_array($result['_self']['schema']['id'], $allowedSchemas['id'])) {
                         return new Response('Object is not supported by this endpoint', '406');
                     }
 
@@ -402,7 +413,7 @@ class RequestService
                     $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) ? json_encode($this->content) : $this->content);
                 } else {
                     //$this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
-                    $result = $this->cacheService->searchObjects(null, $filters, $allowedSchemas);
+                    $result = $this->cacheService->searchObjects(null, $filters, $allowedSchemas['id']);
                 }
                 break;
             case 'POST':
@@ -419,7 +430,7 @@ class RequestService
                 }
 
                 // Lets see if the found result is allowd for this endpoint
-                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas)) {
+                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
@@ -450,7 +461,7 @@ class RequestService
                 }
 
                 // Lets see if the found result is allowd for this endpoint
-                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas)) {
+                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
@@ -481,7 +492,7 @@ class RequestService
                 }
 
                 // Lets see if the found result is allowd for this endpoint
-                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas)) {
+                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
@@ -511,7 +522,7 @@ class RequestService
                 }
 
                 // Lets see if the found result is allowd for this endpoint
-                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas)) {
+                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
