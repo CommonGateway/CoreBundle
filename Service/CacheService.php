@@ -753,7 +753,7 @@ class CacheService
         }
 
         if (isset($this->io)) {
-            $this->io->writeln('Start caching endpoint '.$endpoint->getId()->toString());
+            $this->io->writeln('Start caching endpoint '.$endpoint->getId()->toString().' with name: '.$endpoint->getName());
         }
         $updatedEndpoint = $this->entityManager->getRepository('App:Endpoint')->find($endpoint->getId());
         if ($updatedEndpoint instanceof Endpoint) {
