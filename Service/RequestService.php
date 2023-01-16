@@ -377,7 +377,7 @@ class RequestService
         $allowedSchemas = [];
         if (isset($this->data['endpoint'])) {
             foreach ($this->data['endpoint']->getEntities() as $entity) {
-                $allowedSchemas['id'][] = $entity->getId();
+                $allowedSchemas['id'][] = $entity->getId()->toString();
                 $allowedSchemas['name'][] = $entity->getName();
             }
         }
