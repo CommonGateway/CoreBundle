@@ -379,7 +379,6 @@ class RequestService
             $allowedSchemas = $this->data['endpoint']->getEntities();
         }
 
-
         // All prepped so lets go
         // todo: split these into functions?
         switch ($this->data['method']) {
