@@ -374,7 +374,8 @@ class RequestService
         // todo: controlleren of de gebruiker ingelogd is
 
         // Make a list of schema's that are allowed for this endpoint
-        $allowedSchemas = [];
+        $allowedSchemas['id'] = [];
+        $allowedSchemas['name'] = [];
         if (isset($this->data['endpoint'])) {
             foreach ($this->data['endpoint']->getEntities() as $entity) {
                 $allowedSchemas['id'][] = $entity->getId()->toString();
