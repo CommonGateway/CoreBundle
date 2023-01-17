@@ -547,7 +547,7 @@ class RequestService
 
         $this->handleMetadataSelf($result, $metadataSelf);
 
-        $result = $this->shouldWeUnsetEmbedded($result, $this->data['headers']['accept'] ?? null, $isCollection ?? false);
+//        $result = $this->shouldWeUnsetEmbedded($result, $this->data['headers']['accept'] ?? null, $isCollection ?? false);
 
         return $this->createResponse($result);
     }
