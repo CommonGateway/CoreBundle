@@ -19,6 +19,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * Handles incomming request from endpoints or controllers that relate to the gateways object structure (eav).
@@ -39,6 +40,7 @@ class RequestService
     private CallService $callService;
     private Security $security;
     private EventDispatcherInterface $eventDispatcher;
+    private SerializerInterface $serializer;
 
     /**
      * @param EntityManagerInterface   $entityManager
@@ -49,6 +51,7 @@ class RequestService
      * @param CallService              $callService
      * @param Security                 $security
      * @param EventDispatcherInterface $eventDispatcher
+     * @param SerializerInterface      $serializer
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -58,7 +61,8 @@ class RequestService
         LogService $logService,
         CallService $callService,
         Security $security,
-        EventDispatcherInterface $eventDispatcher
+        EventDispatcherInterface $eventDispatcher,
+        SerializerInterface $serializer
     ) {
         $this->entityManager = $entityManager;
         $this->cacheService = $cacheService;
@@ -68,6 +72,7 @@ class RequestService
         $this->callService = $callService;
         $this->security = $security;
         $this->eventDispatcher = $eventDispatcher;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -371,10 +376,9 @@ class RequestService
         // Make a list of schema's that are allowed for this endpoint
         $allowedSchemas = [];
         if (isset($this->data['endpoint'])) {
-            foreach ($this->data['endpoint']->getEntities() as $entity) {
-                $allowedSchemas[] = $entity->getId();
-            }
+            $allowedSchemas = $this->data['endpoint']->getEntities();
         }
+
 
         // All prepped so lets go
         // todo: split these into functions?
@@ -386,7 +390,12 @@ class RequestService
 
                     // If we do not have an object we throw an 404
                     if (!$result) {
-                        return new Response('Object '.$this->id.' not found', '404');
+                        return new Response($this->serializer->serialize([
+                            'message' => 'Could not find an object with id '.$this->id,
+                            'type'    => 'Bad Request',
+                            'path'    => implode(', ', $allowedSchemas['name']),
+                            'data'    => ['id' => $this->id],
+                        ], 'json'), Response::HTTP_NOT_FOUND);
                     }
 
                     // Lets see if the found result is allowd for this endpoint
@@ -536,7 +545,7 @@ class RequestService
 
         $this->handleMetadataSelf($result, $metadataSelf);
 
-        $result = $this->shouldWeUnsetEmbedded($result, $this->data['headers']['accept'] ?? null, $isCollection ?? false);
+//        $result = $this->shouldWeUnsetEmbedded($result, $this->data['headers']['accept'] ?? null, $isCollection ?? false);
 
         return $this->createResponse($result);
     }
