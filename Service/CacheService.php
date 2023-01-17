@@ -200,6 +200,11 @@ class CacheService
      */
     public function cacheObject(ObjectEntity $objectEntity): ObjectEntity
     {
+        // For when we can't generate a schema for an ObjectEntity (for example setting an id on ObjectEntity created with testData)
+        if (!$objectEntity->getEntity()) {
+            return $objectEntity;
+        }
+
         // Backwards compatablity
         if (!isset($this->client)) {
             return $objectEntity;
@@ -748,27 +753,27 @@ class CacheService
         }
 
         if (isset($this->io)) {
-            $this->io->writeln('Start caching object '.$endpoint->getId()->toString());
+            $this->io->writeln('Start caching endpoint '.$endpoint->getId()->toString().' with name: '.$endpoint->getName());
         }
-        $updatedEntity = $this->entityManager->getRepository('App:Endpoint')->find($endpoint->getId());
-        if ($updatedEntity instanceof Endpoint) {
-            $entity = $updatedEntity;
+        $updatedEndpoint = $this->entityManager->getRepository('App:Endpoint')->find($endpoint->getId());
+        if ($updatedEndpoint instanceof Endpoint) {
+            $endpoint = $updatedEndpoint;
         } elseif (isset($this->io)) {
-            $this->io->writeln('Could not find an Endpoint with id: '.$objectEntity->getId()->toString());
+            $this->io->writeln('Could not find an Endpoint with id: '.$endpoint->getId()->toString());
         }
 
         $collection = $this->client->endpoints->json;
 
-        $entityArray = $this->serializer->normalize($entity);
+        $endpointArray = $this->serializer->normalize($endpoint);
 
         if ($collection->findOneAndReplace(
             ['id' => $endpoint->getId()->toString()],
-            $entityArray,
+            $endpointArray,
             ['upsert'=>true]
         )) {
-            (isset($this->io) ? $this->io->writeln('Updated object '.$endpoint->getId()->toString().' of type Endpoint to cache') : '');
+            (isset($this->io) ? $this->io->writeln('Updated endpoint '.$endpoint->getId()->toString().' to cache') : '');
         } else {
-            (isset($this->io) ? $this->io->writeln('Wrote object '.$endpoint->getId()->toString().' of type Endpoint to cache') : '');
+            (isset($this->io) ? $this->io->writeln('Wrote object '.$endpoint->getId()->toString().' to cache') : '');
         }
 
         return $endpoint;
