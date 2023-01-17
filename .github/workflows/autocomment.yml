@@ -20,4 +20,5 @@ jobs:
             - [ ] Is bassed on an issue
             - [ ] Has been locally tested
             - [ ] Has been tested with the admin ui
+            - [ ] Has been documented
             - [ ] Has been discussed with the development team in an open channel
