@@ -392,7 +392,7 @@ class RequestService
                         return new Response($this->serializer->serialize([
                             'message' => 'Could not find an object with id '.$this->id,
                             'type'    => 'Bad Request',
-                            'path'    => implode(', ', $allowedSchemas['name']),
+//                            'path'    => implode(', ', $allowedSchemas['name']),
                             'data'    => ['id' => $this->id],
                         ], 'json'), Response::HTTP_NOT_FOUND);
                     }
