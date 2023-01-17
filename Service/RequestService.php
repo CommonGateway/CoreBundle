@@ -377,7 +377,10 @@ class RequestService
         $allowedSchemas['id'] = [];
         $allowedSchemas['name'] = [];
         if (isset($this->data['endpoint'])) {
-            $allowedSchemas = $this->data['endpoint']->getEntities();
+            foreach ($this->data['endpoint']->getEntities() as $entity) {
+                $allowedSchemas['id'][] = $entity->getId()->toString();
+                $allowedSchemas['name'][] = $entity->getName();
+            }
         }
 
         // All prepped so lets go
@@ -393,13 +396,13 @@ class RequestService
                         return new Response($this->serializer->serialize([
                             'message' => 'Could not find an object with id '.$this->id,
                             'type'    => 'Bad Request',
-//                            'path'    => implode(', ', $allowedSchemas['name']),
+                            'path'    => implode(', ', $allowedSchemas['name']),
                             'data'    => ['id' => $this->id],
                         ], 'json'), Response::HTTP_NOT_FOUND);
                     }
 
                     // Lets see if the found result is allowd for this endpoint
-                    if (isset($this->data['endpoint']) && !in_array($result['_self']['schema']['id'], $allowedSchemas)) {
+                    if (isset($this->data['endpoint']) && !in_array($result['_self']['schema']['id'], $allowedSchemas['id'])) {
                         return new Response('Object is not supported by this endpoint', '406');
                     }
 
@@ -411,7 +414,7 @@ class RequestService
                     $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) ? json_encode($this->content) : $this->content);
                 } else {
                     //$this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
-                    $result = $this->cacheService->searchObjects(null, $filters, $allowedSchemas);
+                    $result = $this->cacheService->searchObjects(null, $filters, $allowedSchemas['id']);
                 }
                 break;
             case 'POST':
@@ -428,7 +431,7 @@ class RequestService
                 }
 
                 // Lets see if the found result is allowd for this endpoint
-                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas)) {
+                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
@@ -459,7 +462,7 @@ class RequestService
                 }
 
                 // Lets see if the found result is allowd for this endpoint
-                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas)) {
+                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
@@ -490,7 +493,7 @@ class RequestService
                 }
 
                 // Lets see if the found result is allowd for this endpoint
-                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas)) {
+                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
@@ -520,7 +523,7 @@ class RequestService
                 }
 
                 // Lets see if the found result is allowd for this endpoint
-                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas)) {
+                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
