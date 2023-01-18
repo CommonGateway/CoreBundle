@@ -11,6 +11,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Psr\Log\LoggerInterface;
 
 class InstallationService
 {
@@ -295,22 +296,6 @@ class InstallationService
 
                 if (array_key_exists('_id', $object) && $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $object['_id']])) {
                     $this->io->writeln(['', 'Object '.$object['_id'].' already exists, so updating']);
-                } elseif (array_key_exists('_id', $object)) {
-                    $this->io->writeln('Set id to '.$object['_id']);
-
-                    // Nice doctrine setId shizzle
-                    $objectEntity = new ObjectEntity();
-                    $this->em->persist($objectEntity);
-                    $objectEntity->setId($object['_id']);
-                    $this->em->persist($objectEntity);
-                    $this->em->flush();
-                    $this->em->refresh($objectEntity);
-
-                    $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $object['_id']]);
-
-                    $objectEntity->setEntity($entity);
-
-                    $this->io->writeln('Creating new object with existing id '.$objectEntity->getId());
                 } else {
                     $objectEntity = new ObjectEntity($entity);
                     $this->io->writeln(['', 'Creating new object']);
@@ -318,8 +303,9 @@ class InstallationService
 
                 $this->io->writeln('Writing data to the object');
                 $objectEntity->hydrate($object);
-                $this->em->persist($objectEntity);
-                $this->em->flush();
+
+                $this->saveOnFixedId($objectEntity);
+
                 $this->io->writeln(['Object saved as '.$objectEntity->getId(), '']);
             }
         }
@@ -349,4 +335,49 @@ class InstallationService
 
         return $installationService->install();
     }
+
+    /**
+     * Handles forced id's on object entities
+     *
+     * @param ObjectEntity $objectEntity
+     * @return ObjectEntity
+     */
+    private function saveOnFixedId(ObjectEntity $objectEntity): ObjectEntity{
+        // Save the values
+        $values = $objectEntity->getObjectValues()->toArray();
+        $object->clearAllValues();
+
+        // We have an object entity with a fixed id that isn't in the database, so we need to act
+        if($objectEntity->getId() && !$this->em->contains($objectEntity)){
+            // Sve the id
+            $id = $objectEntity->getId();
+            // Create the entity
+            $this->em->persist($objectEntity);
+            $this->em->flush();
+            $this->em->refresh($objectEntity);
+            // Reset the id
+            $objectEntity->setId($id);
+            $this->em->persist($objectEntity);
+            $this->em->flush();
+            $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
+        }
+
+        // Loop trough the values
+        foreach ($values as $objectValue){
+            // If the value itsself is an object it might also contain fixed id's
+            foreach ($objectValue->getObjects() as $subobject){
+                $subobject = $this->saveOnFixedId($subobject);
+            }
+
+            $objectEntity->addObjectValue($objectValue);
+        }
+
+        $this->em->persist($objectEntity);
+        $this->em->flush();
+
+        return $objectEntity;
+    }
+
+
+
 }
