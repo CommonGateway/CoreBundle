@@ -379,11 +379,14 @@ class RequestService
         // todo: controlleren of de gebruiker ingelogd is
 
         // Make a list of schema's that are allowed for this endpoint
-        $allowedSchemas = [];
+        $allowedSchemas['id'] = [];
+        $allowedSchemas['name'] = [];
         if (isset($this->data['endpoint'])) {
-            $allowedSchemas = $this->data['endpoint']->getEntities();
+            foreach ($this->data['endpoint']->getEntities() as $entity) {
+                $allowedSchemas['id'][] = $entity->getId()->toString();
+                $allowedSchemas['name'][] = $entity->getName();
+            }
         }
-
 
         // All prepped so lets go
         // todo: split these into functions?
@@ -404,7 +407,7 @@ class RequestService
                     }
 
                     // Lets see if the found result is allowd for this endpoint
-                    if (isset($this->data['endpoint']) && !in_array($result['_self']['schema']['id'], $allowedSchemas)) {
+                    if (isset($this->data['endpoint']) && !in_array($result['_self']['schema']['id'], $allowedSchemas['id'])) {
                         return new Response('Object is not supported by this endpoint', '406');
                     }
 
@@ -434,7 +437,7 @@ class RequestService
                 }
 
                 // Lets see if the found result is allowd for this endpoint
-                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas)) {
+                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
@@ -466,7 +469,7 @@ class RequestService
                 }
 
                 // Lets see if the found result is allowd for this endpoint
-                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas)) {
+                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
@@ -499,7 +502,7 @@ class RequestService
                 }
 
                 // Lets see if the found result is allowd for this endpoint
-                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas)) {
+                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
@@ -530,7 +533,7 @@ class RequestService
                 }
 
                 // Lets see if the found result is allowd for this endpoint
-                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas)) {
+                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
