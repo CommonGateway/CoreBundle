@@ -16,6 +16,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Service to call external sources.
@@ -37,6 +38,7 @@ class CacheService
     private SymfonyStyle $io;
     private ParameterBagInterface $parameters;
     private SerializerInterface $serializer;
+    private LoggerInterface $logger;
 
     /**
      * @param AuthenticationService  $authenticationService
@@ -88,6 +90,8 @@ class CacheService
         $filter = [];
         $objects = $collection->find($filter)->toArray();
         (isset($this->io) ? $this->io->writeln('Found '.count($objects).'') : '');
+
+        //$this->logger->info("Ran cache cleanup");
     }
 
     /**
@@ -107,6 +111,7 @@ class CacheService
         if (!isset($this->client)) {
             (isset($this->io) ? $this->io->writeln('No cache client found, halting warmup') : '');
 
+            //$this->info->logger("Ran cache Warmup");
             return Command::SUCCESS;
         }
 
@@ -163,6 +168,7 @@ class CacheService
         (isset($this->io) ? $this->io->writeln(['Removing deleted objects', '============']) : '');
         $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
 
+        //$this->logger->info("Ran cache Warmup");
         return Command::SUCCESS;
     }
 
@@ -200,11 +206,6 @@ class CacheService
      */
     public function cacheObject(ObjectEntity $objectEntity): ObjectEntity
     {
-        // For when we can't generate a schema for an ObjectEntity (for example setting an id on ObjectEntity created with testData)
-        if (!$objectEntity->getEntity()) {
-            return $objectEntity;
-        }
-
         // Backwards compatablity
         if (!isset($this->client)) {
             return $objectEntity;
@@ -243,6 +244,8 @@ class CacheService
             (isset($this->io) ? $this->io->writeln('Wrote object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache') : '');
         }
 
+
+        //$this->logger->debug("Cached object");
         return $objectEntity;
     }
 
@@ -264,6 +267,7 @@ class CacheService
         $collection = $this->client->objects->json;
 
         $collection->findOneAndDelete(['_id'=>$id]);
+        //$this->logger->debug("Delete object");
     }
 
     /**
@@ -292,6 +296,7 @@ class CacheService
             return $this->cacheObject($object)->toArray(['embedded' => true]);
         }
 
+        //$this->logger->debug("Retrieved object from cache");
         return false;
     }
 
@@ -366,6 +371,8 @@ class CacheService
         $total = $collection->count($filter);
 
         // Make sure to add the pagination properties in response
+
+        //$this->logger->debug("Searched cache for objects");
         return $this->handleResultPagination($completeFilter, $results, $total);
     }
 
@@ -753,27 +760,27 @@ class CacheService
         }
 
         if (isset($this->io)) {
-            $this->io->writeln('Start caching endpoint '.$endpoint->getId()->toString().' with name: '.$endpoint->getName());
+            $this->io->writeln('Start caching object '.$endpoint->getId()->toString());
         }
-        $updatedEndpoint = $this->entityManager->getRepository('App:Endpoint')->find($endpoint->getId());
-        if ($updatedEndpoint instanceof Endpoint) {
-            $endpoint = $updatedEndpoint;
+        $updatedEntity = $this->entityManager->getRepository('App:Endpoint')->find($endpoint->getId());
+        if ($updatedEntity instanceof Endpoint) {
+            $entity = $updatedEntity;
         } elseif (isset($this->io)) {
-            $this->io->writeln('Could not find an Endpoint with id: '.$endpoint->getId()->toString());
+            $this->io->writeln('Could not find an Endpoint with id: '.$objectEntity->getId()->toString());
         }
 
         $collection = $this->client->endpoints->json;
 
-        $endpointArray = $this->serializer->normalize($endpoint);
+        $entityArray = $this->serializer->normalize($entity);
 
         if ($collection->findOneAndReplace(
             ['id' => $endpoint->getId()->toString()],
-            $endpointArray,
+            $entityArray,
             ['upsert'=>true]
         )) {
-            (isset($this->io) ? $this->io->writeln('Updated endpoint '.$endpoint->getId()->toString().' to cache') : '');
+            (isset($this->io) ? $this->io->writeln('Updated object '.$endpoint->getId()->toString().' of type Endpoint to cache') : '');
         } else {
-            (isset($this->io) ? $this->io->writeln('Wrote object '.$endpoint->getId()->toString().' to cache') : '');
+            (isset($this->io) ? $this->io->writeln('Wrote object '.$endpoint->getId()->toString().' of type Endpoint to cache') : '');
         }
 
         return $endpoint;
