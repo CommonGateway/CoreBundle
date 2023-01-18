@@ -15,7 +15,6 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 |[createResponse](#requestservicecreateresponse)|Creating the responce object.|
 |[getId](#requestservicegetid)|Get the ID from given parameters.|
 |[getSchema](#requestservicegetschema)|Get the schema from given parameters returns false if no schema could be established.|
-|[itemRequestHandler](#requestserviceitemrequesthandler)||
 |[proxyHandler](#requestserviceproxyhandler)||
 |[realRequestQueryAll](#requestservicerealrequestqueryall)|A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.|
 |[requestHandler](#requestservicerequesthandler)|Handles incomming requests and is responsible for generating a responce.|
@@ -149,30 +148,6 @@ Get the schema from given parameters returns false if no schema could be establi
 `\Entity|false`
 
 
-
-
-<hr />
-
-
-### RequestService::itemRequestHandler  
-
-**Description**
-
-```php
- itemRequestHandler (void)
-```
-
- 
-
- 
-
-**Parameters**
-
-`This function has no parameters.`
-
-**Return Values**
-
-`void`
 
 
 <hr />
