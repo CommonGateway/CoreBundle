@@ -6,10 +6,8 @@ use Adbar\Dot;
 use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\Gateway as Source;
-use App\Entity\Log;
 use App\Entity\ObjectEntity;
 use App\Event\ActionEvent;
-use App\Service\LogService;
 use App\Service\ObjectEntityService;
 use App\Service\ResponseService;
 use Doctrine\Common\Collections\Criteria;
@@ -20,6 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\SerializerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Handles incomming request from endpoints or controllers that relate to the gateways object structure (eav).
@@ -36,8 +35,7 @@ class RequestService
     // todo: we might want to move or rewrite code instead of using these services here:
     private ResponseService $responseService;
     private ObjectEntityService $objectEntityService;
-    private LogService $logService;
-    private CallService $callService;
+    private LoggerInterface $logger;
     private Security $security;
     private EventDispatcherInterface $eventDispatcher;
     private SerializerInterface $serializer;
@@ -47,7 +45,7 @@ class RequestService
      * @param CacheService             $cacheService
      * @param ResponseService          $responseService
      * @param ObjectEntityService      $objectEntityService
-     * @param LogService               $logService
+     * @param LoggerInterface          $RequestLog
      * @param CallService              $callService
      * @param Security                 $security
      * @param EventDispatcherInterface $eventDispatcher
@@ -58,7 +56,7 @@ class RequestService
         CacheService $cacheService,
         ResponseService $responseService,
         ObjectEntityService $objectEntityService,
-        LogService $logService,
+        LoggerInterface $RequestLog,
         CallService $callService,
         Security $security,
         EventDispatcherInterface $eventDispatcher,
@@ -68,7 +66,7 @@ class RequestService
         $this->cacheService = $cacheService;
         $this->responseService = $responseService;
         $this->objectEntityService = $objectEntityService;
-        $this->logService = $logService;
+        $this->logger = $RequestLog;
         $this->callService = $callService;
         $this->security = $security;
         $this->eventDispatcher = $eventDispatcher;
@@ -247,6 +245,8 @@ class RequestService
                 "No Endpoint in data['endpoint']" :
                 "This Endpoint has no Proxy: {$data['endpoint']->getName()}";
 
+            $this->logger->error('This Endpoint has no Proxy');
+
             return new Response(
                 json_encode(['Message' => $message]),
                 Response::HTTP_NOT_FOUND,
@@ -255,6 +255,9 @@ class RequestService
         }
 
         if ($proxy instanceof Source && !$proxy->getIsEnabled()) {
+
+            $this->logger->error('Source is not enabled');
+
             return new Response(
                 json_encode(['Message' => "This Source is not enabled: {$proxy->getName()}"]),
                 Response::HTTP_OK, // This should be ok so we can disable Sources without creating error responses?
@@ -277,6 +280,8 @@ class RequestService
                 'body'    => $this->data['crude_body'],
             ]
         );
+
+        $this->logger->debug('Handled proxy request');
 
         // Let create a responce from the guzle call
         $responce = new Response(
@@ -408,10 +413,11 @@ class RequestService
                     $responseLog = new Response(is_string($this->content) || is_null($this->content) ? $this->content : null, 200, ['CoreBundle' => 'GetItem']);
                     $session = new Session();
                     $session->set('object', $this->id);
-                    $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) ? json_encode($this->content) : $this->content);
+                    $this->logger->debug('GET on collection endpoint',['method'=>'GET']);
                 } else {
                     //$this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
                     $result = $this->cacheService->searchObjects(null, $filters, $allowedSchemas);
+                    $this->logger->debug('GET on item endpoint',['method'=>'GET']);
                 }
                 break;
             case 'POST':
@@ -443,6 +449,7 @@ class RequestService
                     // Use validation to throw an error
                 }
 
+                $this->logger->debug('PUT on collection endpoint',['method'=>'PUT']);
                 $result = $this->cacheService->getObject($this->object->getId());
                 break;
             case 'PUT':
@@ -474,6 +481,8 @@ class RequestService
                     // Use validation to throw an error
                 }
 
+
+                $this->logger->debug('PUT on collection endpoint',['method'=>'PUT']);
                 $result = $this->cacheService->getObject($this->object->getId());
                 break;
             case 'PATCH':
@@ -505,6 +514,7 @@ class RequestService
                     // Use validation to throw an error
                 }
 
+                $this->logger->debug('PATC on collection endpoint',['method'=>'PATCH']);
                 $result = $this->cacheService->getObject($this->object->getId());
                 break;
             case 'DELETE':
@@ -528,12 +538,14 @@ class RequestService
                 //                $this->cacheService - removeObject($this->id); /* @todo this is hacky, the above schould alredy do this */
                 $this->entityManager->flush();
 
+                $this->logger->debug('DELETE on collection endpoint',['method'=>'DELETE']);
                 return new Response('Succesfully deleted object', '202');
                 break;
             default:
-                break;
 
+                $this->logger->error('Unknown method: '.$this->data['method'],['method'=>$this->data['method']]);
                 return new Response('Unkown method'.$this->data['method'], '404');
+                break;
         }
 
         $this->entityManager->flush();
@@ -640,60 +652,6 @@ class RequestService
     }
 
     /**
-     * @param array $data          The data from the call
-     * @param array $configuration The configuration from the call
-     *
-     * @return array The modified data
-     */
-    public function itemRequestHandler(array $data, array $configuration): array
-    {
-        $this->data = $data;
-        $this->configuration = $configuration;
-
-        $method = $this->data['request']->getMethod();
-        $content = $this->data['request']->getContent();
-
-        // Lets see if we have an object
-        if (array_key_exists('id', $this->data)) {
-            $this->id = $data['id'];
-            if (!$this->object = $this->cacheService->getObject($data['id'])) {
-                // Throw not found
-            }
-        }
-
-        switch ($method) {
-            case 'GET':
-                break;
-            case 'PUT':
-
-                if ($validation = $this->object->validate($content) && $this->object->hydrate($content, true)) {
-                    $this->entityManager->persist($this->object);
-                } else {
-                    // Use validation to throw an error
-                }
-                break;
-            case 'PATCH':
-                if ($this->object->hydrate($content) && $validation = $this->object->validate()) {
-                    $this->entityManager->persist($this->object);
-                } else {
-                    // Use validation to throw an error
-                }
-                break;
-            case 'DELETE':
-                $this->entityManager->remove($this->object);
-
-                return new Response('', '202');
-                break;
-            default:
-                break;
-        }
-
-        $this->entityManager->flush();
-
-        return $this->createResponse($this->object);
-    }
-
-    /**
      * This function searches all the objectEntities and formats the data.
      *
      * @param array $data          The data from the call
@@ -719,6 +677,9 @@ class RequestService
                 'objectEntity' => $objectEntity->toArray(),
             ];
         }
+
+
+        $this->logger->debug('Handled search request');
 
         $this->data['response'] = $response = new Response(
             json_encode($response),
