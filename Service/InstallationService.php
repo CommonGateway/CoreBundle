@@ -92,7 +92,7 @@ class InstallationService
         }
 
 
-        $this->logger->debug('Trying to install: '.$bundle;
+        $this->logger->debug('Trying to install: '.$bundle);
 
         $packages = $this->composerService->getAll();
 
