@@ -12,7 +12,8 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use Symfony\Component\Serializer\Encoder\XmlEncoder:
+use Monolog\Logger;
 
 /**
  * Service to call external sources.
@@ -32,6 +33,7 @@ class CallService
     private Client $client;
     private EntityManagerInterface $entityManager;
     private FileService $fileService;
+    private Logger $logger;
 
     /**
      * @param AuthenticationService  $authenticationService
@@ -44,6 +46,7 @@ class CallService
         $this->client = new Client([]);
         $this->entityManager = $entityManager;
         $this->fileService = $fileService;
+        $this->logger = New Logger('call');
     }
 
     /**

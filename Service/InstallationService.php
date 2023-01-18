@@ -11,6 +11,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Monolog\Logger;
 
 class InstallationService
 {
@@ -18,6 +19,7 @@ class InstallationService
     private EntityManagerInterface $em;
     private SymfonyStyle $io;
     private $container;
+    private Logger $logger;
 
     public function __construct(
         ComposerService $composerService,
@@ -28,6 +30,8 @@ class InstallationService
         $this->em = $em;
         $this->container = $kernel->getContainer();
         $this->collection = null;
+        $this->logger = New Logger('installation');
+
     }
 
     /**
@@ -59,7 +63,10 @@ class InstallationService
             ]);
         }
 
+        $this->logger->debug("Running plugin installer");
+
         foreach ($plugins as $plugin) {
+
             $this->install($plugin['name']);
         }
 
@@ -83,6 +90,9 @@ class InstallationService
                 '',
             ]);
         }
+
+
+        $this->logger->debug('Trying to install: '.$bundle;
 
         $packages = $this->composerService->getAll();
 
@@ -123,6 +133,8 @@ class InstallationService
             // We want each plugin to also be a collection (if it contains schema's that is)
             if (count($schemas) > 0) {
                 if (!$this->collection = $this->em->getRepository('App:CollectionEntity')->findOneBy(['plugin' => $package['name']])) {
+
+                    $this->logger->debug('Created a collection for plugin '.$bundle);
                     $this->io->writeln(['Created a collection for this plugin', '']);
                     $this->collection = new CollectionEntity();
                     $this->collection->setName($package['name']);
@@ -130,6 +142,7 @@ class InstallationService
                     isset($package['description']) && $this->collection->setDescription($package['description']);
                 } else {
                     $this->io->writeln(['Found a collection for this plugin', '']);
+                    $this->logger->debug('Found a collection for plugin '.$bundle);
                 }
             }
 
@@ -145,6 +158,7 @@ class InstallationService
             //$progressBar->finish();
         } else {
             $this->io->writeln('No schema folder found');
+            $this->logger->debug('No schema folder found for plugin '.$bundle);
         }
 
         // Handling the data
@@ -163,6 +177,7 @@ class InstallationService
 
             // We need to clear the finder
         } else {
+            $this->logger->debug('No data folder found for plugin '.$bundle);
             $this->io->writeln('No data folder found');
         }
 
@@ -179,10 +194,12 @@ class InstallationService
                 $this->handleInstaller($installer);
             }
         } else {
+            $this->logger->debug('No Installation folder found for plugin '.$bundle);
             $this->io->writeln('No Installation folder found');
         }
 
         $this->io->success('All Done');
+        $this->logger->debug('All Done installing plugin '.$bundle);
 
         return Command::SUCCESS;
     }
