@@ -298,7 +298,6 @@ class InstallationService
                     $this->io->writeln(['', 'Object '.$object['_id'].' already exists, so updating']);
                 } else {
                     $objectEntity = new ObjectEntity($entity);
-                    $this->io->writeln(['', 'Creating new object']);
                 }
 
                 $this->io->writeln('Writing data to the object');
@@ -349,6 +348,9 @@ class InstallationService
 
         // We have an object entity with a fixed id that isn't in the database, so we need to act
         if($objectEntity->getId() && !$this->em->contains($objectEntity)){
+
+            $this->io->writeln(['', 'Creating new object on a fixed id ('.$objectEntity->getId().')']);
+
             // Sve the id
             $id = $objectEntity->getId();
             // Create the entity
@@ -361,11 +363,16 @@ class InstallationService
             $this->em->flush();
             $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
         }
+        else{
+            $this->io->writeln(['', 'Creating new object on a generated id']);
+        }
 
         // Loop trough the values
         foreach ($values as $objectValue){
             // If the value itsself is an object it might also contain fixed id's
             foreach ($objectValue->getObjects() as $subobject){
+
+                $this->io->writeln(['', 'Found sub object']);
                 $subobject = $this->saveOnFixedId($subobject);
             }
 
