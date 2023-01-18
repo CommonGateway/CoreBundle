@@ -359,7 +359,7 @@ class InstallationService
             $objectEntity->setId($id);
             $this->em->persist($objectEntity);
             $this->em->flush();
-            $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
+            $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
         }
 
         // Loop trough the values
