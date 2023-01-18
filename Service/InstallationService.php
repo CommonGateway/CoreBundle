@@ -345,7 +345,7 @@ class InstallationService
     private function saveOnFixedId(ObjectEntity $objectEntity): ObjectEntity{
         // Save the values
         $values = $objectEntity->getObjectValues()->toArray();
-        $object->clearAllValues();
+        $objectEntity->clearAllValues();
 
         // We have an object entity with a fixed id that isn't in the database, so we need to act
         if($objectEntity->getId() && !$this->em->contains($objectEntity)){
