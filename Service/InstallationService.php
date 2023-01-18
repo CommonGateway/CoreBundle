@@ -342,6 +342,12 @@ class InstallationService
      * @return ObjectEntity
      */
     private function saveOnFixedId(ObjectEntity $objectEntity): ObjectEntity{
+        // This savetey dosn't make sense but we need it
+        if(!$objectEntity->getEntity()){
+            $this->io->writeln(['', 'Object can\'t be persisted due to missing schema']);
+            return $objectEntity;
+        }
+
         // Save the values
         $values = $objectEntity->getObjectValues()->toArray();
         $objectEntity->clearAllValues();
@@ -349,7 +355,7 @@ class InstallationService
         // We have an object entity with a fixed id that isn't in the database, so we need to act
         if($objectEntity->getId() && !$this->em->contains($objectEntity)){
 
-            $this->io->writeln(['', 'Creating new object on a fixed id ('.$objectEntity->getId().')']);
+            $this->io->writeln(['', 'Creating new object ('.$objectEntity->getEntity()->getName().') on a fixed id ('.$objectEntity->getId().')']);
 
             // Sve the id
             $id = $objectEntity->getId();
@@ -364,19 +370,19 @@ class InstallationService
             $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
         }
         else{
-            $this->io->writeln(['', 'Creating new object on a generated id']);
+            $this->io->writeln(['', 'Creating new object ('.$objectEntity->getEntity()->getName().') on a generated id']);
         }
 
         // Loop trough the values
         foreach ($values as $objectValue){
+            $objectEntity->addObjectValue($objectValue);
             // If the value itsself is an object it might also contain fixed id's
             foreach ($objectValue->getObjects() as $subobject){
 
-                $this->io->writeln(['', 'Found sub object']);
+                $this->io->writeln(['', 'Found sub object ('.$subobject->getEntity()->getName().')']);
                 $subobject = $this->saveOnFixedId($subobject);
             }
 
-            $objectEntity->addObjectValue($objectValue);
         }
 
         $this->em->persist($objectEntity);
