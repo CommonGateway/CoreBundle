@@ -378,9 +378,14 @@ class InstallationService
             $objectEntity->addObjectValue($objectValue);
             // If the value itsself is an object it might also contain fixed id's
             foreach ($objectValue->getObjects() as $subobject){
-
                 $this->io->writeln(['', 'Found sub object ('.$subobject->getEntity()->getName().')']);
                 $subobject = $this->saveOnFixedId($subobject);
+
+                // This savetey dosn't make sense but we need it
+                if(!$subobject->getEntity()){
+                    // todo: Throw error
+                    $objectEntity->removeObjectValue($objectValue);
+                }
             }
 
         }
