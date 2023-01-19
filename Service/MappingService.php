@@ -5,16 +5,22 @@ namespace CommonGateway\CoreBundle\Service;
 use App\Entity\Mapping;
 use Doctrine\ORM\EntityManagerInterface;
 use Monolog\Logger;
+use Twig\Environment;
 
 class MappingService
 {
     private EntityManagerInterface $em;;
     private Logger $logger;
 
+    // Create a private variable to store the twig environment
+    private Environment $twig;
+
     public function __construct(
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        Environment $twig
     ) {
         $this->em = $em;
+        $this->twig = $twig;
         $this->logger = New Logger('mapping');
     }
 
@@ -32,7 +38,8 @@ class MappingService
 
         // Lets do the actual mapping
         foreach($mappingObject->getMapping() as $key => $value){
-            $dotArray->set($key, $value);
+            // Render the value from twig
+            $dotArray->set($key, $twig->createTemplate($value)->render($input));
         }
 
         // Unset unwanted key's
@@ -69,7 +76,7 @@ class MappingService
 
         // Back to arrray
         $output = $dotArray->all();
-        
+
         // Log the result
         $this->logger->info('Mapped object',[
             "input" => $input,
