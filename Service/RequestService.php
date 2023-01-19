@@ -20,6 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\SerializerInterface;
+use Monolog\Logger;
 
 /**
  * Handles incomming request from endpoints or controllers that relate to the gateways object structure (eav).
@@ -36,11 +37,11 @@ class RequestService
     // todo: we might want to move or rewrite code instead of using these services here:
     private ResponseService $responseService;
     private ObjectEntityService $objectEntityService;
-    private LogService $logService;
     private CallService $callService;
     private Security $security;
     private EventDispatcherInterface $eventDispatcher;
     private SerializerInterface $serializer;
+    private Logger $logger;
 
     /**
      * @param EntityManagerInterface   $entityManager
@@ -73,6 +74,7 @@ class RequestService
         $this->security = $security;
         $this->eventDispatcher = $eventDispatcher;
         $this->serializer = $serializer;
+        $this->logger = New Logger('request');
     }
 
     /**
@@ -548,7 +550,7 @@ class RequestService
 
         $this->handleMetadataSelf($result, $metadataSelf);
 
-        $result = $this->shouldWeUnsetEmbedded($result, $this->data['headers']['accept'] ?? null, $isCollection ?? false);
+//        $result = $this->shouldWeUnsetEmbedded($result, $this->data['headers']['accept'] ?? null, $isCollection ?? false);
 
         return $this->createResponse($result);
     }

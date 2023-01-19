@@ -6,9 +6,18 @@ use function PHPUnit\Framework\throwException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
+use Monolog\Logger;
 
 class ComposerService
 {
+
+    private Logger $logger;
+
+    public function __construct(){
+
+        $this->logger = New Logger('installation');
+    }
+
     private function arrayEnum(array $array, array $enum): bool
     {
         // Lets see if the values in the array arry pressent in the enum
