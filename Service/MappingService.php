@@ -15,7 +15,7 @@ class MappingService
         EntityManagerInterface $em
     ) {
         $this->em = $em;
-        $this->logger = New Logger('cache');
+        $this->logger = New Logger('mapping');
     }
 
     public function mapping(Mapping $mappingObject, array $input): array
@@ -35,18 +35,41 @@ class MappingService
             $dotArray->set($key, $value);
         }
 
-        // Back to arrray
-        $output = $dotArray->all();
-
         // Unset unwanted key's
         foreach ($mappingObject->getUnset() as $unset){
-            if(!isset($output[$unset])){
-                $this->logger->error("Trying to unset and property that doensnt exist during mapping");
+            if(!$dotArray->has($unset)){
+                $this->logger->error("Trying to unset an property that doensnt exist during mapping");
                 continue;
             }
-            $unset($output[$unset]);
+            $dotArray->delete($unset);
         }
 
+        // Cast values to a specific type
+        foreach ($mappingObject->getCast() as $key => $cast){
+            if(!$dotArray->has($key)){
+                $this->logger->error("Trying to cast an property that doensnt exist during mapping");
+                continue;
+            }
+
+            $value = $dotArray->get($key);
+
+            switch ($cast) {
+                case 'int':
+                case 'integer':
+                    $value = intval($value);
+                    break;
+                // Todo: Add more casts
+                default:
+                    $this->logger->error("Trying to cast to an unsuported cast type: ".$cast);
+                    continue;
+            }
+
+            $dotArray->set($key, $value);
+        }
+
+        // Back to arrray
+        $output = $dotArray->all();
+        
         // Log the result
         $this->logger->info('Mapped object',[
             "input" => $input,
