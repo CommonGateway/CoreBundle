@@ -560,8 +560,34 @@ class InstallationService
             if ($valueObject instanceof Value) {
                 // Value is an array so lets create an object
                 if($valueObject->getAttribute()->getType() == "object"){
+                    // I hate arrays
+                    if($valueObject->getAttribute()->getMultiple() && is_array($value)){
+                        foreach($value as $subvalue){
+                            // is array
+                            if(is_array($value)){
+                                // Savety
+                                if(!$valueObject->getAttribute()->getObject()){
+                                    continue;
+                                }
+                                $newObject= New ObjectEntity($valueObject->getAttribute()->getObject());
+                                $value = $this->saveOnFixedId($newObject, $value);
+                            }
+                            // Is not an array
+                            else{
+                                $idValue = $value;
+                                $value =  $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
+                                // Savety
+                                if(!$value) {
+                                    $this->io->error('Could not find an object for id '.$idValue);
+                                }
+                            }
+                        }
+                    }
+                    if($valueObject->getAttribute()->getMultiple() && !is_array($value)){
+                        $this->io->error($valueObject->getAttribute()->getName().'Is a multiple so should be filled with an array, but provided value was '.$value.'(type: '.gettype($value).')');
+                    }
                     // is array
-                    if( is_array($value)){
+                    if(is_array($value)){
                         // Savety
                         if(!$valueObject->getAttribute()->getObject()){
                             continue;
@@ -585,6 +611,9 @@ class InstallationService
                 $objectEntity->addObjectValue($valueObject);
             }
         }
+
+        // Lets force the default values
+        $objectEntity->hydrate([]);
 
         $this->em->persist($objectEntity);
         $this->em->flush();
