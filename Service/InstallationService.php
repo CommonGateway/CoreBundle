@@ -74,7 +74,56 @@ class InstallationService
     }
 
     /**
-     * Validates the current EAV setup
+     * Validates the  objects in the EAV setup
+     *
+     * @return void
+     */
+    public function validateObjects(): int{
+
+        $objects = $this->em->getRepository('App:ObjectEntity')->findAll();
+
+        if ($this->io) {
+            $this->io->writeln([
+                'Validating: <comment> '.count($objects).' </comment> objects\'s',
+            ]);
+        }
+        $this->logger->info( 'Validating:'.count($objects).'objects\'s');
+
+        // Lets go go go !
+        foreach ($objects as $object){
+            if($object->get){
+
+            }
+        }
+    }
+
+
+    /**
+     * Validates the  objects in the EAV setup
+     *
+     * @return void
+     */
+    public function validateValues(): int{
+
+        $values = $this->em->getRepository('App:Value')->findAll();
+
+        if ($this->io) {
+            $this->io->writeln([
+                'Validating: <comment> '.count($values).' </comment> values\'s',
+            ]);
+        }
+        $this->logger->info( 'Validating:'.count($values).'values\'s');
+
+        // Lets go go go !
+        foreach ($values as $value){
+            if(!$value->getObjectEntity()){
+                $message = 'Value '.$value->getStringValue().' ('.$value->getId().') that belongs to  '.$value->getAttribute()->getName().' ('.$value->getAttribute()->getId().') is orpahned';
+            }
+        }
+    }
+
+    /**
+     * Validates the schemas in the EAV setup
      *
      * @return void
      */
@@ -117,8 +166,8 @@ class InstallationService
                     // Check for object link
                     if(!$attribute->getObject()){
                         $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an object';
-                        $this->logger->info($message);
-                        if ($this->io) { $this->io->info($message);}
+                        $this->logger->error($message);
+                        if ($this->io) { $this->io->error($message);}
                         $statusOk = false;
                     }
                     else{
@@ -139,8 +188,8 @@ class InstallationService
                 // Check for reference link
                 if($attribute->getReference() && !$attribute->getType() == "object"){
                     $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that has a reverence ('.$attribute->getReference().') but isn\'t of the type object';
-                    $this->logger->info($message);
-                    if ($this->io) { $this->io->info($message);}
+                    $this->logger->error($message);
+                    if ($this->io) { $this->io->error($message);}
                     $statusOk = false;
                 }
             }
@@ -480,7 +529,7 @@ class InstallationService
         }
 
         // Loop trough the values
-        foreach ($values as $objectValue){
+        foreach ($values as $key => $objectValue){
             $objectEntity->addObjectValue($objectValue);
 
             // If the value itsself is an object it might also contain fixed id's
@@ -491,12 +540,23 @@ class InstallationService
                 if($subobject->getEntity()){
                     $this->io->writeln(['subobject has entity so can be saved']);
                     $subobject = $this->saveOnFixedId($subobject);
+                    unset($values['$key']);
                 }
                 else{
                     $this->io->warning(['subobject has NO entity so can\'t be saved']);
                     $objectValue->removeObject($subobject);
                 }
+
             }
+        }
+
+        // DESTROY orphans
+        if(!empty($values)){
+            foreach($values as $value){
+                $this->em->remove($value);
+            }
+            $message = 'Found orpahned value object for atribute'.$value->getAttribute()->getName().'('.$value->getAttribute()->getId().') on object '.$objectEntity->getName().' ('.$objectEntity->getId().') deleting it';
+            $this->io->warning($message);
         }
 
         $this->em->persist($objectEntity);
