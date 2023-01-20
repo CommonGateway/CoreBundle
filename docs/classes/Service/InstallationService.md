@@ -20,6 +20,9 @@
 |[uninstall](#installationserviceuninstall)||
 |[update](#installationserviceupdate)||
 |[valdiateJsonSchema](#installationservicevaldiatejsonschema)|Performce a very basic check to see if a schema file is a valid json-schema file.|
+|[validateObjects](#installationservicevalidateobjects)|Validates the objects in the EAV setup.|
+|[validateSchemas](#installationservicevalidateschemas)|Validates the schemas in the EAV setup.|
+|[validateValues](#installationservicevalidatevalues)|Validates the objects in the EAV setup.|
 
 
 
@@ -265,6 +268,84 @@ Performce a very basic check to see if a schema file is a valid json-schema file
 **Return Values**
 
 `bool`
+
+
+
+
+<hr />
+
+
+### InstallationService::validateObjects  
+
+**Description**
+
+```php
+public validateObjects (void)
+```
+
+Validates the objects in the EAV setup. 
+
+ 
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`void`
+
+
+
+
+<hr />
+
+
+### InstallationService::validateSchemas  
+
+**Description**
+
+```php
+public validateSchemas (void)
+```
+
+Validates the schemas in the EAV setup. 
+
+ 
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`void`
+
+
+
+
+<hr />
+
+
+### InstallationService::validateValues  
+
+**Description**
+
+```php
+public validateValues (void)
+```
+
+Validates the objects in the EAV setup. 
+
+ 
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`void`
 
 
 
