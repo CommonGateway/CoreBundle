@@ -10,7 +10,7 @@
 
 | Name | Description |
 |------|-------------|
-|[__construct](#installationservice__construct)||
+|[__construct](#installationservice__construct)|Setting up the base class with required services|
 |[composerupdate](#installationservicecomposerupdate)||
 |[handleData](#installationservicehandledata)||
 |[handleInstaller](#installationservicehandleinstaller)||
@@ -29,16 +29,18 @@
 **Description**
 
 ```php
- __construct (void)
+public __construct (\ComposerService $composerService, \EntityManagerInterface $em, \Kernel $kernel)
 ```
 
- 
+Setting up the base class with required services 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(\ComposerService) $composerService`
+* `(\EntityManagerInterface) $em`
+* `(\Kernel) $kernel`
 
 **Return Values**
 

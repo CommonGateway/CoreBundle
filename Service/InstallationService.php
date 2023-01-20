@@ -11,6 +11,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Monolog\Logger;
 
 class InstallationService
 {
@@ -19,6 +20,16 @@ class InstallationService
     private SymfonyStyle $io;
     private $container;
 
+    // Add monolog logger bundle for the generic logging interface
+    private Logger $logger;
+
+    /**
+     * Setting up the base class with required services
+     *
+     * @param ComposerService $composerService
+     * @param EntityManagerInterface $em
+     * @param Kernel $kernel
+     */
     public function __construct(
         ComposerService $composerService,
         EntityManagerInterface $em,
@@ -28,6 +39,8 @@ class InstallationService
         $this->em = $em;
         $this->container = $kernel->getContainer();
         $this->collection = null;
+        $this->logger = New Logger('installation');
+
     }
 
     /**
@@ -59,7 +72,10 @@ class InstallationService
             ]);
         }
 
+        $this->logger->debug("Running plugin installer");
+
         foreach ($plugins as $plugin) {
+
             $this->install($plugin['name']);
         }
 
@@ -83,6 +99,8 @@ class InstallationService
                 '',
             ]);
         }
+
+        $this->logger->debug('Trying to install: '.$bundle);
 
         $packages = $this->composerService->getAll();
 
@@ -123,6 +141,8 @@ class InstallationService
             // We want each plugin to also be a collection (if it contains schema's that is)
             if (count($schemas) > 0) {
                 if (!$this->collection = $this->em->getRepository('App:CollectionEntity')->findOneBy(['plugin' => $package['name']])) {
+
+                    $this->logger->debug('Created a collection for plugin '.$bundle);
                     $this->io->writeln(['Created a collection for this plugin', '']);
                     $this->collection = new CollectionEntity();
                     $this->collection->setName($package['name']);
@@ -130,6 +150,7 @@ class InstallationService
                     isset($package['description']) && $this->collection->setDescription($package['description']);
                 } else {
                     $this->io->writeln(['Found a collection for this plugin', '']);
+                    $this->logger->debug('Found a collection for plugin '.$bundle);
                 }
             }
 
@@ -145,6 +166,7 @@ class InstallationService
             //$progressBar->finish();
         } else {
             $this->io->writeln('No schema folder found');
+            $this->logger->debug('No schema folder found for plugin '.$bundle);
         }
 
         // Handling the data
@@ -163,6 +185,7 @@ class InstallationService
 
             // We need to clear the finder
         } else {
+            $this->logger->debug('No data folder found for plugin '.$bundle);
             $this->io->writeln('No data folder found');
         }
 
@@ -179,10 +202,12 @@ class InstallationService
                 $this->handleInstaller($installer);
             }
         } else {
+            $this->logger->debug('No Installation folder found for plugin '.$bundle);
             $this->io->writeln('No Installation folder found');
         }
 
         $this->io->success('All Done');
+        $this->logger->debug('All Done installing plugin '.$bundle);
 
         return Command::SUCCESS;
     }
@@ -295,31 +320,15 @@ class InstallationService
 
                 if (array_key_exists('_id', $object) && $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $object['_id']])) {
                     $this->io->writeln(['', 'Object '.$object['_id'].' already exists, so updating']);
-                } elseif (array_key_exists('_id', $object)) {
-                    $this->io->writeln('Set id to '.$object['_id']);
-
-                    // Nice doctrine setId shizzle
-                    $objectEntity = new ObjectEntity();
-                    $this->em->persist($objectEntity);
-                    $objectEntity->setId($object['_id']);
-                    $this->em->persist($objectEntity);
-                    $this->em->flush();
-                    $this->em->refresh($objectEntity);
-
-                    $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $object['_id']]);
-
-                    $objectEntity->setEntity($entity);
-
-                    $this->io->writeln('Creating new object with existing id '.$objectEntity->getId());
                 } else {
                     $objectEntity = new ObjectEntity($entity);
-                    $this->io->writeln(['', 'Creating new object']);
                 }
 
                 $this->io->writeln('Writing data to the object');
                 $objectEntity->hydrate($object);
-                $this->em->persist($objectEntity);
-                $this->em->flush();
+
+                $this->saveOnFixedId($objectEntity);
+
                 $this->io->writeln(['Object saved as '.$objectEntity->getId(), '']);
             }
         }
@@ -349,4 +358,73 @@ class InstallationService
 
         return $installationService->install();
     }
+
+    /**
+     * Handles forced id's on object entities
+     *
+     * @param ObjectEntity $objectEntity
+     * @return ObjectEntity
+     */
+    private function saveOnFixedId(ObjectEntity $objectEntity): ObjectEntity{
+        // This savetey dosn't make sense but we need it
+        if(!$objectEntity->getEntity()){
+
+            $this->logger->error('Object can\'t be persisted due to missing schema');
+            $this->io->writeln(['', 'Object can\'t be persisted due to missing schema']);
+            return $objectEntity;
+        }
+
+        // Save the values
+        $values = $objectEntity->getObjectValues()->toArray();
+        $objectEntity->clearAllValues();
+
+        // We have an object entity with a fixed id that isn't in the database, so we need to act
+        if($objectEntity->getId() && !$this->em->contains($objectEntity)){
+
+            $this->io->writeln(['', 'Creating new object ('.$objectEntity->getEntity()->getName().') on a fixed id ('.$objectEntity->getId().')']);
+
+            // Sve the id
+            $id = $objectEntity->getId();
+            // Create the entity
+            $this->em->persist($objectEntity);
+            $this->em->flush();
+            $this->em->refresh($objectEntity);
+            // Reset the id
+            $objectEntity->setId($id);
+            $this->em->persist($objectEntity);
+            $this->em->flush();
+            $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
+        }
+        else{
+            $this->io->writeln(['', 'Creating new object ('.$objectEntity->getEntity()->getName().') on a generated id']);
+        }
+
+        // Loop trough the values
+        foreach ($values as $objectValue){
+            $objectEntity->addObjectValue($objectValue);
+
+            // If the value itsself is an object it might also contain fixed id's
+            foreach ($objectValue->getObjects() as $subobject){
+
+                $this->io->writeln(['', 'Found sub object ('.$subobject->getEntity()->getName().')']);
+
+                if($subobject->getEntity()){
+                    $this->io->writeln(['subobject has schema so can be saved']);
+                    $subobject = $this->saveOnFixedId($subobject);
+                }
+                else{
+                    $this->io->warning(['subobject has NO schema so can\'t be saved']);
+                    $objectValue->removeObject($subobject);
+                }
+            }
+        }
+
+        $this->em->persist($objectEntity);
+        $this->em->flush();
+
+        return $objectEntity;
+    }
+
+
+
 }
