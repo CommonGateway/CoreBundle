@@ -7,12 +7,11 @@ use App\Entity\Entity;
 use App\Entity\ObjectEntity;
 use App\Kernel;
 use Doctrine\ORM\EntityManagerInterface;
-use phpDocumentor\Reflection\Types\Void_;
+use Monolog\Logger;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use Monolog\Logger;
 
 class InstallationService
 {
@@ -33,7 +32,7 @@ class InstallationService
         $this->em = $em;
         $this->container = $kernel->getContainer();
         $this->collection = null;
-        $this->logger = New Logger('installation');
+        $this->logger = new Logger('installation');
         $this->cacheService = $cacheService;
     }
 
@@ -66,25 +65,24 @@ class InstallationService
             ]);
         }
 
-        $this->logger->debug("Running plugin installer");
+        $this->logger->debug('Running plugin installer');
 
         foreach ($plugins as $plugin) {
-
             $this->install($plugin['name']);
         }
-        
+
         $this->cacheService->warmup();
 
         return Command::SUCCESS;
     }
 
     /**
-     * Validates the  objects in the EAV setup
+     * Validates the  objects in the EAV setup.
      *
      * @return void
      */
-    public function validateObjects(): int{
-
+    public function validateObjects(): int
+    {
         $objects = $this->em->getRepository('App:ObjectEntity')->findAll();
 
         if ($this->io) {
@@ -92,24 +90,22 @@ class InstallationService
                 'Validating: <comment> '.count($objects).' </comment> objects\'s',
             ]);
         }
-        $this->logger->info( 'Validating:'.count($objects).'objects\'s');
+        $this->logger->info('Validating:'.count($objects).'objects\'s');
 
         // Lets go go go !
-        foreach ($objects as $object){
-            if($object->get){
-
+        foreach ($objects as $object) {
+            if ($object->get) {
             }
         }
     }
 
-
     /**
-     * Validates the  objects in the EAV setup
+     * Validates the  objects in the EAV setup.
      *
      * @return void
      */
-    public function validateValues(): int{
-
+    public function validateValues(): int
+    {
         $values = $this->em->getRepository('App:Value')->findAll();
 
         if ($this->io) {
@@ -117,23 +113,23 @@ class InstallationService
                 'Validating: <comment> '.count($values).' </comment> values\'s',
             ]);
         }
-        $this->logger->info( 'Validating:'.count($values).'values\'s');
+        $this->logger->info('Validating:'.count($values).'values\'s');
 
         // Lets go go go !
-        foreach ($values as $value){
-            if(!$value->getObjectEntity()){
+        foreach ($values as $value) {
+            if (!$value->getObjectEntity()) {
                 $message = 'Value '.$value->getStringValue().' ('.$value->getId().') that belongs to  '.$value->getAttribute()->getName().' ('.$value->getAttribute()->getId().') is orpahned';
             }
         }
     }
 
     /**
-     * Validates the schemas in the EAV setup
+     * Validates the schemas in the EAV setup.
      *
      * @return void
      */
-    public function validateSchemas(): int{
-
+    public function validateSchemas(): int
+    {
         $schemas = $this->em->getRepository('App:Entity')->findAll();
 
         if ($this->io) {
@@ -141,15 +137,14 @@ class InstallationService
                 'Validating: <comment> '.count($schemas).' </comment> schema\'s',
             ]);
         }
-        $this->logger->info( 'Validating:'.count($schemas).'schema\'s');
+        $this->logger->info('Validating:'.count($schemas).'schema\'s');
 
         // Lets go go go !
-        foreach ($schemas as $schema){
-
-            $statusOk= true;
+        foreach ($schemas as $schema) {
+            $statusOk = true;
             // Gereric check
-            if(!$schema->getReference()){
-                $this->logger->info( 'Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a reference');
+            if (!$schema->getReference()) {
+                $this->logger->info('Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a reference');
             }
 
             // Gereric check
@@ -164,24 +159,27 @@ class InstallationService
             */
 
             // Check atributes
-            foreach($schema->getAttributes() as $attribute){
+            foreach ($schema->getAttributes() as $attribute) {
                 // Specific checks for objects
-                if($attribute->getType() == "object"){
+                if ($attribute->getType() == 'object') {
 
                     // Check for object link
-                    if(!$attribute->getObject()){
+                    if (!$attribute->getObject()) {
                         $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an object';
                         $this->logger->error($message);
-                        if ($this->io) { $this->io->error($message);}
+                        if ($this->io) {
+                            $this->io->error($message);
+                        }
                         $statusOk = false;
-                    }
-                    else{
+                    } else {
                         $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is linked to object '.$attribute->getObject()->getName().' ('.$attribute->getObject()->getId();
                         $this->logger->debug($message);
-                        if ($this->io) { $this->io->note($message);}
+                        if ($this->io) {
+                            $this->io->note($message);
+                        }
                     }
                     // Check for reference link
-                    if(!$attribute->getReference()){
+                    if (!$attribute->getReference()) {
 
                         //$message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an reference';
                         //$this->logger->info($message);
@@ -191,29 +189,34 @@ class InstallationService
 
                 // Specific wierdnes
                 // Check for reference link
-                if($attribute->getReference() && !$attribute->getType() == "object"){
+                if ($attribute->getReference() && !$attribute->getType() == 'object') {
                     $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that has a reverence ('.$attribute->getReference().') but isn\'t of the type object';
                     $this->logger->error($message);
-                    if ($this->io) { $this->io->error($message);}
+                    if ($this->io) {
+                        $this->io->error($message);
+                    }
                     $statusOk = false;
                 }
             }
 
-            if($statusOk){
+            if ($statusOk) {
                 $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has been checked and is fine';
                 $this->logger->info($message);
-                if ($this->io) { $this->io->info($message);}
-            }
-            else{
+                if ($this->io) {
+                    $this->io->info($message);
+                }
+            } else {
                 $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has been checked and has an error';
                 $this->logger->error($message);
-                if ($this->io) { $this->io->error($message);}
+                if ($this->io) {
+                    $this->io->error($message);
+                }
             }
         }
 
         return 1;
-
     }
+
     /**
      * Performs installation actions on a common Gataway bundle.
      *
@@ -273,7 +276,6 @@ class InstallationService
             // We want each plugin to also be a collection (if it contains schema's that is)
             if (count($schemas) > 0) {
                 if (!$this->collection = $this->em->getRepository('App:CollectionEntity')->findOneBy(['plugin' => $package['name']])) {
-
                     $this->logger->debug('Created a collection for plugin '.$bundle);
                     $this->io->writeln(['Created a collection for this plugin', '']);
                     $this->collection = new CollectionEntity();
@@ -300,8 +302,6 @@ class InstallationService
             $this->io->writeln('No schema folder found');
             $this->logger->debug('No schema folder found for plugin '.$bundle);
         }
-
-
 
         // Handling the data
         $this->io->section('Looking for data');
@@ -494,17 +494,19 @@ class InstallationService
     }
 
     /**
-     * Handles forced id's on object entities
+     * Handles forced id's on object entities.
      *
      * @param ObjectEntity $objectEntity
+     *
      * @return ObjectEntity
      */
-    private function saveOnFixedId(ObjectEntity $objectEntity): ObjectEntity{
+    private function saveOnFixedId(ObjectEntity $objectEntity): ObjectEntity
+    {
         // This savetey dosn't make sense but we need it
-        if(!$objectEntity->getEntity()){
-
+        if (!$objectEntity->getEntity()) {
             $this->logger->error('Object can\'t be persisted due to missing schema');
             $this->io->writeln(['', 'Object can\'t be persisted due to missing schema']);
+
             return $objectEntity;
         }
 
@@ -513,8 +515,7 @@ class InstallationService
         $objectEntity->clearAllValues();
 
         // We have an object entity with a fixed id that isn't in the database, so we need to act
-        if($objectEntity->getId() && !$this->em->contains($objectEntity)){
-
+        if ($objectEntity->getId() && !$this->em->contains($objectEntity)) {
             $this->io->writeln(['', 'Creating new object ('.$objectEntity->getEntity()->getName().') on a fixed id ('.$objectEntity->getId().')']);
 
             // Sve the id
@@ -528,36 +529,32 @@ class InstallationService
             $this->em->persist($objectEntity);
             $this->em->flush();
             $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
-        }
-        else{
+        } else {
             $this->io->writeln(['', 'Creating new object ('.$objectEntity->getEntity()->getName().') on a generated id']);
         }
 
         // Loop trough the values
-        foreach ($values as $key => $objectValue){
+        foreach ($values as $key => $objectValue) {
             $objectEntity->addObjectValue($objectValue);
 
             // If the value itsself is an object it might also contain fixed id's
-            foreach ($objectValue->getObjects() as $subobject){
-
+            foreach ($objectValue->getObjects() as $subobject) {
                 $this->io->writeln(['', 'Found sub object ('.$subobject->getEntity()->getName().')']);
 
-                if($subobject->getEntity()){
+                if ($subobject->getEntity()) {
                     $this->io->writeln(['subobject has entity so can be saved']);
                     $subobject = $this->saveOnFixedId($subobject);
                     unset($values['$key']);
-                }
-                else{
+                } else {
                     $this->io->warning(['subobject has NO entity so can\'t be saved']);
                     $objectValue->removeObject($subobject);
                 }
-
             }
         }
 
         // DESTROY orphans
-        if(!empty($values)){
-            foreach($values as $value){
+        if (!empty($values)) {
+            foreach ($values as $value) {
                 $this->em->remove($value);
             }
             $message = 'Found orpahned value object for atribute'.$value->getAttribute()->getName().'('.$value->getAttribute()->getId().') on object '.$objectEntity->getName().' ('.$objectEntity->getId().') deleting it';
@@ -569,7 +566,4 @@ class InstallationService
 
         return $objectEntity;
     }
-
-
-
 }
