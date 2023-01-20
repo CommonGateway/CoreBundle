@@ -7,6 +7,7 @@ use App\Entity\Entity;
 use App\Entity\ObjectEntity;
 use App\Kernel;
 use Doctrine\ORM\EntityManagerInterface;
+use phpDocumentor\Reflection\Types\Void_;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
@@ -73,6 +74,61 @@ class InstallationService
         return Command::SUCCESS;
     }
 
+    /**
+     * Validates the current EAV setup
+     *
+     * @return void
+     */
+    public function validateSchemas(): int{
+
+        $schemas = $this->em->getRepository('App:Entity')->findAll();
+
+        if ($this->io) {
+            $this->io->writeln([
+                'Validating: <comment> '.count($schemas).' </comment> schema\'s',
+            ]);
+        }
+        $this->logger->info( 'Validating:'.count($schemas).'schema\'s');
+
+        // Lets go go go !
+        foreach ($schemas as $schema){
+
+            // Gereric check
+            if(!$schema->getReference()){
+                $this->logger->info( 'Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a reference');
+            }
+
+            // Gereric check
+            /*
+            if(!$schema->getApplication()){
+                $this->logger->info( 'Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a application');
+            }
+            // Gereric check
+            if(!$schema->getOrganization()){
+                $this->logger->info( 'Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a organization');
+            }
+            */
+
+            // Check atributes
+            foreach($schema->getAtributes() as $attribute){
+                // Specific checks for objects
+                if($attribute->getType() == "type"){
+                    // Check for object link
+                    if(!$attribute->getObject()){
+                        $this->logger->info( 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an object');
+                    }
+                    // Check for reference link
+                    if(!$attribute->getRef()){
+                        $this->logger->info( 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an reference');
+                    }
+                }
+
+            }
+        }
+
+        return 1;
+
+    }
     /**
      * Performs installation actions on a common Gataway bundle.
      *
