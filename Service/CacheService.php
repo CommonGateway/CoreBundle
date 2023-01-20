@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use MongoDB\Client;
+use Monolog\Logger;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 use Symfony\Component\Console\Command\Command;
@@ -38,10 +39,16 @@ class CacheService
     private ParameterBagInterface $parameters;
     private SerializerInterface $serializer;
 
+    // Add monolog logger bundle for the generic logging interface
+    private Logger $logger;
+
     /**
-     * @param AuthenticationService  $authenticationService
+     * Setting up the base class with required services
+     *
      * @param EntityManagerInterface $entityManager
-     * @param FileService            $fileService
+     * @param CacheInterface $cache
+     * @param ParameterBagInterface $parameters
+     * @param SerializerInterface $serializer
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -56,6 +63,7 @@ class CacheService
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }
+        $this->logger = New Logger('cache');
     }
 
     /**
@@ -239,8 +247,12 @@ class CacheService
             ['upsert'=>true]
         )) {
             (isset($this->io) ? $this->io->writeln('Updated object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache') : '');
+
+            $this->logger->debug("updated object to cache");
         } else {
             (isset($this->io) ? $this->io->writeln('Wrote object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache') : '');
+
+            $this->logger->debug("Added object to cache");
         }
 
         return $objectEntity;
@@ -264,6 +276,8 @@ class CacheService
         $collection = $this->client->objects->json;
 
         $collection->findOneAndDelete(['_id'=>$id]);
+
+        $this->logger->debug("Removed object from cache");
     }
 
     /**
@@ -284,11 +298,13 @@ class CacheService
 
         // Check if object is in the cache ????
         if ($object = $collection->findOne(['_id'=>$id])) {
+            $this->logger->debug("Retrieved cached object from cache");
             return $object;
         }
 
         // Fall back tot the entity manager
         if ($object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id'=>$id])) {
+            $this->logger->debug("Retrieved uncached object from cache");
             return $this->cacheObject($object)->toArray(['embedded' => true]);
         }
 
@@ -364,6 +380,9 @@ class CacheService
         // Find / Search
         $results = $collection->find($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order])->toArray();
         $total = $collection->count($filter);
+
+
+        $this->logger->debug("Searched cache for objects");
 
         // Make sure to add the pagination properties in response
         return $this->handleResultPagination($completeFilter, $results, $total);

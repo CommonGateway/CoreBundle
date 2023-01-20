@@ -7,23 +7,38 @@ use Doctrine\ORM\EntityManagerInterface;
 use Monolog\Logger;
 use Twig\Environment;
 
+/**
+ * The mapping service handels the mapping (or transformation) of array A (input) to array B (output)
+ *
+ * More information on how to write your own mappings can be found at [/docs/mapping.md](/docs/mapping.md).
+ */
 class MappingService
 {
-    private EntityManagerInterface $em;;
+    // Add monolog logger bundle for the generic logging interface
     private Logger $logger;
 
     // Create a private variable to store the twig environment
     private Environment $twig;
 
+    /**
+     * Setting up the base class with required services
+     *
+     * @param Environment $twig
+     */
     public function __construct(
-        EntityManagerInterface $em,
         Environment $twig
     ) {
-        $this->em = $em;
         $this->twig = $twig;
         $this->logger = New Logger('mapping');
     }
 
+    /**
+     * Maps (transforms) an array (input) to a differend array (output)
+     *
+     * @param Mapping $mappingObject The mapping object that formes the recepy for the mapping
+     * @param array $input The array that need to be mapped (transformed) otherwise known as input
+     * @return array The result (output) of the mapping procces
+     */
     public function mapping(Mapping $mappingObject, array $input): array
     {
         $output = [];
