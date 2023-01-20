@@ -32,7 +32,6 @@ class ValidateSchemaCommand extends Command
     {
         $this->installationService->setStyle(new SymfonyStyle($input, $output));
 
-
-        return $this->installationService->validateSchemas($bundle, $noSchema);
+        return $this->installationService->validateSchemas();
     }
 }

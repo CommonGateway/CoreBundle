@@ -32,7 +32,6 @@ class InstallationService
         $this->container = $kernel->getContainer();
         $this->collection = null;
         $this->logger = New Logger('installation');
-
     }
 
     /**
@@ -93,6 +92,7 @@ class InstallationService
         // Lets go go go !
         foreach ($schemas as $schema){
 
+            $statusOk= true;
             // Gereric check
             if(!$schema->getReference()){
                 $this->logger->info( 'Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a reference');
@@ -110,19 +110,50 @@ class InstallationService
             */
 
             // Check atributes
-            foreach($schema->getAtributes() as $attribute){
+            foreach($schema->getAttributes() as $attribute){
                 // Specific checks for objects
-                if($attribute->getType() == "type"){
+                if($attribute->getType() == "object"){
+
                     // Check for object link
                     if(!$attribute->getObject()){
-                        $this->logger->info( 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an object');
+                        $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an object';
+                        $this->logger->info($message);
+                        if ($this->io) { $this->io->info($message);}
+                        $statusOk = false;
+                    }
+                    else{
+                        $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is linked to object '.$attribute->getObject()->getName().' ('.$attribute->getObject()->getId();
+                        $this->logger->debug($message);
+                        if ($this->io) { $this->io->note($message);}
                     }
                     // Check for reference link
-                    if(!$attribute->getRef()){
-                        $this->logger->info( 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an reference');
+                    if(!$attribute->getReference()){
+
+                        //$message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an reference';
+                        //$this->logger->info($message);
+                        //if ($this->io) { $this->io->info($message);}
                     }
                 }
 
+                // Specific wierdnes
+                // Check for reference link
+                if($attribute->getReference() && !$attribute->getType() == "object"){
+                    $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that has a reverence ('.$attribute->getReference().') but isn\'t of the type object';
+                    $this->logger->info($message);
+                    if ($this->io) { $this->io->info($message);}
+                    $statusOk = false;
+                }
+            }
+
+            if($statusOk){
+                $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has been checked and is fine';
+                $this->logger->info($message);
+                if ($this->io) { $this->io->info($message);}
+            }
+            else{
+                $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has been checked and has an error';
+                $this->logger->error($message);
+                if ($this->io) { $this->io->error($message);}
             }
         }
 
@@ -215,6 +246,8 @@ class InstallationService
             $this->io->writeln('No schema folder found');
             $this->logger->debug('No schema folder found for plugin '.$bundle);
         }
+
+
 
         // Handling the data
         $this->io->section('Looking for data');
