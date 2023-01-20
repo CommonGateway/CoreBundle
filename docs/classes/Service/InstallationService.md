@@ -20,9 +20,9 @@
 |[uninstall](#installationserviceuninstall)||
 |[update](#installationserviceupdate)||
 |[valdiateJsonSchema](#installationservicevaldiatejsonschema)|Performce a very basic check to see if a schema file is a valid json-schema file.|
-|[validateObjects](#installationservicevalidateobjects)|Validates the objects in the EAV setup|
-|[validateSchemas](#installationservicevalidateschemas)|Validates the schemas in the EAV setup|
-|[validateValues](#installationservicevalidatevalues)|Validates the objects in the EAV setup|
+|[validateObjects](#installationservicevalidateobjects)|Validates the objects in the EAV setup.|
+|[validateSchemas](#installationservicevalidateschemas)|Validates the schemas in the EAV setup.|
+|[validateValues](#installationservicevalidatevalues)|Validates the objects in the EAV setup.|
 
 
 
@@ -283,7 +283,7 @@ Performce a very basic check to see if a schema file is a valid json-schema file
 public validateObjects (void)
 ```
 
-Validates the objects in the EAV setup 
+Validates the objects in the EAV setup. 
 
  
 
@@ -309,7 +309,7 @@ Validates the objects in the EAV setup
 public validateSchemas (void)
 ```
 
-Validates the schemas in the EAV setup 
+Validates the schemas in the EAV setup. 
 
  
 
@@ -335,7 +335,7 @@ Validates the schemas in the EAV setup
 public validateValues (void)
 ```
 
-Validates the objects in the EAV setup 
+Validates the objects in the EAV setup. 
 
  
 
