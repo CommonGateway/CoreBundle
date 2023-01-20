@@ -11,6 +11,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use CommonGateway\CoreBundle\Service\CacheService;
 
 class InstallationService
 {
@@ -18,16 +19,19 @@ class InstallationService
     private EntityManagerInterface $em;
     private SymfonyStyle $io;
     private $container;
+    private CacheService $cacheService;
 
     public function __construct(
         ComposerService $composerService,
         EntityManagerInterface $em,
-        Kernel $kernel
+        Kernel $kernel,
+        CacheService $cacheService
     ) {
         $this->composerService = $composerService;
         $this->em = $em;
         $this->container = $kernel->getContainer();
         $this->collection = null;
+        $this->cacheService = $cacheService;
     }
 
     /**
@@ -62,6 +66,8 @@ class InstallationService
         foreach ($plugins as $plugin) {
             $this->install($plugin['name']);
         }
+        
+        $this->cacheService->warmup();
 
         return Command::SUCCESS;
     }
