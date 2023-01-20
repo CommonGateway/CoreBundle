@@ -613,6 +613,8 @@ class InstallationService
                             $valueObject->setValue($value);
                         }
                     }
+                } else {
+                    $valueObject->setValue($value);
                 }
 
                 // Do the normaul stuf
