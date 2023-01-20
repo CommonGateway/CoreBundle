@@ -457,7 +457,7 @@ class InstallationService
                 // Lets see if we need to update
 
                 // Backwarsd competability
-                if(isset($object['_id'])){
+                if (isset($object['_id'])) {
                     $object['id'] = $object['_id'];
                     unset($object['_id']);
                 }
@@ -519,9 +519,6 @@ class InstallationService
             return $objectEntity;
         }
 
-
-
-
         // Save the values
         //$values = $objectEntity->getObjectValues()->toArray();
         //$objectEntity->clearAllValues();
@@ -542,12 +539,10 @@ class InstallationService
             $this->em->flush();
             $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
 
-
             $this->io->writeln(['Defintive object id ('.$objectEntity->getId().')']);
         } else {
             $this->io->writeln(['Creating new object ('.$objectEntity->getEntity()->getName().') on a generated id']);
         }
-
 
         // We already dit this so lets skip it
         unset($hydrate['id']);
@@ -559,41 +554,37 @@ class InstallationService
             // If we find the Value object we set the value
             if ($valueObject instanceof Value) {
                 // Value is an array so lets create an object
-                if($valueObject->getAttribute()->getType() == "object"){
+                if ($valueObject->getAttribute()->getType() == 'object') {
 
                     // I hate arrays
-                    if($valueObject->getAttribute()->getMultiple()){
+                    if ($valueObject->getAttribute()->getMultiple()) {
                         $this->io->info('an array for objects
                         ');
-                        if(is_array($value)){
-                            foreach($value as $subvalue){
+                        if (is_array($value)) {
+                            foreach ($value as $subvalue) {
                                 // Savety
-                                if(!$valueObject->getAttribute()->getObject()){
+                                if (!$valueObject->getAttribute()->getObject()) {
                                     continue;
                                 }
                                 // is array
-                                if(is_array($value)){
-                                    $newObject= New ObjectEntity($valueObject->getAttribute()->getObject());
+                                if (is_array($value)) {
+                                    $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
                                     $newObject = $this->saveOnFixedId($newObject, $value);
                                     $valueObject->addObject($newObject);
                                 }
                                 // Is not an array
-                                else{
+                                else {
                                     $idValue = $value;
-                                    $value =  $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
+                                    $value = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
                                     // Savety
-                                    if(!$value) {
+                                    if (!$value) {
                                         $this->io->error('Could not find an object for id '.$idValue);
-                                    }
-                                    else{
+                                    } else {
                                         $valueObject->addObject($newObject);
-
                                     }
                                 }
                             }
-
-                        }
-                        else{
+                        } else {
                             $this->io->error($valueObject->getAttribute()->getName().' Is a multiple so should be filled with an array, but provided value was '.$value.'(type: '.gettype($value).')');
                         }
                         continue;
@@ -601,25 +592,24 @@ class InstallationService
                     // End of array hate, we are friends again
 
                     // is array
-                    if(is_array($value)){
+                    if (is_array($value)) {
                         // Savety
-                        if(!$valueObject->getAttribute()->getObject()){
+                        if (!$valueObject->getAttribute()->getObject()) {
                             $this->io->error('Could not find an object for atribute  '.$valueObject->getAttribute()->getname().' ('.$valueObject->getAttribute()->getId().')');
                             continue;
                         }
-                        $newObject= New ObjectEntity($valueObject->getAttribute()->getObject());
+                        $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
                         $value = $this->saveOnFixedId($newObject, $value);
                         $valueObject->setValue($value);
                     }
                     // Is not an array
-                    else{
+                    else {
                         $idValue = $value;
-                        $value =  $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
+                        $value = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
                         // Savety
-                        if(!$value) {
+                        if (!$value) {
                             $this->io->error('Could not find an object for id '.$idValue);
-                        }
-                        else{
+                        } else {
                             $valueObject->setValue($value);
                         }
                     }
