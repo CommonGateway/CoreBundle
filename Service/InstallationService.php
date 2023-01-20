@@ -72,7 +72,7 @@ class InstallationService
 
             $this->install($plugin['name']);
         }
-        
+
         $this->cacheService->warmup();
 
         return Command::SUCCESS;
@@ -192,7 +192,7 @@ class InstallationService
                 // Specific wierdnes
                 // Check for reference link
                 if($attribute->getReference() && !$attribute->getType() == "object"){
-                    $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that has a reverence ('.$attribute->getReference().') but isn\'t of the type object';
+                    $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that has a reference ('.$attribute->getReference().') but isn\'t of the type object';
                     $this->logger->error($message);
                     if ($this->io) { $this->io->error($message);}
                     $statusOk = false;
