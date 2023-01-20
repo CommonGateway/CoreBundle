@@ -11,7 +11,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use CommonGateway\CoreBundle\Service\CacheService;
 
 class InstallationService
 {
@@ -66,7 +65,7 @@ class InstallationService
         foreach ($plugins as $plugin) {
             $this->install($plugin['name']);
         }
-        
+
         $this->cacheService->warmup();
 
         return Command::SUCCESS;
