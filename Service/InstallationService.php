@@ -71,7 +71,10 @@ class InstallationService
             $this->install($plugin['name']);
         }
 
-        $this->cacheService->warmup();
+        if ($this->io) {
+            $this->cacheService->setStyle($this->io);
+            $this->cacheService->warmup();
+        }
 
         return Command::SUCCESS;
     }
