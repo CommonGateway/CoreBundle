@@ -8,7 +8,7 @@ use Monolog\Logger;
 use Twig\Environment;
 
 /**
- * The mapping service handels the mapping (or transformation) of array A (input) to array B (output)
+ * The mapping service handles the mapping (or transformation) of array A (input) to array B (output)
  *
  * More information on how to write your own mappings can be found at [/docs/mapping.md](/docs/mapping.md).
  */
@@ -33,34 +33,34 @@ class MappingService
     }
 
     /**
-     * Maps (transforms) an array (input) to a differend array (output)
+     * Maps (transforms) an array (input) to a different array (output)
      *
-     * @param Mapping $mappingObject The mapping object that formes the recepy for the mapping
+     * @param Mapping $mappingObject The mapping object that forms the recipe for the mapping
      * @param array $input The array that need to be mapped (transformed) otherwise known as input
-     * @return array The result (output) of the mapping procces
+     * @return array The result (output) of the mapping process
      */
     public function mapping(Mapping $mappingObject, array $input): array
     {
         $output = [];
 
-        // Check for troughput
+        // Check for throughput
         if($mappingObject->getPassTrough()){
             $output = $input;
         }
 
-        // Lets get the dot array bassed on https://github.com/adbario/php-dot-notation
+        // Let's get the dot array based on https://github.com/adbario/php-dot-notation
         $dotArray = dot($output);
 
-        // Lets do the actual mapping
+        // Let's do the actual mapping
         foreach($mappingObject->getMapping() as $key => $value){
             // Render the value from twig
-            $dotArray->set($key, $twig->createTemplate($value)->render($input));
+            $dotArray->set($key, $this->twig->createTemplate($value)->render($input));
         }
 
         // Unset unwanted key's
         foreach ($mappingObject->getUnset() as $unset){
             if(!$dotArray->has($unset)){
-                $this->logger->error("Trying to unset an property that doensnt exist during mapping");
+                $this->logger->error("Trying to unset an property that doesn't exist during mapping");
                 continue;
             }
             $dotArray->delete($unset);
@@ -69,7 +69,7 @@ class MappingService
         // Cast values to a specific type
         foreach ($mappingObject->getCast() as $key => $cast){
             if(!$dotArray->has($key)){
-                $this->logger->error("Trying to cast an property that doensnt exist during mapping");
+                $this->logger->error("Trying to cast an property that doesn't exist during mapping");
                 continue;
             }
 
@@ -80,16 +80,27 @@ class MappingService
                 case 'integer':
                     $value = intval($value);
                     break;
+                case 'string':
+                    break;
+                case 'array':
+                    //
+                    break;
+                case 'date':
+                    ///
+                    break;
+                case 'datetime':
+                    ////
+                    break;
                 // Todo: Add more casts
                 default:
-                    $this->logger->error("Trying to cast to an unsuported cast type: ".$cast);
-                    continue;
+                    $this->logger->error("Trying to cast to an unsupported cast type: ".$cast);
+                    break;
             }
 
             $dotArray->set($key, $value);
         }
 
-        // Back to arrray
+        // Back to array
         $output = $dotArray->all();
 
         // Log the result
