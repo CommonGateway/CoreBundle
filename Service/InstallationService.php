@@ -21,17 +21,20 @@ class InstallationService
     private SymfonyStyle $io;
     private $container;
     private Logger $logger;
+    private CacheService $cacheService;
 
     public function __construct(
         ComposerService $composerService,
         EntityManagerInterface $em,
-        Kernel $kernel
+        Kernel $kernel,
+        CacheService $cacheService
     ) {
         $this->composerService = $composerService;
         $this->em = $em;
         $this->container = $kernel->getContainer();
         $this->collection = null;
         $this->logger = New Logger('installation');
+        $this->cacheService = $cacheService;
     }
 
     /**
@@ -69,6 +72,8 @@ class InstallationService
 
             $this->install($plugin['name']);
         }
+        
+        $this->cacheService->warmup();
 
         return Command::SUCCESS;
     }
