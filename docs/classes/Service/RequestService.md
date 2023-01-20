@@ -1,6 +1,6 @@
 # CommonGateway\CoreBundle\Service\RequestService  
 
-Handles incomming request from endpoints or controllers that relate to the gateways object structure (eav).
+Handles incomming request and generates a response
 
 
 
@@ -10,7 +10,7 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 
 | Name | Description |
 |------|-------------|
-|[__construct](#requestservice__construct)||
+|[__construct](#requestservice__construct)|Setting up the base class with required services|
 |[checkEmbedded](#requestservicecheckembedded)|If embedded should be shown or not.|
 |[createResponse](#requestservicecreateresponse)|Creating the responce object.|
 |[getId](#requestservicegetid)|Get the ID from given parameters.|
@@ -30,16 +30,23 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 **Description**
 
 ```php
- __construct (void)
+public __construct (\EntityManagerInterface $entityManager, \CacheService $cacheService, \ResponseService $responseService, \ObjectEntityService $objectEntityService, \LogService $logService, \CallService $callService, \Security $security, \EventDispatcherInterface $eventDispatcher)
 ```
 
- 
+Setting up the base class with required services 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(\EntityManagerInterface) $entityManager`
+* `(\CacheService) $cacheService`
+* `(\ResponseService) $responseService`
+* `(\ObjectEntityService) $objectEntityService`
+* `(\LogService) $logService`
+* `(\CallService) $callService`
+* `(\Security) $security`
+* `(\EventDispatcherInterface) $eventDispatcher`
 
 **Return Values**
 
