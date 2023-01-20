@@ -18,16 +18,19 @@ class InstallationService
     private EntityManagerInterface $em;
     private SymfonyStyle $io;
     private $container;
+    private CacheService $cacheService;
 
     public function __construct(
         ComposerService $composerService,
         EntityManagerInterface $em,
-        Kernel $kernel
+        Kernel $kernel,
+        CacheService $cacheService
     ) {
         $this->composerService = $composerService;
         $this->em = $em;
         $this->container = $kernel->getContainer();
         $this->collection = null;
+        $this->cacheService = $cacheService;
     }
 
     /**
@@ -62,6 +65,8 @@ class InstallationService
         foreach ($plugins as $plugin) {
             $this->install($plugin['name']);
         }
+
+        $this->cacheService->warmup();
 
         return Command::SUCCESS;
     }
