@@ -563,16 +563,19 @@ class InstallationService
 
                     // I hate arrays
                     if($valueObject->getAttribute()->getMultiple()){
+                        $this->io->info('an array for objects
+                        ');
                         if(is_array($value)){
                             foreach($value as $subvalue){
+                                // Savety
+                                if(!$valueObject->getAttribute()->getObject()){
+                                    continue;
+                                }
                                 // is array
                                 if(is_array($value)){
-                                    // Savety
-                                    if(!$valueObject->getAttribute()->getObject()){
-                                        continue;
-                                    }
                                     $newObject= New ObjectEntity($valueObject->getAttribute()->getObject());
-                                    $value = $this->saveOnFixedId($newObject, $value);
+                                    $newObject = $this->saveOnFixedId($newObject, $value);
+                                    $valueObject->addObject($newObject);
                                 }
                                 // Is not an array
                                 else{
@@ -582,8 +585,13 @@ class InstallationService
                                     if(!$value) {
                                         $this->io->error('Could not find an object for id '.$idValue);
                                     }
+                                    else{
+                                        $valueObject->addObject($newObject);
+
+                                    }
                                 }
                             }
+
                         }
                         else{
                             $this->io->error($valueObject->getAttribute()->getName().' Is a multiple so should be filled with an array, but provided value was '.$value.'(type: '.gettype($value).')');
@@ -591,15 +599,17 @@ class InstallationService
                         continue;
                     }
                     // End of array hate, we are friends again
-                    
+
                     // is array
                     if(is_array($value)){
                         // Savety
                         if(!$valueObject->getAttribute()->getObject()){
+                            $this->io->error('Could not find an object for atribute  '.$valueObject->getAttribute()->getname().' ('.$valueObject->getAttribute()->getId().')');
                             continue;
                         }
                         $newObject= New ObjectEntity($valueObject->getAttribute()->getObject());
                         $value = $this->saveOnFixedId($newObject, $value);
+                        $valueObject->setValue($value);
                     }
                     // Is not an array
                     else{
@@ -609,11 +619,13 @@ class InstallationService
                         if(!$value) {
                             $this->io->error('Could not find an object for id '.$idValue);
                         }
+                        else{
+                            $valueObject->setValue($value);
+                        }
                     }
                 }
 
                 // Do the normaul stuf
-                $valueObject->setValue($value);
                 $objectEntity->addObjectValue($valueObject);
             }
         }
