@@ -12,7 +12,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Monolog\Logger;
-use CommonGateway\CoreBundle\Service\CacheService;
 
 class InstallationService
 {
