@@ -5,6 +5,7 @@ namespace CommonGateway\CoreBundle\Service;
 use App\Entity\CollectionEntity;
 use App\Entity\Entity;
 use App\Entity\ObjectEntity;
+use App\Entity\Value;
 use App\Kernel;
 use Doctrine\ORM\EntityManagerInterface;
 use Monolog\Logger;
@@ -455,16 +456,21 @@ class InstallationService
             foreach ($objects as $object) {
                 // Lets see if we need to update
 
-                if (array_key_exists('_id', $object) && $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $object['_id']])) {
-                    $this->io->writeln(['', 'Object '.$object['_id'].' already exists, so updating']);
+                // Backwarsd competability
+                if(isset($object['_id'])){
+                    $object['id'] = $object['_id'];
+                    unset($object['_id']);
+                }
+
+                if (isset($object['id']) && $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $object['id']])) {
+                    $this->io->writeln(['', 'Object '.$object['id'].' already exists, so updating']);
                 } else {
                     $objectEntity = new ObjectEntity($entity);
                 }
 
                 $this->io->writeln('Writing data to the object');
-                $objectEntity->hydrate($object);
 
-                $this->saveOnFixedId($objectEntity);
+                $this->saveOnFixedId($objectEntity, $object);
 
                 $this->io->writeln(['Object saved as '.$objectEntity->getId(), '']);
             }
@@ -503,7 +509,7 @@ class InstallationService
      *
      * @return ObjectEntity
      */
-    private function saveOnFixedId(ObjectEntity $objectEntity): ObjectEntity
+    private function saveOnFixedId(ObjectEntity $objectEntity, array $hydrate = []): ObjectEntity
     {
         // This savetey dosn't make sense but we need it
         if (!$objectEntity->getEntity()) {
@@ -513,13 +519,16 @@ class InstallationService
             return $objectEntity;
         }
 
+
+
+
         // Save the values
-        $values = $objectEntity->getObjectValues()->toArray();
-        $objectEntity->clearAllValues();
+        //$values = $objectEntity->getObjectValues()->toArray();
+        //$objectEntity->clearAllValues();
 
         // We have an object entity with a fixed id that isn't in the database, so we need to act
-        if ($objectEntity->getId() && !$this->em->contains($objectEntity)) {
-            $this->io->writeln(['', 'Creating new object ('.$objectEntity->getEntity()->getName().') on a fixed id ('.$objectEntity->getId().')']);
+        if (isset($object['id']) && !$this->em->contains($objectEntity)) {
+            $this->io->writeln(['Creating new object ('.$objectEntity->getEntity()->getName().') on a fixed id ('.$objectEntity->getId().')']);
 
             // Sve the id
             $id = $objectEntity->getId();
@@ -532,36 +541,49 @@ class InstallationService
             $this->em->persist($objectEntity);
             $this->em->flush();
             $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
+
+
+            $this->io->writeln(['Defintive object id ('.$objectEntity->getId().')']);
         } else {
-            $this->io->writeln(['', 'Creating new object ('.$objectEntity->getEntity()->getName().') on a generated id']);
+            $this->io->writeln(['Creating new object ('.$objectEntity->getEntity()->getName().') on a generated id']);
         }
 
-        // Loop trough the values
-        foreach ($values as $key => $objectValue) {
-            $objectEntity->addObjectValue($objectValue);
 
-            // If the value itsself is an object it might also contain fixed id's
-            foreach ($objectValue->getObjects() as $subobject) {
-                $this->io->writeln(['', 'Found sub object ('.$subobject->getEntity()->getName().')']);
+        // We already dit this so lets skip it
+        unset($hydrate['id']);
 
-                if ($subobject->getEntity()) {
-                    $this->io->writeln(['subobject has entity so can be saved']);
-                    $subobject = $this->saveOnFixedId($subobject);
-                    unset($values['$key']);
-                } else {
-                    $this->io->warning(['subobject has NO entity so can\'t be saved']);
-                    $objectValue->removeObject($subobject);
+        foreach ($hydrate as $key => $value) {
+            // Try to get a value object
+            $valueObject = $objectEntity->getValueObject($key);
+
+            // If we find the Value object we set the value
+            if ($valueObject instanceof Value) {
+                // Value is an array so lets create an object
+                if($valueObject->getAttribute()->getType() == "object"){
+                    // is array
+                    if( is_array($value)){
+                        // Savety
+                        if(!$valueObject->getAttribute()->getObject()){
+                            continue;
+                        }
+                        $newObject= New ObjectEntity($valueObject->getAttribute()->getObject());
+                        $value = $this->saveOnFixedId($newObject, $value);
+                    }
+                    // Is not an array
+                    else{
+                        $idValue = $value;
+                        $value =  $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
+                        // Savety
+                        if(!$value) {
+                            $this->io->error('Could not find an object for id '.$idValue);
+                        }
+                    }
                 }
-            }
-        }
 
-        // DESTROY orphans
-        if (!empty($values)) {
-            foreach ($values as $value) {
-                $this->em->remove($value);
+                // Do the normaul stuf
+                $valueObject->setValue($value);
+                $objectEntity->addObjectValue($valueObject);
             }
-            $message = 'Found orpahned value object for atribute'.$value->getAttribute()->getName().'('.$value->getAttribute()->getId().') on object '.$objectEntity->getName().' ('.$objectEntity->getId().') deleting it';
-            $this->io->warning($message);
         }
 
         $this->em->persist($objectEntity);
