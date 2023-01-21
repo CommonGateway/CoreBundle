@@ -614,7 +614,8 @@ class RequestService
             return;
         }
 
-        if (isset($result['results']) && $this->data['method'] === 'GET' && !isset($this->id)) {
+        // todo: $this->id is sometimes empty, it should never be an empty string
+        if (isset($result['results']) && $this->data['method'] === 'GET' && empty($this->id)) {
             array_walk($result['results'], function (&$record) {
                 $record = iterator_to_array($record);
             });
