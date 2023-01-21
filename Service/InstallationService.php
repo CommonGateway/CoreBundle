@@ -524,11 +524,11 @@ class InstallationService
         //$objectEntity->clearAllValues();
 
         // We have an object entity with a fixed id that isn't in the database, so we need to act
-        if (isset($object['id']) && !$this->em->contains($objectEntity)) {
-            $this->io->writeln(['Creating new object ('.$objectEntity->getEntity()->getName().') on a fixed id ('.$objectEntity->getId().')']);
+        if (isset($hydrate['id']) && !$this->em->contains($objectEntity)) {
+            $this->io->writeln(['Creating new object ('.$objectEntity->getEntity()->getName().') on a fixed id ('.$hydrate['id'].')']);
 
             // Sve the id
-            $id = $objectEntity->getId();
+            $id = $hydrate['id'];
             // Create the entity
             $this->em->persist($objectEntity);
             $this->em->flush();
@@ -545,7 +545,7 @@ class InstallationService
         }
 
         // We already dit this so lets skip it
-        unset($hydrate['id']);
+        unset($hydrate['_id']);
 
         foreach ($hydrate as $key => $value) {
             // Try to get a value object
