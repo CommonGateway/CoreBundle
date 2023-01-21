@@ -626,7 +626,7 @@ class RequestService
             return;
         }
 
-        if (!isset($result['id']) || !Uuid::isValid($result['id'])) {
+        if (empty($result['id']) || !Uuid::isValid($result['id'])) {
             return;
         }
         $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['id']]);
@@ -634,7 +634,7 @@ class RequestService
         if (!$objectEntity instanceof ObjectEntity) {
             return;
         }
-        if ($this->data['method'] === 'GET' && isset($this->id)) {
+        if ($this->data['method'] === 'GET' && !empty($this->id)) {
             $metadataSelf['dateRead'] = 'getItem';
         }
         $this->responseService->xCommongatewayMetadata = $metadataSelf;
