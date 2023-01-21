@@ -567,20 +567,21 @@ class InstallationService
                                     continue;
                                 }
                                 // is array
-                                if (is_array($value)) {
+
+                                if (is_array($subvalue)) {
                                     $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
-                                    $newObject = $this->saveOnFixedId($newObject, $value);
+                                    $newObject = $this->saveOnFixedId($newObject, $subvalue);
                                     $valueObject->addObject($newObject);
                                 }
                                 // Is not an array
                                 else {
-                                    $idValue = $value;
-                                    $value = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
+                                    $idValue = $subvalue;
+                                    $subvalue = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
                                     // Savety
-                                    if (!$value) {
+                                    if (!$subvalue) {
                                         $this->io->error('Could not find an object for id '.$idValue);
                                     } else {
-                                        $valueObject->addObject($newObject);
+                                        $valueObject->addObject($subvalue);
                                     }
                                 }
                             }
@@ -613,6 +614,8 @@ class InstallationService
                             $valueObject->setValue($value);
                         }
                     }
+                } else {
+                    $valueObject->setValue($value);
                 }
 
                 // Do the normaul stuf
