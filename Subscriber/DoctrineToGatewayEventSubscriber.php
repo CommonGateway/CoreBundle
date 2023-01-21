@@ -318,7 +318,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      *
      * @return void
      */
-    public function posFlush(LifecycleEventArgs $args): void
+    public function postFlush(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
 
