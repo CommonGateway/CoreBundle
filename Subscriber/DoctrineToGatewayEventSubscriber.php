@@ -43,7 +43,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         CacheService $cacheService,
         EntityManagerInterface $entityManager,
         SessionInterface $session,
-        EventDispatcherInterface $eventDispatcher,
+        EventDispatcherInterface $eventDispatcher
     ) {
         $this->cacheService = $cacheService;
         $this->entityManager = $entityManager;
