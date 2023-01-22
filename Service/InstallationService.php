@@ -567,6 +567,7 @@ class InstallationService
                                     continue;
                                 }
                                 // is array
+
                                 if (is_array($subvalue)) {
                                     $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
                                     $newObject = $this->saveOnFixedId($newObject, $subvalue);
