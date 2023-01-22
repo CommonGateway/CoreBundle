@@ -59,13 +59,13 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     public function getSubscribedEvents(): array
     {
         return [
-            Events::preRemove,
-            Events::prePersist,
-            Events::preUpdate,
-            Events::postPersist,
-            Events::postUpdate,
-            Events::postRemove,
-            Events::postLoad,
+//            Events::preRemove,
+//            Events::prePersist,
+//            Events::preUpdate,
+//            Events::postPersist,
+//            Events::postUpdate,
+//            Events::postRemove,
+//            Events::postLoad,
 //            Events::preFlush,
 //            Events::postFlush,
         ];
