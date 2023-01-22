@@ -10,6 +10,8 @@ use App\Event\ActionEvent;
 use CommonGateway\CoreBundle\Service\CacheService;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Event\PostFlushEventArgs;
+use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Monolog\Logger;
@@ -64,8 +66,8 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             Events::postUpdate,
             Events::postRemove,
             Events::postLoad,
-            Events::preFlush,
-            Events::postFlush,
+//            Events::preFlush,
+//            Events::postFlush,
         ];
     }
 
@@ -290,7 +292,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      *
      * @return void
      */
-    public function preFlush(LifecycleEventArgs $args): void
+    public function preFlush(PreFlushEventArgs $args): void
     {
         $object = $args->getObject();
 
@@ -318,7 +320,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      *
      * @return void
      */
-    public function postFlush(LifecycleEventArgs $args): void
+    public function postFlush(PostFlushEventArgs $args): void
     {
         $object = $args->getObject();
 
