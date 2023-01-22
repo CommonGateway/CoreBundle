@@ -98,7 +98,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         );
 
         // Throw the event
-        $event = new ActionEvent($eventType, ['object' => $object->toArray(), 'entity' => $this->getEntity()->getId()->toString()]);
+        $event = new ActionEvent('commongateway.object.pre.delete', ['object' => $object->toArray(), 'entity' => $this->getEntity()->getId()->toString()]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.pre.delete');
     }
 
@@ -129,7 +129,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         );
 
         // Throw the event
-        $event = new ActionEvent($eventType, ['object' => $object->toArray(), 'entity' => $this->getEntity()->getId()->toString()]);
+        $event = new ActionEvent('commongateway.object.pre.create', ['object' => $object->toArray(), 'entity' => $this->getEntity()->getId()->toString()]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.pre.create');
     }
 
@@ -160,7 +160,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         );
 
         // Throw the event
-        $event = new ActionEvent($eventType, ['object' => $object->toArray(), 'entity' => $this->getEntity()->getId()->toString()]);
+        $event = new ActionEvent('commongateway.object.pre.update', ['object' => $object->toArray(), 'entity' => $this->getEntity()->getId()->toString()]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.pre.update');
     }
 
@@ -188,7 +188,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         );
 
         // Throw the event
-        $event = new ActionEvent($eventType, []);
+        $event = new ActionEvent('commongateway.object.post.delete', []);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.post.delete');
     }
 
@@ -219,7 +219,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         );
 
         // Throw the event
-        $event = new ActionEvent($eventType, ['object' => $object->toArray(), 'entity' => $this->getEntity()->getId()->toString()]);
+        $event = new ActionEvent('commongateway.object.post.create', ['object' => $object->toArray(), 'entity' => $this->getEntity()->getId()->toString()]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.post.create');
     }
 
@@ -250,7 +250,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         );
 
         // Throw the event
-        $event = new ActionEvent($eventType, ['object' => $object->toArray(), 'entity' => $this->getEntity()->getId()->toString()]);
+        $event = new ActionEvent('commongateway.object.post.update', ['object' => $object->toArray(), 'entity' => $this->getEntity()->getId()->toString()]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.post.update');
     }
 
@@ -281,7 +281,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         );
 
         // Throw the event
-        $event = new ActionEvent($eventType, ['object' => $object->toArray(), 'entity' => $this->getEntity()->getId()->toString()]);
+        $event = new ActionEvent('commongateway.object.post.read', ['object' => $object->toArray(), 'entity' => $this->getEntity()->getId()->toString()]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.post.read');
     }
 
@@ -309,7 +309,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         );
 
         // Throw the event
-        $event = new ActionEvent($eventType, []);
+        $event = new ActionEvent('commongateway.object.pre.flush', []);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.pre.flush');
     }
 
@@ -337,7 +337,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         );
 
         // Throw the event
-        $event = new ActionEvent($eventType, []);
+        $event = new ActionEvent('commongateway.object.post.flush', []);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.post.flush');
     }
 }
