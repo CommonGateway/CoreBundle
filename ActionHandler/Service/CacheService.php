@@ -171,7 +171,7 @@ class CacheService
         $endpoints = $collection->find()->toArray();
         foreach ($endpoints as $endpoint) {
             if (!$this->entityManager->find($type, $endpoint['id'])) {
-                $this->io->writeln("removing {$endpoint['id']} from cache");
+                isset($this->io) && $this->io->writeln("removing {$endpoint['id']} from cache");
                 $collection->findOneAndDelete(['id' => $endpoint['id']]);
             }
         }
