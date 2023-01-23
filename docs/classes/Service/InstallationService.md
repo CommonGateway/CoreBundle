@@ -11,7 +11,7 @@
 | Name | Description |
 |------|-------------|
 |[__construct](#installationservice__construct)||
-|[composerupdate](#installationservicecomposerupdate)||
+|[composerupdate](#installationservicecomposerupdate)|Updates all commonground bundles on teh commen gateway installation|
 |[handleData](#installationservicehandledata)||
 |[handleInstaller](#installationservicehandleinstaller)||
 |[handleSchema](#installationservicehandleschema)||
@@ -56,20 +56,22 @@
 **Description**
 
 ```php
- composerupdate (void)
+public composerupdate (array $config)
 ```
 
- 
+Updates all commonground bundles on teh commen gateway installation 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(array) $config`
 
 **Return Values**
 
-`void`
+`int`
+
+
 
 
 <hr />
