@@ -292,6 +292,26 @@ class RequestService
     }
 
     /**
+     * Get a scopes array for the current user (or of the anonymus if no user s logged in).
+     *
+     * @return array
+     */
+    public function getScopes(): ?array
+    {
+        if ($user = $this->security->getUser()) {
+            return $user->getScopes();
+        } else {
+            $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous'=>true]);
+            if ($anonymousSecurityGroup) {
+                return $anonymousSecurityGroup->getScopes();
+            }
+        }
+
+        // Lets play it save
+        return [];
+    }
+
+    /**
      * Handles incomming requests and is responsible for generating a responce.
      *
      * @param array $data          The data from the call
@@ -381,6 +401,18 @@ class RequestService
                 $allowedSchemas['id'][] = $entity->getId()->toString();
                 $allowedSchemas['name'][] = $entity->getName();
             }
+        }
+
+        // Security
+        $scopes = $this->getScopes();
+        foreach ($allowedSchemas['id'] as $schema) {
+            if (!isset($scopes[$schema][$this->data['method']])) {
+                // THROW SECURITY ERROR AND EXIT
+            }
+        }
+        // Hotfix
+        if (!$this->security->getUser()) {
+            throw new \Exception('You need to be logged in for this endpoint');
         }
 
         // All prepped so lets go
