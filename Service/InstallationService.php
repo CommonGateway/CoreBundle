@@ -52,14 +52,14 @@ class InstallationService
     }
 
     /**
-     * Updates all commonground bundles on teh commen gateway installation
+     * Updates all commonground bundles on teh commen gateway installation.
      *
      * @param array $config
+     *
      * @return int
      */
     public function composerupdate(array $config = []): int
     {
-
         $plugins = $this->composerService->getAll();
 
         if ($this->io) {
@@ -314,15 +314,10 @@ class InstallationService
             $this->logger->debug('No schema folder found for plugin '.$bundle);
         }
 
-
-
-
-
         // Handling the data
         $this->io->section('Looking for data');
-        if(array_key_exists("data", $config) && $config["data"]){
+        if (array_key_exists('data', $config) && $config['data']) {
             $dataDir = $vendorFolder.'/'.$bundle.'/Data';
-
 
             if ($filesystem->exists($dataDir)) {
                 $this->io->writeln('Data folder found');
@@ -339,9 +334,8 @@ class InstallationService
                 $this->logger->debug('No data folder found for plugin '.$bundle);
                 $this->io->writeln('No data folder found');
             }
-        }
-        else {
-            $this->io->warning("No test data loaded for bundle, run command with -data to load (test) data");
+        } else {
+            $this->io->warning('No test data loaded for bundle, run command with -data to load (test) data');
         }
 
         // Handling the installations
@@ -539,7 +533,6 @@ class InstallationService
         // Save the values
         //$values = $objectEntity->getObjectValues()->toArray();
         //$objectEntity->clearAllValues();
-
 
         // We have an object entity with a fixed id that isn't in the database, so we need to act
         if (isset($hydrate['id']) && !$this->em->contains($objectEntity)) {
