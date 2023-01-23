@@ -15,7 +15,7 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 |[createResponse](#requestservicecreateresponse)|Creating the responce object.|
 |[getId](#requestservicegetid)|Get the ID from given parameters.|
 |[getSchema](#requestservicegetschema)|Get the schema from given parameters returns false if no schema could be established.|
-|[getScopes](#requestservicegetscopes)|Get a scopes array for the current user (or of the anonymus if no user s logged in)|
+|[getScopes](#requestservicegetscopes)|Get a scopes array for the current user (or of the anonymus if no user s logged in).|
 |[itemRequestHandler](#requestserviceitemrequesthandler)||
 |[proxyHandler](#requestserviceproxyhandler)||
 |[realRequestQueryAll](#requestservicerealrequestqueryall)|A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.|
@@ -163,7 +163,7 @@ Get the schema from given parameters returns false if no schema could be establi
 public getScopes (void)
 ```
 
-Get a scopes array for the current user (or of the anonymus if no user s logged in) 
+Get a scopes array for the current user (or of the anonymus if no user s logged in). 
 
  
 
