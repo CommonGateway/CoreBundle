@@ -11,7 +11,7 @@
 | Name | Description |
 |------|-------------|
 |[__construct](#installationservice__construct)||
-|[composerupdate](#installationservicecomposerupdate)||
+|[composerupdate](#installationservicecomposerupdate)|Updates all commonground bundles on the common gateway installation.|
 |[handleData](#installationservicehandledata)||
 |[handleInstaller](#installationservicehandleinstaller)||
 |[handleSchema](#installationservicehandleschema)||
@@ -19,7 +19,7 @@
 |[setStyle](#installationservicesetstyle)|Set symfony style in order to output to the console.|
 |[uninstall](#installationserviceuninstall)||
 |[update](#installationserviceupdate)||
-|[valdiateJsonSchema](#installationservicevaldiatejsonschema)|Performce a very basic check to see if a schema file is a valid json-schema file.|
+|[valdiateJsonSchema](#installationservicevaldiatejsonschema)|Perform a very basic check to see if a schema file is a valid json-schema file.|
 |[validateObjects](#installationservicevalidateobjects)|Validates the objects in the EAV setup.|
 |[validateSchemas](#installationservicevalidateschemas)|Validates the schemas in the EAV setup.|
 |[validateValues](#installationservicevalidatevalues)|Validates the objects in the EAV setup.|
@@ -56,20 +56,22 @@
 **Description**
 
 ```php
- composerupdate (void)
+public composerupdate (array $config)
 ```
 
- 
+Updates all commonground bundles on the common gateway installation. 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(array) $config`
 
 **Return Values**
 
-`void`
+`int`
+
+
 
 
 <hr />
@@ -257,7 +259,7 @@ Set symfony style in order to output to the console.
 public valdiateJsonSchema (array $schema)
 ```
 
-Performce a very basic check to see if a schema file is a valid json-schema file. 
+Perform a very basic check to see if a schema file is a valid json-schema file. 
 
  
 
