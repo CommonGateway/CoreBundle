@@ -51,8 +51,15 @@ class InstallationService
         return $this;
     }
 
-    public function composerupdate(): int
+    /**
+     * Updates all commonground bundles on teh commen gateway installation
+     *
+     * @param array $config
+     * @return int
+     */
+    public function composerupdate(array $config = []): int
     {
+
         $plugins = $this->composerService->getAll();
 
         if ($this->io) {
@@ -69,7 +76,7 @@ class InstallationService
         $this->logger->debug('Running plugin installer');
 
         foreach ($plugins as $plugin) {
-            $this->install($plugin['name']);
+            $this->install($plugin['name'], $config);
         }
 
         if ($this->io) {
@@ -230,7 +237,7 @@ class InstallationService
      *
      * @return int
      */
-    public function install(string $bundle, bool $noSchema = false): int
+    public function install(string $bundle, array $config = []): int
     {
         if ($this->io) {
             $this->io->writeln([
@@ -307,24 +314,34 @@ class InstallationService
             $this->logger->debug('No schema folder found for plugin '.$bundle);
         }
 
+
+
+
+
         // Handling the data
         $this->io->section('Looking for data');
-        $dataDir = $vendorFolder.'/'.$bundle.'/Data';
+        if(array_key_exists("data", $config) && $config["data"]){
+            $dataDir = $vendorFolder.'/'.$bundle.'/Data';
 
-        if ($filesystem->exists($dataDir)) {
-            $this->io->writeln('Data folder found');
-            $datas = new Finder();
-            $datas = $datas->in($dataDir);
-            $this->io->writeln('Files found: '.count($datas));
 
-            foreach ($datas->files() as $data) {
-                $this->handleData($data);
+            if ($filesystem->exists($dataDir)) {
+                $this->io->writeln('Data folder found');
+                $datas = new Finder();
+                $datas = $datas->in($dataDir);
+                $this->io->writeln('Files found: '.count($datas));
+
+                foreach ($datas->files() as $data) {
+                    $this->handleData($data);
+                }
+
+                // We need to clear the finder
+            } else {
+                $this->logger->debug('No data folder found for plugin '.$bundle);
+                $this->io->writeln('No data folder found');
             }
-
-            // We need to clear the finder
-        } else {
-            $this->logger->debug('No data folder found for plugin '.$bundle);
-            $this->io->writeln('No data folder found');
+        }
+        else {
+            $this->io->warning("No test data loaded for bundle, run command with -data to load (test) data");
         }
 
         // Handling the installations
@@ -523,11 +540,12 @@ class InstallationService
         //$values = $objectEntity->getObjectValues()->toArray();
         //$objectEntity->clearAllValues();
 
+
         // We have an object entity with a fixed id that isn't in the database, so we need to act
         if (isset($hydrate['id']) && !$this->em->contains($objectEntity)) {
             $this->io->writeln(['Creating new object ('.$objectEntity->getEntity()->getName().') on a fixed id ('.$hydrate['id'].')']);
 
-            // Sve the id
+            // save the id
             $id = $hydrate['id'];
             // Create the entity
             $this->em->persist($objectEntity);
