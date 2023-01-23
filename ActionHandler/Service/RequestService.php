@@ -122,11 +122,11 @@ class RequestService
         } elseif (isset($this->data['query']['id'])) {
             return $this->data['query']['id'];
         } elseif (isset($this->data['path']['id'])) {
-            return$this->data['path']['id'];
+            return $this->data['path']['id'];
         } elseif (isset($this->data['path']['{uuid}'])) {
             return $this->data['path']['{uuid}'];
         } elseif (isset($this->data['query']['uuid'])) {
-            return$this->data['query']['uuid'];
+            return $this->data['query']['uuid'];
         } elseif (isset($this->content['id'])) { // the id might also be passed trough the object itself
             return $this->content['id'];
         } elseif (isset($this->content['uuid'])) {
@@ -264,7 +264,7 @@ class RequestService
 
         // Get clean query paramters without all the symfony shizzle
         $query = $this->realRequestQueryAll($this->data['method']);
-        $this->data['path'] = '/'.$data['path']['{route}'];
+        $this->data['path'] = '/' . $data['path']['{route}'];
 
         // Make a guzzle call to the source bassed on the incomming call
         $result = $this->callService->call(
@@ -394,7 +394,7 @@ class RequestService
                     // If we do not have an object we throw an 404
                     if (!$result) {
                         return new Response($this->serializer->serialize([
-                            'message' => 'Could not find an object with id '.$this->id,
+                            'message' => 'Could not find an object with id ' . $this->id,
                             'type'    => 'Bad Request',
                             'path'    => implode(', ', $allowedSchemas['name']),
                             'data'    => ['id' => $this->id],
@@ -536,14 +536,17 @@ class RequestService
             default:
                 break;
 
-                return new Response('Unkown method'.$this->data['method'], '404');
+                return new Response('Unkown method' . $this->data['method'], '404');
         }
 
         $this->entityManager->flush();
 
+
         if (isset($eventType) && isset($this->object)) {
             $event = new ActionEvent($eventType, ['response' => $this->object->toArray(), 'entity' => $this->object->getEntity()->getId()->toString()]);
             $this->eventDispatcher->dispatch($event, $event->getType());
+            $eventData = $event->getData();
+            isset($eventData['response']) && $result = $eventData['response'];
         }
 
         $this->handleMetadataSelf($result, $metadataSelf);
