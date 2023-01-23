@@ -296,9 +296,9 @@ class RequestService
      *
      * @return array
      */
-    public function getScopes(): array
+    public function getScopes(): ?array
     {
-        if (!$user = $this->security->getUser()) {
+        if ($user = $this->security->getUser()) {
             return $user->getScopes();
         } else {
             $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous'=>true]);
@@ -308,7 +308,7 @@ class RequestService
         }
 
         // Lets play it save
-        return $scopes;
+        return [];
     }
 
     /**
@@ -412,7 +412,7 @@ class RequestService
         }
         // Hotfix
         if (!$this->security->getUser()) {
-            throwException('You need to be logged in for this endpoint');
+            throw new \Exception('You need to be logged in for this endpoint');
         }
 
         // All prepped so lets go
