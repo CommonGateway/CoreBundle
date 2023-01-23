@@ -11,7 +11,7 @@
 | Name | Description |
 |------|-------------|
 |[__construct](#installationservice__construct)||
-|[composerupdate](#installationservicecomposerupdate)|Updates all commonground bundles on teh commen gateway installation|
+|[composerupdate](#installationservicecomposerupdate)|Updates all commonground bundles on teh commen gateway installation.|
 |[handleData](#installationservicehandledata)||
 |[handleInstaller](#installationservicehandleinstaller)||
 |[handleSchema](#installationservicehandleschema)||
@@ -59,7 +59,7 @@
 public composerupdate (array $config)
 ```
 
-Updates all commonground bundles on teh commen gateway installation 
+Updates all commonground bundles on teh commen gateway installation. 
 
  
 
