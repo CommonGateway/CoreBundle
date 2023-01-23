@@ -292,20 +292,19 @@ class RequestService
     }
 
     /**
-     * Get a scopes array for the current user (or of the anonymus if no user s logged in)
+     * Get a scopes array for the current user (or of the anonymus if no user s logged in).
      *
      * @return array
      */
-    public function getScopes(): array{
-
-        if(! $user = $this->security->getUser()){
+    public function getScopes(): array
+    {
+        if (!$user = $this->security->getUser()) {
             return $user->getScopes();
-        }
-        else{
-           $anonymousSecurityGroup = $this->entityManager->getRepository("App:SecurityGroup")->findOneBy(["anonymous"=>true]);
-           if($anonymousSecurityGroup){
-               return $anonymousSecurityGroup->getScopes();
-           }
+        } else {
+            $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous'=>true]);
+            if ($anonymousSecurityGroup) {
+                return $anonymousSecurityGroup->getScopes();
+            }
         }
 
         // Lets play it save
@@ -406,13 +405,13 @@ class RequestService
 
         // Security
         $scopes = $this->getScopes();
-        foreach($allowedSchemas['id'] as $schema){
-            if(!isset($scopes[$schema][$this->data['method']])){
+        foreach ($allowedSchemas['id'] as $schema) {
+            if (!isset($scopes[$schema][$this->data['method']])) {
                 // THROW SECURITY ERROR AND EXIT
             }
         }
         // Hotfix
-        if(!$this->security->getUser()){
+        if (!$this->security->getUser()) {
             throwException('You need to be logged in for this endpoint');
         }
 
