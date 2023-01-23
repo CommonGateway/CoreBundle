@@ -11,7 +11,7 @@
 | Name | Description |
 |------|-------------|
 |[__construct](#installationservice__construct)||
-|[composerupdate](#installationservicecomposerupdate)|Updates all commonground bundles on teh commen gateway installation.|
+|[composerupdate](#installationservicecomposerupdate)|Updates all commonground bundles on the common gateway installation.|
 |[handleData](#installationservicehandledata)||
 |[handleInstaller](#installationservicehandleinstaller)||
 |[handleSchema](#installationservicehandleschema)||
@@ -19,7 +19,7 @@
 |[setStyle](#installationservicesetstyle)|Set symfony style in order to output to the console.|
 |[uninstall](#installationserviceuninstall)||
 |[update](#installationserviceupdate)||
-|[valdiateJsonSchema](#installationservicevaldiatejsonschema)|Performce a very basic check to see if a schema file is a valid json-schema file.|
+|[valdiateJsonSchema](#installationservicevaldiatejsonschema)|Perform a very basic check to see if a schema file is a valid json-schema file.|
 |[validateObjects](#installationservicevalidateobjects)|Validates the objects in the EAV setup.|
 |[validateSchemas](#installationservicevalidateschemas)|Validates the schemas in the EAV setup.|
 |[validateValues](#installationservicevalidatevalues)|Validates the objects in the EAV setup.|
@@ -59,7 +59,7 @@
 public composerupdate (array $config)
 ```
 
-Updates all commonground bundles on teh commen gateway installation. 
+Updates all commonground bundles on the common gateway installation. 
 
  
 
@@ -259,7 +259,7 @@ Set symfony style in order to output to the console.
 public valdiateJsonSchema (array $schema)
 ```
 
-Performce a very basic check to see if a schema file is a valid json-schema file. 
+Perform a very basic check to see if a schema file is a valid json-schema file. 
 
  
 
