@@ -52,7 +52,7 @@ class InstallationService
     }
 
     /**
-     * Updates all commonground bundles on teh commen gateway installation.
+     * Updates all commonground bundles on the common gateway installation.
      *
      * @param array $config
      *
@@ -421,7 +421,7 @@ class InstallationService
     }
 
     /**
-     * Performce a very basic check to see if a schema file is a valid json-schema file.
+     * Perform a very basic check to see if a schema file is a valid json-schema file.
      *
      * @param array $schema
      *
