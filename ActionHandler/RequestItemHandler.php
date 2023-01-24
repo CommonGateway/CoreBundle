@@ -13,13 +13,15 @@ class RequestItemHandler implements ActionHandlerInterface
         $this->requestService = $requestService;
     }
 
-    function getConditions() {
+    public function getConditions()
+    {
         return ['==' => [1, 1]];
     }
 
-    function getListens() {
+    public function getListens()
+    {
         return [
-            'none'
+            'none',
         ];
     }
 
