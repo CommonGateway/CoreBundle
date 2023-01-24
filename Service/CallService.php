@@ -13,6 +13,7 @@ use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use Symfony\Component\Serializer\Encoder\YamlEncoder;
 
 /**
  * Service to call external sources.
@@ -139,7 +140,7 @@ class CallService
 
         $log = new CallLog();
         $log->setSource($source);
-        $log->setEndpoint($source->getLocation().$endpoint);
+        $log->setEndpoint($source->getLocation() . $endpoint);
         $log->setMethod($method);
         $log->setConfig($config);
         $log->setRequestBody($config['body'] ?? null);
@@ -153,7 +154,7 @@ class CallService
         $config['headers'] = $this->removeEmptyHeaders($config['headers']);
         $log->setRequestHeaders($config['headers'] ?? null);
 
-        $url = $source->getLocation().$endpoint;
+        $url = $source->getLocation() . $endpoint;
 
         $startTimer = microtime(true);
         // Lets make the call
@@ -163,7 +164,7 @@ class CallService
             } else {
                 $response = $this->client->requestAsync($method, $url, $config);
             }
-        } catch (ServerException|ClientException|RequestException|Exception $e) {
+        } catch (ServerException | ClientException | RequestException | Exception $e) {
             $stopTimer = microtime(true);
             $log->setResponseStatus('');
             if ($e->getResponse()) {
@@ -234,8 +235,9 @@ class CallService
      */
     public function decodeResponse(
         Source $source,
-        Response $response
-    ): array {
+        Response $response,
+        ?string $contentType = null
+    ) {
         // resultaat omzetten
 
         // als geen content-type header dan content-type header is accept header
@@ -245,8 +247,13 @@ class CallService
         }
 
         $xmlEncoder = new XmlEncoder(['xml_root_node_name' => $this->configuration['apiSource']['location']['xmlRootNodeName'] ?? 'response']);
-        $contentType = $this->getContentType($response, $source);
+        $yamlEncoder = new YamlEncoder();
+        $contentType = $contentType !== null ? $contentType : $this->getContentType($response, $source) ?? 'application/json';
         switch ($contentType) {
+            case 'text/yaml':
+            case 'text/x-yaml':
+                return $yamlEncoder->decode($responseBody, 'yaml');
+                break;
             case 'text/xml':
             case 'text/xml; charset=utf-8':
             case 'application/xml':
