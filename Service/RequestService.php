@@ -443,6 +443,8 @@ class RequestService
                     $responseLog = new Response(is_string($this->content) || is_null($this->content) ? $this->content : null, 200, ['CoreBundle' => 'GetItem']);
                     $session = new Session();
                     $session->set('object', $this->id);
+                    
+                    // todo: This log is needed so we know an user has 'read' this object
                     $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) ? json_encode($this->content) : $this->content);
                 } else {
                     //$this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
