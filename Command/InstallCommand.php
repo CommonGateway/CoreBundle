@@ -38,10 +38,10 @@ class InstallCommand extends Command
         $this->installationService->setStyle(new SymfonyStyle($input, $output));
 
         return $this->installationService->install($input->getArgument('bundle'), [
-            'data' => $input->getArgument('data'),
+            'data'     => $input->getArgument('data'),
             'noSchema' => $input->getOption('schema'),
-            'script' => $input->getOption('script'),
-            'unsafe' => $input->getOption('unsafe')
+            'script'   => $input->getOption('script'),
+            'unsafe'   => $input->getOption('unsafe'),
         ]);
     }
 }
