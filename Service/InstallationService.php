@@ -548,6 +548,7 @@ class InstallationService
             $objectEntity->setId($id);
             $this->em->persist($objectEntity);
             $this->em->flush();
+            $this->em->clear(get_class($objectEntity));
             $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
 
             $this->io->writeln(['Defintive object id ('.$objectEntity->getId().')']);
