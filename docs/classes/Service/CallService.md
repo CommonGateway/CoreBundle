@@ -15,6 +15,7 @@ This service provides a guzzle wrapper to work with sources in the common gatewa
 |[__construct](#callservice__construct)||
 |[call](#callservicecall)|Calls a source according to given configuration.|
 |[decodeResponse](#callservicedecoderesponse)|Decodes a response based on the source it belongs to.|
+|[getAllResults](#callservicegetallresults)|Fetches all pages for a source and merges the result arrays to one array|
 |[getCertificate](#callservicegetcertificate)|Writes the certificate and ssl keys to disk, returns the filenames.|
 |[removeFiles](#callserviceremovefiles)|Removes certificates and private keys from disk if they are not necessary anymore.|
 
@@ -111,6 +112,37 @@ Decodes a response based on the source it belongs to.
 
 `\Exception`
 > Thrown if the response does not fit any supported content type
+
+<hr />
+
+
+### CallService::getAllResults  
+
+**Description**
+
+```php
+public getAllResults (\Source $source, string $endpoint, array $config)
+```
+
+Fetches all pages for a source and merges the result arrays to one array 
+
+ 
+
+**Parameters**
+
+* `(\Source) $source`
+: The source to call  
+* `(string) $endpoint`
+: The endpoint on the source to call  
+* `(array) $config`
+: The additional configuration to call the source  
+
+**Return Values**
+
+`array`
+
+> The array of results
+
 
 <hr />
 
