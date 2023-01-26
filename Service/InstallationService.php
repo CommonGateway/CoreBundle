@@ -115,6 +115,42 @@ class InstallationService
         $vendorFolder = 'vendor';
         $filesystem = new Filesystem();
 
+        // Handling the actions's
+        $this->io->section('Looking for actions\'s');
+        $actionDir = $vendorFolder.'/'.$bundle.'/Action';
+        if ($filesystem->exists($actionDir)) {
+            $this->io->writeln('Action folder found');
+            $actions = new Finder();
+            $actions = $actions->in($actionDir);
+            $this->io->writeln('Files found: '.count($actions));
+            foreach ($actions->files() as $action) {
+                $this->handleAction($action);
+            }
+
+            //$progressBar->finish();
+        } else {
+            $this->io->writeln('No action folder found');
+        }
+
+        // Handling the mappings
+        $this->io->section('Looking for mappings\'s');
+        $mappingDir = $vendorFolder.'/'.$bundle.'/Mapping';
+        if ($filesystem->exists($mappingDir)) {
+            $this->io->writeln('Mapping folder found');
+            $mappings = new Finder();
+            $mappings = $mappings->in($mappingDir);
+            $this->io->writeln('Files found: '.count($schemas));
+
+            foreach ($mappings->files() as $mapping) {
+                $this->handleMapping($mapping);
+            }
+
+            //$progressBar->finish();
+        } else {
+            $this->io->writeln('No mapping folder found');
+        }
+
+
         // Handling the schema's
         $this->io->section('Looking for schema\'s');
         $schemaDir = $vendorFolder.'/'.$bundle.'/Schema';
@@ -212,6 +248,69 @@ class InstallationService
         ]);
 
         return Command::SUCCESS;
+    }
+
+    public function handleAction($file)
+    {
+        if (!$action = json_decode($file->getContents(), true)) {
+            $this->io->writeln($file->getFilename().' is not a valid json object');
+
+            return false;
+        }
+
+        if (!$this->valdiateJsonSchema($action)) {
+            $this->io->writeln($file->getFilename().' is not a valid json-schema object');
+
+            return false;
+        }
+
+        if (!$entity = $this->em->getRepository('App:Action')->findOneBy(['reference' => $action['$id']])) {
+            $this->io->writeln('Action not present, creating action '.$action['title'].' under reference '.$action['$id']);
+            $entity = new Entity();
+        } else {
+            $this->io->writeln('Action already present, looking to update');
+            if (array_key_exists('version', $action) && version_compare($action['version'], $entity->getVersion()) < 0) {
+                $this->io->writeln('The new action has a version number equal or lower then the already present version');
+            }
+        }
+
+        $entity->fromSchema($action);
+
+        $this->em->persist($entity);
+
+        $this->em->flush();
+        $this->io->writeln('Done with action '.$entity->getName());
+    }
+
+    public function handleMapping($file)
+    {
+        if (!$mapping = json_decode($file->getContents(), true)) {
+            $this->io->writeln($file->getFilename().' is not a valid json object');
+
+            return false;
+        }
+
+        if (!$this->valdiateJsonSchema($mapping)) {
+            $this->io->writeln($file->getFilename().' is not a valid json-schema object');
+
+            return false;
+        }
+
+        if (!$entity = $this->em->getRepository('App:Mapping')->findOneBy(['reference' => $mapping['$id']])) {
+            $this->io->writeln('Maping not present, creating mapping '.$mapping['title'].' under reference '.$mapping['$id']);
+            $entity = new Entity();
+        } else {
+            $this->io->writeln('Mapping already present, looking to update');
+            if (array_key_exists('version', $mapping) && version_compare($mapping['version'], $entity->getVersion()) < 0) {
+                $this->io->writeln('The new mapping has a version number equal or lower then the already present version');
+            }
+        }
+
+        $entity->fromSchema($mapping);
+
+        $this->em->persist($entity);
+        $this->em->flush();
+        $this->io->writeln('Done with mapping '.$entity->getName());
     }
 
     public function handleSchema($file)
