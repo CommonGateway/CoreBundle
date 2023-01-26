@@ -304,26 +304,26 @@ class CallService
     {
         $errorCount = 0;
         $pageCount = 1;
-        $decodedResponses = [];
+        $results = [];
+        $previousResult = [];
         while ($errorCount < 5) {
             try {
                 $config['query']['page'] = $pageCount;
                 $pageCount++;
                 $response = $this->call($source, $endpoint, 'GET', $config);
                 $decodedResponse = $this->decodeResponse($source, $response);
-                if ($decodedResponse === [] || $decodedResponse['results'] === [] || $decodedResponse['page'] !== $pageCount - 1) {
+                if ($decodedResponse === [] || isset($decodedResponse['results']) && $decodedResponse['results'] === [] || isset($decodedResponse['items']) && $decodedResponse['items'] == [] || $decodedResponse['page'] !== $pageCount - 1) {
                     break;
                 }
                 $decodedResponses[] = $decodedResponse;
+                $previousResult = $decodedResponse;
             } catch (\Exception $exception) {
                 $errorCount++;
             }
-        }
-
-        $results = [];
-        foreach ($decodedResponses as $decodedResponse) {
             if (isset($decodedResponse['results'])) {
                 $results = array_merge($decodedResponse['results'], $results);
+            } elseif(isset($decodedResponse['items'])) {
+                $results = array_merge($decodedResponse['items'], $results);
             } elseif (isset($decodedResponse[0])) {
                 $results = array_merge($decodedResponse, $results);
             }
