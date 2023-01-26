@@ -322,7 +322,7 @@ class CallService
             }
             if (isset($decodedResponse['results'])) {
                 $results = array_merge($decodedResponse['results'], $results);
-            } elseif(isset($decodedResponse['items'])) {
+            } elseif (isset($decodedResponse['items'])) {
                 $results = array_merge($decodedResponse['items'], $results);
             } elseif (isset($decodedResponse[0])) {
                 $results = array_merge($decodedResponse, $results);
