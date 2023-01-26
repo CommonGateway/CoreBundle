@@ -140,7 +140,7 @@ class CallService
 
         $log = new CallLog();
         $log->setSource($source);
-        $log->setEndpoint($source->getLocation() . $endpoint);
+        $log->setEndpoint($source->getLocation().$endpoint);
         $log->setMethod($method);
         $log->setConfig($config);
         $log->setRequestBody($config['body'] ?? null);
@@ -154,7 +154,7 @@ class CallService
         $config['headers'] = $this->removeEmptyHeaders($config['headers']);
         $log->setRequestHeaders($config['headers'] ?? null);
 
-        $url = $source->getLocation() . $endpoint;
+        $url = $source->getLocation().$endpoint;
 
         $startTimer = microtime(true);
         // Lets make the call
@@ -164,7 +164,7 @@ class CallService
             } else {
                 $response = $this->client->requestAsync($method, $url, $config);
             }
-        } catch (ServerException | ClientException | RequestException | Exception $e) {
+        } catch (ServerException|ClientException|RequestException|Exception $e) {
             $stopTimer = microtime(true);
             $log->setResponseStatus('');
             if ($e->getResponse()) {
@@ -290,11 +290,14 @@ class CallService
     }
 
     /**
-     * Fetches all pages for a source and merges the result arrays to one array
+     * Fetches all pages for a source and merges the result arrays to one array.
+     *
      * @TODO: This is based on some assumptions
-     * @param Source $source The source to call
+     *
+     * @param Source $source   The source to call
      * @param string $endpoint The endpoint on the source to call
-     * @param array $config The additional configuration to call the source
+     * @param array  $config   The additional configuration to call the source
+     *
      * @return array The array of results
      */
     public function getAllResults(Source $source, string $endpoint = '', array $config = []): array
@@ -302,13 +305,13 @@ class CallService
         $errorCount = 0;
         $pageCount = 1;
         $decodedResponses = [];
-        while($errorCount < 5) {
+        while ($errorCount < 5) {
             try {
                 $config['query']['page'] = $pageCount;
                 $pageCount++;
                 $response = $this->call($source, $endpoint, 'GET', $config);
                 $decodedResponse = $this->decodeResponse($source, $response);
-                if($decodedResponse === [] || $decodedResponse['results'] === [] || $decodedResponse['page'] !== $pageCount-1) {
+                if ($decodedResponse === [] || $decodedResponse['results'] === [] || $decodedResponse['page'] !== $pageCount - 1) {
                     break;
                 }
                 $decodedResponses[] = $decodedResponse;
@@ -318,10 +321,10 @@ class CallService
         }
 
         $results = [];
-        foreach($decodedResponses as $decodedResponse) {
-            if(isset($decodedResponse['results'])) {
+        foreach ($decodedResponses as $decodedResponse) {
+            if (isset($decodedResponse['results'])) {
                 $results = array_merge($decodedResponse['results'], $results);
-            } elseif(isset($decodedResponse[0])) {
+            } elseif (isset($decodedResponse[0])) {
                 $results = array_merge($decodedResponse, $results);
             }
         }
