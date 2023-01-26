@@ -58,18 +58,16 @@ class MappingService
     {
             isset($this->io) ?? $this->io->debug("Mapping array based on mapping object ".$mappingObject->getName()." (id:".$mappingObject->getId()->toString()." / ref:".$mappingObject->getReference().") v:".$mappingObject->getversion());
 
-        $output = [];
-
-        // Check for throughput
+        // Determine pass trough
+        // Let's get the dot array based on https://github.com/adbario/php-dot-notation
         if($mappingObject->getPassTrough()){
-            $output = $input;
+            $dotArray = new Dot($input);
                 isset($this->io) ?? $this->io->debug("Mapping *with* pass trough");
-        } else {
+        }
+        else{
+            $dotArray = new Dot();
                 isset($this->io) ?? $this->io->debug("Mapping *without* pass trough");
         }
-
-        // Let's get the dot array based on https://github.com/adbario/php-dot-notation
-        $dotArray = dot($output);
 
         // Let's do the actual mapping
         foreach($mappingObject->getMapping() as $key => $value){
