@@ -21,6 +21,7 @@
 |[setStyle](#installationservicesetstyle)|Set symfony style in order to output to the console.|
 |[uninstall](#installationserviceuninstall)||
 |[update](#installationserviceupdate)||
+|[valdiateJsonMapping](#installationservicevaldiatejsonmapping)|Performce a very basic check to see if a schema file is a valid json-schema file.|
 |[valdiateJsonSchema](#installationservicevaldiatejsonschema)|Performce a very basic check to see if a schema file is a valid json-schema file.|
 
 
@@ -291,6 +292,32 @@ Set symfony style in order to output to the console.
 **Return Values**
 
 `void`
+
+
+<hr />
+
+
+### InstallationService::valdiateJsonMapping  
+
+**Description**
+
+```php
+public valdiateJsonMapping (array $schema)
+```
+
+Performce a very basic check to see if a schema file is a valid json-schema file. 
+
+ 
+
+**Parameters**
+
+* `(array) $schema`
+
+**Return Values**
+
+`bool`
+
+
 
 
 <hr />
