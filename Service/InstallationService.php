@@ -141,7 +141,7 @@ class InstallationService
             $this->io->writeln('Mapping folder found');
             $mappings = new Finder();
             $mappings = $mappings->in($mappingDir);
-            $this->io->writeln('Files found: '.count($schemas));
+            $this->io->writeln('Files found: '.count($mappings));
 
             foreach ($mappings->files() as $mapping) {
                 $this->handleMapping($mapping);
