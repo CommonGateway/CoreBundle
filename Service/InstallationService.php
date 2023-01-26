@@ -364,7 +364,7 @@ class InstallationService
         if (
             array_key_exists('$id', $schema) &&
             array_key_exists('$schema', $schema) &&
-            $schema['$schema'] == 'https://json-schema.org/draft/2020-12/maping'
+            $schema['$schema'] == 'https://json-schema.org/draft/2020-12/mapping'
         ) {
             return true;
         }
