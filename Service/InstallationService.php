@@ -2,6 +2,8 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use App\Entity\Action;
+use App\Entity\Mapping;
 use App\Entity\CollectionEntity;
 use App\Entity\Entity;
 use App\Entity\ObjectEntity;
@@ -266,7 +268,7 @@ class InstallationService
 
         if (!$entity = $this->em->getRepository('App:Action')->findOneBy(['reference' => $action['$id']])) {
             $this->io->writeln('Action not present, creating action '.$action['title'].' under reference '.$action['$id']);
-            $entity = new Entity();
+            $entity = new Action();
         } else {
             $this->io->writeln('Action already present, looking to update');
             if (array_key_exists('version', $action) && version_compare($action['version'], $entity->getVersion()) < 0) {
@@ -298,7 +300,7 @@ class InstallationService
 
         if (!$entity = $this->em->getRepository('App:Mapping')->findOneBy(['reference' => $mapping['$id']])) {
             $this->io->writeln('Maping not present, creating mapping '.$mapping['title'].' under reference '.$mapping['$id']);
-            $entity = new Entity();
+            $entity = new Mapping();
         } else {
             $this->io->writeln('Mapping already present, looking to update');
             if (array_key_exists('version', $mapping) && version_compare($mapping['version'], $entity->getVersion()) < 0) {
