@@ -171,7 +171,7 @@ class CacheService
         $endpoints = $collection->find()->toArray();
         foreach ($endpoints as $endpoint) {
             if (!$this->entityManager->find($type, $endpoint['id'])) {
-                $this->io->writeln("removing {$endpoint['id']} from cache");
+                isset($this->io) ?? $this->io->writeln("removing {$endpoint['id']} from cache");
                 $collection->findOneAndDelete(['id' => $endpoint['id']]);
             }
         }
@@ -186,9 +186,9 @@ class CacheService
      */
     private function ioCatchException(Exception $exception)
     {
-        $this->io->warning($exception->getMessage());
-        $this->io->block("File: {$exception->getFile()}, Line: {$exception->getLine()}");
-        $this->io->block("Trace: {$exception->getTraceAsString()}");
+        isset($this->io) ?? $this->io->warning($exception->getMessage());
+        isset($this->io) ?? $this->io->block("File: {$exception->getFile()}, Line: {$exception->getLine()}");
+        isset($this->io) ?? $this->io->block("Trace: {$exception->getTraceAsString()}");
     }
 
     /**
