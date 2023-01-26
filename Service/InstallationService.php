@@ -292,8 +292,8 @@ class InstallationService
             return false;
         }
 
-        if (!$this->valdiateJsonSchema($mapping)) {
-            $this->io->writeln($file->getFilename().' is not a valid json-schema object');
+        if (!$this->valdiateJsonMapping($mapping)) {
+            $this->io->writeln($file->getFilename().' is not a valid json-mapping object');
 
             return false;
         }
@@ -350,6 +350,26 @@ class InstallationService
 
         $this->em->flush();
         $this->io->writeln('Done with schema '.$entity->getName());
+    }
+
+    /**
+     * Performce a very basic check to see if a schema file is a valid json-schema file.
+     *
+     * @param array $schema
+     *
+     * @return bool
+     */
+    public function valdiateJsonMapping(array $schema): bool
+    {
+        if (
+            array_key_exists('$id', $schema) &&
+            array_key_exists('$schema', $schema) &&
+            $schema['$schema'] == 'https://json-schema.org/draft/2020-12/maping'
+        ) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
