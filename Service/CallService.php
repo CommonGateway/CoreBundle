@@ -288,4 +288,44 @@ class CallService
     {
         return $this->authenticationService->getAuthentication($source);
     }
+
+    /**
+     * Fetches all pages for a source and merges the result arrays to one array
+     * @TODO: This is based on some assumptions
+     * @param Source $source The source to call
+     * @param string $endpoint The endpoint on the source to call
+     * @param array $config The additional configuration to call the source
+     * @return array The array of results
+     */
+    public function getAllResults(Source $source, string $endpoint = '', array $config = []): array
+    {
+        $errorCount = 0;
+        $pageCount = 1;
+        $decodedResponses = [];
+        while($errorCount < 5) {
+            try {
+                $config['query']['page'] = $pageCount;
+                $pageCount++;
+                $response = $this->call($source, $endpoint, 'GET', $config);
+                $decodedResponse = $this->decodeResponse($source, $response);
+                if($decodedResponse === [] || $decodedResponse['results'] === [] || $decodedResponse['page'] !== $pageCount-1) {
+                    break;
+                }
+                $decodedResponses[] = $decodedResponse;
+            } catch (\Exception $exception) {
+                $errorCount++;
+            }
+        }
+
+        $results = [];
+        foreach($decodedResponses as $decodedResponse) {
+            if(isset($decodedResponse['results'])) {
+                $results = array_merge($decodedResponse['results'], $results);
+            } elseif(isset($decodedResponse[0])) {
+                $results = array_merge($decodedResponse, $results);
+            }
+        }
+
+        return $results;
+    }
 }
