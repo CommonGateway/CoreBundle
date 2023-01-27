@@ -56,7 +56,7 @@ class MappingService
      */
     public function mapping(Mapping $mappingObject, array $input): array
     {
-            isset($this->io) ?? $this->io->debug("Mapping array based on mapping object ".$mappingObject->getName()." (id:".$mappingObject->getId()->toString()." / ref:".$mappingObject->getReference().") v:".$mappingObject->getversion());
+        isset($this->io) ?? $this->io->debug("Mapping array based on mapping object ".$mappingObject->getName()." (id:".$mappingObject->getId()->toString()." / ref:".$mappingObject->getReference().") v:".$mappingObject->getversion());
 
         // Determine pass trough
         // Let's get the dot array based on https://github.com/adbario/php-dot-notation
@@ -69,8 +69,15 @@ class MappingService
                 isset($this->io) ?? $this->io->debug("Mapping *without* pass trough");
         }
 
+        $dotInput = new Dot($input);
+
         // Let's do the actual mapping
         foreach($mappingObject->getMapping() as $key => $value){
+            // If the vallue exists in the input dot take it from there
+            if($dotInput->has($value)){
+                $dotArray->set($dotInput->get($value));
+                continue;
+            }
             // Render the value from twig
             $dotArray->set($key, $this->twig->createTemplate($value)->render($input));
         }
