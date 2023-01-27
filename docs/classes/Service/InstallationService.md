@@ -12,13 +12,16 @@
 |------|-------------|
 |[__construct](#installationservice__construct)||
 |[composerupdate](#installationservicecomposerupdate)||
+|[handleAction](#installationservicehandleaction)||
 |[handleData](#installationservicehandledata)||
 |[handleInstaller](#installationservicehandleinstaller)||
+|[handleMapping](#installationservicehandlemapping)||
 |[handleSchema](#installationservicehandleschema)||
 |[install](#installationserviceinstall)|Performs installation actions on a common Gataway bundle.|
 |[setStyle](#installationservicesetstyle)|Set symfony style in order to output to the console.|
 |[uninstall](#installationserviceuninstall)||
 |[update](#installationserviceupdate)||
+|[valdiateJsonMapping](#installationservicevaldiatejsonmapping)|Performce a very basic check to see if a schema file is a valid json-schema file.|
 |[valdiateJsonSchema](#installationservicevaldiatejsonschema)|Performce a very basic check to see if a schema file is a valid json-schema file.|
 
 
@@ -72,6 +75,30 @@
 <hr />
 
 
+### InstallationService::handleAction  
+
+**Description**
+
+```php
+ handleAction (void)
+```
+
+ 
+
+ 
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`void`
+
+
+<hr />
+
+
 ### InstallationService::handleData  
 
 **Description**
@@ -102,6 +129,30 @@
 
 ```php
  handleInstaller (void)
+```
+
+ 
+
+ 
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`void`
+
+
+<hr />
+
+
+### InstallationService::handleMapping  
+
+**Description**
+
+```php
+ handleMapping (void)
 ```
 
  
@@ -241,6 +292,32 @@ Set symfony style in order to output to the console.
 **Return Values**
 
 `void`
+
+
+<hr />
+
+
+### InstallationService::valdiateJsonMapping  
+
+**Description**
+
+```php
+public valdiateJsonMapping (array $schema)
+```
+
+Performce a very basic check to see if a schema file is a valid json-schema file. 
+
+ 
+
+**Parameters**
+
+* `(array) $schema`
+
+**Return Values**
+
+`bool`
+
+
 
 
 <hr />
