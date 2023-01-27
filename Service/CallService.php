@@ -140,7 +140,7 @@ class CallService
 
         $log = new CallLog();
         $log->setSource($source);
-        $log->setEndpoint($source->getLocation() . $endpoint);
+        $log->setEndpoint($source->getLocation().$endpoint);
         $log->setMethod($method);
         $log->setConfig($config);
         $log->setRequestBody($config['body'] ?? null);
@@ -154,7 +154,7 @@ class CallService
         $config['headers'] = $this->removeEmptyHeaders($config['headers']);
         $log->setRequestHeaders($config['headers'] ?? null);
 
-        $url = $source->getLocation() . $endpoint;
+        $url = $source->getLocation().$endpoint;
 
         $startTimer = microtime(true);
         // Lets make the call
@@ -164,7 +164,7 @@ class CallService
             } else {
                 $response = $this->client->requestAsync($method, $url, $config);
             }
-        } catch (ServerException | ClientException | RequestException | Exception $e) {
+        } catch (ServerException|ClientException|RequestException|Exception $e) {
             $stopTimer = microtime(true);
             $log->setResponseStatus('');
             if ($e->getResponse()) {
