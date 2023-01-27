@@ -92,7 +92,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             'Deleting object from database',
             [
                 'object'    => $object->getId(),
-                'entity'    => $object->getEntity()->getId()
+                'entity'    => $object->getEntity()->getId(),
             ]
         );
 
@@ -152,7 +152,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             'Updating object to database',
             [
                 'object'    => $object->getId(),
-                'entity'    => $object->getEntity()->getId()
+                'entity'    => $object->getEntity()->getId(),
             ]
         );
 
@@ -210,7 +210,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             'Created object in database',
             [
                 'object'    => $object->getId(),
-                'entity'    => $object->getEntity()->getId()
+                'entity'    => $object->getEntity()->getId(),
             ]
         );
 
@@ -240,7 +240,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             'Updated object in database',
             [
                 'object'    => $object->getId(),
-                'entity'    => $object->getEntity()->getId()
+                'entity'    => $object->getEntity()->getId(),
             ]
         );
 
@@ -270,7 +270,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             'Read object from database',
             [
                 'object'    => $object->getId(),
-                'entity'    => $object->getEntity()->getId()
+                'entity'    => $object->getEntity()->getId(),
             ]
         );
 

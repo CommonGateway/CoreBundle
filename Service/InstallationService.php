@@ -3,9 +3,9 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Action;
-use App\Entity\Mapping;
 use App\Entity\CollectionEntity;
 use App\Entity\Entity;
+use App\Entity\Mapping;
 use App\Entity\ObjectEntity;
 use App\Kernel;
 use Doctrine\ORM\EntityManagerInterface;
@@ -151,7 +151,6 @@ class InstallationService
         } else {
             $this->io->writeln('No mapping folder found');
         }
-
 
         // Handling the schema's
         $this->io->section('Looking for schema\'s');
