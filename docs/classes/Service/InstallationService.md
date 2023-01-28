@@ -11,8 +11,7 @@
 | Name | Description |
 |------|-------------|
 |[__construct](#installationservice__construct)||
-|[composerupdate](#installationservicecomposerupdate)||
-|[handleAction](#installationservicehandleaction)||
+|[composerupdate](#installationservicecomposerupdate)|Updates all commonground bundles on the common gateway installation.|
 |[handleData](#installationservicehandledata)||
 |[handleInstaller](#installationservicehandleinstaller)||
 |[handleMapping](#installationservicehandlemapping)||
@@ -21,8 +20,10 @@
 |[setStyle](#installationservicesetstyle)|Set symfony style in order to output to the console.|
 |[uninstall](#installationserviceuninstall)||
 |[update](#installationserviceupdate)||
-|[valdiateJsonMapping](#installationservicevaldiatejsonmapping)|Performce a very basic check to see if a schema file is a valid json-schema file.|
-|[valdiateJsonSchema](#installationservicevaldiatejsonschema)|Performce a very basic check to see if a schema file is a valid json-schema file.|
+|[valdiateJsonSchema](#installationservicevaldiatejsonschema)|Perform a very basic check to see if a schema file is a valid json-schema file.|
+|[validateObjects](#installationservicevalidateobjects)|Validates the objects in the EAV setup.|
+|[validateSchemas](#installationservicevalidateschemas)|Validates the schemas in the EAV setup.|
+|[validateValues](#installationservicevalidatevalues)|Validates the objects in the EAV setup.|
 
 
 
@@ -56,20 +57,22 @@
 **Description**
 
 ```php
- composerupdate (void)
+public composerupdate (array $config)
 ```
 
- 
+Updates all commonground bundles on the common gateway installation. 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(array) $config`
 
 **Return Values**
 
-`void`
+`int`
+
+
 
 
 <hr />
@@ -331,7 +334,7 @@ Performce a very basic check to see if a schema file is a valid json-schema file
 public valdiateJsonSchema (array $schema)
 ```
 
-Performce a very basic check to see if a schema file is a valid json-schema file. 
+Perform a very basic check to see if a schema file is a valid json-schema file. 
 
  
 
@@ -342,6 +345,84 @@ Performce a very basic check to see if a schema file is a valid json-schema file
 **Return Values**
 
 `bool`
+
+
+
+
+<hr />
+
+
+### InstallationService::validateObjects  
+
+**Description**
+
+```php
+public validateObjects (void)
+```
+
+Validates the objects in the EAV setup. 
+
+ 
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`void`
+
+
+
+
+<hr />
+
+
+### InstallationService::validateSchemas  
+
+**Description**
+
+```php
+public validateSchemas (void)
+```
+
+Validates the schemas in the EAV setup. 
+
+ 
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`void`
+
+
+
+
+<hr />
+
+
+### InstallationService::validateValues  
+
+**Description**
+
+```php
+public validateValues (void)
+```
+
+Validates the objects in the EAV setup. 
+
+ 
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`void`
 
 
 
