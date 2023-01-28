@@ -270,7 +270,6 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             'Read object from database',
             [
                 'object'    => $object->getId(),
-                'entity'    => $object->getEntity()->getId(),
             ]
         );
 
