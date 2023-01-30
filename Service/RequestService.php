@@ -410,10 +410,6 @@ class RequestService
                 // THROW SECURITY ERROR AND EXIT
             }
         }
-        // Hotfix
-        if (!$this->security->getUser()) {
-            throw new \Exception('You need to be logged in for this endpoint');
-        }
 
         // All prepped so lets go
         // todo: split these into functions?
