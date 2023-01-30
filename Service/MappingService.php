@@ -73,7 +73,7 @@ class MappingService
         foreach ($mappingObject->getMapping() as $key => $value) {
             // If the vallue exists in the input dot take it from there
             if ($dotInput->has($value)) {
-                $dotArray->set($dotInput->get($value));
+                $dotArray->set($key,$dotInput->get($value));
                 continue;
             }
             // Render the value from twig
