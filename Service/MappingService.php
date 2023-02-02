@@ -4,7 +4,9 @@ namespace CommonGateway\CoreBundle\Service;
 
 use Adbar\Dot;
 use App\Entity\Mapping;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Twig\Environment;
 
 /**
@@ -19,6 +21,8 @@ class MappingService
 
     // Create a private variable to store the twig environment
     private Environment $twig;
+    private SessionInterface $session;
+    private LoggerInterface $logger;
 
     /**
      * Setting up the base class with required services.
@@ -26,9 +30,13 @@ class MappingService
      * @param Environment $twig
      */
     public function __construct(
-        Environment $twig
+        Environment $twig,
+        SessionInterface $session,
+        LoggerInterface $mappingLogger
     ) {
         $this->twig = $twig;
+        $this->session = $session;
+        $this->logger = $mappingLogger;
     }
 
     /**
@@ -55,16 +63,20 @@ class MappingService
      */
     public function mapping(Mapping $mappingObject, array $input): array
     {
+        $this->session->set('mapping', $mappingObject->getId()->toString());
         isset($this->io) ?? $this->io->debug('Mapping array based on mapping object '.$mappingObject->getName().' (id:'.$mappingObject->getId()->toString().' / ref:'.$mappingObject->getReference().') v:'.$mappingObject->getversion());
+        $this->logger->info('Mapping array based on mapping object '.$mappingObject->getName().' (id:'.$mappingObject->getId()->toString().' / ref:'.$mappingObject->getReference().') v:'.$mappingObject->getversion());
 
         // Determine pass trough
         // Let's get the dot array based on https://github.com/adbario/php-dot-notation
         if ($mappingObject->getPassTrough()) {
             $dotArray = new Dot($input);
             isset($this->io) ?? $this->io->debug('Mapping *with* pass trough');
+            $this->logger->debug('mapping *with* pass trough');
         } else {
             $dotArray = new Dot();
             isset($this->io) ?? $this->io->debug('Mapping *without* pass trough');
+            $this->logger->debug('Mapping *without* pass trough');
         }
 
         $dotInput = new Dot($input);
@@ -76,7 +88,6 @@ class MappingService
                 $dotArray->set($key, $dotInput->get($value));
                 continue;
             }
-
             // Render the value from twig
             $dotArray->set($key, $this->twig->createTemplate($value)->render($input));
         }
@@ -85,6 +96,7 @@ class MappingService
         foreach ($mappingObject->getUnset() as $unset) {
             if (!$dotArray->has($unset)) {
                 isset($this->io) ?? $this->io->debug("Trying to unset an property that doesn't exist during mapping");
+                $this->logger->debug("Trying to unset an property that doesn't exist during mapping");
                 continue;
             }
             $dotArray->delete($unset);
@@ -94,6 +106,7 @@ class MappingService
         foreach ($mappingObject->getCast() as $key => $cast) {
             if (!$dotArray->has($key)) {
                 isset($this->io) ?? $this->io->debug("Trying to cast an property that doesn't exist during mapping");
+                $this->logger->debug("Trying to cast an property that doesn't exist during mapping");
                 continue;
             }
 
@@ -118,7 +131,8 @@ class MappingService
                     break;
                 // Todo: Add more casts
                 default:
-                        isset($this->io) ?? $this->io->debug('Trying to cast to an unsupported cast type: '.$cast);
+                    isset($this->io) ?? $this->io->debug('Trying to cast to an unsupported cast type: '.$cast);
+                    $this->logger->debug('Trying to cast to an unsupported cast type: '.$cast);
                     break;
             }
 
@@ -131,13 +145,18 @@ class MappingService
         // Back to array
         $output = $dotArray->all();
 
-        // Log the result
-        isset($this->io) ?? $this->io->debug('Mapped object', [
+        $result = [
             'input'      => $input,
             'output'     => $output,
             'passTrough' => $mappingObject->getPassTrough(),
             'mapping'    => $mappingObject->getMapping(),
-        ]);
+        ];
+
+        // Log the result
+        isset($this->io) ?? $this->io->debug('Mapped object', $result);
+        $this->logger->debug('Mapped object', ['mapping' => $result]);
+
+        $this->session->remove('mapping');
 
         return $output;
     }
