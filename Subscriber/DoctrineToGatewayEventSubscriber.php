@@ -59,15 +59,15 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     public function getSubscribedEvents(): array
     {
         return [
-            //            Events::preRemove,
-            //            Events::prePersist,
-            //            Events::preUpdate,
-            //            Events::postPersist,
-            //            Events::postUpdate,
-            //            Events::postRemove,
-            //            Events::postLoad,
-            //            Events::preFlush,
-            //            Events::postFlush,
+            Events::preRemove,
+            Events::prePersist,
+            Events::preUpdate,
+            Events::postPersist,
+            Events::postUpdate,
+            Events::postRemove,
+            Events::postLoad,
+            Events::preFlush,
+            Events::postFlush,
         ];
     }
 
@@ -93,12 +93,11 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             [
                 'object'    => $object->getId(),
                 'entity'    => $object->getEntity()->getId(),
-                'objectData'=> $object->toArray(),
             ]
         );
 
         // Throw the event
-        $event = new ActionEvent('commongateway.object.pre.delete', ['object' => $object->toArray(), 'entity' => $object->getEntity()->getId()->toString()]);
+        $event = new ActionEvent('commongateway.object.pre.delete', ['object' => $object]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.pre.delete');
     }
 
@@ -124,12 +123,11 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             [
                 'object'    => $object->getId(),
                 'entity'    => $object->getEntity()->getId(),
-                'objectData'=> $object->toArray(),
             ]
         );
 
         // Throw the event
-        $event = new ActionEvent('commongateway.object.pre.create', ['object' => $object->toArray(), 'entity' => $object->getEntity()->getId()->toString()]);
+        $event = new ActionEvent('commongateway.object.pre.create', ['object' => $object]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.pre.create');
     }
 
@@ -155,12 +153,11 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             [
                 'object'    => $object->getId(),
                 'entity'    => $object->getEntity()->getId(),
-                'objectData'=> $object->toArray(),
             ]
         );
 
         // Throw the event
-        $event = new ActionEvent('commongateway.object.pre.update', ['object' => $object->toArray(), 'entity' => $object->getEntity()->getId()->toString()]);
+        $event = new ActionEvent('commongateway.object.pre.update', ['object' => $object]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.pre.update');
     }
 
@@ -214,12 +211,11 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             [
                 'object'    => $object->getId(),
                 'entity'    => $object->getEntity()->getId(),
-                'objectData'=> $object->toArray(),
             ]
         );
 
         // Throw the event
-        $event = new ActionEvent('commongateway.object.post.create', ['object' => $object->toArray(), 'entity' => $object->getEntity()->getId()->toString()]);
+        $event = new ActionEvent('commongateway.object.post.create', ['object' => $object]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.post.create');
     }
 
@@ -245,12 +241,11 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             [
                 'object'    => $object->getId(),
                 'entity'    => $object->getEntity()->getId(),
-                'objectData'=> $object->toArray(),
             ]
         );
 
         // Throw the event
-        $event = new ActionEvent('commongateway.object.post.update', ['object' => $object->toArray(), 'entity' => $object->getEntity()->getId()->toString()]);
+        $event = new ActionEvent('commongateway.object.post.update', ['object' => $object]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.post.update');
     }
 
@@ -275,13 +270,11 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             'Read object from database',
             [
                 'object'    => $object->getId(),
-                'entity'    => $object->getEntity()->getId(),
-                'objectData'=> $object->toArray(),
             ]
         );
 
         // Throw the event
-        $event = new ActionEvent('commongateway.object.post.read', ['object' => $object->toArray(), 'entity' => $object->getEntity()->getId()->toString()]);
+        $event = new ActionEvent('commongateway.object.post.read', ['object' => $object]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.post.read');
     }
 
@@ -294,13 +287,6 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      */
     public function preFlush(PreFlushEventArgs $args): void
     {
-        $object = $args->getObject();
-
-        // if this subscriber only applies to certain entity types,
-        if (!$object instanceof ObjectEntity) {
-            return;
-        }
-
         // Write the log
         $this->logger->info(
             'Flushing entity manager',
@@ -322,12 +308,6 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      */
     public function postFlush(PostFlushEventArgs $args): void
     {
-        $object = $args->getObject();
-
-        // if this subscriber only applies to certain entity types,
-        if (!$object instanceof ObjectEntity) {
-            return;
-        }
 
         // Write the log
         $this->logger->info(

@@ -2,8 +2,10 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use App\Entity\Action;
 use App\Entity\CollectionEntity;
 use App\Entity\Entity;
+use App\Entity\Mapping;
 use App\Entity\ObjectEntity;
 use App\Entity\Value;
 use App\Kernel;
@@ -274,6 +276,41 @@ class InstallationService
         $vendorFolder = 'vendor';
         $filesystem = new Filesystem();
 
+        // Handling the actions's
+        $this->io->section('Looking for actions\'s');
+        $actionDir = $vendorFolder.'/'.$bundle.'/Action';
+        if ($filesystem->exists($actionDir)) {
+            $this->io->writeln('Action folder found');
+            $actions = new Finder();
+            $actions = $actions->in($actionDir);
+            $this->io->writeln('Files found: '.count($actions));
+            foreach ($actions->files() as $action) {
+                $this->handleAction($action);
+            }
+
+            //$progressBar->finish();
+        } else {
+            $this->io->writeln('No action folder found');
+        }
+
+        // Handling the mappings
+        $this->io->section('Looking for mappings\'s');
+        $mappingDir = $vendorFolder.'/'.$bundle.'/Mapping';
+        if ($filesystem->exists($mappingDir)) {
+            $this->io->writeln('Mapping folder found');
+            $mappings = new Finder();
+            $mappings = $mappings->in($mappingDir);
+            $this->io->writeln('Files found: '.count($mappings));
+
+            foreach ($mappings->files() as $mapping) {
+                $this->handleMapping($mapping);
+            }
+
+            //$progressBar->finish();
+        } else {
+            $this->io->writeln('No mapping folder found');
+        }
+
         // Handling the schema's
         $this->io->section('Looking for schema\'s');
         $schemaDir = $vendorFolder.'/'.$bundle.'/Schema';
@@ -383,6 +420,69 @@ class InstallationService
         return Command::SUCCESS;
     }
 
+    public function handleAction($file)
+    {
+        if (!$action = json_decode($file->getContents(), true)) {
+            $this->io->writeln($file->getFilename().' is not a valid json object');
+
+            return false;
+        }
+
+        if (!$this->validateJsonSchema($action)) {
+            $this->io->writeln($file->getFilename().' is not a valid json-schema object');
+
+            return false;
+        }
+
+        if (!$entity = $this->em->getRepository('App:Action')->findOneBy(['reference' => $action['$id']])) {
+            $this->io->writeln('Action not present, creating action '.$action['title'].' under reference '.$action['$id']);
+            $entity = new Action();
+        } else {
+            $this->io->writeln('Action already present, looking to update');
+            if (array_key_exists('version', $action) && version_compare($action['version'], $entity->getVersion()) < 0) {
+                $this->io->writeln('The new action has a version number equal or lower then the already present version');
+            }
+        }
+
+        $entity->fromSchema($action);
+
+        $this->em->persist($entity);
+
+        $this->em->flush();
+        $this->io->writeln('Done with action '.$entity->getName());
+    }
+
+    public function handleMapping($file)
+    {
+        if (!$mapping = json_decode($file->getContents(), true)) {
+            $this->io->writeln($file->getFilename().' is not a valid json object');
+
+            return false;
+        }
+
+        if (!$this->validateJsonMapping($mapping)) {
+            $this->io->writeln($file->getFilename().' is not a valid json-mapping object');
+
+            return false;
+        }
+
+        if (!$entity = $this->em->getRepository('App:Mapping')->findOneBy(['reference' => $mapping['$id']])) {
+            $this->io->writeln('Maping not present, creating mapping '.$mapping['title'].' under reference '.$mapping['$id']);
+            $entity = new Mapping();
+        } else {
+            $this->io->writeln('Mapping already present, looking to update');
+            if (array_key_exists('version', $mapping) && version_compare($mapping['version'], $entity->getVersion()) < 0) {
+                $this->io->writeln('The new mapping has a version number equal or lower then the already present version');
+            }
+        }
+
+        $entity->fromSchema($mapping);
+
+        $this->em->persist($entity);
+        $this->em->flush();
+        $this->io->writeln('Done with mapping '.$entity->getName());
+    }
+
     public function handleSchema($file)
     {
         if (!$schema = json_decode($file->getContents(), true)) {
@@ -391,7 +491,7 @@ class InstallationService
             return false;
         }
 
-        if (!$this->valdiateJsonSchema($schema)) {
+        if (!$this->validateJsonSchema($schema)) {
             $this->io->writeln($file->getFilename().' is not a valid json-schema object');
 
             return false;
@@ -427,7 +527,27 @@ class InstallationService
      *
      * @return bool
      */
-    public function valdiateJsonSchema(array $schema): bool
+    public function validateJsonMapping(array $schema): bool
+    {
+        if (
+            array_key_exists('$id', $schema) &&
+            array_key_exists('$schema', $schema) &&
+            $schema['$schema'] == 'https://json-schema.org/draft/2020-12/mapping'
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Performce a very basic check to see if a schema file is a valid json-schema file.
+     *
+     * @param array $schema
+     *
+     * @return bool
+     */
+    public function validateJsonSchema(array $schema): bool
     {
         if (
             array_key_exists('$id', $schema) &&

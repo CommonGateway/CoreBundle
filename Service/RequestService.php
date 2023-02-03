@@ -410,10 +410,6 @@ class RequestService
                 // THROW SECURITY ERROR AND EXIT
             }
         }
-        // Hotfix
-        if (!$this->security->getUser()) {
-            throw new \Exception('You need to be logged in for this endpoint');
-        }
 
         // All prepped so lets go
         // todo: split these into functions?
@@ -443,7 +439,7 @@ class RequestService
                     $responseLog = new Response(is_string($this->content) || is_null($this->content) ? $this->content : null, 200, ['CoreBundle' => 'GetItem']);
                     $session = new Session();
                     $session->set('object', $this->id);
-                    
+
                     // todo: This log is needed so we know an user has 'read' this object
                     $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) ? json_encode($this->content) : $this->content);
                 } else {
@@ -460,7 +456,7 @@ class RequestService
                 }
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
-                if (!isset($this->schema)) {
+                if (!isset($this->schema) || !$this->schema) {
                     return new Response('No schema could be established for your request', '400');
                 }
 
@@ -491,7 +487,7 @@ class RequestService
                 }
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
-                if (!isset($this->schema)) {
+                if (!isset($this->schema) || !$this->schema) {
                     return new Response('No schema could be established for your request', '400');
                 }
 
@@ -522,7 +518,7 @@ class RequestService
                 }
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
-                if (!isset($this->schema)) {
+                if (!isset($this->schema) || !$this->schema) {
                     return new Response('No schema could be established for your request', '400');
                 }
 
@@ -552,7 +548,7 @@ class RequestService
                 }
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
-                if (!isset($this->schema)) {
+                if (!isset($this->schema) || !$this->schema) {
                     return new Response('No schema could be established for your request', '400');
                 }
 
@@ -582,6 +578,8 @@ class RequestService
 
         $this->handleMetadataSelf($result, $metadataSelf);
 
+        // TODO: Removed this so embedded keeps working for all accept types (for projects like KISS & OC)
+        // TODO: find another way to get this working as expected for Roxit.
 //        $result = $this->shouldWeUnsetEmbedded($result, $this->data['headers']['accept'] ?? null, $isCollection ?? false);
 
         return $this->createResponse($result);
