@@ -578,6 +578,8 @@ class RequestService
 
         $this->handleMetadataSelf($result, $metadataSelf);
 
+        // TODO: Removed this so embedded keeps working for all accept types (for projects like KISS & OC)
+        // TODO: find another way to get this working as expected for Roxit.
 //        $result = $this->shouldWeUnsetEmbedded($result, $this->data['headers']['accept'] ?? null, $isCollection ?? false);
 
         return $this->createResponse($result);
