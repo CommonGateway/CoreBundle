@@ -456,7 +456,7 @@ class RequestService
                 }
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
-                if (!isset($this->schema)) {
+                if (!isset($this->schema) || !$this->schema) {
                     return new Response('No schema could be established for your request', '400');
                 }
 
@@ -487,7 +487,7 @@ class RequestService
                 }
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
-                if (!isset($this->schema)) {
+                if (!isset($this->schema) || !$this->schema) {
                     return new Response('No schema could be established for your request', '400');
                 }
 
@@ -518,7 +518,7 @@ class RequestService
                 }
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
-                if (!isset($this->schema)) {
+                if (!isset($this->schema) || !$this->schema) {
                     return new Response('No schema could be established for your request', '400');
                 }
 
@@ -548,7 +548,7 @@ class RequestService
                 }
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
-                if (!isset($this->schema)) {
+                if (!isset($this->schema) || !$this->schema) {
                     return new Response('No schema could be established for your request', '400');
                 }
 
