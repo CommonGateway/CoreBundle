@@ -21,8 +21,8 @@
 |[setStyle](#installationservicesetstyle)|Set symfony style in order to output to the console.|
 |[uninstall](#installationserviceuninstall)||
 |[update](#installationserviceupdate)||
-|[valdiateJsonMapping](#installationservicevaldiatejsonmapping)|Perform a very basic check to see if a schema file is a valid json-schema file.|
-|[valdiateJsonSchema](#installationservicevaldiatejsonschema)|Performce a very basic check to see if a schema file is a valid json-schema file.|
+|[validateJsonMapping](#installationservicevalidateJsonMapping)|Perform a very basic check to see if a schema file is a valid json-schema file.|
+|[validateJsonSchema](#installationservicevalidateJsonSchema)|Performce a very basic check to see if a schema file is a valid json-schema file.|
 |[validateObjects](#installationservicevalidateobjects)|Validates the objects in the EAV setup.|
 |[validateSchemas](#installationservicevalidateschemas)|Validates the schemas in the EAV setup.|
 |[validateValues](#installationservicevalidatevalues)|Validates the objects in the EAV setup.|
@@ -302,12 +302,12 @@ Set symfony style in order to output to the console.
 <hr />
 
 
-### InstallationService::valdiateJsonMapping  
+### InstallationService::validateJsonMapping  
 
 **Description**
 
 ```php
-public valdiateJsonMapping (array $schema)
+public validateJsonMapping (array $schema)
 ```
 
 Perform a very basic check to see if a schema file is a valid json-schema file. 
@@ -328,12 +328,12 @@ Perform a very basic check to see if a schema file is a valid json-schema file.
 <hr />
 
 
-### InstallationService::valdiateJsonSchema  
+### InstallationService::validateJsonSchema  
 
 **Description**
 
 ```php
-public valdiateJsonSchema (array $schema)
+public validateJsonSchema (array $schema)
 ```
 
 Performce a very basic check to see if a schema file is a valid json-schema file. 

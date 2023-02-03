@@ -428,7 +428,7 @@ class InstallationService
             return false;
         }
 
-        if (!$this->valdiateJsonSchema($action)) {
+        if (!$this->validateJsonSchema($action)) {
             $this->io->writeln($file->getFilename().' is not a valid json-schema object');
 
             return false;
@@ -460,7 +460,7 @@ class InstallationService
             return false;
         }
 
-        if (!$this->valdiateJsonMapping($mapping)) {
+        if (!$this->validateJsonMapping($mapping)) {
             $this->io->writeln($file->getFilename().' is not a valid json-mapping object');
 
             return false;
@@ -491,7 +491,7 @@ class InstallationService
             return false;
         }
 
-        if (!$this->valdiateJsonSchema($schema)) {
+        if (!$this->validateJsonSchema($schema)) {
             $this->io->writeln($file->getFilename().' is not a valid json-schema object');
 
             return false;
@@ -527,7 +527,7 @@ class InstallationService
      *
      * @return bool
      */
-    public function valdiateJsonMapping(array $schema): bool
+    public function validateJsonMapping(array $schema): bool
     {
         if (
             array_key_exists('$id', $schema) &&
@@ -547,7 +547,7 @@ class InstallationService
      *
      * @return bool
      */
-    public function valdiateJsonSchema(array $schema): bool
+    public function validateJsonSchema(array $schema): bool
     {
         if (
             array_key_exists('$id', $schema) &&
