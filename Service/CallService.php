@@ -13,6 +13,7 @@ use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use Symfony\Component\Serializer\Encoder\YamlEncoder;
 
 /**
  * Service to call external sources.
@@ -234,7 +235,8 @@ class CallService
      */
     public function decodeResponse(
         Source $source,
-        Response $response
+        Response $response,
+        ?string $contentType = 'application/json'
     ): array {
         // resultaat omzetten
 
@@ -245,12 +247,16 @@ class CallService
         }
 
         $xmlEncoder = new XmlEncoder(['xml_root_node_name' => $this->configuration['apiSource']['location']['xmlRootNodeName'] ?? 'response']);
-        $contentType = $this->getContentType($response, $source);
+        $yamlEncoder = new YamlEncoder();
+        $contentType = $this->getContentType($response, $source) ?? $contentType;
         switch ($contentType) {
+            case 'text/yaml':
+            case 'text/x-yaml':
+                return $yamlEncoder->decode($responseBody, 'yaml');
             case 'text/xml':
             case 'text/xml; charset=utf-8':
             case 'application/xml':
-                $result = $xmlEncoder->decode($responseBody, 'xml');
+                return $xmlEncoder->decode($responseBody, 'xml');
             case 'application/json':
             default:
                 $result = json_decode($responseBody, true);
@@ -280,5 +286,54 @@ class CallService
     private function getAuthentication(Source $source): array
     {
         return $this->authenticationService->getAuthentication($source);
+    }
+
+    /**
+     * Fetches all pages for a source and merges the result arrays to one array.
+     *
+     * @TODO: This is based on some assumptions
+     *
+     * @param Source $source   The source to call
+     * @param string $endpoint The endpoint on the source to call
+     * @param array  $config   The additional configuration to call the source
+     *
+     * @return array The array of results
+     */
+    public function getAllResults(Source $source, string $endpoint = '', array $config = []): array
+    {
+        $errorCount = 0;
+        $pageCount = 1;
+        $results = [];
+        $previousResult = [];
+        while ($errorCount < 5) {
+            try {
+                $config['query']['page'] = $pageCount;
+                $pageCount++;
+                $response = $this->call($source, $endpoint, 'GET', $config);
+                $decodedResponse = $this->decodeResponse($source, $response);
+                if (
+                    $decodedResponse === [] ||
+                    isset($decodedResponse['results']) && $decodedResponse['results'] === [] ||
+                    isset($decodedResponse['items']) && $decodedResponse['items'] == [] ||
+                    isset($decodedResponse['page']) && $decodedResponse['page'] !== $pageCount - 1 ||
+                    $decodedResponse == $previousResult
+                ) {
+                    break;
+                }
+                $decodedResponses[] = $decodedResponse;
+                $previousResult = $decodedResponse;
+            } catch (\Exception $exception) {
+                $errorCount++;
+            }
+            if (isset($decodedResponse['results'])) {
+                $results = array_merge($decodedResponse['results'], $results);
+            } elseif (isset($decodedResponse['items'])) {
+                $results = array_merge($decodedResponse['items'], $results);
+            } elseif (isset($decodedResponse[0])) {
+                $results = array_merge($decodedResponse, $results);
+            }
+        }
+
+        return $results;
     }
 }

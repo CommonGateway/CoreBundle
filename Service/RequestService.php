@@ -292,6 +292,26 @@ class RequestService
     }
 
     /**
+     * Get a scopes array for the current user (or of the anonymus if no user s logged in).
+     *
+     * @return array
+     */
+    public function getScopes(): ?array
+    {
+        if ($user = $this->security->getUser()) {
+            return $user->getScopes();
+        } else {
+            $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous'=>true]);
+            if ($anonymousSecurityGroup) {
+                return $anonymousSecurityGroup->getScopes();
+            }
+        }
+
+        // Lets play it save
+        return [];
+    }
+
+    /**
      * Handles incomming requests and is responsible for generating a responce.
      *
      * @param array $data          The data from the call
@@ -383,6 +403,14 @@ class RequestService
             }
         }
 
+        // Security
+        $scopes = $this->getScopes();
+        foreach ($allowedSchemas['id'] as $schema) {
+            if (!isset($scopes[$schema][$this->data['method']])) {
+                // THROW SECURITY ERROR AND EXIT
+            }
+        }
+
         // All prepped so lets go
         // todo: split these into functions?
         switch ($this->data['method']) {
@@ -411,6 +439,8 @@ class RequestService
                     $responseLog = new Response(is_string($this->content) || is_null($this->content) ? $this->content : null, 200, ['CoreBundle' => 'GetItem']);
                     $session = new Session();
                     $session->set('object', $this->id);
+
+                    // todo: This log is needed so we know an user has 'read' this object
                     $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) ? json_encode($this->content) : $this->content);
                 } else {
                     //$this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
@@ -548,7 +578,9 @@ class RequestService
 
         $this->handleMetadataSelf($result, $metadataSelf);
 
-        $result = $this->shouldWeUnsetEmbedded($result, $this->data['headers']['accept'] ?? null, $isCollection ?? false);
+        // TODO: Removed this so embedded keeps working for all accept types (for projects like KISS & OC)
+        // TODO: find another way to get this working as expected for Roxit.
+//        $result = $this->shouldWeUnsetEmbedded($result, $this->data['headers']['accept'] ?? null, $isCollection ?? false);
 
         return $this->createResponse($result);
     }
