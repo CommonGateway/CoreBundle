@@ -253,11 +253,10 @@ class CallService
             case 'text/yaml':
             case 'text/x-yaml':
                 return $yamlEncoder->decode($responseBody, 'yaml');
-                break;
             case 'text/xml':
             case 'text/xml; charset=utf-8':
             case 'application/xml':
-                $result = $xmlEncoder->decode($responseBody, 'xml');
+                return $xmlEncoder->decode($responseBody, 'xml');
             case 'application/json':
             default:
                 $result = json_decode($responseBody, true);
