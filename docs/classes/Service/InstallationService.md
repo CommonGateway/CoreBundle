@@ -21,8 +21,8 @@
 |[setStyle](#installationservicesetstyle)|Set symfony style in order to output to the console.|
 |[uninstall](#installationserviceuninstall)||
 |[update](#installationserviceupdate)||
-|[validateJsonMapping](#installationservicevalidateJsonMapping)|Perform a very basic check to see if a schema file is a valid json-schema file.|
-|[validateJsonSchema](#installationservicevalidateJsonSchema)|Performce a very basic check to see if a schema file is a valid json-schema file.|
+|[validateJsonMapping](#installationservicevalidatejsonmapping)|Perform a very basic check to see if a schema file is a valid json-schema file.|
+|[validateJsonSchema](#installationservicevalidatejsonschema)|Performce a very basic check to see if a schema file is a valid json-schema file.|
 |[validateObjects](#installationservicevalidateobjects)|Validates the objects in the EAV setup.|
 |[validateSchemas](#installationservicevalidateschemas)|Validates the schemas in the EAV setup.|
 |[validateValues](#installationservicevalidatevalues)|Validates the objects in the EAV setup.|
