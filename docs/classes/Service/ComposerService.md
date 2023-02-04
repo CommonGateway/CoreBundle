@@ -53,7 +53,7 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 **Description**
 
 ```php
-public getAll (array $options)
+public getAll (void)
 ```
 
 Show al packadges installed trough composer. 
@@ -62,7 +62,7 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 
 **Parameters**
 
-* `(array) $options`
+`This function has no parameters.`
 
 **Return Values**
 
