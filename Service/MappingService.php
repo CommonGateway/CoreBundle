@@ -90,10 +90,33 @@ class MappingService
             $dotArray->delete($unset);
         }
 
-        // Cast values to a specific type
+        $dotArray = $this->cast($mappingObject, $dotArray);
+
+        // Back to array
+        $output = $dotArray->all();
+
+        // Log the result
+        isset($this->io) ?? $this->io->debug('Mapped object', [
+            'input'      => $input,
+            'output'     => $output,
+            'passTrough' => $mappingObject->getPassTrough(),
+            'mapping'    => $mappingObject->getMapping(),
+        ]);
+
+        return $output;
+    }
+
+    /**
+     * Cast values to a specific type
+     *
+     * @param Mapping $mappingObject
+     * @param Dot $dotArray
+     * @return Dot
+     */
+    public function cast(Mapping $mappingObject,  Dot $dotArray):Dot{
         foreach ($mappingObject->getCast() as $key => $cast) {
             if (!$dotArray->has($key)) {
-                isset($this->io) ?? $this->io->debug("Trying to cast an property that doesn't exist during mapping");
+                    isset($this->io) ?? $this->io->debug("Trying to cast an property that doesn't exist during mapping");
                 continue;
             }
 
@@ -128,17 +151,6 @@ class MappingService
             }
         }
 
-        // Back to array
-        $output = $dotArray->all();
-
-        // Log the result
-        isset($this->io) ?? $this->io->debug('Mapped object', [
-            'input'      => $input,
-            'output'     => $output,
-            'passTrough' => $mappingObject->getPassTrough(),
-            'mapping'    => $mappingObject->getMapping(),
-        ]);
-
-        return $output;
+        return $dotArray;
     }
 }
