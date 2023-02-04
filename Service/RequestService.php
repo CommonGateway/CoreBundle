@@ -90,19 +90,23 @@ class RequestService
             return $vars;
         }
 
-        $pairs = explode('&', $_SERVER['QUERY_STRING']);
-        foreach ($pairs as $pair) {
-            $nv = explode('=', $pair);
-            $name = urldecode($nv[0]);
-            $value = '';
-            if (count($nv) == 2) {
-                $value = urldecode($nv[1]);
+        if(isset($_SERVER['QUERY_STRING'])){
+            $pairs = explode('&', $_SERVER['QUERY_STRING']);
+            foreach ($pairs as $pair) {
+                $nv = explode('=', $pair);
+                $name = urldecode($nv[0]);
+                $value = '';
+                if (count($nv) == 2) {
+                    $value = urldecode($nv[1]);
+                }
+
+                $this->recursiveRequestQueryKey($vars, $name, explode('[', $name)[0], $value);
             }
 
-            $this->recursiveRequestQueryKey($vars, $name, explode('[', $name)[0], $value);
+            return $vars;
         }
 
-        return $vars;
+        return [];
     }
 
     /**

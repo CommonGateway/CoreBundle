@@ -106,10 +106,10 @@ class MappingService
                     break;
                 case 'bool':
                 case 'boolean':
-                    echo 'i equals 1';
+                    boolval($value);
                     break;
                 case 'string':
-                    echo 'i equals 2';
+                    strval($value);
                     break;
                 case 'keyCantBeValue':
                     if ($key == $value) {
