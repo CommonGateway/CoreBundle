@@ -314,11 +314,9 @@ class ComposerService
      *
      * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
      *
-     * @param array $options
-     *
      * @return array
      */
-    public function getAll(array $options = []): array
+    public function getAll(): array
     {
         $results = $this->getLockFile();
         $plugins = [];
@@ -386,7 +384,7 @@ class ComposerService
      *
      * @return array
      */
-    public function getSingle(string $packadge, array $options = []): array
+    public function getSingle(string $packadge): array
     {
         $url = 'https://packagist.org/packages/'.$packadge.'.json';
 
