@@ -39,7 +39,7 @@ class PluginController extends AbstractController
     /**
      * @Route("/audit", methods={"GET"})
      */
-    public function auditAction(Request $request)
+    public function auditAction()
     {
         $status = 200;
         $plugins = $this->composerService->audit(['--format=json']);

@@ -36,12 +36,6 @@ class ComposerUpdateCommand extends Command
     {
         $this->installationService->setStyle(new SymfonyStyle($input, $output));
 
-        $bundle = $input->getOption('bundle');
-        $data = $input->getOption('data');
-        $noSchema = $input->getOption('schema');
-        $script = $input->getOption('script');
-        $unsafe = $input->getOption('unsafe');
-
         return $this->installationService->composerupdate();
     }
 }

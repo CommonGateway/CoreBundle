@@ -10,10 +10,6 @@ class EavService
 {
     private EntityManagerInterface $entityManager;
     private CacheService $cacheService;
-    private array $configuration;
-    private array $data;
-    private ObjectEntity $object;
-    private string $id;
 
     /**
      * @param EntityManagerInterface $entityManager
