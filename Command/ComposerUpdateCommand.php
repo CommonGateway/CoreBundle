@@ -30,7 +30,6 @@ class ComposerUpdateCommand extends Command
         parent::__construct();
     }//end __construct()
 
-
     /**
      * @return void
      */
@@ -46,11 +45,9 @@ class ComposerUpdateCommand extends Command
             ->setHelp('This command allows you to run further installation an configuration actions afther installing a plugin');
     }
 
-
     /**
-     * @param InputInterface $input Symfony style
+     * @param InputInterface  $input  Symfony style
      * @param OutputInterface $output Symfony style
-     *
      *
      * @return int Succes or failure of the command
      */

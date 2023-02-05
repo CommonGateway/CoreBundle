@@ -10,11 +10,11 @@ use App\Entity\ObjectEntity;
 use App\Entity\Value;
 use App\Kernel;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use Psr\Log\LoggerInterface;
 
 class InstallationService
 {
@@ -45,18 +45,17 @@ class InstallationService
      */
     private LoggerInterface $logger;
 
-
     /**
      * @var CacheService
      */
     private CacheService $cacheService;
 
     /**
-     * @param ComposerService $composerService
+     * @param ComposerService        $composerService
      * @param EntityManagerInterface $em
-     * @param Kernel $kernel
-     * @param CacheService $cacheService
-     * @param LoggerInterface $pluginLogger
+     * @param Kernel                 $kernel
+     * @param CacheService           $cacheService
+     * @param LoggerInterface        $pluginLogger
      */
     public function __construct(
         ComposerService $composerService,
@@ -64,7 +63,6 @@ class InstallationService
         Kernel $kernel,
         CacheService $cacheService,
         LoggerInterface $pluginLogger
-
     ) {
         $this->composerService = $composerService;
         $this->em = $em;

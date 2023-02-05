@@ -34,9 +34,9 @@ class DataClearCommand extends Command
     private ParameterBagInterface $parameterBagInterface;
 
     /**
-     * @param CacheService $cacheService The cache servie
+     * @param CacheService           $cacheService           The cache servie
      * @param EntityManagerInterface $entityManagerInterface The entity manager
-     * @param ParameterBagInterface $parameterBagInterface The environmental values
+     * @param ParameterBagInterface  $parameterBagInterface  The environmental values
      */
     public function __construct(
         CacheService $cacheService,
@@ -50,7 +50,6 @@ class DataClearCommand extends Command
         parent::__construct();
     }//end __construct()
 
-
     /**
      * @return void
      */
@@ -61,11 +60,9 @@ class DataClearCommand extends Command
             ->setHelp('use with care, or better don\'t use at all');
     }
 
-
     /**
-     * @param InputInterface $input Symfony style
+     * @param InputInterface  $input  Symfony style
      * @param OutputInterface $output Symfony style
-     *
      *
      * @return int Succes or failure of the command
      */

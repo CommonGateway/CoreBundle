@@ -5,7 +5,7 @@ namespace CommonGateway\CoreBundle\ActionHandler;
 use CommonGateway\CoreBundle\Service\RequestService;
 
 /**
- * Handles specific search requests
+ * Handles specific search requests.
  */
 class RequestSearchHandler implements ActionHandlerInterface
 {
@@ -30,18 +30,18 @@ class RequestSearchHandler implements ActionHandlerInterface
     public function getConfiguration(): array
     {
         return [
-                '$id'        => 'https://example.com/person.schema.json',
-                '$schema'    => 'https://json-schema.org/draft/2020-12/schema',
-                'title'      => 'SearchRequestHandler',
-                'required'   => [],
-                'properties' => [
-                    'searchEntityId' => [
-                        'type'        => 'uuid',
-                        'description' => 'The uuid of the entity you want to search for',
-                        'example'     => 'b484ba0b-0fb7-4007-a303-1ead3ab48846',
-                        'nullable'    => true,
-                    ],
+            '$id'        => 'https://example.com/person.schema.json',
+            '$schema'    => 'https://json-schema.org/draft/2020-12/schema',
+            'title'      => 'SearchRequestHandler',
+            'required'   => [],
+            'properties' => [
+                'searchEntityId' => [
+                    'type'        => 'uuid',
+                    'description' => 'The uuid of the entity you want to search for',
+                    'example'     => 'b484ba0b-0fb7-4007-a303-1ead3ab48846',
+                    'nullable'    => true,
                 ],
+            ],
         ];
     }
 

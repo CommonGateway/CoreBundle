@@ -24,7 +24,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
 
     /**
      * @param EntityManagerInterface $entityManager
-     * @param EavService $eavService
+     * @param EavService             $eavService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -90,6 +90,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
 
     /**
      * @param LifecycleEventArgs $args
+     *
      * @return void
      */
     public function preUpdate(LifecycleEventArgs $args): void

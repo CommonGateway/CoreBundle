@@ -46,9 +46,8 @@ class UninstallCommand extends Command
     }
 
     /**
-     * @param InputInterface $input Symfony style
+     * @param InputInterface  $input  Symfony style
      * @param OutputInterface $output Symfony style
-     *
      *
      * @return int Succes or failure of the command
      */
