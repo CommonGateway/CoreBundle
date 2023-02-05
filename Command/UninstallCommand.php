@@ -12,16 +12,29 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class UninstallCommand extends Command
 {
+    /**
+     * @var string
+     */
     protected static $defaultName = 'commongateway:uninstall';
+
+    /**
+     * @var InstallationService
+     */
     private InstallationService $installationService;
 
+    /**
+     * @param InstallationService $installationService
+     */
     public function __construct(InstallationService $installationService)
     {
         $this->installationService = $installationService;
 
         parent::__construct();
-    }
+    }//end __construct()
 
+    /**
+     * @return void
+     */
     protected function configure(): void
     {
         $this
@@ -32,6 +45,11 @@ class UninstallCommand extends Command
             ->setHelp('This command allows you to create a OAS files for your EAV entities');
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);

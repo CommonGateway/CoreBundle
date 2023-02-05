@@ -4,10 +4,20 @@ namespace CommonGateway\CoreBundle\ActionHandler;
 
 use CommonGateway\CoreBundle\Service\RequestService;
 
+/**
+ * Handlers the ITEM requests on an endpoint
+ */
 class RequestItemHandler implements ActionHandlerInterface
 {
+
+    /**
+     * @var RequestService
+     */
     private RequestService $requestService;
 
+    /**
+     * @param RequestService $requestService
+     */
     public function __construct(RequestService $requestService)
     {
         $this->requestService = $requestService;

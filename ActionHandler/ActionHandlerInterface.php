@@ -2,6 +2,9 @@
 
 namespace CommonGateway\CoreBundle\ActionHandler;
 
+/**
+ * This interface is used to auto detect action handlers for the gateway
+ */
 interface ActionHandlerInterface
 {
     /*

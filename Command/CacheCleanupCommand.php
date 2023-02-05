@@ -8,17 +8,31 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+
 class CacheCleanupCommand extends Command
 {
+    /**
+     * @var string
+     */
     protected static $defaultName = 'commongateway:cache:cleanup';
+
+    /**
+     * @var CacheService
+     */
     private $cacheService;
 
+    /**
+     * @param CacheService $cacheService
+     */
     public function __construct(CacheService $cacheService)
     {
         $this->cacheService = $cacheService;
         parent::__construct();
-    }
+    }//end __construct()
 
+    /**
+     * @return void
+     */
     protected function configure(): void
     {
         $this
@@ -26,6 +40,11 @@ class CacheCleanupCommand extends Command
             ->setHelp('This command allows you to run further installation an configuration actions afther installing a plugin');
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->cacheService->setStyle(new SymfonyStyle($input, $output));

@@ -13,11 +13,31 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class DataClearCommand extends Command
 {
+    /**
+     * @var string
+     */
     protected static $defaultName = 'commongateway:data:clear';
+
+    /**
+     * @var CacheService
+     */
     private $cacheService;
+
+    /**
+     * @var EntityManagerInterface
+     */
     private EntityManagerInterface $entityManagerInterface;
+
+    /**
+     * @var ParameterBagInterface
+     */
     private ParameterBagInterface $parameterBagInterface;
 
+    /**
+     * @param CacheService $cacheService
+     * @param EntityManagerInterface $entityManagerInterface
+     * @param ParameterBagInterface $parameterBagInterface
+     */
     public function __construct(
         CacheService $cacheService,
         EntityManagerInterface $entityManagerInterface,
@@ -28,8 +48,11 @@ class DataClearCommand extends Command
         $this->parameterBagInterface = $parameterBagInterface;
 
         parent::__construct();
-    }
+    }//end __construct()
 
+    /**
+     * @return void
+     */
     protected function configure(): void
     {
         $this
@@ -37,6 +60,11 @@ class DataClearCommand extends Command
             ->setHelp('use with care, or better don\'t use at all');
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $env = $this->parameterBagInterface->get('app_env');

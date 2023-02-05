@@ -11,15 +11,28 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class ComposerUpdateCommand extends Command
 {
+    /**
+     * @var string
+     */
     protected static $defaultName = 'commongateway:composer:update';
+
+    /**
+     * @var InstallationService
+     */
     private $installationService;
 
+    /**
+     * @param InstallationService $installationService
+     */
     public function __construct(InstallationService $installationService)
     {
         $this->installationService = $installationService;
         parent::__construct();
-    }
+    }//end __construct()
 
+    /**
+     * @return void
+     */
     protected function configure(): void
     {
         $this
@@ -32,6 +45,11 @@ class ComposerUpdateCommand extends Command
             ->setHelp('This command allows you to run further installation an configuration actions afther installing a plugin');
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->installationService->setStyle(new SymfonyStyle($input, $output));

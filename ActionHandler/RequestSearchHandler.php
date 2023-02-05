@@ -4,10 +4,19 @@ namespace CommonGateway\CoreBundle\ActionHandler;
 
 use CommonGateway\CoreBundle\Service\RequestService;
 
+/**
+ * Handles specific search requests
+ */
 class RequestSearchHandler implements ActionHandlerInterface
 {
+    /**
+     * @var RequestService
+     */
     private RequestService $requestService;
 
+    /**
+     * @param RequestService $requestService
+     */
     public function __construct(RequestService $requestService)
     {
         $this->requestService = $requestService;
