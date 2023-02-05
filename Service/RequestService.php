@@ -146,7 +146,7 @@ class RequestService
             return $vars;
         }
 
-        if(isset($_SERVER['QUERY_STRING'])){
+        if (isset($_SERVER['QUERY_STRING'])) {
             $pairs = explode('&', $_SERVER['QUERY_STRING']);
             foreach ($pairs as $pair) {
                 $nv = explode('=', $pair);
