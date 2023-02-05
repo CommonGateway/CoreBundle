@@ -25,7 +25,9 @@ class EavService
     private LoggerInterface $logger;
 
     /**
-     * @param EntityManagerInterface $entityManager
+     * @param EntityManagerInterface $entityManager The entity manager
+     * @param CacheService $cacheService The Cache service
+     * @param LoggerInterface $objectLogger The logger interface
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -40,20 +42,20 @@ class EavService
     /**
      * Checks an entity to see if there are anny atributtes waiting for it.
      *
-     * @param Entity $entity
+     * @param Entity $entity The Entity
      *
      * @return Entity
      */
     public function checkEntityforAttribute(Entity $entity): Entity
     {
-        // Make sure we have a reference
+        // Make sure we have a reference.
         if (!$entity->getReference()) {
             return $entity;
         }
-        // Find the atribbutes
+        // Find the atribbutes.
         $attributes = $this->entityManager->getRepository('App:Attribute')->findBy(['reference'=>$entity->getReference(), 'object'=>null]);
 
-        // Add them to the entity
+        // Add them to the entity.
         foreach ($attributes as $attribute) {
             $attribute->setObject($entity);
         }
@@ -64,18 +66,18 @@ class EavService
     /**
      * Checks an atribute to see if a schema for its reference has becomme available.
      *
-     * @param Attribute $attribute
+     * @param Attribute $attribute The Attribute
      *
      * @return Attribute
      */
     public function checkAttributeforEntity(Attribute $attribute): Attribute
     {
-        // Make sure we have a referende
-        if (!$attribute->getReference() || $attribute->getObject()) {
+        // Make sure we have a reference.
+        if ($attribute->getReference() === false || $attribute->getObject() === true) {
             return $attribute;
         }
 
-        if ($entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference'=>$attribute->getReference()])) {
+        if ($entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $attribute->getReference()])) {
             $attribute->setObject($entity);
         }
 
