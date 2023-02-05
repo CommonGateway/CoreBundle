@@ -15,7 +15,7 @@ class RequestSearchHandler implements ActionHandlerInterface
     private RequestService $requestService;
 
     /**
-     * @param RequestService $requestService
+     * @param RequestService $requestService The request service
      */
     public function __construct(RequestService $requestService)
     {
