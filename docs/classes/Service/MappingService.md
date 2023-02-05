@@ -18,14 +18,13 @@ More information on how to write your own mappings can be found at [/docs/mappin
 
 
 
-
 ### MappingService::__construct  
 
 **Description**
 
 ```php
 public __construct (\Environment $twig, \SessionInterface $session, \LoggerInterface $mappingLogger)
-```
+
 
 Setting up the base class with required services. 
 
@@ -101,4 +100,3 @@ Maps (transforms) an array (input) to a different array (output).
 
 
 <hr />
-
