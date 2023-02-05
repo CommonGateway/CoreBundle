@@ -62,7 +62,7 @@ class InstallationService
         $this->collection = null;
         $this->logger = new Logger('installation');
         $this->cacheService = $cacheService;
-    }
+    }//end __construct()
 
     /**
      * Set symfony style in order to output to the console.

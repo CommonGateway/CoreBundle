@@ -16,6 +16,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Service to call external sources.
@@ -31,6 +32,7 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class CacheService
 {
+
     /**
      * @var Client
      */
@@ -62,23 +64,34 @@ class CacheService
     private SerializerInterface $serializer;
 
     /**
-     * @param AuthenticationService  $authenticationService
+     * @var LoggerInterface
+     */
+    private LoggerInterface $logger;
+
+    /**
+     * Setting up the base class with required services.
+     *
      * @param EntityManagerInterface $entityManager
-     * @param FileService            $fileService
+     * @param CacheInterface $cache
+     * @param ParameterBagInterface $parameters
+     * @param SerializerInterface $serializer
+     * @param LoggerInterface $cacheLogger
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         CacheInterface $cache,
         ParameterBagInterface $parameters,
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        LoggerInterface $cacheLogger
     ) {
         $this->entityManager = $entityManager;
         $this->cache = $cache;
         $this->parameters = $parameters;
         $this->serializer = $serializer;
-        if ($this->parameters->get('cache_url', false)) {
+        $this->logger = $cacheLogger;
+        if ($this->parameters->get('cache_url', false) === true) {
             $this->client = new Client($this->parameters->get('cache_url'));
-        }
+        }//end __construct()
     }
 
     /**

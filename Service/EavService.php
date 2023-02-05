@@ -27,7 +27,7 @@ class EavService
     ) {
         $this->entityManager = $entityManager;
         $this->cacheService = $cacheService;
-    }
+    }//end __construct()
 
     /**
      * Checks an entity to see if there are anny atributtes waiting for it.

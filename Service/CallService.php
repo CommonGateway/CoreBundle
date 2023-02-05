@@ -60,7 +60,7 @@ class CallService
         $this->client = new Client([]);
         $this->entityManager = $entityManager;
         $this->fileService = $fileService;
-    }
+    }//end __construct()
 
     /**
      * Writes the certificate and ssl keys to disk, returns the filenames.
