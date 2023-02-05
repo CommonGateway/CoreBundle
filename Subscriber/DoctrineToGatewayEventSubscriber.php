@@ -51,10 +51,10 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     /**
      * Load requiered services, schould not be aprouched directly.
      *
-     * @param CacheService             $cacheService
-     * @param EntityManagerInterface   $entityManager
-     * @param SessionInterface         $session
-     * @param EventDispatcherInterface $eventDispatcher
+     * @param CacheService             $cacheService The CacheService
+     * @param EntityManagerInterface   $entityManager The EntityManagerInterface
+     * @param SessionInterface         $session The SessionInterface
+     * @param EventDispatcherInterface $eventDispatcher The EventDispatcherInterface
      */
     public function __construct(
         CacheService $cacheService,

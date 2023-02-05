@@ -30,9 +30,9 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
     private SessionInterface $session;
 
     /**
-     * @param CacheService           $cacheService
-     * @param EntityManagerInterface $entityManager
-     * @param SessionInterface       $session
+     * @param CacheService           $cacheService The CacheService
+     * @param EntityManagerInterface $entityManager The EntityManagerInterface
+     * @param SessionInterface       $session The SessionInterface
      */
     public function __construct(
         CacheService $cacheService,

@@ -207,7 +207,7 @@ class CallService
 
             throw $e;
         } catch (GuzzleException $e) {
-            var_dump($e->getMessage());
+            $this->logger->error($e->getMessage());
         }
         $stopTimer = microtime(true);
 

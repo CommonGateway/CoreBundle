@@ -23,8 +23,8 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     private EntityManagerInterface $entityManager;
 
     /**
-     * @param EntityManagerInterface $entityManager
-     * @param EavService             $eavService
+     * @param EntityManagerInterface $entityManager The EntityManagerInterface
+     * @param EavService             $eavService The EavService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
