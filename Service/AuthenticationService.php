@@ -19,9 +19,9 @@ use Jose\Component\Signature\JWSTokenSupport;
 use Jose\Component\Signature\JWSVerifier;
 use Jose\Component\Signature\Serializer\CompactSerializer;
 use Jose\Component\Signature\Serializer\JWSSerializerManager;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Psr\Log\LoggerInterface;
 
 class AuthenticationService
 {
@@ -39,7 +39,6 @@ class AuthenticationService
      * @var LoggerInterface
      */
     private LoggerInterface $logger;
-
 
     public function __construct(ParameterBagInterface $parameterBag)
     {

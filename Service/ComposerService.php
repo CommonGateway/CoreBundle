@@ -3,13 +3,12 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use function PHPUnit\Framework\throwException;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
-use Psr\Log\LoggerInterface;
 
 class ComposerService
 {
-
     /**
      * @var LoggerInterface
      */
@@ -20,10 +19,8 @@ class ComposerService
      */
     public function __construct(
         LoggerInterface $pluginLogger
-
     ) {
         $this->logger = $pluginLogger;
-
     }//end __construct()
 
     private function arrayEnum(array $array, array $enum): bool

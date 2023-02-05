@@ -6,7 +6,6 @@ use Psr\Log\LoggerInterface;
 
 class FileService
 {
-
     /**
      * @var LoggerInterface
      */
@@ -17,7 +16,6 @@ class FileService
      */
     public function __construct(
         LoggerInterface $fileLogger
-
     ) {
         $this->logger = $fileLogger;
     }//end __construct()

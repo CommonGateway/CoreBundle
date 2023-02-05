@@ -30,9 +30,9 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
     private SessionInterface $session;
 
     /**
-     * @param CacheService $cacheService
+     * @param CacheService           $cacheService
      * @param EntityManagerInterface $entityManager
-     * @param SessionInterface $session
+     * @param SessionInterface       $session
      */
     public function __construct(
         CacheService $cacheService,
@@ -58,6 +58,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
 
     /**
      * @param LifecycleEventArgs $args
+     *
      * @return void
      */
     public function postUpdate(LifecycleEventArgs $args): void
@@ -95,6 +96,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
 
     /**
      * @param LifecycleEventArgs $args
+     *
      * @return void
      */
     public function preUpdate(LifecycleEventArgs $args): void
@@ -104,6 +106,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
 
     /**
      * @param LifecycleEventArgs $args
+     *
      * @return void
      */
     public function prePersist(LifecycleEventArgs $args): void

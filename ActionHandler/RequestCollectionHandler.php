@@ -5,11 +5,10 @@ namespace CommonGateway\CoreBundle\ActionHandler;
 use CommonGateway\CoreBundle\Service\RequestService;
 
 /**
- * Handlers the COLLECTION requests on an endpoint
+ * Handlers the COLLECTION requests on an endpoint.
  */
 class RequestCollectionHandler implements ActionHandlerInterface
 {
-
     /**
      * @var RequestService
      */
@@ -31,18 +30,18 @@ class RequestCollectionHandler implements ActionHandlerInterface
     public function getConfiguration(): array
     {
         return [
-                '$id'        => 'https://example.com/person.schema.json',
-                '$schema'    => 'https://json-schema.org/draft/2020-12/schema',
-                'title'      => 'CollectionRequestHandler',
-                'required'   => [],
-                'properties' => [
-                    'serviceDNS' => [
-                        'type'        => 'string',
-                        'description' => 'The DNS of the mail provider, see https://symfony.com/doc/6.2/mailer.html for details',
-                        'example'     => 'native://default',
-                        'required'    => true,
-                    ],
+            '$id'        => 'https://example.com/person.schema.json',
+            '$schema'    => 'https://json-schema.org/draft/2020-12/schema',
+            'title'      => 'CollectionRequestHandler',
+            'required'   => [],
+            'properties' => [
+                'serviceDNS' => [
+                    'type'        => 'string',
+                    'description' => 'The DNS of the mail provider, see https://symfony.com/doc/6.2/mailer.html for details',
+                    'example'     => 'native://default',
+                    'required'    => true,
                 ],
+            ],
         ];
     }
 

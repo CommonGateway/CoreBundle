@@ -11,10 +11,10 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Response;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
-use Psr\Log\LoggerInterface;
 
 /**
  * Service to call external sources.
@@ -55,7 +55,6 @@ class CallService
      */
     private LoggerInterface $logger;
 
-
     /**
      * @param AuthenticationService  $authenticationService
      * @param EntityManagerInterface $entityManager
@@ -66,8 +65,7 @@ class CallService
         EntityManagerInterface $entityManager,
         FileService $fileService,
         LoggerInterface $callLogger
-    )
-    {
+    ) {
         $this->authenticationService = $authenticationService;
         $this->client = new Client([]);
         $this->entityManager = $entityManager;

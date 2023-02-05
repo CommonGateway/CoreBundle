@@ -10,13 +10,13 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use MongoDB\Client;
+use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Serializer\SerializerInterface;
-use Psr\Log\LoggerInterface;
 
 /**
  * Service to call external sources.
@@ -32,7 +32,6 @@ use Psr\Log\LoggerInterface;
  */
 class CacheService
 {
-
     /**
      * @var Client
      */
@@ -72,10 +71,10 @@ class CacheService
      * Setting up the base class with required services.
      *
      * @param EntityManagerInterface $entityManager
-     * @param CacheInterface $cache
-     * @param ParameterBagInterface $parameters
-     * @param SerializerInterface $serializer
-     * @param LoggerInterface $cacheLogger
+     * @param CacheInterface         $cache
+     * @param ParameterBagInterface  $parameters
+     * @param SerializerInterface    $serializer
+     * @param LoggerInterface        $cacheLogger
      */
     public function __construct(
         EntityManagerInterface $entityManager,

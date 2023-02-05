@@ -32,7 +32,6 @@ class UpgradeCommand extends Command
         parent::__construct();
     }//end __construct()
 
-
     /**
      * @return void
      */
@@ -46,11 +45,9 @@ class UpgradeCommand extends Command
             ->setHelp('This command allows you to create a OAS files for your EAV entities');
     }
 
-
     /**
-     * @param InputInterface $input Symfony style
+     * @param InputInterface  $input  Symfony style
      * @param OutputInterface $output Symfony style
-     *
      *
      * @return int Succes or failure of the command
      */

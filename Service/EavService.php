@@ -24,7 +24,6 @@ class EavService
      */
     private LoggerInterface $logger;
 
-
     /**
      * @param EntityManagerInterface $entityManager
      */

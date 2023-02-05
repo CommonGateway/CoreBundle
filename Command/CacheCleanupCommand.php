@@ -8,7 +8,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-
 class CacheCleanupCommand extends Command
 {
     /**
@@ -30,7 +29,6 @@ class CacheCleanupCommand extends Command
         parent::__construct();
     }//end __construct()
 
-
     /**
      * @return void
      */
@@ -41,11 +39,9 @@ class CacheCleanupCommand extends Command
             ->setHelp('This command allows you to run further installation an configuration actions afther installing a plugin');
     }
 
-
     /**
-     * @param InputInterface $input Symfony style
+     * @param InputInterface  $input  Symfony style
      * @param OutputInterface $output Symfony style
-     *
      *
      * @return int Succes or failure of the command
      */
