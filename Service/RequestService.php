@@ -828,7 +828,7 @@ class RequestService
     /**
      * Creating the responce object.
      *
-     * @param $data  
+     * @param $data
      *
      * @return \CommonGateway\CoreBundle\Service\Response
      */

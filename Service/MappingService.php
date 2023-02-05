@@ -35,9 +35,9 @@ class MappingService
     /**
      * Setting up the base class with required services.
      *
-     * @param Environment      $twig
-     * @param SessionInterface $session
-     * @param LoggerInterface  $mappingLogger
+     * @param Environment      $twig The twig environment
+     * @param SessionInterface $session The session interface
+     * @param LoggerInterface  $mappingLogger The logger
      */
     public function __construct(
         Environment $twig,
@@ -59,7 +59,7 @@ class MappingService
      */
     public function mapping(Mapping $mappingObject, array $input): array
     {
-        // Log to the session that we are doing a mapping
+        // Log to the session that we are doing a mapping.
         $this->session->set('mapping', $mappingObject->getId()->toString());
 
         // Determine pass trough and create dot array based on https://github.com/adbario/php-dot-notation.
@@ -86,7 +86,7 @@ class MappingService
         // Unset unwanted key's.
         foreach ($mappingObject->getUnset() as $unset) {
             if ($dotArray->has($unset) === false) {
-                $this->logger->debug("Trying to unset an property that doesn't exist during mapping", ['mapping'=>$mappingObject->toSchema(), 'input'=>$input, 'property'=>$unset]);
+                $this->logger->debug("Trying to unset an property that doesn't exist during mapping", ['mapping' => $mappingObject->toSchema(), 'input' => $input, 'property' => $unset]);
                 continue;
             }
 
@@ -116,7 +116,7 @@ class MappingService
      */
     public function cast(Mapping $mappingObject, Dot $dotArray): Dot
     {
-        // Loop trough the configured castings
+        // Loop trough the configured castings.
         foreach ($mappingObject->getCast() as $key => $cast) {
             if (!$dotArray->has($key)) {
                 $this->logger->error("Trying to cast an property that doesn't exist during mapping", ['mapping'=>$mappingObject->toSchema(), 'property'=>$key, 'cast'=>$cast]);
@@ -140,15 +140,15 @@ class MappingService
                     $value = (string) $value;
                     break;
                 case 'keyCantBeValue':
-                    if ($key == $value) {
+                    if ($key === $value) {
                         $dotArray->delete($key);
                     }
                     break;
                 // Todo: Add more casts
                 default:
-                    $this->logger->error('Trying to cast to an unsupported cast type', ['mapping'=>$mappingObject->toSchema(), 'property'=>$key, 'cast'=>$cast]);
+                    $this->logger->error('Trying to cast to an unsupported cast type', ['mapping' => $mappingObject->toSchema(), 'property' =>$key, 'cast' => $cast]);
                     break;
-            } //end switch
+            }//end switch
 
             // Don't reset key that was deleted on purpose.
             if ($dotArray->has($key) === true) {
