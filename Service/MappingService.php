@@ -6,6 +6,8 @@ use Adbar\Dot;
 use App\Entity\Mapping;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Twig\Environment;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
  * The mapping service handles the mapping (or transformation) of array A (input) to array B (output).
@@ -14,12 +16,6 @@ use Twig\Environment;
  */
 class MappingService
 {
-    /**
-     * Add symfony style bundle in order to output to the console.
-     *
-     * @var SymfonyStyle
-     */
-    private SymfonyStyle $io;
 
     /**
      * Create a private variable to store the twig environment.
@@ -29,28 +25,30 @@ class MappingService
     private Environment $twig;
 
     /**
-     * Setting up the base class with required services.
-     *
-     * @param Environment $twig The twig envirnoment to use
+     * @var SessionInterface
      */
-    public function __construct(
-        Environment $twig
-    ) {
-        $this->twig = $twig;
-    }
+    private SessionInterface $session;
 
     /**
-     * Set symfony style in order to output to the console.
-     *
-     * @param SymfonyStyle $io The symfony style to set
-     *
-     * @return self This object
+     * @var LoggerInterface
      */
-    public function setStyle(SymfonyStyle $io): self
-    {
-        $this->io = $io;
+    private LoggerInterface $logger;
 
-        return $this;
+    /**
+     * Setting up the base class with required services.
+     *
+     * @param Environment $twig
+     * @param SessionInterface $session
+     * @param LoggerInterface $mappingLogger
+     */
+    public function __construct(
+        Environment $twig,
+        SessionInterface $session,
+        LoggerInterface $mappingLogger
+    ) {
+        $this->twig = $twig;
+        $this->session = $session;
+        $this->logger = $mappingLogger;
     }
 
     /**
@@ -63,17 +61,15 @@ class MappingService
      */
     public function mapping(Mapping $mappingObject, array $input): array
     {
-        isset($this->io) ?? $this->io->debug('Mapping array based on mapping object '.$mappingObject->getName().' (id:'.$mappingObject->getId()->toString().' / ref:'.$mappingObject->getReference().') v:'.$mappingObject->getversion());
+        // Log to the session that we are doing a mapping
+        $this->session->set('mapping', $mappingObject->getId()->toString());
 
-        // Determine pass trough.
+
+        // Determine pass trough and create dot array based on https://github.com/adbario/php-dot-notation.
         if ($mappingObject->getPassTrough()) {
-            // Let's create and fill the dot array based on https://github.com/adbario/php-dot-notation.
             $dotArray = new Dot($input);
-            isset($this->io) ?? $this->io->debug('Mapping *with* pass trough');
         } else {
-            // Let's create the dot array based on https://github.com/adbario/php-dot-notation.
             $dotArray = new Dot();
-            isset($this->io) ?? $this->io->debug('Mapping *without* pass trough');
         }
 
         $dotInput = new Dot($input);
@@ -93,7 +89,7 @@ class MappingService
         // Unset unwanted key's.
         foreach ($mappingObject->getUnset() as $unset) {
             if (!$dotArray->has($unset)) {
-                isset($this->io) ?? $this->io->debug("Trying to unset an property that doesn't exist during mapping");
+                $this->logger->debug("Trying to unset an property that doesn't exist during mapping",['mapping'=>$mappingObject->toSchema(),'input'=>$input,'property'=>$unset]);
                 continue;
             }
             $dotArray->delete($unset);
@@ -105,12 +101,9 @@ class MappingService
         $output = $dotArray->all();
 
         // Log the result.
-        isset($this->io) ?? $this->io->debug('Mapped object', [
-            'input'      => $input,
-            'output'     => $output,
-            'passTrough' => $mappingObject->getPassTrough(),
-            'mapping'    => $mappingObject->getMapping(),
-        ]);
+        $this->logger->info('Mapped array based on mapping object',['mapping'=>$mappingObject->toSchema(),'input'=>$input,'output'=>$output]);
+
+        $this->session->remove('mapping');
 
         return $output;
     }
@@ -124,14 +117,18 @@ class MappingService
      * @return Dot The status of the mapping afther casting has been applied
      */
     public function cast(Mapping $mappingObject,  Dot $dotArray):Dot{
+        // Loop trough the configured castings
         foreach ($mappingObject->getCast() as $key => $cast) {
+
             if (!$dotArray->has($key)) {
-                    isset($this->io) ?? $this->io->debug("Trying to cast an property that doesn't exist during mapping");
+                $this->logger->error("Trying to cast an property that doesn't exist during mapping",['mapping'=>$mappingObject->toSchema(),'property'=>$key,'cast'=>$cast]);
                 continue;
             }
 
+            // Get the value.
             $value = $dotArray->get($key);
 
+            // Do the casting.
             switch ($cast) {
                 case 'int':
                 case 'integer':
@@ -151,7 +148,7 @@ class MappingService
                     break;
                 // Todo: Add more casts
                 default:
-                    isset($this->io) ?? $this->io->debug('Trying to cast to an unsupported cast type: '.$cast);
+                    $this->logger->error("Trying to cast to an unsupported cast type",['mapping'=>$mappingObject->toSchema(),'property'=>$key,'cast'=>$cast]);
                     break;
             } //end switch
 
