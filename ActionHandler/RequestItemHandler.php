@@ -20,7 +20,7 @@ class RequestItemHandler implements ActionHandlerInterface
     public function __construct(RequestService $requestService)
     {
         $this->requestService = $requestService;
-    }//end __construct()
+    } //end __construct()
 
     /**
      * This function returns the required configuration as a [json-schema](https://json-schema.org/) array.
