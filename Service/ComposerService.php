@@ -295,7 +295,6 @@ class ComposerService
      */
     public function getLockFile(): array
     {
-        $filesystem = new Filesystem();
 
         if (!$plugins = @file_get_contents('../composer.lock')) {
             if (!$plugins = @file_get_contents('composer.lock')) {
@@ -425,7 +424,7 @@ class ComposerService
      *
      * @return array
      */
-    public function search(string $search = null, array $options = []): array
+    public function search(string $search = null): array
     {
         $url = 'https://packagist.org/search.json';
         $query = ['tags'=>'common-gateway-plugin'];

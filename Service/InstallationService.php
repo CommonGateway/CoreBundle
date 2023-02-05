@@ -406,6 +406,14 @@ class InstallationService
             '',
         ]);
 
+        if (isset($bundle)) {
+            $this->io->writeln([
+                'Trying to update: <comment> '.$bundle.' </comment>',
+                '',
+            ]);
+        }
+
+
         return Command::SUCCESS;
     }
 
@@ -416,6 +424,13 @@ class InstallationService
             '============',
             '',
         ]);
+
+        if (isset($bundle)) {
+            $this->io->writeln([
+                'Trying to uninstall: <comment> '.$bundle.' </comment>',
+                '',
+            ]);
+        }
 
         return Command::SUCCESS;
     }
