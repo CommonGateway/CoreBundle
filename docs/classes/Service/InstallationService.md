@@ -205,7 +205,7 @@ Updates all commonground bundles on the common gateway installation.
 **Description**
 
 ```php
-public install (\SymfonyStyle $io, string $bundle, bool $noSchema)
+public install (string $bundle, array $config)
 ```
 
 Performs installation actions on a common Gataway bundle. 
@@ -214,9 +214,10 @@ Performs installation actions on a common Gataway bundle.
 
 **Parameters**
 
-* `(\SymfonyStyle) $io`
 * `(string) $bundle`
-* `(bool) $noSchema`
+: The bundle name that you want to install  
+* `(array) $config`
+: Optional configuration  
 
 **Return Values**
 
