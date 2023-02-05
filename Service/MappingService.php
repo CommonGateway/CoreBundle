@@ -66,7 +66,7 @@ class MappingService
 
 
         // Determine pass trough and create dot array based on https://github.com/adbario/php-dot-notation.
-        if ($mappingObject->getPassTrough() == true) {
+        if ($mappingObject->getPassTrough() === true) {
             $dotArray = new Dot($input);
         } else {
             $dotArray = new Dot();
@@ -77,7 +77,7 @@ class MappingService
         // Let's do the actual mapping.
         foreach ($mappingObject->getMapping() as $key => $value) {
             // If the value exists in the input dot take it from there.
-            if ($dotInput->has($value)) {
+            if ($dotInput->has($value) === true) {
                 $dotArray->set($key, $dotInput->get($value));
                 continue;
             }
@@ -88,10 +88,11 @@ class MappingService
 
         // Unset unwanted key's.
         foreach ($mappingObject->getUnset() as $unset) {
-            if (!$dotArray->has($unset)) {
+            if ($dotArray->has($unset) === false) {
                 $this->logger->debug("Trying to unset an property that doesn't exist during mapping",['mapping'=>$mappingObject->toSchema(),'input'=>$input,'property'=>$unset]);
                 continue;
             }
+
             $dotArray->delete($unset);
         }
 
