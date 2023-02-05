@@ -23,7 +23,7 @@ class UninstallCommand extends Command
     private InstallationService $installationService;
 
     /**
-     * @param InstallationService $installationService
+     * @param InstallationService $installationService The installation service
      */
     public function __construct(InstallationService $installationService)
     {
@@ -46,9 +46,9 @@ class UninstallCommand extends Command
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int
+     * @param InputInterface $input Symfony style
+     * @param OutputInterface $output Symfony style
+     * @return int Succes or failure of the command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {

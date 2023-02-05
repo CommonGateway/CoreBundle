@@ -21,13 +21,14 @@ class ValidateObjectCommand extends Command
     private $installationService;
 
     /**
-     * @param InstallationService $installationService
+     * @param InstallationService $installationService The installation service
      */
     public function __construct(InstallationService $installationService)
     {
         $this->installationService = $installationService;
         parent::__construct();
     }//end __construct()
+
 
     /**
      * @return void
@@ -39,10 +40,11 @@ class ValidateObjectCommand extends Command
             ->setHelp('This command allows you to run further installation an configuration actions afther installing a plugin');
     }
 
+
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int
+     * @param InputInterface $input Symfony style
+     * @param OutputInterface $output Symfony style
+     * @return int Succes or failure of the command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {

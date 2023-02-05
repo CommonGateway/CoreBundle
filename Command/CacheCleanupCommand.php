@@ -22,13 +22,14 @@ class CacheCleanupCommand extends Command
     private $cacheService;
 
     /**
-     * @param CacheService $cacheService
+     * @param CacheService $cacheService The cache serice
      */
     public function __construct(CacheService $cacheService)
     {
         $this->cacheService = $cacheService;
         parent::__construct();
     }//end __construct()
+
 
     /**
      * @return void
@@ -40,10 +41,11 @@ class CacheCleanupCommand extends Command
             ->setHelp('This command allows you to run further installation an configuration actions afther installing a plugin');
     }
 
+
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int
+     * @param InputInterface $input Symfony style
+     * @param OutputInterface $output Symfony style
+     * @return int Succes or failure of the command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {

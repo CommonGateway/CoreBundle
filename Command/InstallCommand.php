@@ -23,7 +23,7 @@ class InstallCommand extends Command
     private $installationService;
 
     /**
-     * @param InstallationService $installationService
+     * @param InstallationService $installationService The installation service
      */
     public function __construct(InstallationService $installationService)
     {
@@ -47,9 +47,9 @@ class InstallCommand extends Command
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int
+     * @param InputInterface $input Symfony style
+     * @param OutputInterface $output Symfony style
+     * @return int Succes or failure of the command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
