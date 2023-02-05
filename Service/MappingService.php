@@ -49,7 +49,7 @@ class MappingService
         $this->twig = $twig;
         $this->session = $session;
         $this->logger = $mappingLogger;
-    }
+    }//end __construct()
 
     /**
      * Maps (transforms) an array (input) to a different array (output).
@@ -66,7 +66,7 @@ class MappingService
 
 
         // Determine pass trough and create dot array based on https://github.com/adbario/php-dot-notation.
-        if ($mappingObject->getPassTrough()) {
+        if ($mappingObject->getPassTrough() == true) {
             $dotArray = new Dot($input);
         } else {
             $dotArray = new Dot();
