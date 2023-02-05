@@ -154,12 +154,7 @@ class InstallationService
     {
         $values = $this->em->getRepository('App:Value')->findAll();
 
-        if ($this->io) {
-            $this->io->writeln([
-                'Validating: <comment> '.count($values).' </comment> values\'s',
-            ]);
-        }
-        $this->logger->info('Validating:'.count($values).'values\'s');
+        $this->logger->debug('Validating:'.count($values).'values\'s');
 
         // Lets go go go !
         foreach ($values as $value) {
@@ -178,12 +173,7 @@ class InstallationService
     {
         $schemas = $this->em->getRepository('App:Entity')->findAll();
 
-        if ($this->io) {
-            $this->io->writeln([
-                'Validating: <comment> '.count($schemas).' </comment> schema\'s',
-            ]);
-        }
-        $this->logger->info('Validating:'.count($schemas).'schema\'s');
+        $this->logger->debug('Validating:'.count($schemas).'schema\'s');
 
         // Lets go go go !
         foreach ($schemas as $schema) {
@@ -266,9 +256,8 @@ class InstallationService
     /**
      * Performs installation actions on a common Gataway bundle.
      *
-     * @param SymfonyStyle $io
-     * @param string       $bundle
-     * @param bool         $noSchema
+     * @param string       $bundle The bundle name that you want to install
+     * @param array        $config Optional configuration
      *
      * @return int
      */
@@ -431,42 +420,37 @@ class InstallationService
         return Command::SUCCESS;
     }
 
-    public function update(string $bundle, string $data)
+    /**
+     * @param string $bundle The bundle that you want to update
+     * @param array  $config Optional configuration
+     *
+     * @return mixed
+     */
+    public function update(string $bundle, array $config = [])
     {
-        $this->io->writeln([
-            'Common Gateway Bundle Updater',
-            '============',
-            '',
-        ]);
 
-        if (isset($bundle)) {
-            $this->io->writeln([
-                'Trying to update: <comment> '.$bundle.' </comment>',
-                '',
-            ]);
-        }
+        $this->logger->debug('Trying to update: '.$bundle, ['bundle' => $bundle ]);
 
         return Command::SUCCESS;
     }
-
+    /**
+     * @param string $bundle The bundle that you want to uninstall (delete))
+     * @param array  $config Optional configuration
+     *
+     * @return mixed
+     */
     public function uninstall(string $bundle, string $data)
     {
-        $this->io->writeln([
-            'Common Gateway Bundle Uninstaller',
-            '============',
-            '',
-        ]);
 
-        if (isset($bundle)) {
-            $this->io->writeln([
-                'Trying to uninstall: <comment> '.$bundle.' </comment>',
-                '',
-            ]);
-        }
+        $this->logger->debug('Trying to uninstall: '.$bundle, ['bundle' => $bundle ]);
 
         return Command::SUCCESS;
     }
 
+    /**
+     * @param $file
+     * @return false|void
+     */
     public function handleAction($file)
     {
         if (!$action = json_decode($file->getContents(), true)) {
@@ -499,6 +483,10 @@ class InstallationService
         $this->io->writeln('Done with action '.$entity->getName());
     }
 
+    /**
+     * @param $file
+     * @return false|void
+     */
     public function handleMapping($file)
     {
         if (!$mapping = json_decode($file->getContents(), true)) {
@@ -530,6 +518,10 @@ class InstallationService
         $this->io->writeln('Done with mapping '.$entity->getName());
     }
 
+    /**
+     * @param $file
+     * @return false|void
+     */
     public function handleSchema($file)
     {
         if (!$schema = json_decode($file->getContents(), true)) {
@@ -610,6 +602,10 @@ class InstallationService
         return false;
     }
 
+    /**
+     * @param $file
+     * @return false|void
+     */
     public function handleData($file)
     {
         if (!$data = json_decode($file->getContents(), true)) {
@@ -655,6 +651,10 @@ class InstallationService
         }
     }
 
+    /**
+     * @param $file
+     * @return false
+     */
     public function handleInstaller($file)
     {
         if (!$data = json_decode($file->getContents(), true)) {
