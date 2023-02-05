@@ -15,8 +15,6 @@ More information on how to write your own mappings can be found at [/docs/mappin
 |[__construct](#mappingservice__construct)|Setting up the base class with required services.|
 |[cast](#mappingservicecast)|Cast values to a specific type|
 |[mapping](#mappingservicemapping)|Maps (transforms) an array (input) to a different array (output).|
-|[setStyle](#mappingservicesetstyle)|Set symfony style in order to output to the console.|
-
 
 
 
@@ -25,8 +23,8 @@ More information on how to write your own mappings can be found at [/docs/mappin
 **Description**
 
 ```php
-public __construct (\Environment $twig)
-```
+public __construct (\Environment $twig, \SessionInterface $session, \LoggerInterface $mappingLogger)
+
 
 Setting up the base class with required services. 
 
@@ -35,7 +33,8 @@ Setting up the base class with required services.
 **Parameters**
 
 * `(\Environment) $twig`
-: The twig envirnoment to use  
+* `(\SessionInterface) $session`
+* `(\LoggerInterface) $mappingLogger`
 
 **Return Values**
 
@@ -101,31 +100,3 @@ Maps (transforms) an array (input) to a different array (output).
 
 
 <hr />
-
-
-### MappingService::setStyle  
-
-**Description**
-
-```php
-public setStyle (\SymfonyStyle $io)
-```
-
-Set symfony style in order to output to the console. 
-
- 
-
-**Parameters**
-
-* `(\SymfonyStyle) $io`
-: The symfony style to set  
-
-**Return Values**
-
-`self`
-
-> This object
-
-
-<hr />
-
