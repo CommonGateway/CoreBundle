@@ -10,6 +10,7 @@
 
 | Name | Description |
 |------|-------------|
+|[__construct](#composerservice__construct)||
 |[audit](#composerserviceaudit)|Search for a given term.|
 |[getAll](#composerservicegetall)|Show al packadges installed trough composer.|
 |[getLockFile](#composerservicegetlockfile)|Gets all installed plugins from the lock file.|
@@ -20,6 +21,30 @@
 |[upgrade](#composerserviceupgrade)|Show a single packadge installed trough composer.|
 
 
+
+
+### ComposerService::__construct  
+
+**Description**
+
+```php
+ __construct (void)
+```
+
+ 
+
+ 
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`void`
+
+
+<hr />
 
 
 ### ComposerService::audit  
