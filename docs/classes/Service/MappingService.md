@@ -34,8 +34,11 @@ Setting up the base class with required services.
 **Parameters**
 
 * `(\Environment) $twig`
+: The twig environment  
 * `(\SessionInterface) $session`
+: The session interface  
 * `(\LoggerInterface) $mappingLogger`
+: The logger  
 
 **Return Values**
 
