@@ -47,10 +47,15 @@ Setting up the base class with required services.
 **Parameters**
 
 * `(\EntityManagerInterface) $entityManager`
+: The EntityManagerInterface  
 * `(\CacheInterface) $cache`
+: The CacheInterface  
 * `(\ParameterBagInterface) $parameters`
+: The ParameterBagInterface  
 * `(\SerializerInterface) $serializer`
+: The SerializerInterface  
 * `(\LoggerInterface) $cacheLogger`
+: The LoggerInterface  
 
 **Return Values**
 
@@ -101,6 +106,7 @@ Put a single object into the cache.
 **Parameters**
 
 * `(\ObjectEntity) $objectEntity`
+: ObjectEntity  
 
 **Return Values**
 
@@ -227,6 +233,7 @@ Get a single object from the cache.
 **Parameters**
 
 * `(string) $id`
+: The id of the object  
 
 **Return Values**
 
@@ -305,6 +312,7 @@ Removes an object from the cache.
 **Parameters**
 
 * `(\ObjectEntity) $objectEntity`
+: ObjectEntity  
 
 **Return Values**
 
@@ -425,6 +433,7 @@ Set symfony style in order to output to the console.
 **Parameters**
 
 * `(\SymfonyStyle) $io`
+: SymfonyStyle  
 
 **Return Values**
 
