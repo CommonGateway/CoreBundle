@@ -118,6 +118,7 @@ Get the ID from given parameters.
 **Parameters**
 
 * `(array) $object`
+: The object to get an id from  
 
 **Return Values**
 
@@ -144,6 +145,7 @@ Get the schema from given parameters returns false if no schema could be establi
 **Parameters**
 
 * `(array) $parameters`
+: The parameters to get a schema from  
 
 **Return Values**
 
