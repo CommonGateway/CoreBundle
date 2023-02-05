@@ -29,9 +29,24 @@ use Symfony\Component\Serializer\Encoder\YamlEncoder;
  */
 class CallService
 {
+    /**
+     * @var AuthenticationService
+     */
     private AuthenticationService $authenticationService;
+
+    /**
+     * @var Client
+     */
     private Client $client;
+
+    /**
+     * @var EntityManagerInterface
+     */
     private EntityManagerInterface $entityManager;
+
+    /**
+     * @var FileService
+     */
     private FileService $fileService;
 
     /**

@@ -8,7 +8,14 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class EavService
 {
+    /**
+     * @var EntityManagerInterface
+     */
     private EntityManagerInterface $entityManager;
+
+    /**
+     * @var CacheService
+     */
     private CacheService $cacheService;
 
     /**

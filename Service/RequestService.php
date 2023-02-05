@@ -26,20 +26,76 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class RequestService
 {
+    /**
+     * @var EntityManagerInterface
+     */
     private EntityManagerInterface $entityManager;
+
+    /**
+     * @var CacheService
+     */
     private CacheService $cacheService;
+
+    /**
+     * @var array
+     */
     private array $configuration;
+
+    /**
+     * @var array
+     */
     private array $data;
+
+    /**
+     * @var ObjectEntity
+     */
     private ObjectEntity $object;
+
+    /**
+     * @var string
+     */
     private string $id;
+
+    /**
+     * @var
+     */
     private $schema; // todo: cast to Entity|Boolean in php 8
+
     // todo: we might want to move or rewrite code instead of using these services here:
+
+    /**
+     * @var ResponseService
+     */
     private ResponseService $responseService;
+
+    /**
+     * @var ObjectEntityService
+     */
     private ObjectEntityService $objectEntityService;
+
+    /**
+     * @var LogService
+     */
     private LogService $logService;
+
+    /**
+     * @var CallService
+     */
     private CallService $callService;
+
+    /**
+     * @var Security
+     */
     private Security $security;
+
+    /**
+     * @var EventDispatcherInterface
+     */
     private EventDispatcherInterface $eventDispatcher;
+
+    /**
+     * @var SerializerInterface
+     */
     private SerializerInterface $serializer;
 
     /**

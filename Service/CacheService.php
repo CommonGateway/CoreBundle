@@ -31,11 +31,34 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class CacheService
 {
+    /**
+     * @var Client
+     */
     private Client $client;
+
+    /**
+     * @var EntityManagerInterface
+     */
     private EntityManagerInterface $entityManager;
+
+    /**
+     * @var CacheInterface
+     */
     private CacheInterface $cache;
+
+    /**
+     * @var SymfonyStyle
+     */
     private SymfonyStyle $io;
+
+    /**
+     * @var ParameterBagInterface
+     */
     private ParameterBagInterface $parameters;
+
+    /**
+     * @var SerializerInterface
+     */
     private SerializerInterface $serializer;
 
     /**

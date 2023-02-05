@@ -24,7 +24,14 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
 class AuthenticationService
 {
+    /**
+     * @var ParameterBagInterface
+     */
     private ParameterBagInterface $parameterBag;
+
+    /**
+     * @var FileService
+     */
     private FileService $fileService;
 
     public function __construct(ParameterBagInterface $parameterBag)

@@ -18,11 +18,36 @@ use Symfony\Component\Finder\Finder;
 
 class InstallationService
 {
+    /**
+     * @var ComposerService
+     */
     private ComposerService $composerService;
+
+    /**
+     * @var EntityManagerInterface
+     */
     private EntityManagerInterface $em;
+
+    /**
+     * @var SymfonyStyle
+     */
     private SymfonyStyle $io;
+
+    /**
+     * Holds the symfony container interface
+     *
+     * @var
+     */
     private $container;
+
+    /**
+     * @var Logger
+     */
     private Logger $logger;
+
+    /**
+     * @var CacheService
+     */
     private CacheService $cacheService;
 
     public function __construct(

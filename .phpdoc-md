@@ -11,6 +11,7 @@ return (object)[
         '\CommonGateway\CoreBundle\Service\EavService',
         '\CommonGateway\CoreBundle\Service\FileService',
         '\CommonGateway\CoreBundle\Service\InstallationService',
+        '\CommonGateway\CoreBundle\Service\MappingService',
         '\CommonGateway\CoreBundle\Service\RequestService'
     ],
 ];
