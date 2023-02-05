@@ -59,6 +59,7 @@ class CallService
      * @param AuthenticationService  $authenticationService
      * @param EntityManagerInterface $entityManager
      * @param FileService            $fileService
+     * @param LoggerInterface        $callLogger
      */
     public function __construct(
         AuthenticationService $authenticationService,
