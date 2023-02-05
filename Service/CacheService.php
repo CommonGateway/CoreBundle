@@ -71,10 +71,10 @@ class CacheService
      * Setting up the base class with required services.
      *
      * @param EntityManagerInterface $entityManager The EntityManagerInterface
-     * @param CacheInterface         $cache The CacheInterface
-     * @param ParameterBagInterface  $parameters The ParameterBagInterface
-     * @param SerializerInterface    $serializer The SerializerInterface
-     * @param LoggerInterface        $cacheLogger The LoggerInterface
+     * @param CacheInterface         $cache         The CacheInterface
+     * @param ParameterBagInterface  $parameters    The ParameterBagInterface
+     * @param SerializerInterface    $serializer    The SerializerInterface
+     * @param LoggerInterface        $cacheLogger   The LoggerInterface
      */
     public function __construct(
         EntityManagerInterface $entityManager,

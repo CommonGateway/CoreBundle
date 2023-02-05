@@ -26,8 +26,8 @@ class EavService
 
     /**
      * @param EntityManagerInterface $entityManager The entity manager
-     * @param CacheService $cacheService The Cache service
-     * @param LoggerInterface $objectLogger The logger interface
+     * @param CacheService           $cacheService  The Cache service
+     * @param LoggerInterface        $objectLogger  The logger interface
      */
     public function __construct(
         EntityManagerInterface $entityManager,

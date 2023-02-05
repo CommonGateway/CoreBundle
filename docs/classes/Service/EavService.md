@@ -56,6 +56,7 @@ Checks an atribute to see if a schema for its reference has becomme available.
 **Parameters**
 
 * `(\Attribute) $attribute`
+: The Attribute  
 
 **Return Values**
 
@@ -82,6 +83,7 @@ Checks an entity to see if there are anny atributtes waiting for it.
 **Parameters**
 
 * `(\Entity) $entity`
+: The Entity  
 
 **Return Values**
 

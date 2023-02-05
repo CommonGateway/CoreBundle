@@ -35,8 +35,8 @@ class MappingService
     /**
      * Setting up the base class with required services.
      *
-     * @param Environment      $twig The twig environment
-     * @param SessionInterface $session The session interface
+     * @param Environment      $twig          The twig environment
+     * @param SessionInterface $session       The session interface
      * @param LoggerInterface  $mappingLogger The logger
      */
     public function __construct(
