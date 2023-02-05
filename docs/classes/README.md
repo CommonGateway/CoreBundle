@@ -7,4 +7,5 @@
 * [Service\EavService](Service/EavService.md) 
 * [Service\FileService](Service/FileService.md) 
 * [Service\InstallationService](Service/InstallationService.md) 
+* [Service\MappingService](Service/MappingService.md) 
 * [Service\RequestService](Service/RequestService.md) 
