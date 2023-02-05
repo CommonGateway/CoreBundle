@@ -256,8 +256,8 @@ class InstallationService
     /**
      * Performs installation actions on a common Gataway bundle.
      *
-     * @param string       $bundle The bundle name that you want to install
-     * @param array        $config Optional configuration
+     * @param string $bundle The bundle name that you want to install
+     * @param array  $config Optional configuration
      *
      * @return int
      */
@@ -428,11 +428,11 @@ class InstallationService
      */
     public function update(string $bundle, array $config = [])
     {
-
-        $this->logger->debug('Trying to update: '.$bundle, ['bundle' => $bundle ]);
+        $this->logger->debug('Trying to update: '.$bundle, ['bundle' => $bundle]);
 
         return Command::SUCCESS;
     }
+
     /**
      * @param string $bundle The bundle that you want to uninstall (delete))
      * @param array  $config Optional configuration
@@ -441,14 +441,14 @@ class InstallationService
      */
     public function uninstall(string $bundle, string $data)
     {
-
-        $this->logger->debug('Trying to uninstall: '.$bundle, ['bundle' => $bundle ]);
+        $this->logger->debug('Trying to uninstall: '.$bundle, ['bundle' => $bundle]);
 
         return Command::SUCCESS;
     }
 
     /**
      * @param $file
+     *
      * @return false|void
      */
     public function handleAction($file)
@@ -485,6 +485,7 @@ class InstallationService
 
     /**
      * @param $file
+     *
      * @return false|void
      */
     public function handleMapping($file)
@@ -520,6 +521,7 @@ class InstallationService
 
     /**
      * @param $file
+     *
      * @return false|void
      */
     public function handleSchema($file)
@@ -604,6 +606,7 @@ class InstallationService
 
     /**
      * @param $file
+     *
      * @return false|void
      */
     public function handleData($file)
@@ -653,6 +656,7 @@ class InstallationService
 
     /**
      * @param $file
+     *
      * @return false
      */
     public function handleInstaller($file)
