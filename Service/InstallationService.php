@@ -34,7 +34,7 @@ class InstallationService
     private SymfonyStyle $io;
 
     /**
-     * Holds the symfony container interface
+     * Holds the symfony container interface.
      *
      * @var
      */
@@ -437,7 +437,6 @@ class InstallationService
                 '',
             ]);
         }
-
 
         return Command::SUCCESS;
     }

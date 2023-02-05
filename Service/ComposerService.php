@@ -3,7 +3,6 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use function PHPUnit\Framework\throwException;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
@@ -295,7 +294,6 @@ class ComposerService
      */
     public function getLockFile(): array
     {
-
         if (!$plugins = @file_get_contents('../composer.lock')) {
             if (!$plugins = @file_get_contents('composer.lock')) {
                 return [];

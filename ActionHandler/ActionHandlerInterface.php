@@ -4,7 +4,6 @@ namespace CommonGateway\CoreBundle\ActionHandler;
 
 interface ActionHandlerInterface
 {
-
     /*
      * All action handles should be able to return there configuration requirements and options as a (json-schema)[https://json-schema.org/understanding-json-schema/reference/object.html] object
      */
