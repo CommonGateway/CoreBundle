@@ -22,7 +22,7 @@ class FileService
 
     /**
      * @param string $baseFileName The name of the file to write
-     * @param string $contents The content to wrtie into het file
+     * @param string $contents     The content to wrtie into het file
      *
      * @return string
      */
@@ -36,6 +36,7 @@ class FileService
 
     /**
      * @param $filename The name of the file to remove
+     *
      * @return void
      */
     public function removeFile($filename): void
