@@ -12,7 +12,7 @@ This service provides a guzzle wrapper to work with sources in the common gatewa
 
 | Name | Description |
 |------|-------------|
-|[__construct](#cacheservice__construct)||
+|[__construct](#cacheservice__construct)|Setting up the base class with required services.|
 |[cacheEndpoint](#cacheservicecacheendpoint)|Put a single endpoint into the cache.|
 |[cacheObject](#cacheservicecacheobject)|Put a single object into the cache.|
 |[cacheShema](#cacheservicecacheshema)|Put a single schema into the cache.|
@@ -37,16 +37,20 @@ This service provides a guzzle wrapper to work with sources in the common gatewa
 **Description**
 
 ```php
- __construct (void)
+public __construct (\EntityManagerInterface $entityManager, \CacheInterface $cache, \ParameterBagInterface $parameters, \SerializerInterface $serializer, \LoggerInterface $cacheLogger)
 ```
 
- 
+Setting up the base class with required services. 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(\EntityManagerInterface) $entityManager`
+* `(\CacheInterface) $cache`
+* `(\ParameterBagInterface) $parameters`
+* `(\SerializerInterface) $serializer`
+* `(\LoggerInterface) $cacheLogger`
 
 **Return Values**
 
