@@ -1,7 +1,5 @@
 <?php
 
-// src/Subscriber/DatabaseActivitySubscriber.php
-
 namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Entity\Entity;
@@ -25,10 +23,29 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
  */
 class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
 {
+    /**
+     * @var CacheService
+     */
     private CacheService $cacheService;
+
+    /**
+     * @var EntityManagerInterface
+     */
     private EntityManagerInterface $entityManager;
+
+    /**
+     * @var SessionInterface
+     */
     private SessionInterface $session;
+
+    /**
+     * @var EventDispatcherInterface
+     */
     private EventDispatcherInterface $eventDispatcher;
+
+    /**
+     * @var Logger
+     */
     private Logger $logger;
 
     /**
@@ -50,10 +67,11 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         $this->session = $session;
         $this->eventDispatcher = $eventDispatcher;
         $this->logger = new Logger('object');
-    }
+    }//end __construct()
 
-    // this method can only return the event names; you cannot define a
-    // custom method name to execute when each event triggers
+    /**
+     * @return array
+     */
     public function getSubscribedEvents(): array
     {
         return [

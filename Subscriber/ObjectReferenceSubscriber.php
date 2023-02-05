@@ -1,7 +1,5 @@
 <?php
 
-// src/Subscriber/DatabaseActivitySubscriber.php
-
 namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Entity\Attribute;
@@ -14,19 +12,31 @@ use Doctrine\Persistence\Event\LifecycleEventArgs;
 
 class ObjectReferenceSubscriber implements EventSubscriberInterface
 {
+    /**
+     * @var EavService
+     */
     private EavService $eavService;
+
+    /**
+     * @var EntityManagerInterface
+     */
     private EntityManagerInterface $entityManager;
 
+    /**
+     * @param EntityManagerInterface $entityManager
+     * @param EavService $eavService
+     */
     public function __construct(
         EntityManagerInterface $entityManager,
         EavService $eavService
     ) {
         $this->entityManager = $entityManager;
         $this->eavService = $eavService;
-    }
+    }//end __construct()
 
-    // this method can only return the event names; you cannot define a
-    // custom method name to execute when each event triggers
+    /**
+     * @return array
+     */
     public function getSubscribedEvents(): array
     {
         return [
@@ -78,6 +88,10 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
         }
     }
 
+    /**
+     * @param LifecycleEventArgs $args
+     * @return void
+     */
     public function preUpdate(LifecycleEventArgs $args): void
     {
         $this->prePersist($args);

@@ -1,7 +1,5 @@
 <?php
 
-// src/Subscriber/DatabaseActivitySubscriber.php
-
 namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Entity\Endpoint;
@@ -16,10 +14,26 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class CacheDatabaseSubscriber implements EventSubscriberInterface
 {
+    /**
+     * @var CacheService
+     */
     private CacheService $cacheService;
+
+    /**
+     * @var EntityManagerInterface
+     */
     private EntityManagerInterface $entityManager;
+
+    /**
+     * @var SessionInterface
+     */
     private SessionInterface $session;
 
+    /**
+     * @param CacheService $cacheService
+     * @param EntityManagerInterface $entityManager
+     * @param SessionInterface $session
+     */
     public function __construct(
         CacheService $cacheService,
         EntityManagerInterface $entityManager,
@@ -28,10 +42,11 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         $this->cacheService = $cacheService;
         $this->entityManager = $entityManager;
         $this->session = $session;
-    }
+    }//end __construct()
 
-    // this method can only return the event names; you cannot define a
-    // custom method name to execute when each event triggers
+    /**
+     * @return array
+     */
     public function getSubscribedEvents(): array
     {
         return [
@@ -41,6 +56,10 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @param LifecycleEventArgs $args
+     * @return void
+     */
     public function postUpdate(LifecycleEventArgs $args): void
     {
         $this->postPersist($args);
@@ -74,11 +93,19 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         }
     }
 
+    /**
+     * @param LifecycleEventArgs $args
+     * @return void
+     */
     public function preUpdate(LifecycleEventArgs $args): void
     {
         $this->prePersist($args);
     }
 
+    /**
+     * @param LifecycleEventArgs $args
+     * @return void
+     */
     public function prePersist(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
