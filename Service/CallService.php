@@ -61,7 +61,12 @@ class CallService
      * @param EntityManagerInterface $entityManager
      * @param FileService            $fileService
      */
-    public function __construct(AuthenticationService $authenticationService, EntityManagerInterface $entityManager, FileService $fileService)
+    public function __construct(
+        AuthenticationService $authenticationService,
+        EntityManagerInterface $entityManager,
+        FileService $fileService,
+        LoggerInterface $callLogger
+    )
     {
         $this->authenticationService = $authenticationService;
         $this->client = new Client([]);

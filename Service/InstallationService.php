@@ -51,17 +51,26 @@ class InstallationService
      */
     private CacheService $cacheService;
 
+    /**
+     * @param ComposerService $composerService
+     * @param EntityManagerInterface $em
+     * @param Kernel $kernel
+     * @param CacheService $cacheService
+     * @param LoggerInterface $pluginLogger
+     */
     public function __construct(
         ComposerService $composerService,
         EntityManagerInterface $em,
         Kernel $kernel,
-        CacheService $cacheService
+        CacheService $cacheService,
+        LoggerInterface $pluginLogger
+
     ) {
         $this->composerService = $composerService;
         $this->em = $em;
         $this->container = $kernel->getContainer();
         $this->collection = null;
-        $this->logger = new Logger('installation');
+        $this->logger = $pluginLogger;
         $this->cacheService = $cacheService;
     }//end __construct()
 

@@ -30,10 +30,12 @@ class EavService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        CacheService $cacheService
+        CacheService $cacheService,
+        LoggerInterface $objectLogger
     ) {
         $this->entityManager = $entityManager;
         $this->cacheService = $cacheService;
+        $this->logger = $objectLogger;
     }//end __construct()
 
     /**

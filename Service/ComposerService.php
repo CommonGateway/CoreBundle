@@ -15,6 +15,17 @@ class ComposerService
      */
     private LoggerInterface $logger;
 
+    /**
+     * @param LoggerInterface $pluginLogger
+     */
+    public function __construct(
+        LoggerInterface $pluginLogger
+
+    ) {
+        $this->logger = $pluginLogger;
+
+    }//end __construct()
+
     private function arrayEnum(array $array, array $enum): bool
     {
         // Lets see if the values in the array arry pressent in the enum

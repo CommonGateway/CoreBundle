@@ -12,6 +12,16 @@ class FileService
      */
     private LoggerInterface $logger;
 
+    /**
+     * @param LoggerInterface $fileLogger
+     */
+    public function __construct(
+        LoggerInterface $fileLogger
+
+    ) {
+        $this->logger = $fileLogger;
+    }//end __construct()
+
     public function writeFile(string $baseFileName, string $contents): string
     {
         $stamp = microtime().getmypid();

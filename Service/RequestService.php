@@ -74,9 +74,9 @@ class RequestService
     private ObjectEntityService $objectEntityService;
 
     /**
-     * @var LogService
+     * @var LoggerInterface
      */
-    private LogService $logService;
+    private LoggerInterface $logger;
 
     /**
      * @var CallService
@@ -103,7 +103,7 @@ class RequestService
      * @param CacheService             $cacheService
      * @param ResponseService          $responseService
      * @param ObjectEntityService      $objectEntityService
-     * @param LogService               $logService
+     * @param LoggerInterface          $requestLogger
      * @param CallService              $callService
      * @param Security                 $security
      * @param EventDispatcherInterface $eventDispatcher
@@ -114,7 +114,7 @@ class RequestService
         CacheService $cacheService,
         ResponseService $responseService,
         ObjectEntityService $objectEntityService,
-        LogService $logService,
+        LoggerInterface $requestLogger,
         CallService $callService,
         Security $security,
         EventDispatcherInterface $eventDispatcher,
@@ -124,7 +124,7 @@ class RequestService
         $this->cacheService = $cacheService;
         $this->responseService = $responseService;
         $this->objectEntityService = $objectEntityService;
-        $this->logService = $logService;
+        $this->logger = $requestLogger;
         $this->callService = $callService;
         $this->security = $security;
         $this->eventDispatcher = $eventDispatcher;
@@ -501,7 +501,7 @@ class RequestService
                     $session->set('object', $this->id);
 
                     // todo: This log is needed so we know an user has 'read' this object
-                    $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) ? json_encode($this->content) : $this->content);
+                    // $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) ? json_encode($this->content) : $this->content);
                 } else {
                     //$this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
                     $result = $this->cacheService->searchObjects(null, $filters, $allowedSchemas['id']);
