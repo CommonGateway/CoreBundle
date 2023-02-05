@@ -13,7 +13,7 @@ More information on how to write your own mappings can be found at [/docs/mappin
 | Name | Description |
 |------|-------------|
 |[__construct](#mappingservice__construct)|Setting up the base class with required services.|
-|[cast](#mappingservicecast)|Cast values to a specific type|
+|[cast](#mappingservicecast)|Cast values to a specific type.|
 |[mapping](#mappingservicemapping)|Maps (transforms) an array (input) to a different array (output).|
 
 
@@ -53,7 +53,7 @@ Setting up the base class with required services.
 public cast (\Mapping $mappingObject, \Dot $dotArray)
 ```
 
-Cast values to a specific type 
+Cast values to a specific type. 
 
  
 
