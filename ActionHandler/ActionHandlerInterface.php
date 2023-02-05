@@ -19,6 +19,7 @@ interface ActionHandlerInterface
      *
      * @param array $data The data passed to the runnen
      * @param array $configuration The configuration of the used action
+     *
      * @return mixed Any valid result
      */
     public function run(array $data, array $configuration);

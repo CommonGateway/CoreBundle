@@ -70,11 +70,11 @@ class CacheService
     /**
      * Setting up the base class with required services.
      *
-     * @param EntityManagerInterface $entityManager
-     * @param CacheInterface         $cache
-     * @param ParameterBagInterface  $parameters
-     * @param SerializerInterface    $serializer
-     * @param LoggerInterface        $cacheLogger
+     * @param EntityManagerInterface $entityManager The EntityManagerInterface
+     * @param CacheInterface         $cache The CacheInterface
+     * @param ParameterBagInterface  $parameters The ParameterBagInterface
+     * @param SerializerInterface    $serializer The SerializerInterface
+     * @param LoggerInterface        $cacheLogger The LoggerInterface
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -90,13 +90,13 @@ class CacheService
         $this->logger = $cacheLogger;
         if ($this->parameters->get('cache_url', false) === true) {
             $this->client = new Client($this->parameters->get('cache_url'));
-        }//end __construct()
-    }
+        }
+    }//end __construct()
 
     /**
      * Set symfony style in order to output to the console.
      *
-     * @param SymfonyStyle $io
+     * @param SymfonyStyle $io SymfonyStyle
      *
      * @return self
      */
@@ -229,7 +229,7 @@ class CacheService
     /**
      * Put a single object into the cache.
      *
-     * @param ObjectEntity $objectEntity
+     * @param ObjectEntity $objectEntity ObjectEntity
      *
      * @return ObjectEntity
      */
@@ -282,7 +282,7 @@ class CacheService
     /**
      * Removes an object from the cache.
      *
-     * @param ObjectEntity $objectEntity
+     * @param ObjectEntity $objectEntity ObjectEntity
      *
      * @return void
      */
@@ -302,7 +302,7 @@ class CacheService
     /**
      * Get a single object from the cache.
      *
-     * @param string $id
+     * @param string $id The id of the object
      *
      * @return array|null
      */
@@ -405,7 +405,7 @@ class CacheService
     /**
      * Make sure we still support the old query params. By translating them to the new ones with _.
      *
-     * @param array $filter
+     * @param array $filter THe appliad filter
      *
      * @return void
      */

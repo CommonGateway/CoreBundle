@@ -21,7 +21,7 @@ class CacheCommand extends Command
     private $cacheService;
 
     /**
-     * @param CacheService $cacheService
+     * @param CacheService $cacheService The cache service
      */
     public function __construct(CacheService $cacheService)
     {

@@ -99,15 +99,15 @@ class RequestService
     private SerializerInterface $serializer;
 
     /**
-     * @param EntityManagerInterface   $entityManager
-     * @param CacheService             $cacheService
-     * @param ResponseService          $responseService
-     * @param ObjectEntityService      $objectEntityService
-     * @param LoggerInterface          $requestLogger
-     * @param CallService              $callService
-     * @param Security                 $security
-     * @param EventDispatcherInterface $eventDispatcher
-     * @param SerializerInterface      $serializer
+     * @param EntityManagerInterface   $entityManager The EntityManagerInterface
+     * @param CacheService             $cacheService The CacheService
+     * @param ResponseService          $responseService The ResponseService
+     * @param ObjectEntityService      $objectEntityService The ObjectEntityService
+     * @param LoggerInterface          $requestLogger The LoggerInterface
+     * @param CallService              $callService The CallService
+     * @param Security                 $security The SecurityInterface
+     * @param EventDispatcherInterface $eventDispatcher The EventDispatcherInterface
+     * @param SerializerInterface      $serializer The SerializerInterface
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -129,7 +129,7 @@ class RequestService
         $this->security = $security;
         $this->eventDispatcher = $eventDispatcher;
         $this->serializer = $serializer;
-    }
+    }//end __construct()
 
     /**
      * A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.
@@ -168,7 +168,7 @@ class RequestService
     /**
      * Get the ID from given parameters.
      *
-     * @param array $object
+     * @param array $object The object to get an id from
      *
      * @return string|false
      */
@@ -199,7 +199,7 @@ class RequestService
     /**
      * Get the schema from given parameters returns false if no schema could be established.
      *
-     * @param array $parameters
+     * @param array $parameters The parameters to get a schema from
      *
      * @return Entity|false
      */
@@ -828,7 +828,7 @@ class RequestService
     /**
      * Creating the responce object.
      *
-     * @param $data
+     * @param $data  
      *
      * @return \CommonGateway\CoreBundle\Service\Response
      */
