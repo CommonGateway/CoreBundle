@@ -14,6 +14,7 @@ use GuzzleHttp\Psr7\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
+use Psr\Log\LoggerInterface;
 
 /**
  * Service to call external sources.
@@ -48,6 +49,12 @@ class CallService
      * @var FileService
      */
     private FileService $fileService;
+
+    /**
+     * @var LoggerInterface
+     */
+    private LoggerInterface $logger;
+
 
     /**
      * @param AuthenticationService  $authenticationService

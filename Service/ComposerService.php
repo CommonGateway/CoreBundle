@@ -5,9 +5,16 @@ namespace CommonGateway\CoreBundle\Service;
 use function PHPUnit\Framework\throwException;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
+use Psr\Log\LoggerInterface;
 
 class ComposerService
 {
+
+    /**
+     * @var LoggerInterface
+     */
+    private LoggerInterface $logger;
+
     private function arrayEnum(array $array, array $enum): bool
     {
         // Lets see if the values in the array arry pressent in the enum

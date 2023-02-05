@@ -2,8 +2,16 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use Psr\Log\LoggerInterface;
+
 class FileService
 {
+
+    /**
+     * @var LoggerInterface
+     */
+    private LoggerInterface $logger;
+
     public function writeFile(string $baseFileName, string $contents): string
     {
         $stamp = microtime().getmypid();

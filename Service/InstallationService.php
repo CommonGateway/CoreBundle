@@ -10,11 +10,11 @@ use App\Entity\ObjectEntity;
 use App\Entity\Value;
 use App\Kernel;
 use Doctrine\ORM\EntityManagerInterface;
-use Monolog\Logger;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Psr\Log\LoggerInterface;
 
 class InstallationService
 {
@@ -41,9 +41,10 @@ class InstallationService
     private $container;
 
     /**
-     * @var Logger
+     * @var LoggerInterface
      */
-    private Logger $logger;
+    private LoggerInterface $logger;
+
 
     /**
      * @var CacheService

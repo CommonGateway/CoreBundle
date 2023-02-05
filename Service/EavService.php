@@ -5,6 +5,7 @@ namespace CommonGateway\CoreBundle\Service;
 use App\Entity\Attribute;
 use App\Entity\Entity;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 
 class EavService
 {
@@ -17,6 +18,12 @@ class EavService
      * @var CacheService
      */
     private CacheService $cacheService;
+
+    /**
+     * @var LoggerInterface
+     */
+    private LoggerInterface $logger;
+
 
     /**
      * @param EntityManagerInterface $entityManager
