@@ -2,7 +2,7 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
-use App\Entity\CallLog;
+//use App\Entity\CallLog;
 use App\Entity\Gateway as Source;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
@@ -95,7 +95,7 @@ class CallService
      *
      * @param array $headers Http headers
      *
-     * @return string
+     * @return array|null
      */
     private function removeEmptyHeaders(array $headers): ?array
     {
@@ -115,11 +115,12 @@ class CallService
     /**
      * Calls a source according to given configuration.
      *
-     * @param Source $source       The source to call
-     * @param string $endpoint     The endpoint on the source to call
-     * @param string $method       The method on which to call the source
-     * @param array  $config       The additional configuration to call the source
-     * @param bool   $asynchronous Whether or not to call the source asynchronously
+     * @param Source $source             The source to call
+     * @param string $endpoint           The endpoint on the source to call
+     * @param string $method             The method on which to call the source
+     * @param array  $config             The additional configuration to call the source
+     * @param bool   $asynchronous       Whether or not to call the source asynchronously
+     * @param bool   $createCertificates
      *
      * @return Response
      */
@@ -138,12 +139,12 @@ class CallService
             $config = array_merge_recursive($config, $source->getConfiguration());
         }
 
-        $log = new CallLog();
-        $log->setSource($source);
-        $log->setEndpoint($source->getLocation().$endpoint);
-        $log->setMethod($method);
-        $log->setConfig($config);
-        $log->setRequestBody($config['body'] ?? null);
+//        $log = new CallLog();
+//        $log->setSource($source);
+//        $log->setEndpoint($source->getLocation().$endpoint);
+//        $log->setMethod($method);
+//        $log->setConfig($config);
+//        $log->setRequestBody($config['body'] ?? null);
 
         // Set authenticion if needed
         $parsedUrl = parse_url($source->getLocation());
@@ -152,7 +153,7 @@ class CallService
         $createCertificates && $config = array_merge($config, $this->getCertificate($config));
         $config['headers']['host'] = $parsedUrl['host'];
         $config['headers'] = $this->removeEmptyHeaders($config['headers']);
-        $log->setRequestHeaders($config['headers'] ?? null);
+//        $log->setRequestHeaders($config['headers'] ?? null);
 
         $url = $source->getLocation().$endpoint;
 
@@ -164,38 +165,38 @@ class CallService
             } else {
                 $response = $this->client->requestAsync($method, $url, $config);
             }
-        } catch (ServerException|ClientException|RequestException|Exception $e) {
-            $stopTimer = microtime(true);
-            $log->setResponseStatus('');
-            if ($e->getResponse()) {
-                $log->setResponseStatusCode($e->getResponse()->getStatusCode());
-                $log->setResponseBody($e->getResponse()->getBody()->getContents());
-                $log->setResponseHeaders($e->getResponse()->getHeaders());
-            } else {
-                $log->setResponseStatusCode(0);
-                $log->setResponseBody($e->getMessage());
-            }
-            $log->setResponseTime($stopTimer - $startTimer);
-            $this->entityManager->persist($log);
-            $this->entityManager->flush();
-
-            throw $e;
+//        } catch (ServerException|ClientException|RequestException|Exception $e) {
+//            $stopTimer = microtime(true);
+//            $log->setResponseStatus('');
+//            if ($e->getResponse()) {
+//                $log->setResponseStatusCode($e->getResponse()->getStatusCode());
+//                $log->setResponseBody($e->getResponse()->getBody()->getContents());
+//                $log->setResponseHeaders($e->getResponse()->getHeaders());
+//            } else {
+//                $log->setResponseStatusCode(0);
+//                $log->setResponseBody($e->getMessage());
+//            }
+//            $log->setResponseTime($stopTimer - $startTimer);
+//            $this->entityManager->persist($log);
+//            $this->entityManager->flush();
+//
+//            throw $e;
         } catch (GuzzleException $e) {
             var_dump($e->getMessage());
         }
-        $stopTimer = microtime(true);
-
-        $responseClone = clone $response;
-
-        $log->setResponseHeaders($responseClone->getHeaders());
-        $log->setResponseStatus('');
-        $log->setResponseStatusCode($responseClone->getStatusCode());
-        // Disabled because you cannot getBody after passing it here
-        // $log->setResponseBody($responseClone->getBody()->getContents());
-        $log->setResponseBody('');
-        $log->setResponseTime($stopTimer - $startTimer);
-        $this->entityManager->persist($log);
-        $this->entityManager->flush();
+//        $stopTimer = microtime(true);
+//
+//        $responseClone = clone $response;
+//
+//        $log->setResponseHeaders($responseClone->getHeaders());
+//        $log->setResponseStatus('');
+//        $log->setResponseStatusCode($responseClone->getStatusCode());
+//        // Disabled because you cannot getBody after passing it here
+//        // $log->setResponseBody($responseClone->getBody()->getContents());
+//        $log->setResponseBody('');
+//        $log->setResponseTime($stopTimer - $startTimer);
+//        $this->entityManager->persist($log);
+//        $this->entityManager->flush();
 
         $createCertificates && $this->removeFiles($config);
 
