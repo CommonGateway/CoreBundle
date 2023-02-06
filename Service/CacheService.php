@@ -108,14 +108,14 @@ class CacheService
     {
         $this->logger->debut('Connecting to'.$this->parameters->get('cache_url'));
 
-        // Backwards compatablity
+        // Backwards compatablity.
         if (!isset($this->client)) {
             $this->logger->error('No cache client found, halting warmup');
 
             return Command::FAILURE;
         }
 
-        // Objects
+        // Objects.
         $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
         $this->logger->debut('Found '.count($objectEntities).' objects\'s');
 
@@ -126,7 +126,7 @@ class CacheService
             // todo: remove from session
         }
 
-        // Schemas
+        // Schemas.
         $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
         $this->logger->debut('Found '.count($schemas).' schema\'s');
 
@@ -136,7 +136,7 @@ class CacheService
             // todo: remove from session
         }
 
-        // Endpoints
+        // Endpoints.
         $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
         $this->logger->debut('Found '.count($endpoints).' endpoints\'s');
 
@@ -147,16 +147,15 @@ class CacheService
         }
 
         // Created indexes
-        $this->client->objects->json->createIndex(['$**'=>'text']);
-        $this->client->schemas->json->createIndex(['$**'=>'text']);
-        $this->client->endpoints->json->createIndex(['$**'=>'text']);
+        $this->client->objects->json->createIndex(['$**' => 'text']);
+        $this->client->schemas->json->createIndex(['$**' => 'text']);
+        $this->client->endpoints->json->createIndex(['$**' => 'text']);
 
         $this->logger->debug('Removing deleted endpoints');
         $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
 
         $this->logger->debug('Removing deleted objects');
         $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
-
 
         $this->logger->info('Finished cache warmup');
 
@@ -174,7 +173,7 @@ class CacheService
     {
         $endpoints = $collection->find()->toArray();
         foreach ($endpoints as $endpoint) {
-            if (!$this->entityManager->find($type, $endpoint['id'])) {
+            if ($this->entityManager->find($type, $endpoint['id']) === false) {
                 $this->logger->info("removing {$endpoint['id']} from cache",["type" => $type, "id" => $endpoint['id']]);
                 $collection->findOneAndDelete(['id' => $endpoint['id']]);
             }
@@ -191,13 +190,13 @@ class CacheService
      */
     public function cacheObject(ObjectEntity $objectEntity): ObjectEntity
     {
-        // For when we can't generate a schema for an ObjectEntity (for example setting an id on ObjectEntity created with testData)
+        // For when we can't generate a schema for an ObjectEntity (for example setting an id on ObjectEntity created with testData).
         if (
             $objectEntity->getEntity() === false) {
             return $objectEntity;
         }
 
-        // Backwards compatablity
+        // Backwards compatablity.
         if (isset($this->client) === false) {
             return $objectEntity;
         }
@@ -214,7 +213,7 @@ class CacheService
 
         $collection = $this->client->objects->json;
 
-        // Lets not cash the entire schema
+        // Lets not cash the entire schema.
         $array = $objectEntity->toArray(['embedded' => true]);
 
         $id = $objectEntity->getId()->toString();
@@ -222,10 +221,10 @@ class CacheService
         $array['id'] = $id;
 
         if ($collection->findOneAndReplace(
-            ['_id'=>$id],
+            ['_id' => $id],
             $array,
-            ['upsert'=>true]
-        )) {
+            ['upsert' => true]
+        ) === true) {
             $this->logger->debug('Updated object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache');
         } else {
             $this->logger->debug('Wrote object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache');
@@ -243,8 +242,8 @@ class CacheService
      */
     public function removeObject(ObjectEntity $object): void
     {
-        // Backwards compatablity
-        if (!isset($this->client)) {
+        // Backwards compatablity.
+        if (isset($this->client) === false) {
             return;
         }
 
@@ -265,21 +264,21 @@ class CacheService
      */
     public function getObject(string $id)
     {
-        // Backwards compatablity
-        if (!isset($this->client)) {
+        // Backwards compatablity.
+        if (isset($this->client) === false) {
             return false;
         }
 
         $collection = $this->client->objects->json;
 
         // Check if object is in the cache ????
-        if ($object = $collection->findOne(['_id'=>$id])) {
+        if ($object = $collection->findOne(['_id' => $id]) === true) {
             $this->logger->debug('Retrieved object from cache',["object" => $id]);
             return $object;
         }
 
-        // Fall back tot the entity manager
-        if ($object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id'=>$id])) {
+        // Fall back tot the entity manager.
+        if ($object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]) === true) {
             $this->logger->debug('Could not retrieve object from cache',["object" => $id]);
             return $this->cacheObject($object)->toArray(['embedded' => true]);
         }
@@ -302,17 +301,17 @@ class CacheService
      */
     public function searchObjects(string $search = null, array $filter = [], array $entities = []): ?array
     {
-        // Backwards compatablity
-        if (!isset($this->client)) {
+        // Backwards compatablity.
+        if (isset($this->client) === false) {
             return [];
         }
 
         $collection = $this->client->objects->json;
 
-        // Backwards compatibility
+        // Backwards compatibility.
         $this->queryBackwardsCompatibility($filter);
 
-        // Make sure we also have all filters stored in $completeFilter before unsetting
+        // Make sure we also have all filters stored in $completeFilter before unsetting.
         $completeFilter = $filter;
         unset($filter['_start'], $filter['_offset'], $filter['_limit'], $filter['_page'],
             $filter['_extend'], $filter['_search'], $filter['_order'], $filter['_fields']);
@@ -324,7 +323,7 @@ class CacheService
 
         // Search for the correct entity / entities
         // todo: make this if into a function?
-        if (!empty($entities)) {
+        if (empty($entities) === true) {
             foreach ($entities as $entity) {
                 // todo: disable this for now, put back later!
 //                $orderError = $this->handleOrderCheck($entity, $completeFilter['_order'] ?? null);
@@ -402,7 +401,7 @@ class CacheService
         }
 
         // Handle filters that expect $value to be an array
-        if ($this->handleFilterArray($key, $value)) {
+        if ($this->handleFilterArray($key, $value) === true) {
             return;
         }
 
@@ -443,7 +442,7 @@ class CacheService
     private function handleFilterArray($key, &$value): bool
     {
         // Lets check for the methods like in
-        if (is_array($value)) {
+        if (is_array($value) === true) {
             // int_compare
             if (array_key_exists('int_compare', $value) && is_array($value['int_compare'])) {
                 $value = array_map('intval', $value['int_compare']);
@@ -570,7 +569,7 @@ class CacheService
      */
     private function handleOrderCheck(Entity $entity, $order): ?string
     {
-        if (empty($order)) {
+        if (empty($order) === true) {
             return null;
         }
 
@@ -648,7 +647,7 @@ class CacheService
             return;
         }
 
-        // Normal search on every property with type text (includes strings)
+        // Normal search on every property with type text (includes strings).
         if (is_string($search)) {
             $filter['$text']
                 = [
@@ -656,7 +655,7 @@ class CacheService
                     '$caseSensitive'=> false,
                 ];
         }
-        // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value
+        // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value.
         elseif (is_array($search)) {
             $searchRegex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $search[array_key_first($search)]);
             if (empty($searchRegex)) {
@@ -713,7 +712,7 @@ class CacheService
         $limit = isset($filter['_limit']) && is_numeric($filter['_limit']) ? (int) $filter['_limit'] : 30;
         $page = isset($filter['_page']) && is_numeric($filter['_page']) ? (int) $filter['_page'] : 1;
 
-        // Lets build the page & pagination
+        // Lets build the page & pagination.
         if ($start > 1) {
             $offset = $start - 1;
         } else {
@@ -741,19 +740,18 @@ class CacheService
      */
     public function cacheEndpoint(Endpoint $endpoint): Endpoint
     {
-        // Backwards compatablity
-        if (!isset($this->client)) {
+        // Backwards compatablity.
+        if (isset($this->client) === false) {
             return $endpoint;
         }
 
-        if (isset($this->io)) {
-            $this->io->writeln('Start caching endpoint '.$endpoint->getId()->toString().' with name: '.$endpoint->getName());
-        }
+        $this->logger->debug('Start caching endpoint '.$endpoint->getId()->toString().' with name: '.$endpoint->getName());
+
         $updatedEndpoint = $this->entityManager->getRepository('App:Endpoint')->find($endpoint->getId());
         if ($updatedEndpoint instanceof Endpoint) {
             $endpoint = $updatedEndpoint;
-        } elseif (isset($this->io)) {
-            $this->io->writeln('Could not find an Endpoint with id: '.$endpoint->getId()->toString());
+        } else {
+            $this->logger->debug('Could not find an Endpoint with id: '.$endpoint->getId()->toString());
         }
 
         $collection = $this->client->endpoints->json;
@@ -765,9 +763,9 @@ class CacheService
             $endpointArray,
             ['upsert'=>true]
         )) {
-            (isset($this->io) ? $this->io->writeln('Updated endpoint '.$endpoint->getId()->toString().' to cache') : '');
+            $this->logger->debug('Updated endpoint '.$endpoint->getId()->toString().' to cache');
         } else {
-            (isset($this->io) ? $this->io->writeln('Wrote object '.$endpoint->getId()->toString().' to cache') : '');
+            $this->logger->debug('Wrote object '.$endpoint->getId()->toString().' to cache');
         }
 
         return $endpoint;
@@ -882,9 +880,7 @@ class CacheService
             $entity->toSchema(null),
             ['upsert'=>true]
         )) {
-            $this->io->writeln('Updated object '.$entity->getId().' to cache');
         } else {
-            $this->io->writeln('Wrote object '.$entity->getId().' to cache');
         }
         */
 
