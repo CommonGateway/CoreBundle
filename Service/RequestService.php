@@ -59,9 +59,9 @@ class RequestService
     /**
      * @var
      */
-    private $schema; // todo: cast to Entity|Boolean in php 8
+    private $schema; // Todo: cast to Entity|Boolean in php 8.
 
-    // todo: we might want to move or rewrite code instead of using these services here:
+    // Todo: we might want to move or rewrite code instead of using these services here.
 
     /**
      * @var ResponseService
@@ -152,7 +152,7 @@ class RequestService
                 $nv = explode('=', $pair);
                 $name = urldecode($nv[0]);
                 $value = '';
-                if (count($nv) == 2) {
+                if (count($nv) === 2) {
                     $value = urldecode($nv[1]);
                 }
 
@@ -163,7 +163,7 @@ class RequestService
         }
 
         return [];
-    }
+    }// end realRequestQueryAll()
 
     /**
      * Get the ID from given parameters.
@@ -172,24 +172,24 @@ class RequestService
      *
      * @return string|false
      */
-    public function getId(array $object)
+    public function getId()
     {
         // Try to grap an id
-        if (isset($this->data['path']['{id}'])) {
+        if (isset($this->data['path']['{id}'])  === true) {
             return $this->data['path']['{id}'];
-        } elseif (isset($this->data['path']['[id]'])) {
+        } elseif (isset($this->data['path']['[id]'])  === true) {
             return $this->data['path']['[id]'];
-        } elseif (isset($this->data['query']['id'])) {
+        } elseif (isset($this->data['query']['id']) === true) {
             return $this->data['query']['id'];
-        } elseif (isset($this->data['path']['id'])) {
+        } elseif (isset($this->data['path']['id']) === true) {
             return$this->data['path']['id'];
-        } elseif (isset($this->data['path']['{uuid}'])) {
+        } elseif (isset($this->data['path']['{uuid}']) === true) {
             return $this->data['path']['{uuid}'];
-        } elseif (isset($this->data['query']['uuid'])) {
+        } elseif (isset($this->data['query']['uuid']) === true) {
             return$this->data['query']['uuid'];
-        } elseif (isset($this->content['id'])) { // the id might also be passed trough the object itself
+        } elseif (isset($this->content['id'])  === true) { // The id might also be passed trough the object itself
             return $this->content['id'];
-        } elseif (isset($this->content['uuid'])) {
+        } elseif (isset($this->content['uuid'])  === true) {
             return $this->content['uuid'];
         }
 
@@ -206,24 +206,26 @@ class RequestService
     public function getSchema(array $parameters)
     {
 
-        // If we have an object this is easy
-        if (isset($this->object)) {
+        // If we have an object this is easy.
+        if (isset($this->object) === true) {
             return $this->object->getEntity();
         }
 
-        // Pull the id or reference from the content
-        if (isset($this->content['_self']['schema']['id'])) {
+        // Pull the id or reference from the content.
+        if (isset($this->content['_self']['schema']['id']) === true) {
             $id = $this->content['_self']['schema']['id'];
         }
-        if (isset($this->content['_self']['schema']['ref'])) {
+
+        if (isset($this->content['_self']['schema']['ref']) === true) {
             $reference = $this->content['_self']['schema']['ref'];
         }
-        if (isset($this->content['_self']['schema']['reference'])) {
+
+        if (isset($this->content['_self']['schema']['reference']) === true) {
             $reference = $this->content['_self']['schema']['reference'];
         }
 
         // In normal securmtances we expect a all to com form an endpoint so...
-        if (isset($parameters['endpoint'])) {
+        if (isset($parameters['endpoint']) === true) {
             // The endpoint contains exactly one schema
             if (count($this->data['endpoint']->getEntities()) == 1) {
                 return $this->data['endpoint']->getEntities()->first();
@@ -241,17 +243,17 @@ class RequestService
 
                 return $this->data['endpoint']->getEntities()->matching($criteria)->first();
             }
-            // The  endpoint contains no schema's so there is no limit we dont need to do anything
+            // The  endpoint contains no schema's so there is no limit we don't need to do anything.
         }
 
-        // We only end up here if there is no endpoint or an unlimited endpoint
-        if (isset($id)) {
+        // We only end up here if there is no endpoint or an unlimited endpoint.
+        if (isset($id) === true) {
             return $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $id]);
         }
-        if (isset($reference)) {
+        if (isset($reference) === true) {
             return $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference]);
         }
-        // There is no way to establish an schema so
+        // There is no way to establish an schema so.
         else {
             return false;
         }
