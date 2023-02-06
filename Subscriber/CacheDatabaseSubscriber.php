@@ -66,19 +66,19 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param LifecycleEventArgs $args
+     * @param LifecycleEventArgs $args LifecycleEventArgs
      *
      * @return void
      */
     public function postUpdate(LifecycleEventArgs $args): void
     {
         $this->postPersist($args);
-    }
+    }//end postUpdate()
 
     /**
      * Updates the chache whenever an object is put into the database.
      *
-     * @param LifecycleEventArgs $args
+     * @param LifecycleEventArgs $args LifecycleEventArgs
      *
      * @return void
      */
@@ -86,35 +86,35 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
     {
         $object = $args->getObject();
         // if this subscriber only applies to certain entity types,
-        if ($object instanceof ObjectEntity) {
+        if ($object instanceof ObjectEntity === true) {
             $this->cacheService->cacheObject($object);
 
             return;
         }
-        if ($object instanceof Entity) {
+        if ($object instanceof Entity === true) {
             $this->cacheService->cacheShema($object);
 
             return;
         }
-        if ($object instanceof Endpoint) {
+        if ($object instanceof Endpoint === true) {
             $this->cacheService->cacheEndpoint($object);
 
             return;
         }
-    }
+    }//end  postPersist()
 
     /**
-     * @param LifecycleEventArgs $args
+     * @param LifecycleEventArgs $args LifecycleEventArgs
      *
      * @return void
      */
     public function preUpdate(LifecycleEventArgs $args): void
     {
         $this->prePersist($args);
-    }
+    }//end preUpdate()
 
     /**
-     * @param LifecycleEventArgs $args
+     * @param LifecycleEventArgs $args LifecycleEventArgs
      *
      * @return void
      */
@@ -122,15 +122,15 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
     {
         $object = $args->getObject();
 
-        if ($object instanceof ObjectEntity) {
+        if ($object instanceof ObjectEntity === true) {
             $this->updateParents($object);
         }
-    }
+    }//end prePersist()
 
     /**
      * Remove objects from the cache afther they are removed from the database.
      *
-     * @param LifecycleEventArgs $args
+     * @param LifecycleEventArgs $args LifecycleEventArgs
      *
      * @return void
      */
@@ -139,20 +139,20 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         $object = $args->getObject();
 
         // if this subscriber only applies to certain entity types,
-        if ($object instanceof ObjectEntity) {
+        if ($object instanceof ObjectEntity === true) {
             $this->cacheService->removeObject($object);
 
             return;
         }
-        if ($object instanceof Entity) {
+        if ($object instanceof Entity === true) {
             $this->cacheService->removeSchema($object);
 
             return;
         }
-        if ($object instanceof Endpoint) {
+        if ($object instanceof Endpoint === true) {
             $this->cacheService->removeEndpoint($object);
 
             return;
         }
-    }
+    }//end preRemove()
 }
