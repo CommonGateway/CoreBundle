@@ -10,7 +10,7 @@
 		"symfony"
 	],
 	"homepage" : "https://commongatway.nl",
-	"license" : "MIT",
+	"license" : "EUPL-1.2",
 	"authors" : [{
 			"name" : "Ruben van der Linde",
 			"email" : "ruben@conduction.nl"
