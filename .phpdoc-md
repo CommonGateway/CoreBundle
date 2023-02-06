@@ -4,16 +4,6 @@ return (object)[
     'destDirectory' => 'docs/classes',
     'format' => 'github',
     'classes' => [
-        // Services
-        '\CommonGateway\CoreBundle\Service\AuthenticationService',
-        '\CommonGateway\CoreBundle\Service\CacheService',
-        '\CommonGateway\CoreBundle\Service\CallService',
-        '\CommonGateway\CoreBundle\Service\ComposerService',
-        '\CommonGateway\CoreBundle\Service\EavService',
-        '\CommonGateway\CoreBundle\Service\FileService',
-        '\CommonGateway\CoreBundle\Service\InstallationService',
-        '\CommonGateway\CoreBundle\Service\MappingService',
-        '\CommonGateway\CoreBundle\Service\RequestService',
         // Commmands
         '\CommonGateway\CoreBundle\Command\CacheCleanupCommand',
         '\CommonGateway\CoreBundle\Command\CacheClearCommand',
@@ -26,6 +16,23 @@ return (object)[
         '\CommonGateway\CoreBundle\Command\UpgradeCommand',
         '\CommonGateway\CoreBundle\Command\ValidateObjectCommand',
         '\CommonGateway\CoreBundle\Command\ValidateSchemaCommand',
-        '\CommonGateway\CoreBundle\Command\ValidateValueCommand'
+        '\CommonGateway\CoreBundle\Command\ValidateValueCommand',
+        // Controllers
+        '\CommonGateway\CoreBundle\Controller\PluginController',
+        // Entities
+        // Services
+        '\CommonGateway\CoreBundle\Service\AuthenticationService',
+        '\CommonGateway\CoreBundle\Service\CacheService',
+        '\CommonGateway\CoreBundle\Service\CallService',
+        '\CommonGateway\CoreBundle\Service\ComposerService',
+        '\CommonGateway\CoreBundle\Service\EavService',
+        '\CommonGateway\CoreBundle\Service\FileService',
+        '\CommonGateway\CoreBundle\Service\InstallationService',
+        '\CommonGateway\CoreBundle\Service\MappingService',
+        '\CommonGateway\CoreBundle\Service\RequestService',
+        // Subscribers,
+        \CommonGateway\CoreBundle\Subscriber\CacheDatabaseSubscriber',
+        \CommonGateway\CoreBundle\Subscriber\DoctrineToGatewayEventSubscriber',
+        \CommonGateway\CoreBundle\Subscriber\ObjectReferenceSubscriber'
     ],
 ];
