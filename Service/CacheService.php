@@ -90,6 +90,8 @@ class CacheService
 
     /**
      * Remove non-exisitng items from the cashe.
+     *
+     * @return void
      */
     public function cleanup()
     {
@@ -99,17 +101,19 @@ class CacheService
         $objects = $collection->find($filter)->toArray();
 
         $this->logger->info('Removed '.count($objects).' object from the cache');
-    }
+    }// end cleanup()
 
     /**
      * Throws all available objects into the cache.
+     *
+     * @return void
      */
     public function warmup()
     {
         $this->logger->debut('Connecting to'.$this->parameters->get('cache_url'));
 
         // Backwards compatablity.
-        if (!isset($this->client)) {
+        if (isset($this->client) === false) {
             $this->logger->error('No cache client found, halting warmup');
 
             return Command::FAILURE;
@@ -119,11 +123,10 @@ class CacheService
         $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
         $this->logger->debut('Found '.count($objectEntities).' objects\'s');
 
-
         foreach ($objectEntities as $objectEntity) {
-            // todo: Set to session
+            // Todo: Set to session.
             $this->cacheObject($objectEntity);
-            // todo: remove from session
+            // Todo: remove from session.
         }
 
         // Schemas.
@@ -131,9 +134,9 @@ class CacheService
         $this->logger->debut('Found '.count($schemas).' schema\'s');
 
         foreach ($schemas as $schema) {
-            // todo: Set to session
+            // Todo: Set to session.
             $this->cacheShema($schema);
-            // todo: remove from session
+            // Todo: remove from session.
         }
 
         // Endpoints.
@@ -141,12 +144,12 @@ class CacheService
         $this->logger->debut('Found '.count($endpoints).' endpoints\'s');
 
         foreach ($endpoints as $endpoint) {
-            // todo: Set to session
+            // Todo: Set to session.
             $this->cacheEndpoint($endpoint);
-            // todo: remove from session
+            // Todo: remove from session.
         }
 
-        // Created indexes
+        // Created indexes.
         $this->client->objects->json->createIndex(['$**' => 'text']);
         $this->client->schemas->json->createIndex(['$**' => 'text']);
         $this->client->endpoints->json->createIndex(['$**' => 'text']);
@@ -165,8 +168,9 @@ class CacheService
     /**
      * Loop trough an collection and remove any vallues that no longer exists
      *
-     * @param \MongoDB\Collection $collection
-     * @param string $type
+     * @param \MongoDB\Collection $collection The collection to use
+     * @param string $type The (symfony) entity entity type
+     *
      * @return void
      */
     private function removeDataFromCache(\MongoDB\Collection $collection, string $type): void
@@ -191,8 +195,7 @@ class CacheService
     public function cacheObject(ObjectEntity $objectEntity): ObjectEntity
     {
         // For when we can't generate a schema for an ObjectEntity (for example setting an id on ObjectEntity created with testData).
-        if (
-            $objectEntity->getEntity() === false) {
+        if ($objectEntity->getEntity() === false) {
             return $objectEntity;
         }
 
@@ -203,8 +206,9 @@ class CacheService
 
         $this->logger->debug('Start caching object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName());
 
-        // todo: temp fix to make sure we have the latest version of this ObjectEntity before we cache it.
+        // Todo: temp fix to make sure we have the latest version of this ObjectEntity before we cache it.
         $updatedObjectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $objectEntity->getId()->toString()]);
+
         if ($updatedObjectEntity instanceof ObjectEntity) {
             $objectEntity = $updatedObjectEntity;
         } else {
@@ -236,7 +240,7 @@ class CacheService
     /**
      * Removes an object from the cache.
      *
-     * @param ObjectEntity $objectEntity ObjectEntity
+     * @param ObjectEntity $object ObjectEntity
      *
      * @return void
      */
@@ -250,7 +254,7 @@ class CacheService
         $id = $object->getId()->toString();
         $collection = $this->client->objects->json;
 
-        $collection->findOneAndDelete(['_id'=>$id]);
+        $collection->findOneAndDelete(['_id' => $id]);
 
         $this->logger->info('Removed object from cache',["object" => $id]);
     }
@@ -313,7 +317,8 @@ class CacheService
 
         // Make sure we also have all filters stored in $completeFilter before unsetting.
         $completeFilter = $filter;
-        unset($filter['_start'], $filter['_offset'], $filter['_limit'], $filter['_page'],
+        unset(
+            $filter['_start'], $filter['_offset'], $filter['_limit'], $filter['_page'],
             $filter['_extend'], $filter['_search'], $filter['_order'], $filter['_fields']);
 
         // 'normal' Filters (not starting with _ )
@@ -321,7 +326,7 @@ class CacheService
             $this->handleFilter($key, $value);
         }
 
-        // Search for the correct entity / entities
+        // Search for the correct entity / entities.
         // todo: make this if into a function?
         if (empty($entities) === true) {
             foreach ($entities as $entity) {
@@ -344,21 +349,21 @@ class CacheService
             }
         }
 
-        // Lets see if we need a search
+        // Lets see if we need a search.
         $this->handleSearch($filter, $completeFilter, $search);
 
-        // Limit & Start for pagination
+        // Limit & Start for pagination.
         $this->setPagination($limit, $start, $completeFilter);
 
-        // Order
+        // Order.
         $order = isset($completeFilter['_order']) ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
         !empty($order) && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
 
-        // Find / Search
+        // Find / Search.
         $results = $collection->find($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order])->toArray();
         $total = $collection->count($filter);
 
-        // Make sure to add the pagination properties in response
+        // Make sure to add the pagination properties in response.
         return $this->handleResultPagination($completeFilter, $results, $total);
     }
 
@@ -371,24 +376,24 @@ class CacheService
      */
     private function queryBackwardsCompatibility(array &$filter)
     {
-        !isset($filter['_limit']) && isset($filter['limit']) && $filter['_limit'] = $filter['limit'];
-        !isset($filter['_start']) && isset($filter['start']) && $filter['_start'] = $filter['start'];
-        !isset($filter['_offset']) && isset($filter['offset']) && $filter['_offset'] = $filter['offset'];
-        !isset($filter['_page']) && isset($filter['page']) && $filter['_page'] = $filter['page'];
-        !isset($filter['_extend']) && isset($filter['extend']) && $filter['_extend'] = $filter['extend'];
-        !isset($filter['_search']) && isset($filter['search']) && $filter['_search'] = $filter['search'];
-        !isset($filter['_order']) && isset($filter['order']) && $filter['_order'] = $filter['order'];
-        !isset($filter['_fields']) && isset($filter['fields']) && $filter['_fields'] = $filter['fields'];
+        $oldParameters = ['start','offset','limit','page','extend','search','order','fields'];
 
-        unset($filter['start'], $filter['offset'], $filter['limit'], $filter['page'],
-            $filter['extend'], $filter['search'], $filter['order'], $filter['fields']);
+        foreach($oldParameters as $oldParameter){
+            // We don't need to do anything if the old parameters wasn't used or the new one is used
+            if(isset($filter[$oldParameter]) === false || isset($filter['_'.$oldParameter]) === true){
+                continue;
+            }
+            // But if we end up here we need to come into action
+            $filter['_'.$oldParameter] = $filter[$oldParameter];
+            unset($filter[$oldParameter]);
+        }
     }
 
     /**
      * Handles a single filter used on a get collection api call. This function makes sure special filters work correctly.
      *
-     * @param $key
-     * @param $value
+     * @param string $key The key
+     * @param string $value The value
      *
      * @throws Exception
      *
@@ -396,8 +401,8 @@ class CacheService
      */
     private function handleFilter($key, &$value)
     {
-        if (substr($key, 0, 1) == '_') {
-            // todo: deal with filters starting with _ like: _dateCreated
+        if (substr($key, 0, 1) === '_') {
+            // Todo: deal with filters starting with _ like: _dateCreated.
         }
 
         // Handle filters that expect $value to be an array
@@ -405,7 +410,7 @@ class CacheService
             return;
         }
 
-        // todo: this works, we should go to php 8.0 later
+        // Todo: this works, we should go to php 8.0 later.
         if (str_contains($value, '%')) {
             $regex = str_replace('%', '', $value);
             $regex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $regex);
@@ -413,18 +418,20 @@ class CacheService
 
             return;
         }
+
         if ($value === 'IS NOT NULL') {
             $value = ['$ne' => null];
 
             return;
         }
+
         if ($value === 'IS NULL' || $value === 'null') {
             $value = null;
 
             return;
         }
 
-        // todo: exact match is default, make case insensitive optional:
+        // Todo: exact match is default, make case insensitive optional.
         $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value);
         $value = ['$regex' => "^$value$", '$options' => 'im'];
     }
@@ -432,8 +439,8 @@ class CacheService
     /**
      * Handles a single filter used on a get collection api call. Specifically an filter where the value is an array.
      *
-     * @param $key
-     * @param $value
+     * @param string $key The key
+     * @param string|array $value The value
      *
      * @throws Exception
      *
@@ -459,10 +466,10 @@ class CacheService
 
                 return true;
             }
-            // after, before, strictly_after,strictly_before
-            if (!empty(array_intersect_key($value, array_flip(['after', 'before', 'strictly_after', 'strictly_before'])))) {
+            // After, before, strictly_after,strictly_before (after, before, strictly_after,strictly_before).
+            if (empty(array_intersect_key($value, array_flip(['after', 'before', 'strictly_after', 'strictly_before']))) === false) {
                 // Compare datetime
-                if (!empty(array_intersect_key($value, array_flip(['after', 'strictly_after'])))) {
+                if (empty(array_intersect_key($value, array_flip(['after', 'strictly_after']))) === false) {
                     $after = array_key_exists('strictly_after', $value) ? 'strictly_after' : 'after';
                     $compareDate = new DateTime($value[$after]);
                     $compareKey = $after === 'strictly_after' ? '$gt' : '$gte';
@@ -475,75 +482,75 @@ class CacheService
 
                 return true;
             }
-            // like
-            if (array_key_exists('like', $value) && is_array($value['like'])) {
+            // Like (like).
+            if (array_key_exists('like', $value) === true  && is_array($value['like']) === true ) {
                 //$value = array_map('like', $value['like']);
-            } elseif (array_key_exists('like', $value)) {
+            } elseif (array_key_exists('like', $value) === true ) {
                 $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value['like']);
                 $value = ['$regex' => ".*$value.*", '$options' => 'im'];
 
                 return true;
             }
-            // regex
-            if (array_key_exists('regex', $value) && is_array($value['regex'])) {
+            // Regex (regex).
+            if (array_key_exists('regex', $value) === true  && is_array($value['regex']) === true ) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('regex', $value)) {
-                $value = ['$regex'=> $value['regex']];
+            } elseif (array_key_exists('regex', $value) === true ) {
+                $value = ['$regex' => $value['regex']];
 
                 return true;
             }
-            // >=
-            if (array_key_exists('>=', $value) && is_array($value['>='])) {
+            // Greater then or equel (>=).
+            if (array_key_exists('>=', $value) === true  && is_array($value['>=']) === true ) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('>=', $value)) {
-                $value = ['$gte'=> (int) $value['>=']];
+            } elseif (array_key_exists('>=', $value) === true ) {
+                $value = ['$gte' => (int) $value['>=']];
 
                 return true;
             }
-            // >
-            if (array_key_exists('>', $value) && is_array($value['>'])) {
+            // Greather then (>).
+            if (array_key_exists('>', $value) === true  && is_array($value['>']) === true ) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('>', $value)) {
-                $value = ['$gt'=> (int) $value['>']];
+            } elseif (array_key_exists('>', $value) === true ) {
+                $value = ['$gt' => (int) $value['>']];
 
                 return true;
             }
-            // <=
-            if (array_key_exists('<=', $value) && is_array($value['<='])) {
+            // Smaller than or equal  (<=).
+            if (array_key_exists('<=', $value) === true  && is_array($value['<=']) === true ) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('<=', $value)) {
-                $value = ['$lte'=> (int) $value['<=']];
+            } elseif (array_key_exists('<=', $value) === true ) {
+                $value = ['$lte '=> (int) $value['<=']];
 
                 return true;
             }
-            // <
-            if (array_key_exists('<', $value) && is_array($value['<'])) {
+            // Smaller then (<).
+            if (array_key_exists('<', $value) === true  && is_array($value['<']) === true ) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('<', $value)) {
-                $value = ['$lt'=> (int) $value['<']];
+            } elseif (array_key_exists('<', $value) === true ) {
+                $value = ['$lt' => (int) $value['<']];
 
                 return true;
             }
-            // exact
-            if (array_key_exists('exact', $value) && is_array($value['exact'])) {
+            // Exact (exact).
+            if (array_key_exists('exact', $value) === true  && is_array($value['exact']) === true ) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('exact', $value)) {
+            } elseif (array_key_exists('exact', $value) === true ) {
                 $value = $value;
 
                 return true;
             }
-            // case_insensitive
-            if (array_key_exists('case_insensitive', $value) && is_array($value['case_insensitive'])) {
+            // Case insensitive (case_insensitive).
+            if (array_key_exists('case_insensitive', $value) === true  && is_array($value['case_insensitive']) === true ) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('case_insensitive', $value)) {
+            } elseif (array_key_exists('case_insensitive', $value) === true ) {
                 $value = ['$regex' => $value['case_insensitive'], '$options' => 'i'];
 
                 return true;
             }
-            // case_sensitive
-            if (array_key_exists('case_sensitive', $value) && is_array($value['case_sensitive'])) {
+            // Case sensitive (case_sensitive).
+            if (array_key_exists('case_sensitive', $value) === true && is_array($value['case_sensitive']) === true ) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('case_sensitive', $value)) {
+            } elseif (array_key_exists('case_sensitive', $value) === true ) {
                 $value = ['$regex' => $value['case_sensitive']];
 
                 return true;
@@ -575,21 +582,25 @@ class CacheService
 
         $orderCheck = $this->entityManager->getRepository('App:ObjectEntity')->getOrderParameters($entity, '', 1, true);
 
-        if (!is_array($order)) {
+        if (is_array($order) === false) {
             $orderCheckStr = implode(', ', $orderCheck);
             $message = 'Please give an attribute to order on. Like this: ?_order[attributeName]=desc/asc. Supported order query parameters: '.$orderCheckStr;
         }
-        if (is_array($order) && count($order) > 1) {
+
+        if (is_array($order) === true && count($order) > 1) {
             $message = 'Only one order query param at the time is allowed.';
         }
-        if (is_array($order) && !in_array(strtoupper(array_values($order)[0]), ['DESC', 'ASC'])) {
+
+        if (is_array($order) === true && !in_array(strtoupper(array_values($order)[0]), ['DESC', 'ASC'])) {
             $message = 'Please use desc or asc as value for your order query param, not: '.array_values($order)[0];
         }
-        if (is_array($order) && !in_array(array_keys($order)[0], $orderCheck)) {
+
+        if (is_array($order) === true && !in_array(array_keys($order)[0], $orderCheck)) {
             $orderCheckStr = implode(', ', $orderCheck);
             $message = 'Unsupported order query parameter ('.array_keys($order)[0].'). Supported order query parameters: '.$orderCheckStr;
         }
-        if (isset($message)) {
+
+        if (isset($message) === true) {
             return $message;
         }
 
@@ -618,7 +629,7 @@ class CacheService
                 $unsupportedParams = !isset($unsupportedParams) ? $param : "$unsupportedParams, $param";
             }
         }
-        if (isset($unsupportedParams)) {
+        if (isset($unsupportedParams) === true) {
             $filterCheckStr = implode(', ', $filterCheck);
 
             return 'Unsupported queryParameters ('.$unsupportedParams.'). Supported queryParameters: '.$filterCheckStr;
@@ -632,23 +643,23 @@ class CacheService
      * the _search query is present in $completeFilter query params, then we use that instead.
      * _search query param supports filtering on specific properties with ?_search[property1,property2]=value.
      *
-     * @param array       $filter
-     * @param array       $completeFilter
-     * @param string|null $search
+     * @param array       $filter The filter
+     * @param array       $completeFilter The complete filer
+     * @param string|null $search The thing you are searching for
      *
      * @return void
      */
     private function handleSearch(array &$filter, array $completeFilter, ?string $search)
     {
-        if (isset($completeFilter['_search']) && !empty($completeFilter['_search'])) {
+        if (isset($completeFilter['_search']) === true && empty($completeFilter['_search']) === false) {
             $search = $completeFilter['_search'];
         }
-        if (empty($search)) {
+        if (empty($search) === true) {
             return;
         }
 
         // Normal search on every property with type text (includes strings).
-        if (is_string($search)) {
+        if (is_string($search) === true) {
             $filter['$text']
                 = [
                     '$search'       => $search,
@@ -656,7 +667,7 @@ class CacheService
                 ];
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value.
-        elseif (is_array($search)) {
+        elseif (is_array($search) === true) {
             $searchRegex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $search[array_key_first($search)]);
             if (empty($searchRegex)) {
                 return;
@@ -664,7 +675,7 @@ class CacheService
             $searchRegex = ['$regex' => $searchRegex, '$options' => 'i'];
             $properties = explode(',', array_key_first($search));
             foreach ($properties as $property) {
-                // todo: we might want to check if we are allowed to filter on this property? with $this->handleFilterCheck;
+                // Todo: we might want to check if we are allowed to filter on this property? with $this->handleFilterCheck.
                 $filter['$or'][][$property] = $searchRegex;
             }
         }
@@ -681,17 +692,16 @@ class CacheService
      */
     public function setPagination(&$limit, &$start, array $filters): array
     {
-        if (isset($filters['_limit'])) {
+        $limit = 30;
+        if (isset($filters['_limit']) === true) {
             $limit = intval($filters['_limit']);
-        } else {
-            $limit = 30;
         }
-        if (isset($filters['_start']) || isset($filters['_offset'])) {
+
+        $start = 0;
+        if (isset($filters['_start']) === true|| isset($filters['_offset']) === true) {
             $start = isset($filters['_start']) ? intval($filters['_start']) : intval($filters['_offset']);
-        } elseif (isset($filters['_page'])) {
+        } elseif (isset($filters['_page']) === true) {
             $start = (intval($filters['_page']) - 1) * $limit;
-        } else {
-            $start = 0;
         }
 
         return $filters;
@@ -700,9 +710,9 @@ class CacheService
     /**
      * Adds pagination variables to an array with the results we found with searchObjects().
      *
-     * @param array $filter
-     * @param array $results
-     * @param int   $total
+     * @param array $filter The filters
+     * @param array $results The results
+     * @param int   $total The total
      *
      * @return array the result with pagination.
      */
@@ -817,6 +827,10 @@ class CacheService
         return null;
     }
 
+    /**
+     * @param array $filter The applied filter
+     * @return Endpoint|null
+     */
     public function getEndpoints(array $filter): ?Endpoint
     {
         // Backwards compatablity
