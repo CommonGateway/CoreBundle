@@ -12,7 +12,7 @@ use Twig\Environment;
  * The mapping service handles the mapping (or transformation) of array A (input) to array B (output).
  *
  * More information on how to write your own mappings can be found at [/docs/mapping.md](/docs/mapping.md).
- * 
+ *
  * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>

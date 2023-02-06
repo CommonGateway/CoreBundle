@@ -181,9 +181,9 @@ class RequestService
     public function getId()
     {
         // Try to grap an id
-        if (isset($this->data['path']['{id}'])  === true) {
+        if (isset($this->data['path']['{id}']) === true) {
             return $this->data['path']['{id}'];
-        } elseif (isset($this->data['path']['[id]'])  === true) {
+        } elseif (isset($this->data['path']['[id]']) === true) {
             return $this->data['path']['[id]'];
         } elseif (isset($this->data['query']['id']) === true) {
             return $this->data['query']['id'];
@@ -193,9 +193,9 @@ class RequestService
             return $this->data['path']['{uuid}'];
         } elseif (isset($this->data['query']['uuid']) === true) {
             return$this->data['query']['uuid'];
-        } elseif (isset($this->content['id'])  === true) { // The id might also be passed trough the object itself
+        } elseif (isset($this->content['id']) === true) { // The id might also be passed trough the object itself
             return $this->content['id'];
-        } elseif (isset($this->content['uuid'])  === true) {
+        } elseif (isset($this->content['uuid']) === true) {
             return $this->content['uuid'];
         }
 
