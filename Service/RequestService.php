@@ -23,6 +23,12 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * Handles incomming request from endpoints or controllers that relate to the gateways object structure (eav).
+ *
+ * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Service
  */
 class RequestService
 {

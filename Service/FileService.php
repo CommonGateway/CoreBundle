@@ -4,6 +4,15 @@ namespace CommonGateway\CoreBundle\Service;
 
 use Psr\Log\LoggerInterface;
 
+/**
+ *
+ *
+ * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Service
+ */
 class FileService
 {
     /**
