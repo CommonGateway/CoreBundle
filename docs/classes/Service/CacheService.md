@@ -164,6 +164,8 @@ Remove non-exisitng items from the cashe.
 `void`
 
 
+
+
 <hr />
 
 
@@ -301,7 +303,7 @@ Removes an endpoint from the cache.
 **Description**
 
 ```php
-public removeObject (\ObjectEntity $objectEntity)
+public removeObject (\ObjectEntity $object)
 ```
 
 Removes an object from the cache. 
@@ -310,7 +312,7 @@ Removes an object from the cache.
 
 **Parameters**
 
-* `(\ObjectEntity) $objectEntity`
+* `(\ObjectEntity) $object`
 : ObjectEntity  
 
 **Return Values**
@@ -436,6 +438,8 @@ Throws all available objects into the cache.
 **Return Values**
 
 `void`
+
+
 
 
 <hr />
