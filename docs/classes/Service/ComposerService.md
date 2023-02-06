@@ -1,6 +1,6 @@
 # CommonGateway\CoreBundle\Service\ComposerService  
 
-
+The composer service functions as a wrapper for composer CLI
 
 
 
