@@ -2,7 +2,6 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
-use App\Entity\CallLog;
 use App\Entity\Gateway as Source;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
