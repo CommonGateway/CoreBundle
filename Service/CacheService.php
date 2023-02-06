@@ -14,7 +14,6 @@ use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -46,11 +45,6 @@ class CacheService
      * @var CacheInterface
      */
     private CacheInterface $cache;
-
-    /**
-     * @var SymfonyStyle
-     */
-    private SymfonyStyle $io;
 
     /**
      * @var ParameterBagInterface
@@ -93,36 +87,18 @@ class CacheService
         }
     }//end __construct()
 
-    /**
-     * Set symfony style in order to output to the console.
-     *
-     * @param SymfonyStyle $io SymfonyStyle
-     *
-     * @return self
-     */
-    public function setStyle(SymfonyStyle $io): self
-    {
-        $this->io = $io;
-
-        return $this;
-    }
 
     /**
-     * Remov non-exisitng items from the cashe.
+     * Remove non-exisitng items from the cashe.
      */
     public function cleanup()
     {
-        (isset($this->io) ? $this->io->writeln([
-            'Common Gateway Cache Cleanup',
-            '============',
-            '',
-        ]) : '');
 
-        (isset($this->io) ? $this->io->section('Cleaning Object\'s') : '');
         $collection = $this->client->objects->json;
         $filter = [];
         $objects = $collection->find($filter)->toArray();
-        (isset($this->io) ? $this->io->writeln('Found '.count($objects).'') : '');
+
+        $this->logger->info('Removed '.count($objects).' object from the cache');
     }
 
     /**
@@ -130,101 +106,81 @@ class CacheService
      */
     public function warmup()
     {
-        (isset($this->io) ? $this->io->writeln([
-            'Common Gateway Cache Warmup',
-            '============',
-            '',
-        ]) : '');
-
-        (isset($this->io) ? $this->io->writeln('Connecting to'.$this->parameters->get('cache_url')) : '');
+        $this->logger->debut('Connecting to'.$this->parameters->get('cache_url'));
 
         // Backwards compatablity
         if (!isset($this->client)) {
-            (isset($this->io) ? $this->io->writeln('No cache client found, halting warmup') : '');
+            $this->logger->error('No cache client found, halting warmup');
 
-            return Command::SUCCESS;
+            return Command::FAILURE;
         }
 
         // Objects
-        (isset($this->io) ? $this->io->section('Caching Objects\'s') : '');
         $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
-        (isset($this->io) ? $this->io->writeln('Found '.count($objectEntities).' objects\'s') : '');
+        $this->logger->debut('Found '.count($objectEntities).' objects\'s');
+
 
         foreach ($objectEntities as $objectEntity) {
-            try {
-                $this->cacheObject($objectEntity);
-            } catch (Exception $exception) {
-                $this->ioCatchException($exception);
-                continue;
-            }
+            // todo: Set to session
+            $this->cacheObject($objectEntity);
+            // todo: remove from session
         }
 
         // Schemas
-        (isset($this->io) ? $this->io->section('Caching Schema\'s') : '');
         $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
-        (isset($this->io) ? $this->io->writeln('Found '.count($schemas).' Schema\'s') : '');
+        $this->logger->debut('Found '.count($schemas).' schema\'s');
 
         foreach ($schemas as $schema) {
-            try {
-                $this->cacheShema($schema);
-            } catch (Exception $exception) {
-                $this->ioCatchException($exception);
-                continue;
-            }
+            // todo: Set to session
+            $this->cacheShema($schema);
+            // todo: remove from session
         }
 
         // Endpoints
-        (isset($this->io) ? $this->io->section('Caching Endpoint\'s') : '');
         $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
-        (isset($this->io) ? $this->io->writeln('Found '.count($endpoints).' Endpoint\'s') : '');
+        $this->logger->debut('Found '.count($endpoints).' endpoints\'s');
 
         foreach ($endpoints as $endpoint) {
-            try {
-                $this->cacheEndpoint($endpoint);
-            } catch (Exception $exception) {
-                $this->ioCatchException($exception);
-                continue;
-            }
+            // todo: Set to session
+            $this->cacheEndpoint($endpoint);
+            // todo: remove from session
         }
 
         // Created indexes
-        $collection = $this->client->objects->json->createIndex(['$**'=>'text']);
-        $collection = $this->client->schemas->json->createIndex(['$**'=>'text']);
-        $collection = $this->client->endpoints->json->createIndex(['$**'=>'text']);
+        $this->client->objects->json->createIndex(['$**'=>'text']);
+        $this->client->schemas->json->createIndex(['$**'=>'text']);
+        $this->client->endpoints->json->createIndex(['$**'=>'text']);
 
-        (isset($this->io) ? $this->io->writeln(['Removing deleted endpoints', '============']) : '');
+        $this->logger->debug('Removing deleted endpoints');
         $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
 
-        (isset($this->io) ? $this->io->writeln(['Removing deleted objects', '============']) : '');
+        $this->logger->debug('Removing deleted objects');
         $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
+
+
+        $this->logger->info('Finished cache warmup');
 
         return Command::SUCCESS;
     }
 
+    /**
+     * Loop trough an collection and remove any vallues that no longer exists
+     *
+     * @param \MongoDB\Collection $collection
+     * @param string $type
+     * @return void
+     */
     private function removeDataFromCache(\MongoDB\Collection $collection, string $type): void
     {
         $endpoints = $collection->find()->toArray();
         foreach ($endpoints as $endpoint) {
             if (!$this->entityManager->find($type, $endpoint['id'])) {
-                isset($this->io) ?? $this->io->writeln("removing {$endpoint['id']} from cache");
+                $this->logger->info("removing {$endpoint['id']} from cache",["type" => $type, "id" => $endpoint['id']]);
                 $collection->findOneAndDelete(['id' => $endpoint['id']]);
             }
         }
     }
 
-    /**
-     * Writes exception data to symfony IO.
-     *
-     * @param Exception $exception The Exception
-     *
-     * @return void
-     */
-    private function ioCatchException(Exception $exception)
-    {
-        isset($this->io) ?? $this->io->warning($exception->getMessage());
-        isset($this->io) ?? $this->io->block("File: {$exception->getFile()}, Line: {$exception->getLine()}");
-        isset($this->io) ?? $this->io->block("Trace: {$exception->getTraceAsString()}");
-    }
 
     /**
      * Put a single object into the cache.
@@ -236,25 +192,24 @@ class CacheService
     public function cacheObject(ObjectEntity $objectEntity): ObjectEntity
     {
         // For when we can't generate a schema for an ObjectEntity (for example setting an id on ObjectEntity created with testData)
-        if (!$objectEntity->getEntity()) {
+        if (
+            $objectEntity->getEntity() === false) {
             return $objectEntity;
         }
 
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if (isset($this->client) === false) {
             return $objectEntity;
         }
 
-        if (isset($this->io)) {
-            $this->io->writeln('Start caching object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName());
-        }
+        $this->logger->debug('Start caching object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName());
 
         // todo: temp fix to make sure we have the latest version of this ObjectEntity before we cache it.
         $updatedObjectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $objectEntity->getId()->toString()]);
         if ($updatedObjectEntity instanceof ObjectEntity) {
             $objectEntity = $updatedObjectEntity;
-        } elseif (isset($this->io)) {
-            $this->io->writeln('Could not find an ObjectEntity with id: '.$objectEntity->getId()->toString());
+        } else {
+            $this->logger->error('Could not find an ObjectEntity with id: '.$objectEntity->getId()->toString());
         }
 
         $collection = $this->client->objects->json;
@@ -271,9 +226,9 @@ class CacheService
             $array,
             ['upsert'=>true]
         )) {
-            (isset($this->io) ? $this->io->writeln('Updated object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache') : '');
+            $this->logger->debug('Updated object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache');
         } else {
-            (isset($this->io) ? $this->io->writeln('Wrote object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache') : '');
+            $this->logger->debug('Wrote object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache');
         }
 
         return $objectEntity;
@@ -297,6 +252,8 @@ class CacheService
         $collection = $this->client->objects->json;
 
         $collection->findOneAndDelete(['_id'=>$id]);
+
+        $this->logger->info('Removed object from cache',["object" => $id]);
     }
 
     /**
@@ -317,13 +274,17 @@ class CacheService
 
         // Check if object is in the cache ????
         if ($object = $collection->findOne(['_id'=>$id])) {
+            $this->logger->debug('Retrieved object from cache',["object" => $id]);
             return $object;
         }
 
         // Fall back tot the entity manager
         if ($object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id'=>$id])) {
+            $this->logger->debug('Could not retrieve object from cache',["object" => $id]);
             return $this->cacheObject($object)->toArray(['embedded' => true]);
         }
+
+        $this->logger->error('Object does not seem to exist', ['object' => $id]);
 
         return false;
     }
@@ -647,14 +608,14 @@ class CacheService
      */
     private function handleFilterCheck(Entity $entity, ?array $filters): ?string
     {
-        if (empty($filters)) {
+        if (empty($filters) === true) {
             return null;
         }
 
         $filterCheck = $this->entityManager->getRepository('App:ObjectEntity')->getFilterParameters($entity, '', 1, true);
 
         foreach ($filters as $param => $value) {
-            if (!in_array($param, $filterCheck)) {
+            if (in_array($param, $filterCheck) === false) {
                 $unsupportedParams = !isset($unsupportedParams) ? $param : "$unsupportedParams, $param";
             }
         }
