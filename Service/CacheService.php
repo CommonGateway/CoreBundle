@@ -86,7 +86,6 @@ class CacheService
         }
     }//end __construct()
 
-
     /**
      * Remove non-exisitng items from the cashe.
      *
@@ -94,7 +93,6 @@ class CacheService
      */
     public function cleanup()
     {
-
         $collection = $this->client->objects->json;
         $filter = [];
         $objects = $collection->find($filter)->toArray();
@@ -165,10 +163,10 @@ class CacheService
     }
 
     /**
-     * Loop trough an collection and remove any vallues that no longer exists
+     * Loop trough an collection and remove any vallues that no longer exists.
      *
      * @param \MongoDB\Collection $collection The collection to use
-     * @param string $type The (symfony) entity entity type
+     * @param string              $type       The (symfony) entity entity type
      *
      * @return void
      */
@@ -177,12 +175,11 @@ class CacheService
         $endpoints = $collection->find()->toArray();
         foreach ($endpoints as $endpoint) {
             if ($this->entityManager->find($type, $endpoint['id']) === false) {
-                $this->logger->info("removing {$endpoint['id']} from cache",["type" => $type, "id" => $endpoint['id']]);
+                $this->logger->info("removing {$endpoint['id']} from cache", ['type' => $type, 'id' => $endpoint['id']]);
                 $collection->findOneAndDelete(['id' => $endpoint['id']]);
             }
         }
     }
-
 
     /**
      * Put a single object into the cache.
@@ -255,7 +252,7 @@ class CacheService
 
         $collection->findOneAndDelete(['_id' => $id]);
 
-        $this->logger->info('Removed object from cache',["object" => $id]);
+        $this->logger->info('Removed object from cache', ['object' => $id]);
     }
 
     /**
@@ -276,13 +273,15 @@ class CacheService
 
         // Check if object is in the cache ????
         if ($object = $collection->findOne(['_id' => $id]) === true) {
-            $this->logger->debug('Retrieved object from cache',["object" => $id]);
+            $this->logger->debug('Retrieved object from cache', ['object' => $id]);
+
             return $object;
         }
 
         // Fall back tot the entity manager.
         if ($object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]) === true) {
-            $this->logger->debug('Could not retrieve object from cache',["object" => $id]);
+            $this->logger->debug('Could not retrieve object from cache', ['object' => $id]);
+
             return $this->cacheObject($object)->toArray(['embedded' => true]);
         }
 
@@ -375,11 +374,11 @@ class CacheService
      */
     private function queryBackwardsCompatibility(array &$filter)
     {
-        $oldParameters = ['start','offset','limit','page','extend','search','order','fields'];
+        $oldParameters = ['start', 'offset', 'limit', 'page', 'extend', 'search', 'order', 'fields'];
 
-        foreach($oldParameters as $oldParameter){
+        foreach ($oldParameters as $oldParameter) {
             // We don't need to do anything if the old parameters wasn't used or the new one is used
-            if(isset($filter[$oldParameter]) === false || isset($filter['_'.$oldParameter]) === true){
+            if (isset($filter[$oldParameter]) === false || isset($filter['_'.$oldParameter]) === true) {
                 continue;
             }
             // But if we end up here we need to come into action
@@ -391,7 +390,7 @@ class CacheService
     /**
      * Handles a single filter used on a get collection api call. This function makes sure special filters work correctly.
      *
-     * @param string $key The key
+     * @param string $key   The key
      * @param string $value The value
      *
      * @throws Exception
@@ -438,7 +437,7 @@ class CacheService
     /**
      * Handles a single filter used on a get collection api call. Specifically an filter where the value is an array.
      *
-     * @param string $key The key
+     * @param string       $key   The key
      * @param string|array $value The value
      *
      * @throws Exception
@@ -482,74 +481,74 @@ class CacheService
                 return true;
             }
             // Like (like).
-            if (array_key_exists('like', $value) === true  && is_array($value['like']) === true ) {
+            if (array_key_exists('like', $value) === true && is_array($value['like']) === true) {
                 //$value = array_map('like', $value['like']);
-            } elseif (array_key_exists('like', $value) === true ) {
+            } elseif (array_key_exists('like', $value) === true) {
                 $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value['like']);
                 $value = ['$regex' => ".*$value.*", '$options' => 'im'];
 
                 return true;
             }
             // Regex (regex).
-            if (array_key_exists('regex', $value) === true  && is_array($value['regex']) === true ) {
+            if (array_key_exists('regex', $value) === true && is_array($value['regex']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('regex', $value) === true ) {
+            } elseif (array_key_exists('regex', $value) === true) {
                 $value = ['$regex' => $value['regex']];
 
                 return true;
             }
             // Greater then or equel (>=).
-            if (array_key_exists('>=', $value) === true  && is_array($value['>=']) === true ) {
+            if (array_key_exists('>=', $value) === true && is_array($value['>=']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('>=', $value) === true ) {
+            } elseif (array_key_exists('>=', $value) === true) {
                 $value = ['$gte' => (int) $value['>=']];
 
                 return true;
             }
             // Greather then (>).
-            if (array_key_exists('>', $value) === true  && is_array($value['>']) === true ) {
+            if (array_key_exists('>', $value) === true && is_array($value['>']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('>', $value) === true ) {
+            } elseif (array_key_exists('>', $value) === true) {
                 $value = ['$gt' => (int) $value['>']];
 
                 return true;
             }
             // Smaller than or equal  (<=).
-            if (array_key_exists('<=', $value) === true  && is_array($value['<=']) === true ) {
+            if (array_key_exists('<=', $value) === true && is_array($value['<=']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('<=', $value) === true ) {
+            } elseif (array_key_exists('<=', $value) === true) {
                 $value = ['$lte '=> (int) $value['<=']];
 
                 return true;
             }
             // Smaller then (<).
-            if (array_key_exists('<', $value) === true  && is_array($value['<']) === true ) {
+            if (array_key_exists('<', $value) === true && is_array($value['<']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('<', $value) === true ) {
+            } elseif (array_key_exists('<', $value) === true) {
                 $value = ['$lt' => (int) $value['<']];
 
                 return true;
             }
             // Exact (exact).
-            if (array_key_exists('exact', $value) === true  && is_array($value['exact']) === true ) {
+            if (array_key_exists('exact', $value) === true && is_array($value['exact']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('exact', $value) === true ) {
+            } elseif (array_key_exists('exact', $value) === true) {
                 $value = $value;
 
                 return true;
             }
             // Case insensitive (case_insensitive).
-            if (array_key_exists('case_insensitive', $value) === true  && is_array($value['case_insensitive']) === true ) {
+            if (array_key_exists('case_insensitive', $value) === true && is_array($value['case_insensitive']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('case_insensitive', $value) === true ) {
+            } elseif (array_key_exists('case_insensitive', $value) === true) {
                 $value = ['$regex' => $value['case_insensitive'], '$options' => 'i'];
 
                 return true;
             }
             // Case sensitive (case_sensitive).
-            if (array_key_exists('case_sensitive', $value) === true && is_array($value['case_sensitive']) === true ) {
+            if (array_key_exists('case_sensitive', $value) === true && is_array($value['case_sensitive']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('case_sensitive', $value) === true ) {
+            } elseif (array_key_exists('case_sensitive', $value) === true) {
                 $value = ['$regex' => $value['case_sensitive']];
 
                 return true;
@@ -642,9 +641,9 @@ class CacheService
      * the _search query is present in $completeFilter query params, then we use that instead.
      * _search query param supports filtering on specific properties with ?_search[property1,property2]=value.
      *
-     * @param array       $filter The filter
+     * @param array       $filter         The filter
      * @param array       $completeFilter The complete filer
-     * @param string|null $search The thing you are searching for
+     * @param string|null $search         The thing you are searching for
      *
      * @return void
      */
@@ -697,7 +696,7 @@ class CacheService
         }
 
         $start = 0;
-        if (isset($filters['_start']) === true|| isset($filters['_offset']) === true) {
+        if (isset($filters['_start']) === true || isset($filters['_offset']) === true) {
             $start = isset($filters['_start']) ? intval($filters['_start']) : intval($filters['_offset']);
         } elseif (isset($filters['_page']) === true) {
             $start = (intval($filters['_page']) - 1) * $limit;
@@ -709,9 +708,9 @@ class CacheService
     /**
      * Adds pagination variables to an array with the results we found with searchObjects().
      *
-     * @param array $filter The filters
+     * @param array $filter  The filters
      * @param array $results The results
-     * @param int   $total The total
+     * @param int   $total   The total
      *
      * @return array the result with pagination.
      */
@@ -828,6 +827,7 @@ class CacheService
 
     /**
      * @param array $filter The applied filter
+     *
      * @return Endpoint|null
      */
     public function getEndpoints(array $filter): ?Endpoint

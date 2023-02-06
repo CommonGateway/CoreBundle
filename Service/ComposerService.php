@@ -8,7 +8,7 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
 /**
- * The composer service functions as a wrapper for composer CLI
+ * The composer service functions as a wrapper for composer CLI.
  *
  * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
  *
