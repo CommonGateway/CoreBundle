@@ -28,7 +28,6 @@
 		"adbario/php-dot-notation": "^3",
 		"monolog/monolog": "^2.8.0",
 		"symfony/monolog-bundle": "^3.8",
-		"alcaeus/mongo-php-adapter": "^1.2",
 		"api-platform/core": "^2.6",
 		"respect/validation": "^2.2",
 		"setono/cron-expression-bundle": "^1.5",
