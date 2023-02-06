@@ -16,7 +16,7 @@ This service provides a guzzle wrapper to work with sources in the common gatewa
 |[cacheEndpoint](#cacheservicecacheendpoint)|Put a single endpoint into the cache.|
 |[cacheObject](#cacheservicecacheobject)|Put a single object into the cache.|
 |[cacheShema](#cacheservicecacheshema)|Put a single schema into the cache.|
-|[cleanup](#cacheservicecleanup)|Remov non-exisitng items from the cashe.|
+|[cleanup](#cacheservicecleanup)|Remove non-exisitng items from the cashe.|
 |[getEndpoint](#cacheservicegetendpoint)|Get a single endpoint from the cache.|
 |[getEndpoints](#cacheservicegetendpoints)||
 |[getObject](#cacheservicegetobject)|Get a single object from the cache.|
@@ -26,7 +26,6 @@ This service provides a guzzle wrapper to work with sources in the common gatewa
 |[removeSchema](#cacheserviceremoveschema)|Removes an Schema from the cache.|
 |[searchObjects](#cacheservicesearchobjects)|Searches the object store for objects containing the search string.|
 |[setPagination](#cacheservicesetpagination)|Decides the pagination values.|
-|[setStyle](#cacheservicesetstyle)|Set symfony style in order to output to the console.|
 |[warmup](#cacheservicewarmup)|Throws all available objects into the cache.|
 
 
@@ -152,7 +151,7 @@ Put a single schema into the cache.
 public cleanup (void)
 ```
 
-Remov non-exisitng items from the cashe. 
+Remove non-exisitng items from the cashe. 
 
  
 
@@ -411,33 +410,6 @@ Decides the pagination values.
 **Return Values**
 
 `array`
-
-
-
-
-<hr />
-
-
-### CacheService::setStyle  
-
-**Description**
-
-```php
-public setStyle (\SymfonyStyle $io)
-```
-
-Set symfony style in order to output to the console. 
-
- 
-
-**Parameters**
-
-* `(\SymfonyStyle) $io`
-: SymfonyStyle  
-
-**Return Values**
-
-`self`
 
 
 
