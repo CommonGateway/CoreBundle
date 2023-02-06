@@ -163,12 +163,6 @@ class CallService
             $config = array_merge_recursive($config, $source->getConfiguration());
         }
 
-        $log = new CallLog();
-        $log->setSource($source);
-        $log->setEndpoint($source->getLocation().$endpoint);
-        $log->setMethod($method);
-        $log->setConfig($config);
-        $log->setRequestBody($config['body'] ?? null);
 
         // Set authenticion if needed
         $parsedUrl = parse_url($source->getLocation());
@@ -177,7 +171,6 @@ class CallService
         $createCertificates && $config = array_merge($config, $this->getCertificate($config));
         $config['headers']['host'] = $parsedUrl['host'];
         $config['headers'] = $this->removeEmptyHeaders($config['headers']);
-        $log->setRequestHeaders($config['headers'] ?? null);
 
         $url = $source->getLocation().$endpoint;
 
@@ -191,6 +184,7 @@ class CallService
             }
         } catch (ServerException|ClientException|RequestException|Exception $e) {
             $stopTimer = microtime(true);
+            /*
             $log->setResponseStatus('');
             if ($e->getResponse()) {
                 $log->setResponseStatusCode($e->getResponse()->getStatusCode());
@@ -200,9 +194,7 @@ class CallService
                 $log->setResponseStatusCode(0);
                 $log->setResponseBody($e->getMessage());
             }
-            $log->setResponseTime($stopTimer - $startTimer);
-            $this->entityManager->persist($log);
-            $this->entityManager->flush();
+            */
 
             throw $e;
         } catch (GuzzleException $e) {
@@ -212,15 +204,23 @@ class CallService
 
         $responseClone = clone $response;
 
-        $log->setResponseHeaders($responseClone->getHeaders());
-        $log->setResponseStatus('');
-        $log->setResponseStatusCode($responseClone->getStatusCode());
         // Disabled because you cannot getBody after passing it here
         // $log->setResponseBody($responseClone->getBody()->getContents());
-        $log->setResponseBody('');
-        $log->setResponseTime($stopTimer - $startTimer);
-        $this->entityManager->persist($log);
-        $this->entityManager->flush();
+
+        $this->logge->info('Made external call',[
+            'source' =>  $source->getId()->toString(),
+            'endpoint' =>  $source->getLocation().$endpoint,
+            'method' =>  $method,
+            'config' =>  $config,
+            'requestBody' =>  $config['body'] ?? null,
+            'requestHeaders' =>  $config['headers'] ?? null,
+            'responseBody' =>  $config['body'] ?? null,
+            'responseHeaders' => $responseClone->getHeaders(),
+            'responseStatus' => $responseClone->getStatus(),
+            'responseStatusCode' => $responseClone->getStatusCode(),
+            'responseTime' => $stopTimer - $startTimer
+        ]);
+
 
         $createCertificates && $this->removeFiles($config);
 
