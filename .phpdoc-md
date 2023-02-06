@@ -4,6 +4,7 @@ return (object)[
     'destDirectory' => 'docs/classes',
     'format' => 'github',
     'classes' => [
+        // Services
         '\CommonGateway\CoreBundle\Service\AuthenticationService',
         '\CommonGateway\CoreBundle\Service\CacheService',
         '\CommonGateway\CoreBundle\Service\CallService',
@@ -12,6 +13,19 @@ return (object)[
         '\CommonGateway\CoreBundle\Service\FileService',
         '\CommonGateway\CoreBundle\Service\InstallationService',
         '\CommonGateway\CoreBundle\Service\MappingService',
-        '\CommonGateway\CoreBundle\Service\RequestService'
+        '\CommonGateway\CoreBundle\Service\RequestService',
+        // Commmands
+        '\CommonGateway\CoreBundle\Command\CacheCleanupCommand',
+        '\CommonGateway\CoreBundle\Command\CacheClearCommand',
+        '\CommonGateway\CoreBundle\Command\CacheCommand',
+        '\CommonGateway\CoreBundle\Command\CacheWarmupCommand',
+        '\CommonGateway\CoreBundle\Command\ComposerUpdateCommand',
+        '\CommonGateway\CoreBundle\Command\DataClearCommand',
+        '\CommonGateway\CoreBundle\Command\InstallCommand',
+        '\CommonGateway\CoreBundle\Command\UninstallCommand',
+        '\CommonGateway\CoreBundle\Command\UpgradeCommand',
+        '\CommonGateway\CoreBundle\Command\ValidateObjectCommand',
+        '\CommonGateway\CoreBundle\Command\ValidateSchemaCommand',
+        '\CommonGateway\CoreBundle\Command\ValidateValueCommand'
     ],
 ];
