@@ -89,7 +89,7 @@ class CallService
             $this->fileService->removeFile($config['verify']);
         }
     }
-    
+
     /**
      * Removes empty headers and sets array to string values.
      *
@@ -111,17 +111,17 @@ class CallService
 
         return $headers;
     }
-    
+
     /**
      * Calls a source according to given configuration.
      *
-     * @param Source $source The source to call
-     * @param string $endpoint The endpoint on the source to call
-     * @param string $method The method on which to call the source
-     * @param array $config The additional configuration to call the source
-     * @param bool $asynchronous Whether or not to call the source asynchronously
-     * @param bool $createCertificates
-     * 
+     * @param Source $source             The source to call
+     * @param string $endpoint           The endpoint on the source to call
+     * @param string $method             The method on which to call the source
+     * @param array  $config             The additional configuration to call the source
+     * @param bool   $asynchronous       Whether or not to call the source asynchronously
+     * @param bool   $createCertificates
+     *
      * @return Response
      */
     public function call(
