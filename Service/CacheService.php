@@ -744,7 +744,7 @@ class CacheService
     /**
      * Put a single endpoint into the cache.
      *
-     * @param Endpoint $endpoint
+     * @param Endpoint $endpoint The endpoint
      *
      * @return Endpoint
      */
@@ -758,7 +758,7 @@ class CacheService
         $this->logger->debug('Start caching endpoint '.$endpoint->getId()->toString().' with name: '.$endpoint->getName());
 
         $updatedEndpoint = $this->entityManager->getRepository('App:Endpoint')->find($endpoint->getId());
-        if ($updatedEndpoint instanceof Endpoint) {
+        if ($updatedEndpoint instanceof Endpoint === true) {
             $endpoint = $updatedEndpoint;
         } else {
             $this->logger->debug('Could not find an Endpoint with id: '.$endpoint->getId()->toString());
@@ -784,13 +784,13 @@ class CacheService
     /**
      * Removes an endpoint from the cache.
      *
-     * @param Endpoint $endpoint
+     * @param Endpoint $endpoint The endpoint
      *
      * @return void
      */
     public function removeEndpoint(Endpoint $endpoint): void
     {
-        // Backwards compatablity
+        // Backwards compatablity.
         if (!isset($this->client)) {
             return;
         }
@@ -803,13 +803,13 @@ class CacheService
     /**
      * Get a single endpoint from the cache.
      *
-     * @param Uuid $id
+     * @param Uuid $id The uuid of the endpoint
      *
      * @return array|null
      */
     public function getEndpoint(string $id): ?array
     {
-        // Backwards compatablity
+        // Backwards compatablity.
         if (!isset($this->client)) {
             return [];
         }
@@ -833,8 +833,8 @@ class CacheService
      */
     public function getEndpoints(array $filter): ?Endpoint
     {
-        // Backwards compatablity
-        if (!isset($this->client)) {
+        // Backwards compatablity.
+        if (isset($this->client) === false) {
             return [];
         }
 
@@ -866,14 +866,14 @@ class CacheService
     /**
      * Put a single schema into the cache.
      *
-     * @param Entity $entity
+     * @param Entity $entity The Entity
      *
      * @return Entity
      */
     public function cacheShema(Entity $entity): Entity
     {
-        // Backwards compatablity
-        if (!isset($this->client)) {
+        // Backwards compatablity.
+        if (isset($this->client) === false) {
             return $entity;
         }
         $collection = $this->client->schemas->json;
@@ -904,14 +904,14 @@ class CacheService
     /**
      * Removes an Schema from the cache.
      *
-     * @param Entity $entity
+     * @param Entity $entity The entity
      *
      * @return void
      */
     public function removeSchema(Entity $entity): void
     {
-        // Backwards compatablity
-        if (!isset($this->client)) {
+        // Backwards compatablity.
+        if (isset($this->client) === false) {
             return;
         }
 
@@ -921,14 +921,14 @@ class CacheService
     /**
      * Get a single schema from the cache.
      *
-     * @param Uuid $id
+     * @param Uuid $id The uuid of the schema
      *
      * @return array|null
      */
     public function getSchema(Uuid $id): ?array
     {
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if (isset($this->client) === false) {
             return [];
         }
 
