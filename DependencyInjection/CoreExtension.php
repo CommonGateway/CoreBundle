@@ -10,6 +10,11 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 class CoreExtension extends Extension
 {
     /**
+     * The basic symfony loaders
+     *
+     * Must config array, so unused $configs parameter is allowed as a design desicion
+     *
+     * @codeCoverageIgnore
      * @param array            $configs   The configuration (un used but required from the extend)
      * @param ContainerBuilder $container The container
      *

@@ -20,6 +20,12 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
  *
  * This subscriber turns doctrine events into common gateway action events an provides those to listeners.
  * As a second function it also creates appropriate logging for doctrine events
+ *
+ * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Subscriber
  */
 class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
 {

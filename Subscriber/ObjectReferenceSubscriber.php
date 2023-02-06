@@ -10,6 +10,15 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 
+/**
+ *
+ *
+ * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Subscriber
+ */
 class ObjectReferenceSubscriber implements EventSubscriberInterface
 {
     /**
@@ -86,7 +95,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
 
             return;
         }
-    }
+    }// end prePersist()
 
     /**
      * @param LifecycleEventArgs $args
@@ -95,6 +104,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
      */
     public function preUpdate(LifecycleEventArgs $args): void
     {
+        // We do the same stuff as during pre persist so we can just call that.
         $this->prePersist($args);
-    }
+    }// end preUpdate()
 }
