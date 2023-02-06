@@ -1,6 +1,6 @@
 # CommonGateway\CoreBundle\Service\AuthenticationService  
 
-The auhtentication service handled authentication
+The auhtentication service handled authentication.
 
 
 
