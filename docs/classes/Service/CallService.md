@@ -51,7 +51,7 @@ This service provides a guzzle wrapper to work with sources in the common gatewa
 **Description**
 
 ```php
-public call (\Source $source, string $endpoint, string $method, array $config, bool $asynchronous)
+public call (\Source $source, string $endpoint, string $method, array $config, bool $asynchronous, bool $createCertificates)
 ```
 
 Calls a source according to given configuration. 
@@ -70,6 +70,7 @@ Calls a source according to given configuration.
 : The additional configuration to call the source  
 * `(bool) $asynchronous`
 : Whether or not to call the source asynchronously  
+* `(bool) $createCertificates`
 
 **Return Values**
 
