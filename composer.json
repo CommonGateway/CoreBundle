@@ -10,7 +10,7 @@
 		"symfony"
 	],
 	"homepage" : "https://commongatway.nl",
-	"license" : "MIT",
+	"license" : "EUPL",
 	"authors" : [{
 			"name" : "Ruben van der Linde",
 			"email" : "ruben@conduction.nl"
@@ -80,6 +80,18 @@
 		"post-update-cmd": [
 			"@auto-scripts"
 		]
+	},
+	"config": {
+		"optimize-autoloader": true,
+		"preferred-install": {
+			"*": "dist"
+		},
+		"sort-packages": true,
+		"allow-plugins": {
+			"symfony/flex": true,
+			"symfony/runtime": true,
+			"endroid/installer": true
+		}
 	},
 	"conflict" : {
 		"doctrine/dbal" : "<2.5",
