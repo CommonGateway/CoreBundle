@@ -79,6 +79,7 @@ Put a single endpoint into the cache.
 **Parameters**
 
 * `(\Endpoint) $endpoint`
+: The endpoint  
 
 **Return Values**
 
@@ -132,6 +133,7 @@ Put a single schema into the cache.
 **Parameters**
 
 * `(\Entity) $entity`
+: The Entity  
 
 **Return Values**
 
@@ -184,6 +186,7 @@ Get a single endpoint from the cache.
 **Parameters**
 
 * `(\Uuid) $id`
+: The uuid of the endpoint  
 
 **Return Values**
 
@@ -261,6 +264,7 @@ Get a single schema from the cache.
 **Parameters**
 
 * `(\Uuid) $id`
+: The uuid of the schema  
 
 **Return Values**
 
@@ -287,6 +291,7 @@ Removes an endpoint from the cache.
 **Parameters**
 
 * `(\Endpoint) $endpoint`
+: The endpoint  
 
 **Return Values**
 
@@ -340,6 +345,7 @@ Removes an Schema from the cache.
 **Parameters**
 
 * `(\Entity) $entity`
+: The entity  
 
 **Return Values**
 
