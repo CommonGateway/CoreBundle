@@ -63,7 +63,6 @@ class EndpointService
 
         // Get the  and path parts.
         $path = $this->request->getPathInfo();
-        $pathParts = explode('/', $path);
 
         // Get the accept type.
         $accept = $this->getAcceptType();
@@ -173,10 +172,8 @@ class EndpointService
     private function getParametersFromRequest(?array $parameters = []): array
     {
         // Lets make sure that we always have a path.
-        if (isset($parameters['path']) === false) {
-            $parameters['path'] = $this->request->getPathInfo();
-        }
-
+        $parameters['path'] = $this->request->getPathInfo();
+        $parameters['pathParts'] = explode('/', $parameters['path']);
         $parameters['querystring'] = $this->request->getQueryString();
 
         try {
@@ -186,7 +183,6 @@ class EndpointService
         }
 
         $parameters['crude_body'] = $this->request->getContent();
-
         $parameters['method'] = $this->request->getMethod();
         $parameters['query'] = $this->request->query->all();
 
