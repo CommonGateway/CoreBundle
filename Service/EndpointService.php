@@ -39,7 +39,10 @@ class EndpointService
     private RequestService $requestService;
 
     /**
-     * @param EntityManagerInterface $entityManager The Entity Manager
+     * @param EntityManagerInterface $entityManager The enitymanger
+     * @param Request $request The request
+     * @param SerializerInterface $serializer The serializer
+     * @param RequestService $requestService The request service
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -58,7 +61,8 @@ class EndpointService
      *
      * @return Responce
      */
-    public function handleRequest(): Responce{
+    public function handleRequest(): Responce
+    {
 
         // Get the  and path parts.
         $path = $this->request->getPathInfo();
@@ -76,18 +80,18 @@ class EndpointService
         $parameters['accept'] = $accept;
 
         // If we have an proxy we will handle just that.
-        if($endpoint->getProxy()){
+        if ($endpoint->getProxy() === true) {
             return $this->requestService->proxyHandler($parameters, []);
         }
 
         // If we have shema's lets handle those.
-        if(count($endpoint->getEntities()) > 0){
+        if (count($endpoint->getEntities()) > 0) {
             return $this->requestService->requestHandler($parameters, []);
         }
 
         // Last but not least we check for throw.
-        if(count($endpoint->getThrows()) > 0){
-            $parameters['response'] = new Response('Object is not supported by this endpoint', '200');;
+        if (count($endpoint->getThrows()) > 0) {
+            $parameters['response'] = new Response('Object is not supported by this endpoint', '200');
             foreach($endpoint->getThrows() as $throw){
                 $event = new ActionEvent('commongateway.action.event', $parameters, $throw);
                 $this->eventDispatcher->dispatchdispatch($event, 'commongateway.action.event');
@@ -103,9 +107,10 @@ class EndpointService
      *
      * @return string The accept type
      */
-    public function getAcceptType(): string{
+    public function getAcceptType(): string
+    {
 
-        // Lets first look at the accept header
+        // Lets first look at the accept header.
         $acceptHeader = $this->request->headers->get('accept');
 
         switch ($acceptHeader) {
@@ -131,7 +136,7 @@ class EndpointService
         // As a backup we look at any file extenstion.
         $path = $this->request->getPathInfo();
         $pathparts = explode('.',$path);
-        if(count($pathparts) >= 2){
+        if (count($pathparts) >= 2) {
             $extension = end($pathparts);
             switch ($acceptHeader) {
                 case 'pdf':
@@ -149,16 +154,17 @@ class EndpointService
      *
      * @return Endpoint The found endpoint
      */
-    public function getEndpoint(): Endpoint{
+    public function getEndpoint(): Endpoint
+    {
 
         $endpoint = $this->getDoctrine()->getRepository('App:Endpoint')->findByMethodRegex($this->request->getMethod(), $this->request->getPathInfo());
-        if($endpoint === true){
+        if ($endpoint === true) {
             return $endpoint;
         }
 
         throw new Exception('No proper endpoint could be detirmend');
 
-    }//end getAcceptType()
+    }//end getEndpoint()
 
     /**
      * Builds a parameter array from the request.
@@ -169,10 +175,9 @@ class EndpointService
      */
     private function getParametersFromRequest(?array $parameters = []): array
     {
-
         // Lets make sure that we always have a path.
-        if (!isset($parameters['path'])) {
-            $parameters['path'] = [];
+        if (isset($parameters['path']) === false) {
+            $parameters['path'] = $this->request->getPathInfo();
         }
 
         $parameters['querystring'] = $this->request->getQueryString();
@@ -195,4 +200,4 @@ class EndpointService
 
         return $parameters;
     }//end getParametersFromRequest()
-}
+}//end class
