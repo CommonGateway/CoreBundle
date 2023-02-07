@@ -428,7 +428,7 @@ class InstallationService
             return false;
         }
 
-        if (!$this->validateJsonSchema($actionSchema)) {
+        if (!$this->validateJsonAction($actionSchema)) {
             $this->io->writeln($file->getFilename().' is not a valid json-schema object');
 
             return false;
@@ -521,7 +521,29 @@ class InstallationService
     }
 
     /**
-     * Perform a very basic check to see if a schema file is a valid json-schema file.
+     * Perform a very basic check to see if a schema file is a valid json-action file.
+     *
+     * @param array $schema
+     *
+     * @return bool
+     */
+    public function validateJsonAction(array $schema): bool
+    {
+        if (
+            array_key_exists('$id', $schema) &&
+            array_key_exists('$schema', $schema) &&
+            $schema['$schema'] == 'https://json-schema.org/draft/2020-12/action' &&
+            array_key_exists('listens', $schema) &&
+            array_key_exists('class', $schema)
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Perform a very basic check to see if a schema file is a valid json-mapping file.
      *
      * @param array $schema
      *
