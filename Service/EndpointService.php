@@ -103,6 +103,8 @@ class EndpointService
     /**
      * Gets the accept type based on the request.
      *
+     * This method breaks complexity rules but since a switch is the most efficent and performent way to do this we made a design decicion to allow it
+     *
      * @return string The accept type
      */
     public function getAcceptType(): string
@@ -136,7 +138,7 @@ class EndpointService
         $pathparts = explode('.', $path);
         if (count($pathparts) >= 2) {
             $extension = end($pathparts);
-            switch ($acceptHeader) {
+            switch ($extension) {
                 case 'pdf':
                     return 'pdf';
             }//end switch
