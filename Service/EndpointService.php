@@ -180,7 +180,7 @@ class EndpointService
         try {
             $parameters['body'] = $this->request->toArray();
         } catch (\Exception $exception) {
-          // In a lot of condtions (basically any illigal post) this will return an error. But we want an empty array instead
+          // In a lot of condtions (basically any illigal post) this will return an error. But we want an empty array instead.
         }
 
         $parameters['crude_body'] = $this->request->getContent();
