@@ -21,7 +21,8 @@
 |[setStyle](#installationservicesetstyle)|Set symfony style in order to output to the console.|
 |[uninstall](#installationserviceuninstall)||
 |[update](#installationserviceupdate)||
-|[validateJsonMapping](#installationservicevalidatejsonmapping)|Perform a very basic check to see if a schema file is a valid json-schema file.|
+|[validateJsonAction](#installationservicevalidatejsonaction)|Perform a very basic check to see if a schema file is a valid json-action file.|
+|[validateJsonMapping](#installationservicevalidatejsonmapping)|Perform a very basic check to see if a schema file is a valid json-mapping file.|
 |[validateJsonSchema](#installationservicevalidatejsonschema)|Performce a very basic check to see if a schema file is a valid json-schema file.|
 |[validateObjects](#installationservicevalidateobjects)|Validates the objects in the EAV setup.|
 |[validateSchemas](#installationservicevalidateschemas)|Validates the schemas in the EAV setup.|
@@ -302,6 +303,32 @@ Set symfony style in order to output to the console.
 <hr />
 
 
+### InstallationService::validateJsonAction  
+
+**Description**
+
+```php
+public validateJsonAction (array $schema)
+```
+
+Perform a very basic check to see if a schema file is a valid json-action file. 
+
+ 
+
+**Parameters**
+
+* `(array) $schema`
+
+**Return Values**
+
+`bool`
+
+
+
+
+<hr />
+
+
 ### InstallationService::validateJsonMapping  
 
 **Description**
@@ -310,7 +337,7 @@ Set symfony style in order to output to the console.
 public validateJsonMapping (array $schema)
 ```
 
-Perform a very basic check to see if a schema file is a valid json-schema file. 
+Perform a very basic check to see if a schema file is a valid json-mapping file. 
 
  
 
