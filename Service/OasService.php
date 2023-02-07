@@ -71,8 +71,6 @@ class OasService
         // Get all the endpoints.
         $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
 
-        // Lets start ann array of schema's that we must include.
-
         // Add the endpoints to the OAS.
         foreach ($endpoints as $endpoint) {
             // Add the path to the paths.
@@ -113,7 +111,7 @@ class OasService
                 'description' => $endpoint->getDescription(),
                 'requestBody' => [
                     'description' => $endpoint->getDescription(),
-                    //'required' => // Todo: figure out what we want to do here
+                    //'required' =>//Todo: figure out what we want to do here
                     'content' => [
                         'application/json' => '#/components/schemas/'.$endpoint->getEntites()->first()->getName(),
                         'application/xml'  => '#/components/schemas/'.$endpoint->getEntites()->first()->getName(),
@@ -130,7 +128,7 @@ class OasService
                 ],
             ];
 
-            // If we are dealing with a get request we do not expect an requestBody
+            // If we are dealing with a get request we do not expect an requestBody.
             if ($method === 'GET') {
                 unset($operations[$method]['requestBody']);
             }
@@ -139,7 +137,7 @@ class OasService
         }
 
         return $operations;
-    }
+    }//end getEndpointOperations()
 
     /**
      * Get the schema's for a given endpoint.
@@ -157,7 +155,7 @@ class OasService
         }
 
         return $schemas;
-    }//end getEndpointOperations()
+    }//end getEndpointSchemas()
 
     /**
      * Add the security to an OAS array.
