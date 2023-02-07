@@ -162,7 +162,6 @@ class CallService
             $config = array_merge_recursive($config, $source->getConfiguration());
         }
 
-
         // Set authenticion if needed
         $parsedUrl = parse_url($source->getLocation());
 
@@ -206,20 +205,19 @@ class CallService
         // Disabled because you cannot getBody after passing it here
         // $log->setResponseBody($responseClone->getBody()->getContents());
 
-        $this->logge->info('Made external call',[
-            'source' =>  $source->getId()->toString(),
-            'endpoint' =>  $source->getLocation().$endpoint,
-            'method' =>  $method,
-            'config' =>  $config,
-            'requestBody' =>  $config['body'] ?? null,
-            'requestHeaders' =>  $config['headers'] ?? null,
-            'responseBody' =>  $config['body'] ?? null,
-            'responseHeaders' => $responseClone->getHeaders(),
-            'responseStatus' => $responseClone->getStatus(),
+        $this->logge->info('Made external call', [
+            'source'             => $source->getId()->toString(),
+            'endpoint'           => $source->getLocation().$endpoint,
+            'method'             => $method,
+            'config'             => $config,
+            'requestBody'        => $config['body'] ?? null,
+            'requestHeaders'     => $config['headers'] ?? null,
+            'responseBody'       => $config['body'] ?? null,
+            'responseHeaders'    => $responseClone->getHeaders(),
+            'responseStatus'     => $responseClone->getStatus(),
             'responseStatusCode' => $responseClone->getStatusCode(),
-            'responseTime' => $stopTimer - $startTimer
+            'responseTime'       => $stopTimer - $startTimer,
         ]);
-
 
         $createCertificates && $this->removeFiles($config);
 
