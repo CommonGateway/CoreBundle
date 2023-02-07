@@ -422,102 +422,102 @@ class InstallationService
 
     public function handleAction($file)
     {
-        if (!$action = json_decode($file->getContents(), true)) {
+        if (!$actionSchema = json_decode($file->getContents(), true)) {
             $this->io->writeln($file->getFilename().' is not a valid json object');
 
             return false;
         }
 
-        if (!$this->validateJsonSchema($action)) {
+        if (!$this->validateJsonSchema($actionSchema)) {
             $this->io->writeln($file->getFilename().' is not a valid json-schema object');
 
             return false;
         }
 
-        if (!$entity = $this->em->getRepository('App:Action')->findOneBy(['reference' => $action['$id']])) {
-            $this->io->writeln('Action not present, creating action '.$action['title'].' under reference '.$action['$id']);
-            $entity = new Action();
+        if (!$actionObject = $this->em->getRepository('App:Action')->findOneBy(['reference' => $actionSchema['$id']])) {
+            $this->io->writeln('Action not present, creating action '.$actionSchema['title'].' under reference '.$actionSchema['$id']);
+            $actionObject = new Action();
         } else {
             $this->io->writeln('Action already present, looking to update');
-            if (array_key_exists('version', $action) && version_compare($action['version'], $entity->getVersion()) < 0) {
+            if (array_key_exists('version', $actionSchema) && version_compare($actionSchema['version'], $actionObject->getVersion()) < 0) {
                 $this->io->writeln('The new action has a version number equal or lower then the already present version');
             }
         }
 
-        $entity->fromSchema($action);
+        $actionObject->fromSchema($actionSchema);
 
-        $this->em->persist($entity);
+        $this->em->persist($actionObject);
 
         $this->em->flush();
-        $this->io->writeln('Done with action '.$entity->getName());
+        $this->io->writeln('Done with action '.$actionObject->getName());
     }
 
     public function handleMapping($file)
     {
-        if (!$mapping = json_decode($file->getContents(), true)) {
+        if (!$mappingSchema = json_decode($file->getContents(), true)) {
             $this->io->writeln($file->getFilename().' is not a valid json object');
 
             return false;
         }
 
-        if (!$this->validateJsonMapping($mapping)) {
+        if (!$this->validateJsonMapping($mappingSchema)) {
             $this->io->writeln($file->getFilename().' is not a valid json-mapping object');
 
             return false;
         }
 
-        if (!$entity = $this->em->getRepository('App:Mapping')->findOneBy(['reference' => $mapping['$id']])) {
-            $this->io->writeln('Maping not present, creating mapping '.$mapping['title'].' under reference '.$mapping['$id']);
-            $entity = new Mapping();
+        if (!$mappingObject = $this->em->getRepository('App:Mapping')->findOneBy(['reference' => $mappingSchema['$id']])) {
+            $this->io->writeln('Maping not present, creating mapping '.$mappingSchema['title'].' under reference '.$mappingSchema['$id']);
+            $mappingObject = new Mapping();
         } else {
             $this->io->writeln('Mapping already present, looking to update');
-            if (array_key_exists('version', $mapping) && version_compare($mapping['version'], $entity->getVersion()) < 0) {
+            if (array_key_exists('version', $mappingSchema) && version_compare($mappingSchema['version'], $mappingObject->getVersion()) < 0) {
                 $this->io->writeln('The new mapping has a version number equal or lower then the already present version');
             }
         }
 
-        $entity->fromSchema($mapping);
+        $mappingObject->fromSchema($mappingSchema);
 
-        $this->em->persist($entity);
+        $this->em->persist($mappingObject);
         $this->em->flush();
-        $this->io->writeln('Done with mapping '.$entity->getName());
+        $this->io->writeln('Done with mapping '.$mappingObject->getName());
     }
 
     public function handleSchema($file)
     {
-        if (!$schema = json_decode($file->getContents(), true)) {
+        if (!$entitySchema = json_decode($file->getContents(), true)) {
             $this->io->writeln($file->getFilename().' is not a valid json object');
 
             return false;
         }
 
-        if (!$this->validateJsonSchema($schema)) {
+        if (!$this->validateJsonSchema($entitySchema)) {
             $this->io->writeln($file->getFilename().' is not a valid json-schema object');
 
             return false;
         }
 
-        if (!$entity = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']])) {
-            $this->io->writeln('Schema not present, creating schema '.$schema['title'].' under reference '.$schema['$id']);
-            $entity = new Entity();
+        if (!$entityObject = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $entitySchema['$id']])) {
+            $this->io->writeln('Schema not present, creating schema '.$entitySchema['title'].' under reference '.$entitySchema['$id']);
+            $entityObject = new Entity();
         } else {
             $this->io->writeln('Schema already present, looking to update');
-            if (array_key_exists('version', $schema) && version_compare($schema['version'], $entity->getVersion()) < 0) {
+            if (array_key_exists('version', $entitySchema) && version_compare($entitySchema['version'], $entityObject->getVersion()) < 0) {
                 $this->io->writeln('The new schema has a version number equal or lower then the already present version');
             }
         }
 
-        $entity->fromSchema($schema);
+        $entityObject->fromSchema($entitySchema);
 
-        $this->em->persist($entity);
+        $this->em->persist($entityObject);
 
         // Add the schema to collection
         if (isset($this->collection)) {
-            $entity->addCollection($this->collection);
+            $entityObject->addCollection($this->collection);
         }
 
         $this->em->flush();
-        $this->io->writeln('Done with schema '.$entity->getName());
+        $this->io->writeln('Done with schema '.$entityObject->getName());
     }
 
     /**
