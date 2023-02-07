@@ -519,7 +519,7 @@ class InstallationService
         $this->em->flush();
         $this->io->writeln('Done with schema '.$entityObject->getName());
     }
-    
+
     /**
      * Perform a very basic check to see if a schema file is a valid json-action file.
      *
@@ -538,10 +538,10 @@ class InstallationService
         ) {
             return true;
         }
-        
+
         return false;
     }
-    
+
     /**
      * Perform a very basic check to see if a schema file is a valid json-mapping file.
      *
