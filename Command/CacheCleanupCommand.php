@@ -37,7 +37,7 @@ class CacheCleanupCommand extends Command
         $this
             ->setDescription('This command removes outdated objects from the cache')
             ->setHelp('This command allows you to run further installation an configuration actions afther installing a plugin');
-    }
+    }//end configure()
 
     /**
      * @param InputInterface  $input  Symfony style
@@ -50,5 +50,5 @@ class CacheCleanupCommand extends Command
         $this->cacheService->setStyle(new SymfonyStyle($input, $output));
 
         return $this->cacheService->cleanup();
-    }
+    }// execute()
 }
