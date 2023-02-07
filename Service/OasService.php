@@ -6,7 +6,7 @@ use App\Entity\Endpoint;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * This service handles the creation of OAS documentation for a given application
+ * This service handles the creation of OAS documentation for a given application.
  */
 class OasService
 {
@@ -25,29 +25,29 @@ class OasService
     }//end __construct()
 
     /**
-     * Create an OAS documentation for a specific application
+     * Create an OAS documentation for a specific application.
      *
      * @return array
      */
-    public function createOas():array
+    public function createOas(): array
     {
 
         // Setup the basic oas array.
         $oas = [
             'openapi' => '3.0.0',
-            'info' => [
-                'title' =>'',
-                'description'=>'',
-                'version'=> '0.1.9'
+            'info'    => [
+                'title'      => '',
+                'description'=> '',
+                'version'    => '0.1.9',
             ],
             'servers' => [
-                'url' => 'http://api.example.com/v1',
-                'description' => ''
+                'url'         => 'http://api.example.com/v1',
+                'description' => '',
             ],
-            'paths' => [],
+            'paths'      => [],
             'components' => [],
-            'security' => [],
-            'tags' => [],
+            'security'   => [],
+            'tags'       => [],
         ];
 
         // Add the endpoints.
@@ -60,18 +60,18 @@ class OasService
     }//end createOas();
 
     /**
-     * Adds the endpoints to an OAS Array
+     * Adds the endpoints to an OAS Array.
      *
      * @param array $oas The OAS array where security should be added
+     *
      * @return array The OAS array including security
      */
-    private function addEndpoints(array  $oas): array
+    private function addEndpoints(array $oas): array
     {
         // Get all the endpoints.
         $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
 
         // Lets start ann array of schema's that we must include.
-
 
         // Add the endpoints to the OAS.
         foreach ($endpoints as $endpoint) {
@@ -79,56 +79,55 @@ class OasService
             $oas['paths'][implode('/', $endpoint->getPath())] = $this->getEndpointOperations($endpoint);
 
             // Add the schemas.
-            $oas['components']['schemas'] = array_merge($oas['components']['schemas'],$this->getEndpointSchemas($endpoint));
+            $oas['components']['schemas'] = array_merge($oas['components']['schemas'], $this->getEndpointSchemas($endpoint));
         }
 
         return $oas;
     }//end addEndpoints()
 
     /**
-     * Gets the operations for a given endpoint
+     * Gets the operations for a given endpoint.
      *
      * @param Endpoint $endpoint The endpoint to create operations for
+     *
      * @return array The operations for the given endpoint
      */
     private function getEndpointOperations(Endpoint $endpoint): array
     {
-
-        $operations =[];
+        $operations = [];
 
         // Lets take a look at the methods.
         foreach ($endpoint->getMethods() as $method) {
             // We dont do a request body on GET, DELETE and UPDATE requests.
-            if (in_array($method,['DELETE','UPDATE']) === true) {
+            if (in_array($method, ['DELETE', 'UPDATE']) === true) {
                 $operations[$method] = [
-                    'summary' => $endpoint->getTitle(),
-                    'description' => $endpoint->getDescription()
+                    'summary'     => $endpoint->getTitle(),
+                    'description' => $endpoint->getDescription(),
                 ];
                 continue;
             }
 
-
             // In all other cases we want include a schema.
             $operations[$method] = [
-                'summary' => $endpoint->getTitle(),
+                'summary'     => $endpoint->getTitle(),
                 'description' => $endpoint->getDescription(),
                 'requestBody' => [
                     'description' => $endpoint->getDescription(),
                     //'required' => // Todo: figure out what we want to do here
                     'content' => [
                         'application/json' => '#/components/schemas/'.$endpoint->getEntites()->first()->getName(),
-                        'application/xml' => '#/components/schemas/'.$endpoint->getEntites()->first()->getName()
-                    ]
+                        'application/xml'  => '#/components/schemas/'.$endpoint->getEntites()->first()->getName(),
+                    ],
                 ],
                 'responses' => [
                     '200' => [
                         'description' => $endpoint->getDescription(),
-                        'content' => [
+                        'content'     => [
                             'application/json' => '#/components/schemas/'.$endpoint->getEntites()->first()->getName(),
-                            'application/xml' => '#/components/schemas/'.$endpoint->getEntites()->first()->getName()
-                        ]
-                    ]
-                ]
+                            'application/xml'  => '#/components/schemas/'.$endpoint->getEntites()->first()->getName(),
+                        ],
+                    ],
+                ],
             ];
 
             // If we are dealing with a get request we do not expect an requestBody
@@ -137,16 +136,16 @@ class OasService
             }
 
             // TODO: Collection endpoints
-
         }
 
         return $operations;
     }
 
     /**
-     * Get the schema's for a given endpoint
+     * Get the schema's for a given endpoint.
      *
      * @param Endpoint $endpoint The endpoint
+     *
      * @return array The schema's for that endpoint
      */
     private function getEndpointSchemas(Endpoint $endpoint): array
@@ -161,15 +160,14 @@ class OasService
     }//end getEndpointOperations()
 
     /**
-     * Add the security to an OAS array
+     * Add the security to an OAS array.
      *
      * @param array $oas The OAS array where security should be added
+     *
      * @return array The OAS array including security
      */
     private function addSecurity(array $oas): array
     {
-
-
         return $oas;
     }//end addSecurity()
 }//end class

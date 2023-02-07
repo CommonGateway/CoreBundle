@@ -2,19 +2,16 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
-use App\Entity\Attribute;
-use App\Entity\Entity;
 use App\Event\ActionEvent;
 use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Responce;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
- * This service handles calls on the ZZ endpoint (or in other words abstract routing)
+ * This service handles calls on the ZZ endpoint (or in other words abstract routing).
  */
 class EndpointService
 {
@@ -39,10 +36,10 @@ class EndpointService
     private RequestService $requestService;
 
     /**
-     * @param EntityManagerInterface $entityManager The enitymanger
-     * @param Request $request The request
-     * @param SerializerInterface $serializer The serializer
-     * @param RequestService $requestService The request service
+     * @param EntityManagerInterface $entityManager  The enitymanger
+     * @param Request                $request        The request
+     * @param SerializerInterface    $serializer     The serializer
+     * @param RequestService         $requestService The request service
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -57,7 +54,7 @@ class EndpointService
     }//end __construct()
 
     /**
-     * Handle the request afther it commes in trough the ZZ controller
+     * Handle the request afther it commes in trough the ZZ controller.
      *
      * @return Responce
      */
@@ -66,7 +63,7 @@ class EndpointService
 
         // Get the  and path parts.
         $path = $this->request->getPathInfo();
-        $pathParts = explode('/',$path);
+        $pathParts = explode('/', $path);
 
         // Get the accept type.
         $accept = $this->getAcceptType();
@@ -92,10 +89,11 @@ class EndpointService
         // Last but not least we check for throw.
         if (count($endpoint->getThrows()) > 0) {
             $parameters['response'] = new Response('Object is not supported by this endpoint', '200');
-            foreach($endpoint->getThrows() as $throw){
+            foreach ($endpoint->getThrows() as $throw) {
                 $event = new ActionEvent('commongateway.action.event', $parameters, $throw);
                 $this->eventDispatcher->dispatchdispatch($event, 'commongateway.action.event');
             }
+
             return $parameters['response'];
         }
 
@@ -103,7 +101,7 @@ class EndpointService
     }//end handleRequest()
 
     /**
-     * Gets the accept type based on the request
+     * Gets the accept type based on the request.
      *
      * @return string The accept type
      */
@@ -135,7 +133,7 @@ class EndpointService
 
         // As a backup we look at any file extenstion.
         $path = $this->request->getPathInfo();
-        $pathparts = explode('.',$path);
+        $pathparts = explode('.', $path);
         if (count($pathparts) >= 2) {
             $extension = end($pathparts);
             switch ($acceptHeader) {
@@ -146,30 +144,27 @@ class EndpointService
 
         // If we endup we cant detirmine what kind of accept we need so lets throw an error.
         throw new Exception('No proper accept could be detirmend');
-
     }//end getAcceptType()
 
     /**
-     * Gets the endpoint based on the request
+     * Gets the endpoint based on the request.
      *
      * @return Endpoint The found endpoint
      */
     public function getEndpoint(): Endpoint
     {
-
         $endpoint = $this->getDoctrine()->getRepository('App:Endpoint')->findByMethodRegex($this->request->getMethod(), $this->request->getPathInfo());
         if ($endpoint === true) {
             return $endpoint;
         }
 
         throw new Exception('No proper endpoint could be detirmend');
-
     }//end getEndpoint()
 
     /**
      * Builds a parameter array from the request.
      *
-     * @param ?array   $parameters An optional starting array of parameters
+     * @param ?array $parameters An optional starting array of parameters
      *
      * @return array The parameter arrau
      */
