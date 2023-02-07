@@ -422,34 +422,34 @@ class InstallationService
 
     public function handleAction($file)
     {
-        if (!$action = json_decode($file->getContents(), true)) {
+        if (!$actionJson = json_decode($file->getContents(), true)) {
             $this->io->writeln($file->getFilename().' is not a valid json object');
 
             return false;
         }
 
-        if (!$this->validateJsonSchema($action)) {
+        if (!$this->validateJsonSchema($actionJson)) {
             $this->io->writeln($file->getFilename().' is not a valid json-schema object');
 
             return false;
         }
 
-        if (!$entity = $this->em->getRepository('App:Action')->findOneBy(['reference' => $action['$id']])) {
-            $this->io->writeln('Action not present, creating action '.$action['title'].' under reference '.$action['$id']);
-            $entity = new Action();
+        if (!$actionObject = $this->em->getRepository('App:Action')->findOneBy(['reference' => $actionJson['$id']])) {
+            $this->io->writeln('Action not present, creating action '.$actionJson['title'].' under reference '.$actionJson['$id']);
+            $actionObject = new Action();
         } else {
             $this->io->writeln('Action already present, looking to update');
-            if (array_key_exists('version', $action) && version_compare($action['version'], $entity->getVersion()) < 0) {
+            if (array_key_exists('version', $actionJson) && version_compare($actionJson['version'], $actionObject->getVersion()) < 0) {
                 $this->io->writeln('The new action has a version number equal or lower then the already present version');
             }
         }
 
-        $entity->fromSchema($action);
+        $actionObject->fromSchema($actionJson);
 
-        $this->em->persist($entity);
+        $this->em->persist($actionObject);
 
         $this->em->flush();
-        $this->io->writeln('Done with action '.$entity->getName());
+        $this->io->writeln('Done with action '.$actionObject->getName());
     }
 
     public function handleMapping($file)
