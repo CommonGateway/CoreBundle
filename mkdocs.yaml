@@ -13,9 +13,5 @@ nav:
       InstallationService: "./classes/Service/InstallationService.md"
       RequestService: "./classes/Service/RequestService.md"
 
-
-
-    
-
 theme:
   name: readthedocs
