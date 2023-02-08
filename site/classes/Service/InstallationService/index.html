@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../../img/favicon.ico" />
+    <title>InstallationService - CoreBundle documentation</title>
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "InstallationService";
+        var mkdocs_page_input_path = "classes\\Service\\InstallationService.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../../../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../../.." class="icon icon-home"> CoreBundle documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Services</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../AuthenticationService/">AuthenticationService</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CacheService/">CacheService</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CallService/">CallService</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ComposerService/">ComposerService</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EavService/">EavService</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../FileService/">FileService</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">InstallationService</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#methods">Methods</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#installationservice__construct">InstallationService::__construct</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#installationservicecomposerupdate">InstallationService::composerupdate</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#installationservicehandleaction">InstallationService::handleAction</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#installationservicehandledata">InstallationService::handleData</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#installationservicehandleinstaller">InstallationService::handleInstaller</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#installationservicehandlemapping">InstallationService::handleMapping</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#installationservicehandleschema">InstallationService::handleSchema</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#installationserviceinstall">InstallationService::install</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#installationservicesetstyle">InstallationService::setStyle</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#installationserviceuninstall">InstallationService::uninstall</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#installationserviceupdate">InstallationService::update</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#installationservicevalidatejsonaction">InstallationService::validateJsonAction</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#installationservicevalidatejsonmapping">InstallationService::validateJsonMapping</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#installationservicevalidatejsonschema">InstallationService::validateJsonSchema</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#installationservicevalidateobjects">InstallationService::validateObjects</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#installationservicevalidateschemas">InstallationService::validateSchemas</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#installationservicevalidatevalues">InstallationService::validateValues</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../RequestService/">RequestService</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../..">CoreBundle documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>Services &raquo;</li>
+      <li>InstallationService</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/CommonGateway/CoreBundle/edit/master/docs/classes/Service/InstallationService.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="commongatewaycorebundleserviceinstallationservice">CommonGateway\CoreBundle\Service\InstallationService</h1>
+<h2 id="methods">Methods</h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#installationservice__construct">__construct</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="#installationservicecomposerupdate">composerupdate</a></td>
+<td>Updates all commonground bundles on the common gateway installation.</td>
+</tr>
+<tr>
+<td><a href="#installationservicehandleaction">handleAction</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="#installationservicehandledata">handleData</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="#installationservicehandleinstaller">handleInstaller</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="#installationservicehandlemapping">handleMapping</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="#installationservicehandleschema">handleSchema</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="#installationserviceinstall">install</a></td>
+<td>Performs installation actions on a common Gataway bundle.</td>
+</tr>
+<tr>
+<td><a href="#installationservicesetstyle">setStyle</a></td>
+<td>Set symfony style in order to output to the console.</td>
+</tr>
+<tr>
+<td><a href="#installationserviceuninstall">uninstall</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="#installationserviceupdate">update</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="#installationservicevalidatejsonaction">validateJsonAction</a></td>
+<td>Perform a very basic check to see if a schema file is a valid json-action file.</td>
+</tr>
+<tr>
+<td><a href="#installationservicevalidatejsonmapping">validateJsonMapping</a></td>
+<td>Perform a very basic check to see if a schema file is a valid json-mapping file.</td>
+</tr>
+<tr>
+<td><a href="#installationservicevalidatejsonschema">validateJsonSchema</a></td>
+<td>Performce a very basic check to see if a schema file is a valid json-schema file.</td>
+</tr>
+<tr>
+<td><a href="#installationservicevalidateobjects">validateObjects</a></td>
+<td>Validates the objects in the EAV setup.</td>
+</tr>
+<tr>
+<td><a href="#installationservicevalidateschemas">validateSchemas</a></td>
+<td>Validates the schemas in the EAV setup.</td>
+</tr>
+<tr>
+<td><a href="#installationservicevalidatevalues">validateValues</a></td>
+<td>Validates the objects in the EAV setup.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="installationservice__construct">InstallationService::__construct</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php"> __construct (void)
+</code></pre>
+<p><strong>Parameters</strong></p>
+<p><code>This function has no parameters.</code></p>
+<p><strong>Return Values</strong></p>
+<p><code>void</code></p>
+<hr />
+
+<h3 id="installationservicecomposerupdate">InstallationService::composerupdate</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public composerupdate (array $config)
+</code></pre>
+<p>Updates all commonground bundles on the common gateway installation. </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(array) $config</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>int</code></p>
+<hr />
+
+<h3 id="installationservicehandleaction">InstallationService::handleAction</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php"> handleAction (void)
+</code></pre>
+<p><strong>Parameters</strong></p>
+<p><code>This function has no parameters.</code></p>
+<p><strong>Return Values</strong></p>
+<p><code>void</code></p>
+<hr />
+
+<h3 id="installationservicehandledata">InstallationService::handleData</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php"> handleData (void)
+</code></pre>
+<p><strong>Parameters</strong></p>
+<p><code>This function has no parameters.</code></p>
+<p><strong>Return Values</strong></p>
+<p><code>void</code></p>
+<hr />
+
+<h3 id="installationservicehandleinstaller">InstallationService::handleInstaller</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php"> handleInstaller (void)
+</code></pre>
+<p><strong>Parameters</strong></p>
+<p><code>This function has no parameters.</code></p>
+<p><strong>Return Values</strong></p>
+<p><code>void</code></p>
+<hr />
+
+<h3 id="installationservicehandlemapping">InstallationService::handleMapping</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php"> handleMapping (void)
+</code></pre>
+<p><strong>Parameters</strong></p>
+<p><code>This function has no parameters.</code></p>
+<p><strong>Return Values</strong></p>
+<p><code>void</code></p>
+<hr />
+
+<h3 id="installationservicehandleschema">InstallationService::handleSchema</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php"> handleSchema (void)
+</code></pre>
+<p><strong>Parameters</strong></p>
+<p><code>This function has no parameters.</code></p>
+<p><strong>Return Values</strong></p>
+<p><code>void</code></p>
+<hr />
+
+<h3 id="installationserviceinstall">InstallationService::install</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public install (\SymfonyStyle $io, string $bundle, bool $noSchema)
+</code></pre>
+<p>Performs installation actions on a common Gataway bundle. </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(\SymfonyStyle) $io</code></li>
+<li><code>(string) $bundle</code></li>
+<li><code>(bool) $noSchema</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>int</code></p>
+<hr />
+
+<h3 id="installationservicesetstyle">InstallationService::setStyle</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public setStyle (\SymfonyStyle $io)
+</code></pre>
+<p>Set symfony style in order to output to the console. </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(\SymfonyStyle) $io</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>self</code></p>
+<hr />
+
+<h3 id="installationserviceuninstall">InstallationService::uninstall</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php"> uninstall (void)
+</code></pre>
+<p><strong>Parameters</strong></p>
+<p><code>This function has no parameters.</code></p>
+<p><strong>Return Values</strong></p>
+<p><code>void</code></p>
+<hr />
+
+<h3 id="installationserviceupdate">InstallationService::update</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php"> update (void)
+</code></pre>
+<p><strong>Parameters</strong></p>
+<p><code>This function has no parameters.</code></p>
+<p><strong>Return Values</strong></p>
+<p><code>void</code></p>
+<hr />
+
+<h3 id="installationservicevalidatejsonaction">InstallationService::validateJsonAction</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public validateJsonAction (array $schema)
+</code></pre>
+<p>Perform a very basic check to see if a schema file is a valid json-action file. </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(array) $schema</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>bool</code></p>
+<hr />
+
+<h3 id="installationservicevalidatejsonmapping">InstallationService::validateJsonMapping</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public validateJsonMapping (array $schema)
+</code></pre>
+<p>Perform a very basic check to see if a schema file is a valid json-mapping file. </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(array) $schema</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>bool</code></p>
+<hr />
+
+<h3 id="installationservicevalidatejsonschema">InstallationService::validateJsonSchema</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public validateJsonSchema (array $schema)
+</code></pre>
+<p>Performce a very basic check to see if a schema file is a valid json-schema file. </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(array) $schema</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>bool</code></p>
+<hr />
+
+<h3 id="installationservicevalidateobjects">InstallationService::validateObjects</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public validateObjects (void)
+</code></pre>
+<p>Validates the objects in the EAV setup. </p>
+<p><strong>Parameters</strong></p>
+<p><code>This function has no parameters.</code></p>
+<p><strong>Return Values</strong></p>
+<p><code>void</code></p>
+<hr />
+
+<h3 id="installationservicevalidateschemas">InstallationService::validateSchemas</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public validateSchemas (void)
+</code></pre>
+<p>Validates the schemas in the EAV setup. </p>
+<p><strong>Parameters</strong></p>
+<p><code>This function has no parameters.</code></p>
+<p><strong>Return Values</strong></p>
+<p><code>void</code></p>
+<hr />
+
+<h3 id="installationservicevalidatevalues">InstallationService::validateValues</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public validateValues (void)
+</code></pre>
+<p>Validates the objects in the EAV setup. </p>
+<p><strong>Parameters</strong></p>
+<p><code>This function has no parameters.</code></p>
+<p><strong>Return Values</strong></p>
+<p><code>void</code></p>
+<hr />
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../FileService/" class="btn btn-neutral float-left" title="FileService"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../RequestService/" class="btn btn-neutral float-right" title="RequestService">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/CommonGateway/CoreBundle" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../FileService/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../RequestService/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '../../..';</script>
+    <script src="../../../js/theme_extra.js" defer></script>
+    <script src="../../../js/theme.js" defer></script>
+      <script src="../../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

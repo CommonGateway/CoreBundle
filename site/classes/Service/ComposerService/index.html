@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../../img/favicon.ico" />
+    <title>ComposerService - CoreBundle documentation</title>
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "ComposerService";
+        var mkdocs_page_input_path = "classes\\Service\\ComposerService.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../../../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../../.." class="icon icon-home"> CoreBundle documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Services</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../AuthenticationService/">AuthenticationService</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CacheService/">CacheService</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CallService/">CallService</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">ComposerService</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#methods">Methods</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#composerserviceaudit">ComposerService::audit</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#composerservicegetall">ComposerService::getAll</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#composerservicegetlockfile">ComposerService::getLockFile</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#composerservicegetsingle">ComposerService::getSingle</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#composerserviceremove">ComposerService::remove</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#composerservicerequire">ComposerService::require</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#composerservicesearch">ComposerService::search</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#composerserviceupgrade">ComposerService::upgrade</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EavService/">EavService</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../FileService/">FileService</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../InstallationService/">InstallationService</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../RequestService/">RequestService</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../..">CoreBundle documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>Services &raquo;</li>
+      <li>ComposerService</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/CommonGateway/CoreBundle/edit/master/docs/classes/Service/ComposerService.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="commongatewaycorebundleservicecomposerservice">CommonGateway\CoreBundle\Service\ComposerService</h1>
+<h2 id="methods">Methods</h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#composerserviceaudit">audit</a></td>
+<td>Search for a given term.</td>
+</tr>
+<tr>
+<td><a href="#composerservicegetall">getAll</a></td>
+<td>Show al packadges installed trough composer.</td>
+</tr>
+<tr>
+<td><a href="#composerservicegetlockfile">getLockFile</a></td>
+<td>Gets all installed plugins from the lock file.</td>
+</tr>
+<tr>
+<td><a href="#composerservicegetsingle">getSingle</a></td>
+<td>Show a single packadge installed trough composer.</td>
+</tr>
+<tr>
+<td><a href="#composerserviceremove">remove</a></td>
+<td>Show a single packadge installed trough composer.</td>
+</tr>
+<tr>
+<td><a href="#composerservicerequire">require</a></td>
+<td>Show a single packadge installed trough composer.</td>
+</tr>
+<tr>
+<td><a href="#composerservicesearch">search</a></td>
+<td>Search for a given term.</td>
+</tr>
+<tr>
+<td><a href="#composerserviceupgrade">upgrade</a></td>
+<td>Show a single packadge installed trough composer.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="composerserviceaudit">ComposerService::audit</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public audit (array $options)
+</code></pre>
+<p>Search for a given term. </p>
+<p>See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(array) $options</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>array</code></p>
+<hr />
+
+<h3 id="composerservicegetall">ComposerService::getAll</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public getAll (array $options)
+</code></pre>
+<p>Show al packadges installed trough composer. </p>
+<p>See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(array) $options</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>array</code></p>
+<hr />
+
+<h3 id="composerservicegetlockfile">ComposerService::getLockFile</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public getLockFile (void)
+</code></pre>
+<p>Gets all installed plugins from the lock file. </p>
+<p><strong>Parameters</strong></p>
+<p><code>This function has no parameters.</code></p>
+<p><strong>Return Values</strong></p>
+<p><code>void</code></p>
+<hr />
+
+<h3 id="composerservicegetsingle">ComposerService::getSingle</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public getSingle (array $options)
+</code></pre>
+<p>Show a single packadge installed trough composer. </p>
+<p>See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(array) $options</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>array</code></p>
+<hr />
+
+<h3 id="composerserviceremove">ComposerService::remove</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public remove (array $options)
+</code></pre>
+<p>Show a single packadge installed trough composer. </p>
+<p>See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(array) $options</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>array</code></p>
+<hr />
+
+<h3 id="composerservicerequire">ComposerService::require</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public require (array $options)
+</code></pre>
+<p>Show a single packadge installed trough composer. </p>
+<p>See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(array) $options</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>array</code></p>
+<hr />
+
+<h3 id="composerservicesearch">ComposerService::search</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public search (array $options)
+</code></pre>
+<p>Search for a given term. </p>
+<p>See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(array) $options</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>array</code></p>
+<hr />
+
+<h3 id="composerserviceupgrade">ComposerService::upgrade</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public upgrade (array $options)
+</code></pre>
+<p>Show a single packadge installed trough composer. </p>
+<p>See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(array) $options</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>array</code></p>
+<hr />
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../CallService/" class="btn btn-neutral float-left" title="CallService"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../EavService/" class="btn btn-neutral float-right" title="EavService">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/CommonGateway/CoreBundle" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../CallService/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../EavService/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '../../..';</script>
+    <script src="../../../js/theme_extra.js" defer></script>
+    <script src="../../../js/theme.js" defer></script>
+      <script src="../../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

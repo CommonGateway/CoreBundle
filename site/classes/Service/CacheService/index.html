@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../../img/favicon.ico" />
+    <title>CacheService - CoreBundle documentation</title>
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "CacheService";
+        var mkdocs_page_input_path = "classes\\Service\\CacheService.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../../../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../../.." class="icon icon-home"> CoreBundle documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Services</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../AuthenticationService/">AuthenticationService</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">CacheService</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#methods">Methods</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#cacheservice__construct">CacheService::__construct</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cacheservicecacheendpoint">CacheService::cacheEndpoint</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cacheservicecacheobject">CacheService::cacheObject</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cacheservicecacheshema">CacheService::cacheShema</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cacheservicecleanup">CacheService::cleanup</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cacheservicegetendpoint">CacheService::getEndpoint</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cacheservicegetendpoints">CacheService::getEndpoints</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cacheservicegetobject">CacheService::getObject</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cacheservicegetschema">CacheService::getSchema</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cacheserviceremoveendpoint">CacheService::removeEndpoint</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cacheserviceremoveobject">CacheService::removeObject</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cacheserviceremoveschema">CacheService::removeSchema</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cacheservicesearchobjects">CacheService::searchObjects</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cacheservicesetpagination">CacheService::setPagination</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cacheservicesetstyle">CacheService::setStyle</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cacheservicewarmup">CacheService::warmup</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CallService/">CallService</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ComposerService/">ComposerService</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EavService/">EavService</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../FileService/">FileService</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../InstallationService/">InstallationService</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../RequestService/">RequestService</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../..">CoreBundle documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>Services &raquo;</li>
+      <li>CacheService</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/CommonGateway/CoreBundle/edit/master/docs/classes/Service/CacheService.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="commongatewaycorebundleservicecacheservice">CommonGateway\CoreBundle\Service\CacheService</h1>
+<p>Service to call external sources.</p>
+<p>This service provides a guzzle wrapper to work with sources in the common gateway.  </p>
+<h2 id="methods">Methods</h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#cacheservice__construct">__construct</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="#cacheservicecacheendpoint">cacheEndpoint</a></td>
+<td>Put a single endpoint into the cache.</td>
+</tr>
+<tr>
+<td><a href="#cacheservicecacheobject">cacheObject</a></td>
+<td>Put a single object into the cache.</td>
+</tr>
+<tr>
+<td><a href="#cacheservicecacheshema">cacheShema</a></td>
+<td>Put a single schema into the cache.</td>
+</tr>
+<tr>
+<td><a href="#cacheservicecleanup">cleanup</a></td>
+<td>Remov non-exisitng items from the cashe.</td>
+</tr>
+<tr>
+<td><a href="#cacheservicegetendpoint">getEndpoint</a></td>
+<td>Get a single endpoint from the cache.</td>
+</tr>
+<tr>
+<td><a href="#cacheservicegetendpoints">getEndpoints</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="#cacheservicegetobject">getObject</a></td>
+<td>Get a single object from the cache.</td>
+</tr>
+<tr>
+<td><a href="#cacheservicegetschema">getSchema</a></td>
+<td>Get a single schema from the cache.</td>
+</tr>
+<tr>
+<td><a href="#cacheserviceremoveendpoint">removeEndpoint</a></td>
+<td>Removes an endpoint from the cache.</td>
+</tr>
+<tr>
+<td><a href="#cacheserviceremoveobject">removeObject</a></td>
+<td>Removes an object from the cache.</td>
+</tr>
+<tr>
+<td><a href="#cacheserviceremoveschema">removeSchema</a></td>
+<td>Removes an Schema from the cache.</td>
+</tr>
+<tr>
+<td><a href="#cacheservicesearchobjects">searchObjects</a></td>
+<td>Searches the object store for objects containing the search string.</td>
+</tr>
+<tr>
+<td><a href="#cacheservicesetpagination">setPagination</a></td>
+<td>Decides the pagination values.</td>
+</tr>
+<tr>
+<td><a href="#cacheservicesetstyle">setStyle</a></td>
+<td>Set symfony style in order to output to the console.</td>
+</tr>
+<tr>
+<td><a href="#cacheservicewarmup">warmup</a></td>
+<td>Throws all available objects into the cache.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cacheservice__construct">CacheService::__construct</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php"> __construct (void)
+</code></pre>
+<p><strong>Parameters</strong></p>
+<p><code>This function has no parameters.</code></p>
+<p><strong>Return Values</strong></p>
+<p><code>void</code></p>
+<hr />
+
+<h3 id="cacheservicecacheendpoint">CacheService::cacheEndpoint</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public cacheEndpoint (\Endpoint $endpoint)
+</code></pre>
+<p>Put a single endpoint into the cache. </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(\Endpoint) $endpoint</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>\Endpoint</code></p>
+<hr />
+
+<h3 id="cacheservicecacheobject">CacheService::cacheObject</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public cacheObject (\ObjectEntity $objectEntity)
+</code></pre>
+<p>Put a single object into the cache. </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(\ObjectEntity) $objectEntity</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>\ObjectEntity</code></p>
+<hr />
+
+<h3 id="cacheservicecacheshema">CacheService::cacheShema</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public cacheShema (\Entity $entity)
+</code></pre>
+<p>Put a single schema into the cache. </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(\Entity) $entity</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>\Entity</code></p>
+<hr />
+
+<h3 id="cacheservicecleanup">CacheService::cleanup</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public cleanup (void)
+</code></pre>
+<p>Remov non-exisitng items from the cashe. </p>
+<p><strong>Parameters</strong></p>
+<p><code>This function has no parameters.</code></p>
+<p><strong>Return Values</strong></p>
+<p><code>void</code></p>
+<hr />
+
+<h3 id="cacheservicegetendpoint">CacheService::getEndpoint</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public getEndpoint (\Uuid $id)
+</code></pre>
+<p>Get a single endpoint from the cache. </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(\Uuid) $id</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>array|null</code></p>
+<hr />
+
+<h3 id="cacheservicegetendpoints">CacheService::getEndpoints</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php"> getEndpoints (void)
+</code></pre>
+<p><strong>Parameters</strong></p>
+<p><code>This function has no parameters.</code></p>
+<p><strong>Return Values</strong></p>
+<p><code>void</code></p>
+<hr />
+
+<h3 id="cacheservicegetobject">CacheService::getObject</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public getObject (string $id)
+</code></pre>
+<p>Get a single object from the cache. </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(string) $id</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>array|null</code></p>
+<hr />
+
+<h3 id="cacheservicegetschema">CacheService::getSchema</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public getSchema (\Uuid $id)
+</code></pre>
+<p>Get a single schema from the cache. </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(\Uuid) $id</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>array|null</code></p>
+<hr />
+
+<h3 id="cacheserviceremoveendpoint">CacheService::removeEndpoint</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public removeEndpoint (\Endpoint $endpoint)
+</code></pre>
+<p>Removes an endpoint from the cache. </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(\Endpoint) $endpoint</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>void</code></p>
+<hr />
+
+<h3 id="cacheserviceremoveobject">CacheService::removeObject</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public removeObject (\ObjectEntity $objectEntity)
+</code></pre>
+<p>Removes an object from the cache. </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(\ObjectEntity) $objectEntity</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>void</code></p>
+<hr />
+
+<h3 id="cacheserviceremoveschema">CacheService::removeSchema</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public removeSchema (\Entity $entity)
+</code></pre>
+<p>Removes an Schema from the cache. </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(\Entity) $entity</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>void</code></p>
+<hr />
+
+<h3 id="cacheservicesearchobjects">CacheService::searchObjects</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public searchObjects (string $search, array $filter, array $entities)
+</code></pre>
+<p>Searches the object store for objects containing the search string. </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(string) $search</code>
+: a string to search for within the given context  </li>
+<li><code>(array) $filter</code>
+: an array of dot.notation filters for wich to search with  </li>
+<li><code>(array) $entities</code>
+: schemas to limit te search to  </li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>array|null</code></p>
+<p><strong>Throws Exceptions</strong></p>
+<p><code>\Exception</code></p>
+<hr />
+
+<h3 id="cacheservicesetpagination">CacheService::setPagination</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public setPagination (int $limit, int $start, array $filters)
+</code></pre>
+<p>Decides the pagination values. </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(int) $limit</code>
+: The resulting limit  </li>
+<li><code>(int) $start</code>
+: The resulting start value  </li>
+<li><code>(array) $filters</code>
+: The filters  </li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>array</code></p>
+<hr />
+
+<h3 id="cacheservicesetstyle">CacheService::setStyle</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public setStyle (\SymfonyStyle $io)
+</code></pre>
+<p>Set symfony style in order to output to the console. </p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><code>(\SymfonyStyle) $io</code></li>
+</ul>
+<p><strong>Return Values</strong></p>
+<p><code>self</code></p>
+<hr />
+
+<h3 id="cacheservicewarmup">CacheService::warmup</h3>
+<p><strong>Description</strong></p>
+<pre><code class="language-php">public warmup (void)
+</code></pre>
+<p>Throws all available objects into the cache. </p>
+<p><strong>Parameters</strong></p>
+<p><code>This function has no parameters.</code></p>
+<p><strong>Return Values</strong></p>
+<p><code>void</code></p>
+<hr />
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../AuthenticationService/" class="btn btn-neutral float-left" title="AuthenticationService"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../CallService/" class="btn btn-neutral float-right" title="CallService">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/CommonGateway/CoreBundle" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../AuthenticationService/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../CallService/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '../../..';</script>
+    <script src="../../../js/theme_extra.js" defer></script>
+    <script src="../../../js/theme.js" defer></script>
+      <script src="../../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
