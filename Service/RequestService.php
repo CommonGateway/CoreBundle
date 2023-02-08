@@ -571,9 +571,14 @@ class RequestService
 
         $this->entityManager->flush();
 
-        if (isset($eventType) && isset($this->object)) {
-            $event = new ActionEvent($eventType, ['response' => $this->object->toArray(), 'entity' => $this->object->getEntity()->getId()->toString()]);
+        if (isset($eventType) && isset($result)) {
+            $event = new ActionEvent($eventType, ['response' => $result, 'entity' => $this->object->getEntity()->getId()->toString()]);
             $this->eventDispatcher->dispatch($event, $event->getType());
+
+            // If we have a response return that
+            if ($event->getData()['response']) {
+                return new Response(json_encode($event->getData()['response']));
+            }
         }
 
         $this->handleMetadataSelf($result, $metadataSelf);
