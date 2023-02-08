@@ -3,7 +3,9 @@ site_name: CoreBundle documentation
 repo_url: https://github.com/CommonGateway/CoreBundle
 docs_dir: docs
 
-theme: readthedocs
+theme: 
+  name: readthedocs
+
 nav:
 
   - Home: index.md
