@@ -5,6 +5,8 @@ docs_dir: docs
 
 theme: readthedocs
 nav:
+
+  - Home: index.md
   - Services:
       - AuthenticationService: "./classes/Service/AuthenticationService.md"
       - CacheService: "./classes/Service/CacheService.md"
