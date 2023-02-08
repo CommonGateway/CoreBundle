@@ -2,10 +2,6 @@
 
 Handles incomming request from endpoints or controllers that relate to the gateways object structure (eav).
 
-
-
-
-
 ## Methods
 
 | Name | Description |
@@ -22,9 +18,6 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 |[searchRequestHandler](#requestservicesearchrequesthandler)|This function searches all the objectEntities and formats the data.|
 |[shouldWeUnsetEmbedded](#requestserviceshouldweunsetembedded)|If embedded should be shown or not.|
 
-
-
-
 ### RequestService::__construct  
 
 **Description**
@@ -32,10 +25,6 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 ```php
  __construct (void)
 ```
-
- 
-
- 
 
 **Parameters**
 
@@ -45,9 +34,7 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 
 `void`
 
-
 <hr />
-
 
 ### RequestService::checkEmbedded  
 
@@ -57,9 +44,7 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 public checkEmbedded (object|array $result)
 ```
 
-If embedded should be shown or not. 
-
- 
+If embedded should be shown or not.
 
 **Parameters**
 
@@ -70,11 +55,7 @@ If embedded should be shown or not.
 
 `array|null`
 
-
-
-
 <hr />
-
 
 ### RequestService::createResponse  
 
@@ -84,9 +65,7 @@ If embedded should be shown or not.
 public createResponse ( $data)
 ```
 
-Creating the responce object. 
-
- 
+Creating the responce object.
 
 **Parameters**
 
@@ -96,11 +75,7 @@ Creating the responce object.
 
 `\CommonGateway\CoreBundle\Service\Response`
 
-
-
-
 <hr />
-
 
 ### RequestService::getId  
 
@@ -110,9 +85,7 @@ Creating the responce object.
 public getId (array $object)
 ```
 
-Get the ID from given parameters. 
-
- 
+Get the ID from given parameters.
 
 **Parameters**
 
@@ -122,11 +95,7 @@ Get the ID from given parameters.
 
 `string|false`
 
-
-
-
 <hr />
-
 
 ### RequestService::getSchema  
 
@@ -136,9 +105,7 @@ Get the ID from given parameters.
 public getSchema (array $parameters)
 ```
 
-Get the schema from given parameters returns false if no schema could be established. 
-
- 
+Get the schema from given parameters returns false if no schema could be established.
 
 **Parameters**
 
@@ -148,11 +115,7 @@ Get the schema from given parameters returns false if no schema could be establi
 
 `\Entity|false`
 
-
-
-
 <hr />
-
 
 ### RequestService::itemRequestHandler  
 
@@ -162,10 +125,6 @@ Get the schema from given parameters returns false if no schema could be establi
  itemRequestHandler (void)
 ```
 
- 
-
- 
-
 **Parameters**
 
 `This function has no parameters.`
@@ -174,9 +133,7 @@ Get the schema from given parameters returns false if no schema could be establi
 
 `void`
 
-
 <hr />
-
 
 ### RequestService::proxyHandler  
 
@@ -186,10 +143,6 @@ Get the schema from given parameters returns false if no schema could be establi
  proxyHandler (void)
 ```
 
- 
-
- 
-
 **Parameters**
 
 `This function has no parameters.`
@@ -198,9 +151,7 @@ Get the schema from given parameters returns false if no schema could be establi
 
 `void`
 
-
 <hr />
-
 
 ### RequestService::realRequestQueryAll  
 
@@ -210,9 +161,9 @@ Get the schema from given parameters returns false if no schema could be establi
 public realRequestQueryAll (string $method)
 ```
 
-A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore. 
+A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.
 
-This function will not. 
+This function will not.
 
 **Parameters**
 
@@ -225,9 +176,7 @@ This function will not.
 
 > An array with all query parameters.
 
-
 <hr />
-
 
 ### RequestService::requestHandler  
 
@@ -237,9 +186,7 @@ This function will not.
 public requestHandler (array $data, array $configuration)
 ```
 
-Handles incomming requests and is responsible for generating a responce. 
-
- 
+Handles incomming requests and is responsible for generating a responce.
 
 **Parameters**
 
@@ -254,9 +201,7 @@ Handles incomming requests and is responsible for generating a responce.
 
 > The modified data
 
-
 <hr />
-
 
 ### RequestService::searchRequestHandler  
 
@@ -266,9 +211,7 @@ Handles incomming requests and is responsible for generating a responce.
 public searchRequestHandler (array $data, array $configuration)
 ```
 
-This function searches all the objectEntities and formats the data. 
-
- 
+This function searches all the objectEntities and formats the data.
 
 **Parameters**
 
@@ -283,9 +226,7 @@ This function searches all the objectEntities and formats the data.
 
 > The modified data
 
-
 <hr />
-
 
 ### RequestService::shouldWeUnsetEmbedded  
 
@@ -295,9 +236,7 @@ This function searches all the objectEntities and formats the data.
 public shouldWeUnsetEmbedded (object|array $result, ?array $accept)
 ```
 
-If embedded should be shown or not. 
-
- 
+If embedded should be shown or not.
 
 **Parameters**
 
@@ -310,8 +249,4 @@ If embedded should be shown or not.
 
 `array|null`
 
-
-
-
 <hr />
-
