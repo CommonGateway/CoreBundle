@@ -2,18 +2,16 @@ site_name: CoreBundle documentation
 site_url: https://test-koor-bundle.readthedocs.io/en/latest/
 repo_url: https://github.com/CommonGateway/CoreBundle
 docs_dir: docs
-
-theme: 
+theme:
   name: readthedocs
-
-# nav:
-#   - Home: index.md
-#   - Services:
-#       - AuthenticationService: "./classes/Service/AuthenticationService.md"
-#       - CacheService: "./classes/Service/CacheService.md"
-#       - CallService: "./classes/Service/CallService.md"
-#       - ComposerService: "./classes/Service/ComposerService.md"
-#       - EavService: "./classes/Service/EavService.md"
-#       - FileService: "./classes/Service/FileService.md"
-#       - InstallationService: "./classes/Service/InstallationService.md"
-#       - RequestService: "./classes/Service/RequestService.md"
+nav:
+  - Home: index.md
+  - Services:
+    - AuthenticationService: "./classes/Service/AuthenticationService.md"
+    - CacheService: "./classes/Service/CacheService.md"
+    - CallService: "./classes/Service/CallService.md"
+    - ComposerService: "./classes/Service/ComposerService.md"
+    - EavService: "./classes/Service/EavService.md"
+    - FileService: "./classes/Service/FileService.md"
+    - InstallationService: "./classes/Service/InstallationService.md"
+    - RequestService: "./classes/Service/RequestService.md"
