@@ -2,12 +2,15 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use App\Entity\Endpoint;
 use App\Event\ActionEvent;
-use App\Service\RequestService;
+use CommonGateway\CoreBundle\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Responce;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -36,21 +39,30 @@ class EndpointService
     private RequestService $requestService;
 
     /**
+     * @var EventDispatcherInterface
+     */
+    private EventDispatcherInterface $eventDispatcher;
+
+    /**
+     * @var Endpoint|null
+     */
+    private ?Endpoint $endpoint = null;
+
+    /**
      * @param EntityManagerInterface $entityManager  The enitymanger
-     * @param Request                $request        The request
      * @param SerializerInterface    $serializer     The serializer
      * @param RequestService         $requestService The request service
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        Request $request,
         SerializerInterface $serializer,
-        RequestService $requestService
+        RequestService $requestService,
+        EventDispatcherInterface $eventDispatcher
     ) {
         $this->entityManager = $entityManager;
-        $this->request = $request;
         $this->serializer = $serializer;
         $this->requestService = $requestService;
+        $this->eventDispatcher = $eventDispatcher;
     }//end __construct()
 
     /**
@@ -58,22 +70,23 @@ class EndpointService
      *
      * @return Responce
      */
-    public function handleRequest(): Responce
+    public function handleRequest(Request $request): Response
     {
-
+        $this->request = $request;
         // Get the  and path parts.
         $path = $this->request->getPathInfo();
 
+        // Get the Endpoint.
+        $this->endpoint = $endpoint = $this->getEndpoint();
+
         // Get the accept type.
         $accept = $this->getAcceptType();
-
-        // Get the Endpoint.
-        $endpoint = $this->getEndpoint();
 
         // Get the parameters.
         $parameters = $this->getParametersFromRequest();
         $parameters['endpoint'] = $endpoint;
         $parameters['accept'] = $accept;
+        $parameters['body'] = $this->decodeBody();
 
         // If we have an proxy we will handle just that.
         if ($endpoint->getProxy() === true) {
@@ -90,10 +103,10 @@ class EndpointService
             $parameters['response'] = new Response('Object is not supported by this endpoint', '200');
             foreach ($endpoint->getThrows() as $throw) {
                 $event = new ActionEvent('commongateway.action.event', $parameters, $throw);
-                $this->eventDispatcher->dispatchdispatch($event, 'commongateway.action.event');
+                $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
             }
 
-            return $parameters['response'];
+            return $event->getData()['response'];
         }
 
         throw new Exception('No proxy, schema or events could be established for this endpoint');
@@ -112,11 +125,17 @@ class EndpointService
         // Lets first look at the accept header.
         $acceptHeader = $this->request->headers->get('accept');
 
+        // If the accept header does not provide useful info, check if the endpoint contains a pointer
+        if((!$acceptHeader || $acceptHeader == '*/*') && $this->endpoint && $this->endpoint->getDefaultContentType()) {
+            $acceptHeader = $this->endpoint->getDefaultContentType();
+        }
+
+        //Determine the accept type
         switch ($acceptHeader) {
             case 'application/json':
                 return 'json';
             case 'application/json+hal':
-            case 'application/hal+sjon':
+            case 'application/hal+json':
                 return 'jsonhal';
             case 'application/json+ls':
             case 'application/ld+json':
@@ -130,6 +149,9 @@ class EndpointService
             case 'application/json+graphql':
             case 'application/graphql+json':
                 return 'graphql';
+            case 'text/xml':
+            case 'application/xml':
+                return 'xml';
         }//end switch
 
         // As a backup we look at any file extenstion.
@@ -144,8 +166,41 @@ class EndpointService
         }
 
         // If we endup we cant detirmine what kind of accept we need so lets throw an error.
-        throw new Exception('No proper accept could be detirmend');
+        throw new BadRequestException('No proper accept could be detirmend');
     }//end getAcceptType()
+
+
+    /**
+     * Decodes the body of the request based upon the content-type header, accept header or endpoint default
+     *
+     * @return array
+     */
+    public function decodeBody(): array
+    {
+
+        //Get the content type
+        $contentType = $this->request->getContentType();
+        if(!$contentType) {
+            $contentType = $this->request->headers->get('Accept');
+        }
+
+        //Decode the body
+        switch($contentType) {
+            case 'application/json':
+            case 'application/json+hal':
+            case 'application/hal+json':
+            case 'application/json+ls':
+            case 'application/ld+json':
+                return json_decode($this->request->getContent(), true);
+            case 'text/xml':
+            case 'application/xml':
+            case 'xml':
+                $xmlEncoder = new XmlEncoder();
+                return $xmlEncoder->decode($this->request->getContent(), 'xml');
+            default:
+                return json_decode($this->request->getContent(), true);
+        }//end switch
+    }//end decodeBody
 
     /**
      * Gets the endpoint based on the request.
@@ -154,12 +209,15 @@ class EndpointService
      */
     public function getEndpoint(): Endpoint
     {
-        $endpoint = $this->getDoctrine()->getRepository('App:Endpoint')->findByMethodRegex($this->request->getMethod(), $this->request->getPathInfo());
-        if ($endpoint === true) {
+        $path = $this->request->getPathInfo();
+        $path = substr($path, 5);
+        $endpoint = $this->entityManager->getRepository('App:Endpoint')->findByMethodRegex($this->request->getMethod(), $path);
+
+        if ($endpoint) {
             return $endpoint;
         }
 
-        throw new Exception('No proper endpoint could be detirmend');
+        throw new \Exception('No proper endpoint could be detirmend');
     }//end getEndpoint()
 
     /**
