@@ -45,7 +45,9 @@ class OasService
                 'description' => '',
             ],
             'paths'      => [],
-            'components' => [],
+            'components' => [
+                'schemas' =>[]
+            ],
             'security'   => [],
             'tags'       => [],
         ];
@@ -74,7 +76,27 @@ class OasService
         // Add the endpoints to the OAS.
         foreach ($endpoints as $endpoint) {
             // Add the path to the paths.
-            $oas['paths'][implode('/', $endpoint->getPath())] = $this->getEndpointOperations($endpoint);
+
+            // Lets see if we have proprties in the path
+            $pathArray =  $endpoint->getPath();
+            $parameters = [];
+            foreach($pathArray as $key => $part) {
+                if (in_array($part, $endpoint->getParameters())) {
+                    $pathArray[$key] = '{' . $part . '}';
+                    $parameters = [
+                        'in' => 'path',
+                        'name' => $part,
+                        'schema' => [
+                            'type' => 'string',
+                            'format' => 'uuid'
+                        ],
+                    ];
+                }//end if
+            }//end for each
+
+            $oas['paths'][implode('/', $pathArray)] = $this->getEndpointOperations($endpoint);
+            $oas['paths'][implode('/', $pathArray)]['parameters'] = $parameters;
+
 
             // Add the schemas.
             $oas['components']['schemas'] = array_merge($oas['components']['schemas'], $this->getEndpointSchemas($endpoint));
@@ -99,7 +121,7 @@ class OasService
             // We dont do a request body on GET, DELETE and UPDATE requests.
             if (in_array($method, ['DELETE', 'UPDATE']) === true) {
                 $operations[$method] = [
-                    'summary'     => $endpoint->getTitle(),
+                    'summary'     => $endpoint->getName(),
                     'description' => $endpoint->getDescription(),
                 ];
                 continue;
@@ -107,22 +129,22 @@ class OasService
 
             // In all other cases we want include a schema.
             $operations[$method] = [
-                'summary'     => $endpoint->getTitle(),
+                'summary'     => $endpoint->getName(),
                 'description' => $endpoint->getDescription(),
                 'requestBody' => [
                     'description' => $endpoint->getDescription(),
                     //'required' =>//Todo: figure out what we want to do here
                     'content' => [
-                        'application/json' => '#/components/schemas/'.$endpoint->getEntites()->first()->getName(),
-                        'application/xml'  => '#/components/schemas/'.$endpoint->getEntites()->first()->getName(),
+                        'application/json' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
+                        'application/xml'  => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
                     ],
                 ],
                 'responses' => [
                     '200' => [
                         'description' => $endpoint->getDescription(),
                         'content'     => [
-                            'application/json' => '#/components/schemas/'.$endpoint->getEntites()->first()->getName(),
-                            'application/xml'  => '#/components/schemas/'.$endpoint->getEntites()->first()->getName(),
+                            'application/json' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
+                            'application/xml'  => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
                         ],
                     ],
                 ],
@@ -150,8 +172,8 @@ class OasService
     {
         $schemas = [];
 
-        foreach ($endpoint->getEntities as $entity) {
-            $schemas[$entity->getName()] = $entity->getSchema();
+        foreach ($endpoint->getEntities() as $entity) {
+            $schemas[$entity->getName()] = $entity->toSchema(null);
         }
 
         return $schemas;
