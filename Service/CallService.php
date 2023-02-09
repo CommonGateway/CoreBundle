@@ -165,7 +165,7 @@ class CallService
             } else {
                 $response = $this->client->requestAsync($method, $url, $config);
             }
-        } catch (ServerException | ClientException | RequestException | Exception $e) {
+        } catch (ServerException|ClientException|RequestException|Exception $e) {
 //            $stopTimer = microtime(true);
 //            $log->setResponseStatus('');
 //            if ($e->getResponse()) {
