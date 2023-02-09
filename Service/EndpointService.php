@@ -127,7 +127,7 @@ class EndpointService
         $acceptHeader = $this->request->headers->get('accept');
 
         // If the accept header does not provide useful info, check if the endpoint contains a pointer.
-        if (($acceptHeader == null || $acceptHeader == '*/*') && $this->endpoint != null && $this->endpoint->getDefaultContentType()) {
+        if (($acceptHeader == null || $acceptHeader == '*/*') && $this->endpoint !== null && $this->endpoint->getDefaultContentType() !== null) {
             $acceptHeader = $this->endpoint->getDefaultContentType();
         }//end if
 
@@ -180,7 +180,7 @@ class EndpointService
 
         // Get the content type.
         $contentType = $this->request->getContentType();
-        if ($contentType == null) {
+        if ($contentType === null) {
             $contentType = $this->request->headers->get('Accept');
         }//end if
 
@@ -208,7 +208,7 @@ class EndpointService
         $path = substr($path, 5);
         $endpoint = $this->entityManager->getRepository('App:Endpoint')->findByMethodRegex($this->request->getMethod(), $path);
 
-        if ($endpoint != null) {
+        if ($endpoint !== null) {
             return $endpoint;
         }//end if
 
