@@ -124,12 +124,12 @@ class EndpointService
         // Lets first look at the accept header.
         $acceptHeader = $this->request->headers->get('accept');
 
-        // If the accept header does not provide useful info, check if the endpoint contains a pointer
-        if ((!$acceptHeader || $acceptHeader == '*/*') && $this->endpoint && $this->endpoint->getDefaultContentType()) {
+        // If the accept header does not provide useful info, check if the endpoint contains a pointer.
+        if (($acceptHeader == null || $acceptHeader == '*/*') && $this->endpoint && $this->endpoint->getDefaultContentType()) {
             $acceptHeader = $this->endpoint->getDefaultContentType();
-        }
+        }// end if
 
-        //Determine the accept type
+        // Determine the accept type.
         switch ($acceptHeader) {
             case 'application/json':
                 return 'json';
@@ -178,18 +178,12 @@ class EndpointService
 
         //Get the content type
         $contentType = $this->request->getContentType();
-        if (!$contentType) {
+        if ($contentType == null) {
             $contentType = $this->request->headers->get('Accept');
-        }
+        }// end if
 
         //Decode the body
         switch ($contentType) {
-            case 'application/json':
-            case 'application/json+hal':
-            case 'application/hal+json':
-            case 'application/json+ls':
-            case 'application/ld+json':
-                return json_decode($this->request->getContent(), true);
             case 'text/xml':
             case 'application/xml':
             case 'xml':
@@ -214,10 +208,10 @@ class EndpointService
 
         if ($endpoint) {
             return $endpoint;
-        }
+        }// end if
 
         throw new \Exception('No proper endpoint could be detirmend');
-    }//end getEndpoint()
+    }// end getEndpoint()
 
     /**
      * Builds a parameter array from the request.
