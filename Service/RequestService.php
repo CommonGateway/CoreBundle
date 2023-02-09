@@ -572,7 +572,7 @@ class RequestService
         $this->entityManager->flush();
 
         if (isset($eventType) && isset($result)) {
-            $event = new ActionEvent($eventType, ['response' => $result, 'entity' => $this->object->getEntity()->getId()->toString()]);
+            $event = new ActionEvent($eventType, ['response' => $result, 'entity' => $this->object->getEntity()->getReference() ?? $this->object->getEntity()->getId()->toString()]);
             $this->eventDispatcher->dispatch($event, $event->getType());
 
             // If we have a response return that
