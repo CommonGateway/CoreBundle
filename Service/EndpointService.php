@@ -127,7 +127,7 @@ class EndpointService
         $acceptHeader = $this->request->headers->get('accept');
 
         // If the accept header does not provide useful info, check if the endpoint contains a pointer.
-        if (($acceptHeader == null || $acceptHeader == '*/*') && $this->endpoint !== null && $this->endpoint->getDefaultContentType() !== null) {
+        if (($acceptHeader === null || $acceptHeader === '*/*') && $this->endpoint !== null && $this->endpoint->getDefaultContentType() !== null) {
             $acceptHeader = $this->endpoint->getDefaultContentType();
         }//end if
 
