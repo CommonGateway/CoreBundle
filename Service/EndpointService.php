@@ -127,7 +127,7 @@ class EndpointService
         // If the accept header does not provide useful info, check if the endpoint contains a pointer.
         if (($acceptHeader == null || $acceptHeader == '*/*') && $this->endpoint && $this->endpoint->getDefaultContentType()) {
             $acceptHeader = $this->endpoint->getDefaultContentType();
-        }// end if
+        }//end if
 
         // Determine the accept type.
         switch ($acceptHeader) {
@@ -180,7 +180,7 @@ class EndpointService
         $contentType = $this->request->getContentType();
         if ($contentType == null) {
             $contentType = $this->request->headers->get('Accept');
-        }// end if
+        }//end if
 
         //Decode the body
         switch ($contentType) {
@@ -208,10 +208,10 @@ class EndpointService
 
         if ($endpoint) {
             return $endpoint;
-        }// end if
+        }//end if
 
         throw new \Exception('No proper endpoint could be detirmend');
-    }// end getEndpoint()
+    }//end getEndpoint()
 
     /**
      * Builds a parameter array from the request.
