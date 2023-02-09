@@ -51,6 +51,7 @@ class EndpointService
      * @param EntityManagerInterface $entityManager  The enitymanger
      * @param SerializerInterface    $serializer     The serializer
      * @param RequestService         $requestService The request service
+     * @param EventDispatcherInterface $eventDispatcher The event dispatcher
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -65,15 +66,14 @@ class EndpointService
     }//end __construct()
 
     /**
-     * Handle the request afther it commes in trough the ZZ controller.
-     *
-     * @return Responce
+     * Handle the request afther it commes in through the ZZ controller.
+     * @param Request $request The inbound request
+     * @return Response
      */
     public function handleRequest(Request $request): Response
     {
+        // Set the request globally.
         $this->request = $request;
-        // Get the  and path parts.
-        $path = $this->request->getPathInfo();
 
         // Get the Endpoint.
         $this->endpoint = $endpoint = $this->getEndpoint();
@@ -125,7 +125,7 @@ class EndpointService
         $acceptHeader = $this->request->headers->get('accept');
 
         // If the accept header does not provide useful info, check if the endpoint contains a pointer.
-        if (($acceptHeader == null || $acceptHeader == '*/*') && $this->endpoint && $this->endpoint->getDefaultContentType()) {
+        if (($acceptHeader == null || $acceptHeader == '*/*') && $this->endpoint != null && $this->endpoint->getDefaultContentType()) {
             $acceptHeader = $this->endpoint->getDefaultContentType();
         }//end if
 
@@ -176,13 +176,13 @@ class EndpointService
     public function decodeBody(): array
     {
 
-        //Get the content type
+        // Get the content type.
         $contentType = $this->request->getContentType();
         if ($contentType == null) {
             $contentType = $this->request->headers->get('Accept');
         }//end if
 
-        //Decode the body
+        // Decode the body.
         switch ($contentType) {
             case 'text/xml':
             case 'application/xml':
@@ -193,7 +193,7 @@ class EndpointService
             default:
                 return json_decode($this->request->getContent(), true);
         }//end switch
-    }//end decodeBody
+    }//end decodeBody()
 
     /**
      * Gets the endpoint based on the request.
@@ -206,7 +206,7 @@ class EndpointService
         $path = substr($path, 5);
         $endpoint = $this->entityManager->getRepository('App:Endpoint')->findByMethodRegex($this->request->getMethod(), $path);
 
-        if ($endpoint) {
+        if ($endpoint != null) {
             return $endpoint;
         }//end if
 

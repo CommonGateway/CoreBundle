@@ -111,7 +111,7 @@ class OasService
                 'description' => $endpoint->getDescription(),
                 'requestBody' => [
                     'description' => $endpoint->getDescription(),
-                    //'required' =>//Todo: figure out what we want to do here
+                    //'required' =>// Todo: figure out what we want to do here
                     'content' => [
                         'application/json' => '#/components/schemas/'.$endpoint->getEntites()->first()->getName(),
                         'application/xml'  => '#/components/schemas/'.$endpoint->getEntites()->first()->getName(),
@@ -134,7 +134,7 @@ class OasService
             }
 
             // TODO: Collection endpoints
-        }
+        }//end foreach
 
         return $operations;
     }//end getEndpointOperations()
