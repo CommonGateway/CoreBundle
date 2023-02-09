@@ -48,9 +48,9 @@ class EndpointService
     private ?Endpoint $endpoint = null;
 
     /**
-     * @param EntityManagerInterface $entityManager  The enitymanger
-     * @param SerializerInterface    $serializer     The serializer
-     * @param RequestService         $requestService The request service
+     * @param EntityManagerInterface   $entityManager   The enitymanger
+     * @param SerializerInterface      $serializer      The serializer
+     * @param RequestService           $requestService  The request service
      * @param EventDispatcherInterface $eventDispatcher The event dispatcher
      */
     public function __construct(
@@ -67,7 +67,9 @@ class EndpointService
 
     /**
      * Handle the request afther it commes in through the ZZ controller.
+     *
      * @param Request $request The inbound request
+     *
      * @return Response
      */
     public function handleRequest(Request $request): Response
