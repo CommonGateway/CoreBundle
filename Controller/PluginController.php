@@ -31,7 +31,7 @@ class PluginController extends AbstractController
     public function installedAction(Request $request)
     {
         $status = 200;
-        $plugins = $this->composerService->getAll(['--installed'])['installed'];
+        $plugins = $this->composerService->getAll(['--installed']);
 
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
     }
@@ -76,9 +76,9 @@ class PluginController extends AbstractController
     }
 
     /**
-     * @Route("/installl", methods={"POST"})
+     * @Route("/install", methods={"POST"})
      */
-    public function installlAction(Request $request)
+    public function installAction(Request $request)
     {
         $status = 200;
 
@@ -108,7 +108,7 @@ class PluginController extends AbstractController
     }
 
     /**
-     * @Route("/remove", methods={"POST"})
+     * @Route("/remove", methods={"DELETE"})
      */
     public function removeAction(Request $request)
     {
