@@ -4,7 +4,6 @@ namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Endpoint;
 use App\Event\ActionEvent;
-use CommonGateway\CoreBundle\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
@@ -126,7 +125,7 @@ class EndpointService
         $acceptHeader = $this->request->headers->get('accept');
 
         // If the accept header does not provide useful info, check if the endpoint contains a pointer
-        if((!$acceptHeader || $acceptHeader == '*/*') && $this->endpoint && $this->endpoint->getDefaultContentType()) {
+        if ((!$acceptHeader || $acceptHeader == '*/*') && $this->endpoint && $this->endpoint->getDefaultContentType()) {
             $acceptHeader = $this->endpoint->getDefaultContentType();
         }
 
@@ -169,9 +168,8 @@ class EndpointService
         throw new BadRequestException('No proper accept could be detirmend');
     }//end getAcceptType()
 
-
     /**
-     * Decodes the body of the request based upon the content-type header, accept header or endpoint default
+     * Decodes the body of the request based upon the content-type header, accept header or endpoint default.
      *
      * @return array
      */
@@ -180,12 +178,12 @@ class EndpointService
 
         //Get the content type
         $contentType = $this->request->getContentType();
-        if(!$contentType) {
+        if (!$contentType) {
             $contentType = $this->request->headers->get('Accept');
         }
 
         //Decode the body
-        switch($contentType) {
+        switch ($contentType) {
             case 'application/json':
             case 'application/json+hal':
             case 'application/hal+json':
@@ -196,6 +194,7 @@ class EndpointService
             case 'application/xml':
             case 'xml':
                 $xmlEncoder = new XmlEncoder();
+
                 return $xmlEncoder->decode($this->request->getContent(), 'xml');
             default:
                 return json_decode($this->request->getContent(), true);
