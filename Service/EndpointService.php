@@ -175,7 +175,7 @@ class EndpointService
      *
      * @return array
      */
-    public function decodeBody(): array
+    public function decodeBody(): ?array
     {
 
         // Get the content type.
@@ -225,8 +225,9 @@ class EndpointService
     private function getParametersFromRequest(?array $parameters = []): array
     {
         // Lets make sure that we always have a path.
-        $parameters['path'] = $this->request->getPathInfo();
-        $parameters['pathParts'] = explode('/', $parameters['path']);
+
+        $parameters['pathRaw'] = $this->request->getPathInfo();
+        $parameters['path'] = explode('/', str_replace('/api/', '', $parameters['pathRaw']));
         $parameters['querystring'] = $this->request->getQueryString();
 
         try {
