@@ -11,19 +11,13 @@
 | Name | Description |
 |------|-------------|
 |[__construct](#installationservice__construct)||
+|[addToObjects](#installationserviceaddtoobjects)|Adds an object to the objects stack if it is vallid|
 |[composerupdate](#installationservicecomposerupdate)|Updates all commonground bundles on the common gateway installation.|
-|[handleAction](#installationservicehandleaction)||
-|[handleData](#installationservicehandledata)||
 |[handleInstaller](#installationservicehandleinstaller)||
-|[handleMapping](#installationservicehandlemapping)||
-|[handleSchema](#installationservicehandleschema)||
-|[install](#installationserviceinstall)|Performs installation actions on a common Gataway bundle.|
-|[setStyle](#installationservicesetstyle)|Set symfony style in order to output to the console.|
-|[uninstall](#installationserviceuninstall)||
-|[update](#installationserviceupdate)||
-|[validateJsonAction](#installationservicevalidatejsonaction)|Perform a very basic check to see if a schema file is a valid json-action file.|
-|[validateJsonMapping](#installationservicevalidatejsonmapping)|Perform a very basic check to see if a schema file is a valid json-mapping file.|
-|[validateJsonSchema](#installationservicevalidatejsonschema)|Performce a very basic check to see if a schema file is a valid json-schema file.|
+|[handleObject](#installationservicehandleobject)|Create an object bases on an type and a schema (the object as an array)|
+|[install](#installationserviceinstall)|Installs the files from a bundle|
+|[readDirectory](#installationservicereaddirectory)|This function read a folder to find other folders or json objects|
+|[readfile](#installationservicereadfile)|This function read a folder to find other folders or json objects|
 |[validateObjects](#installationservicevalidateobjects)|Validates the objects in the EAV setup.|
 |[validateSchemas](#installationservicevalidateschemas)|Validates the schemas in the EAV setup.|
 |[validateValues](#installationservicevalidatevalues)|Validates the objects in the EAV setup.|
@@ -55,6 +49,33 @@
 <hr />
 
 
+### InstallationService::addToObjects  
+
+**Description**
+
+```php
+public addToObjects (array $schema)
+```
+
+Adds an object to the objects stack if it is vallid 
+
+ 
+
+**Parameters**
+
+* `(array) $schema`
+: The schema  
+
+**Return Values**
+
+`bool|array`
+
+> The file contents, or false if content could not be establisched
+
+
+<hr />
+
+
 ### InstallationService::composerupdate  
 
 **Description**
@@ -76,54 +97,6 @@ Updates all commonground bundles on the common gateway installation.
 `int`
 
 
-
-
-<hr />
-
-
-### InstallationService::handleAction  
-
-**Description**
-
-```php
- handleAction (void)
-```
-
- 
-
- 
-
-**Parameters**
-
-`This function has no parameters.`
-
-**Return Values**
-
-`void`
-
-
-<hr />
-
-
-### InstallationService::handleData  
-
-**Description**
-
-```php
- handleData (void)
-```
-
- 
-
- 
-
-**Parameters**
-
-`This function has no parameters.`
-
-**Return Values**
-
-`void`
 
 
 <hr />
@@ -153,49 +126,30 @@ Updates all commonground bundles on the common gateway installation.
 <hr />
 
 
-### InstallationService::handleMapping  
+### InstallationService::handleObject  
 
 **Description**
 
 ```php
- handleMapping (void)
+public handleObject (string $type, array $schema)
 ```
 
- 
+Create an object bases on an type and a schema (the object as an array) 
 
- 
+This function breaks complexity rules, but since a switch is the most effective way of doing it a design decicion was made to allow it 
 
 **Parameters**
 
-`This function has no parameters.`
+* `(string) $type`
+: The type of the object  
+* `(array) $schema`
+: The object as an array  
 
 **Return Values**
 
-`void`
+`bool|object`
 
 
-<hr />
-
-
-### InstallationService::handleSchema  
-
-**Description**
-
-```php
- handleSchema (void)
-```
-
- 
-
- 
-
-**Parameters**
-
-`This function has no parameters.`
-
-**Return Values**
-
-`void`
 
 
 <hr />
@@ -206,176 +160,79 @@ Updates all commonground bundles on the common gateway installation.
 **Description**
 
 ```php
-public install (\SymfonyStyle $io, string $bundle, bool $noSchema)
+public install (string $bundle, array $config)
 ```
 
-Performs installation actions on a common Gataway bundle. 
+Installs the files from a bundle 
 
  
 
 **Parameters**
 
-* `(\SymfonyStyle) $io`
 * `(string) $bundle`
-* `(bool) $noSchema`
-
-**Return Values**
-
-`int`
-
-
-
-
-<hr />
-
-
-### InstallationService::setStyle  
-
-**Description**
-
-```php
-public setStyle (\SymfonyStyle $io)
-```
-
-Set symfony style in order to output to the console. 
-
- 
-
-**Parameters**
-
-* `(\SymfonyStyle) $io`
-
-**Return Values**
-
-`self`
-
-
-
-
-<hr />
-
-
-### InstallationService::uninstall  
-
-**Description**
-
-```php
- uninstall (void)
-```
-
- 
-
- 
-
-**Parameters**
-
-`This function has no parameters.`
-
-**Return Values**
-
-`void`
-
-
-<hr />
-
-
-### InstallationService::update  
-
-**Description**
-
-```php
- update (void)
-```
-
- 
-
- 
-
-**Parameters**
-
-`This function has no parameters.`
-
-**Return Values**
-
-`void`
-
-
-<hr />
-
-
-### InstallationService::validateJsonAction  
-
-**Description**
-
-```php
-public validateJsonAction (array $schema)
-```
-
-Perform a very basic check to see if a schema file is a valid json-action file. 
-
- 
-
-**Parameters**
-
-* `(array) $schema`
+: The bundle  
+* `(array) $config`
+: Optional config  
 
 **Return Values**
 
 `bool`
 
-
-
-
-<hr />
-
-
-### InstallationService::validateJsonMapping  
-
-**Description**
-
-```php
-public validateJsonMapping (array $schema)
-```
-
-Perform a very basic check to see if a schema file is a valid json-mapping file. 
-
- 
-
-**Parameters**
-
-* `(array) $schema`
-
-**Return Values**
-
-`bool`
-
-
+> The result of the installation
 
 
 <hr />
 
 
-### InstallationService::validateJsonSchema  
+### InstallationService::readDirectory  
 
 **Description**
 
 ```php
-public validateJsonSchema (array $schema)
+public readDirectory (string $location)
 ```
 
-Performce a very basic check to see if a schema file is a valid json-schema file. 
+This function read a folder to find other folders or json objects 
 
  
 
 **Parameters**
 
-* `(array) $schema`
+* `(string) $location`
+: The location of the folder  
 
 **Return Values**
 
 `bool`
 
+> Whether or not the function was succefully executed
 
+
+<hr />
+
+
+### InstallationService::readfile  
+
+**Description**
+
+```php
+public readfile (\File $file)
+```
+
+This function read a folder to find other folders or json objects 
+
+ 
+
+**Parameters**
+
+* `(\File) $file`
+: The file location  
+
+**Return Values**
+
+`bool|array`
+
+> The file contents, or false if content could not be establisched
 
 
 <hr />
