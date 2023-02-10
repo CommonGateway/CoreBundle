@@ -18,12 +18,45 @@ use Symfony\Component\Finder\Finder;
 
 class InstallationService
 {
+    /**
+     * @var ComposerService
+     */
     private ComposerService $composerService;
+
+    /**
+     * @var EntityManagerInterface
+     */
     private EntityManagerInterface $em;
+
+    /**
+     * @var SymfonyStyle
+     */
     private SymfonyStyle $io;
+
+    /**
+     * @var
+     */
     private $container;
+
+    /**
+     * @var Logger
+     */
     private Logger $logger;
+
+    /**
+     * @var CacheService
+     */
     private CacheService $cacheService;
+
+    /**
+     * @var Filesystem
+     */
+    private Filesystem $filesystem;
+
+    /**
+     * @var array The Objects aquired durring a installation
+     */
+    private array $objects;
 
     public function __construct(
         ComposerService $composerService,
@@ -37,21 +70,8 @@ class InstallationService
         $this->collection = null;
         $this->logger = new Logger('installation');
         $this->cacheService = $cacheService;
-    }
-
-    /**
-     * Set symfony style in order to output to the console.
-     *
-     * @param SymfonyStyle $io
-     *
-     * @return self
-     */
-    public function setStyle(SymfonyStyle $io): self
-    {
-        $this->io = $io;
-
-        return $this;
-    }
+        $this->filesystem = new Filesystem();
+    }//end __construct()
 
     /**
      * Updates all commonground bundles on the common gateway installation.
@@ -87,7 +107,7 @@ class InstallationService
         }
 
         return Command::SUCCESS;
-    }
+    }//end composerupdate()
 
     /**
      * Validates the  objects in the EAV setup.
@@ -110,7 +130,7 @@ class InstallationService
             if ($object->get) {
             }
         }
-    }
+    }//end validateObjects()
 
     /**
      * Validates the  objects in the EAV setup.
@@ -134,7 +154,7 @@ class InstallationService
                 $message = 'Value '.$value->getStringValue().' ('.$value->getId().') that belongs to  '.$value->getAttribute()->getName().' ('.$value->getAttribute()->getId().') is orpahned';
             }
         }
-    }
+    }//end validateValues()
 
     /**
      * Validates the schemas in the EAV setup.
@@ -228,407 +248,341 @@ class InstallationService
         }
 
         return 1;
-    }
+    }//validateSchemas ()
 
     /**
-     * Performs installation actions on a common Gataway bundle.
+     * Installs the files from a bundle
      *
-     * @param SymfonyStyle $io
-     * @param string       $bundle
-     * @param bool         $noSchema
-     *
-     * @return int
+     * @param string $bundle The bundle
+     * @param array $config Optional config
+     * @return bool The result of the installation
      */
-    public function install(string $bundle, array $config = []): int
-    {
-        if ($this->io) {
-            $this->io->writeln([
-                'Trying to install: <comment> '.$bundle.' </comment>',
-                '',
-            ]);
-        }
+    public function install(string $bundle, array $config = []): bool{
 
-        $this->logger->debug('Trying to install: '.$bundle);
-
-        $packages = $this->composerService->getAll();
-
-        $found = array_filter($packages, function ($v, $k) use ($bundle) {
-            return $v['name'] == $bundle;
-        }, ARRAY_FILTER_USE_BOTH); // With the latest PHP third parameter is optional.. Available Values:- ARRAY_FILTER_USE_BOTH OR ARRAY_FILTER_USE_KEY
-
-        $package = reset($found);
-        if ($package) {
-            $this->io->writeln([
-                '<info>Package '.$bundle.' found</info>',
-                '',
-                'Name: '.$package['name'],
-                'Version: '.$package['version'],
-                'Description: '.$package['description'],
-                'Homepage :'.$package['homepage'],
-                'Source: '.$package['source']['url'],
-            ]);
-        } else {
-            $this->io->error($bundle.' not found');
-
-            return Command::FAILURE;
-        }
+        $this->logger->debug('Installing plugin '.$bundle,['bundle'=>$bundle]);
 
         $vendorFolder = 'vendor';
-        $filesystem = new Filesystem();
 
-        // Handling the actions's
-        $this->io->section('Looking for actions\'s');
-        $actionDir = $vendorFolder.'/'.$bundle.'/Action';
-        if ($filesystem->exists($actionDir)) {
-            $this->io->writeln('Action folder found');
-            $actions = new Finder();
-            $actions = $actions->in($actionDir);
-            $this->io->writeln('Files found: '.count($actions));
-            foreach ($actions->files() as $action) {
-                $this->handleAction($action);
-            }
+        // Lets check the basic folders for lagacy pruposes
+        $this->logger->debug('Installing plugin '.$bundle);
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/Action');
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/Schema');
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/Mapping');
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/Data');
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/Installation');
 
-            //$progressBar->finish();
-        } else {
-            $this->io->writeln('No action folder found');
-        }
 
-        // Handling the mappings
-        $this->io->section('Looking for mappings\'s');
-        $mappingDir = $vendorFolder.'/'.$bundle.'/Mapping';
-        if ($filesystem->exists($mappingDir)) {
-            $this->io->writeln('Mapping folder found');
-            $mappings = new Finder();
-            $mappings = $mappings->in($mappingDir);
-            $this->io->writeln('Files found: '.count($mappings));
+        // Handling al the files
+        $this->logger->debug('Found '.count($this->objects).' schema types for '.$bundle,['bundle'=>$bundle]);
 
-            foreach ($mappings->files() as $mapping) {
-                $this->handleMapping($mapping);
-            }
-
-            //$progressBar->finish();
-        } else {
-            $this->io->writeln('No mapping folder found');
-        }
-
-        // Handling the schema's
-        $this->io->section('Looking for schema\'s');
-        $schemaDir = $vendorFolder.'/'.$bundle.'/Schema';
-
-        if ($filesystem->exists($schemaDir)) {
-            $this->io->writeln('Schema folder found');
-            $schemas = new Finder();
-            $schemas = $schemas->in($schemaDir);
-            $this->io->writeln('Files found: '.count($schemas));
-
-            // We want each plugin to also be a collection (if it contains schema's that is)
-            if (count($schemas) > 0) {
-                if (!$this->collection = $this->em->getRepository('App:CollectionEntity')->findOneBy(['plugin' => $package['name']])) {
-                    $this->logger->debug('Created a collection for plugin '.$bundle);
-                    $this->io->writeln(['Created a collection for this plugin', '']);
-                    $this->collection = new CollectionEntity();
-                    $this->collection->setName($package['name']);
-                    $this->collection->setPlugin($package['name']);
-                    isset($package['description']) && $this->collection->setDescription($package['description']);
-                } else {
-                    $this->io->writeln(['Found a collection for this plugin', '']);
-                    $this->logger->debug('Found a collection for plugin '.$bundle);
-                }
-            }
-
-            // Persist collection
-            if (isset($this->collection)) {
-                $this->em->persist($this->collection);
-                $this->em->flush();
-            }
-            foreach ($schemas->files() as $schema) {
-                $this->handleSchema($schema);
-            }
-
-            //$progressBar->finish();
-        } else {
-            $this->io->writeln('No schema folder found');
-            $this->logger->debug('No schema folder found for plugin '.$bundle);
-        }
-
-        // Handling the data
-        $this->io->section('Looking for data');
-        if (array_key_exists('data', $config) && $config['data']) {
-            $dataDir = $vendorFolder.'/'.$bundle.'/Data';
-
-            if ($filesystem->exists($dataDir)) {
-                $this->io->writeln('Data folder found');
-                $datas = new Finder();
-                $datas = $datas->in($dataDir);
-                $this->io->writeln('Files found: '.count($datas));
-
-                foreach ($datas->files() as $data) {
-                    $this->handleData($data);
-                }
-
-                // We need to clear the finder
-            } else {
-                $this->logger->debug('No data folder found for plugin '.$bundle);
-                $this->io->writeln('No data folder found');
-            }
-        } else {
-            $this->io->warning('No test data loaded for bundle, run command with -data to load (test) data');
-        }
-
-        // Handling the installations
-        $this->io->section('Looking for installers');
-        $installationDir = $vendorFolder.'/'.$bundle.'/Installation';
-        if ($filesystem->exists($installationDir)) {
-            $this->io->writeln('Installation folder found');
-            $installers = new Finder();
-            $installers = $installers->in($installationDir);
-            $this->io->writeln('Files found: '.count($installers));
-
-            foreach ($installers->files() as $installer) {
-                $this->handleInstaller($installer);
-            }
-        } else {
-            $this->logger->debug('No Installation folder found for plugin '.$bundle);
-            $this->io->writeln('No Installation folder found');
-        }
-
-        $this->io->success('All Done');
-        $this->logger->debug('All Done installing plugin '.$bundle);
-
-        return Command::SUCCESS;
-    }
-
-    public function update(string $bundle, string $data)
-    {
-        $this->io->writeln([
-            'Common Gateway Bundle Updater',
-            '============',
-            '',
-        ]);
-
-        return Command::SUCCESS;
-    }
-
-    public function uninstall(string $bundle, string $data)
-    {
-        $this->io->writeln([
-            'Common Gateway Bundle Uninstaller',
-            '============',
-            '',
-        ]);
-
-        return Command::SUCCESS;
-    }
-
-    public function handleAction($file)
-    {
-        if (!$actionSchema = json_decode($file->getContents(), true)) {
-            $this->io->writeln($file->getFilename().' is not a valid json object');
-
-            return false;
-        }
-
-        if (!$this->validateJsonAction($actionSchema)) {
-            $this->io->writeln($file->getFilename().' is not a valid json-schema object');
-
-            return false;
-        }
-
-        if (!$actionObject = $this->em->getRepository('App:Action')->findOneBy(['reference' => $actionSchema['$id']])) {
-            $this->io->writeln('Action not present, creating action '.$actionSchema['title'].' under reference '.$actionSchema['$id']);
-            $actionObject = new Action();
-        } else {
-            $this->io->writeln('Action already present, looking to update');
-            if (array_key_exists('version', $actionSchema) && version_compare($actionSchema['version'], $actionObject->getVersion()) < 0) {
-                $this->io->writeln('The new action has a version number equal or lower then the already present version');
+        foreach ($this->objects as $ref => $schemas){
+            $this->logger->debug('Found '.count($schemas).' objects types for schema '.$ref,['bundle'=>$bundle,"reference"=>$ref]);
+            foreach($schemas as $schema){
+                $object = $this->handleObject($schema);
+                // Save it to the database
+                $this->em->persist($object);
             }
         }
 
-        $actionObject->fromSchema($actionSchema);
-
-        $this->em->persist($actionObject);
-
+        // Save the results to the database
         $this->em->flush();
-        $this->io->writeln('Done with action '.$actionObject->getName());
-    }
 
-    public function handleMapping($file)
-    {
-        if (!$mappingSchema = json_decode($file->getContents(), true)) {
-            $this->io->writeln($file->getFilename().' is not a valid json object');
+        $this->logger->debug('All Done installing plugin '.$bundle,['bundle'=>$bundle]);
 
-            return false;
-        }
-
-        if (!$this->validateJsonMapping($mappingSchema)) {
-            $this->io->writeln($file->getFilename().' is not a valid json-mapping object');
-
-            return false;
-        }
-
-        if (!$mappingObject = $this->em->getRepository('App:Mapping')->findOneBy(['reference' => $mappingSchema['$id']])) {
-            $this->io->writeln('Maping not present, creating mapping '.$mappingSchema['title'].' under reference '.$mappingSchema['$id']);
-            $mappingObject = new Mapping();
-        } else {
-            $this->io->writeln('Mapping already present, looking to update');
-            if (array_key_exists('version', $mappingSchema) && version_compare($mappingSchema['version'], $mappingObject->getVersion()) < 0) {
-                $this->io->writeln('The new mapping has a version number equal or lower then the already present version');
-            }
-        }
-
-        $mappingObject->fromSchema($mappingSchema);
-
-        $this->em->persist($mappingObject);
-        $this->em->flush();
-        $this->io->writeln('Done with mapping '.$mappingObject->getName());
-    }
-
-    public function handleSchema($file)
-    {
-        if (!$entitySchema = json_decode($file->getContents(), true)) {
-            $this->io->writeln($file->getFilename().' is not a valid json object');
-
-            return false;
-        }
-
-        if (!$this->validateJsonSchema($entitySchema)) {
-            $this->io->writeln($file->getFilename().' is not a valid json-schema object');
-
-            return false;
-        }
-
-        if (!$entityObject = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $entitySchema['$id']])) {
-            $this->io->writeln('Schema not present, creating schema '.$entitySchema['title'].' under reference '.$entitySchema['$id']);
-            $entityObject = new Entity();
-        } else {
-            $this->io->writeln('Schema already present, looking to update');
-            if (array_key_exists('version', $entitySchema) && version_compare($entitySchema['version'], $entityObject->getVersion()) < 0) {
-                $this->io->writeln('The new schema has a version number equal or lower then the already present version');
-            }
-        }
-
-        $entityObject->fromSchema($entitySchema);
-
-        $this->em->persist($entityObject);
-
-        // Add the schema to collection
-        if (isset($this->collection)) {
-            $entityObject->addCollection($this->collection);
-        }
-
-        $this->em->flush();
-        $this->io->writeln('Done with schema '.$entityObject->getName());
-    }
+        return true;
+    }//end lookforFiles()
 
     /**
-     * Perform a very basic check to see if a schema file is a valid json-action file.
+     * This function read a folder to find other folders or json objects
      *
-     * @param array $schema
-     *
-     * @return bool
+     * @param string $location The location of the folder
+     * @return bool Whether or not the function was succefully executed
      */
-    public function validateJsonAction(array $schema): bool
-    {
-        if (
-            array_key_exists('$id', $schema) &&
-            array_key_exists('$schema', $schema) &&
-            $schema['$schema'] == 'https://json-schema.org/draft/2020-12/action' &&
-            array_key_exists('listens', $schema) &&
-            array_key_exists('class', $schema)
-        ) {
-            return true;
+    public function readDirectory(string $location): bool{
+
+        // Lets see if the folder exisits to start with
+        if ($this->filesystem->exists($location) === false) {
+            $this->logger->debug('Installation folder not found',["location"=>$location]);
+            return false;
         }
 
-        return false;
-    }
+        // Get the folder content
+        $hits = new Finder();
+        $hits = $hits->in($location);
+
+        // Handle files
+        $this->logger->debug('Found '.count($hits->files()). 'files for installer',["location"=>$location,"files"=>count($hits->files())]);
+
+        if(count($hits->files()) > 32){
+            $this->logger->warning('Found more then 32 files in directory, try limiting your files to 32 per directory',["location"=>$location,"files"=>count($hits->files())]);
+        }
+
+        foreach ($hits->files() as $file) {
+            $this->readfile($file);
+        }
+
+        return true;
+    }//end readDirectory()
 
     /**
-     * Perform a very basic check to see if a schema file is a valid json-mapping file.
+     * This function read a folder to find other folders or json objects
      *
-     * @param array $schema
-     *
-     * @return bool
+     * @param File $file The file location
+     * @return bool|array The file contents, or false if content could not be establisched
      */
-    public function validateJsonMapping(array $schema): bool
+    public function readfile(File $file): mixed
     {
-        if (
-            array_key_exists('$id', $schema) &&
-            array_key_exists('$schema', $schema) &&
-            $schema['$schema'] == 'https://json-schema.org/draft/2020-12/mapping'
-        ) {
-            return true;
+
+        // Check if it is a valid json object
+        $mappingSchema = json_decode($file->getContents(), true);
+        if ($mappingSchema === false) {
+            $this->logger->error($file->getFilename().' is not a valid json object');
+            return false;
         }
 
-        return false;
-    }
+        // Check if it is a valid schema
+        $mappingSchema = $this->validateJsonMapping($mappingSchema);
 
-    /**
-     * Performce a very basic check to see if a schema file is a valid json-schema file.
-     *
-     * @param array $schema
-     *
-     * @return bool
-     */
-    public function validateJsonSchema(array $schema): bool
-    {
-        if (
-            array_key_exists('$id', $schema) &&
-            array_key_exists('$schema', $schema) &&
-            $schema['$schema'] == 'https://json-schema.org/draft/2020-12/schema' &&
-            array_key_exists('type', $schema) &&
-            $schema['type'] == 'object' &&
-            array_key_exists('properties', $schema)
-        ) {
-            return true;
-        }
-
-        return false;
-    }
-
-    public function handleData($file)
-    {
-        if (!$data = json_decode($file->getContents(), true)) {
-            $this->io->writeln($file->getFilename().' is not a valid json object');
+        if ($this->validateJsonMapping($mappingSchema)) {
+            $this->logger->error($file->getFilename().' is not a valid json-mapping object');
 
             return false;
         }
 
-        foreach ($data as $reference => $objects) {
-            // Lets see if we actuelly have a shema to upload the objects to
-            if (!$entity = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $reference])) {
-                $this->io->writeln('No Schema found for reference '.$reference);
+        // Add the file to the object
+        return $this->addToObjects($mappingSchema);
+    }//end readfile()
+
+
+    /**
+     * Adds an object to the objects stack if it is vallid
+     *
+     * @param array $schema The schema
+     * @return bool|array The file contents, or false if content could not be establisched
+     */
+    public function addToObjects(array $schema): mixed{
+
+        // It is a schema so lets save it like that
+        if(array_key_exists('$schema', $schema) === true){
+            $this->objects[$schema['$schema']] = $schema;
+            return $schema;
+        }
+
+        //If it is not a schema of itself it might be an array of objects
+        foreach($schema as $key => $value){
+            if(is_array($value)){
+                $this->objects[$key] = $value;
                 continue;
             }
 
-            $this->io->writeln([
-                '',
-                '<info> Found data for schema '.$reference.'</info> containing '.count($objects).' object(s)',
-            ]);
-
-            // Then we can handle data
-            foreach ($objects as $object) {
-                // Lets see if we need to update
-
-                // Backwarsd competability
-                if (isset($object['_id'])) {
-                    $object['id'] = $object['_id'];
-                    unset($object['_id']);
-                }
-
-                if (isset($object['id']) && $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $object['id']])) {
-                    $this->io->writeln(['', 'Object '.$object['id'].' already exists, so updating']);
-                } else {
-                    $objectEntity = new ObjectEntity($entity);
-                }
-
-                $this->io->writeln('Writing data to the object');
-
-                $this->saveOnFixedId($objectEntity, $object);
-
-                $this->io->writeln(['Object saved as '.$objectEntity->getId(), '']);
-            }
+            $this->logger->error("Expected to find array for schema type ".$key." but found ".gettype($value)." instead",["value"=>$value,"schema"=>$key]);
         }
-    }
+
+        return true;
+    }//end addToObjects()
+
+    /**
+     * Create an object bases on an type and a schema (the object as an array)
+     *
+     * This function breaks complexity rules, but since a switch is the most effective way of doing it a design decicion was made to allow it
+     *
+     * @param string $type The type of the object
+     * @param array $schema The object as an array
+     * @return bool|object
+     */
+    public function handleObject(string $type, array $schema):bool
+    {
+        // Only base we need it the assumption that on object isn't valid until we made is so
+        $object = null;
+
+        switch ($type){
+            case 'https://json-schema.org/draft/2020-12/action':
+                //Load it if we have it
+                if(array_key_exists('$id', $schema) === true) {
+                    $object = $this->em->getRepository('App:Action')->findOneBy(['reference' => $schema['$id']]);
+                }
+
+                //Create it if we don't
+                if($object === null){
+                    $object = New Action;
+                }
+                break;
+            case 'https://json-schema.org/draft/2020-12/source':
+                //Load it if we have it
+                if(array_key_exists('$id', $schema) === true) {
+                    $object = $this->em->getRepository('App:Source')->findOneBy(['reference' => $schema['$id']]);
+                }
+
+                //Create it if we don't
+                if($object === null){
+                    $object = New Source;
+                }
+                break;
+            case 'https://json-schema.org/draft/2020-12/entity':
+                //Load it if we have it
+                if(array_key_exists('$id', $schema) === true) {
+                    $object = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']]);
+                }
+
+                //Create it if we don't
+                if($object === null){
+                    $object = New Entity;
+                }
+                break;
+            case 'https://json-schema.org/draft/2020-12/mapping':
+                //Load it if we have it
+                if(array_key_exists('$id', $schema) === true ) {
+                    $object = $this->em->getRepository('App:Mapping')->findOneBy(['reference' => $schema['$id']]);
+                }
+
+                //Create it if we don't
+                if($object === null){
+                    $object = New Mapping;
+                }
+                break;
+            case 'https://json-schema.org/draft/2020-12/organization':
+                //Load it if we have it
+                if(array_key_exists('$id', $schema) === true) {
+                    $object = $this->em->getRepository('App:Organization')->findOneBy(['reference' => $schema['$id']]);
+                }
+
+                //Create it if we don't
+                if($object === null){
+                    $object = New Organization;
+                }
+                break;
+            case 'https://json-schema.org/draft/2020-12/application':
+                //Load it if we have it
+                if(array_key_exists('$id', $schema) === true) {
+                    $object = $this->em->getRepository('App:Application')->findOneBy(['reference' => $schema['$id']]);
+                }
+
+                //Create it if we don't
+                if($object === null){
+                    $object = New Application;
+                }
+            case 'https://json-schema.org/draft/2020-12/cronjob':
+                //Load it if we have it
+                if(array_key_exists('$id', $schema) === true) {
+                    $object = $this->em->getRepository('App:Cronjob')->findOneBy(['reference' => $schema['$id']]);
+                }
+
+                //Create it if we don't
+                if($object === null){
+                    $object = New Cronjob;
+                }
+            case 'https://json-schema.org/draft/2020-12/securityGroup':
+                //Load it if we have it
+                if(array_key_exists('$id', $schema) === true) {
+                    $object = $this->em->getRepository('App:SecurityGroup')->findOneBy(['reference' => $schema['$id']]);
+                }
+
+                //Create it if we dont
+                if($object === null){
+                    $object = New SecurityGroup;
+                }
+            case 'https://json-schema.org/draft/2020-12/user':
+                //Load it if we have it
+                if(array_key_exists('$id', $schema) === true) {
+                    $object = $this->em->getRepository('App:User')->findOneBy(['reference' => $schema['$id']]);
+                }
+
+                //Create it if we don't
+                if($object === null){
+                    $object = New User;
+                }
+            case 'https://json-schema.org/draft/2020-12/endpoint':
+                //Load it if we have it
+                if(array_key_exists('$id', $schema) === true) {
+                    $object = $this->em->getRepository('App:Endpoint')->findOneBy(['reference' => $schema['$id']]);
+                }
+
+                //Create it if we don't
+                if($object === null){
+                    $object = New Endpoint;
+                }
+
+                // Add to collection
+                if (isset($this->collection)) {
+                    $object->addCollection($this->collection);
+                }
+            case 'https://json-schema.org/draft/2020-12/schema':
+                //Load it if we have it
+                if(array_key_exists('$id', $schema) === true){
+                    $object = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']]);
+                }
+
+                //Create it if we don't
+                if($object === null){
+                    $object = New Entity;
+                }
+
+                // Add to collection
+                if (isset($this->collection)) {
+                    $object->addCollection($this->collection);
+                }
+            default:
+                // We have an undifned type so lets try to find it
+                $entity = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $type]);
+                if($entity === null){
+                    $this->logger->error('trying to create data for non-exisitng entity',['reference'=>$type,"object"=> $object->toSchema()]);
+                    return false;
+                }
+
+                // If we have an id let try to grab an object
+                if(array_key_exists('id', $schema)){
+                    $object = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $schema['$id']]);
+                }
+
+                //Create it if we don't
+                if($object === null){
+                    $object = New ObjectEntity($entity);
+                }
+
+                // Now it gets a bit specif but for EAV data we allow nested fixed id's so let dive deep.
+                if($this->em->contains($object) === false && (array_key_exists('id', $schema) || array_key_exists('_id', $schema))){
+                    $object = $this->saveOnFixedId($object, $schema);
+                    break;
+                }
+
+                // EAV objects arn't cast from schema but hydrated from array's
+                $object->hydrate($schema);
+                break;
+        }//end switch
+
+        // Load the data
+        if (
+            array_key_exists('version', $schema) === true &&
+            version_compare($schema['version'], $object->getVersion()) <= 0
+        ) {
+            $this->loger->debug('The new mapping has a version number equal or lower then the already present version, the object is NOT is updated',['schemaVersion'=>$schema['version'],'objectVersion'=>$object->getVersion()]);
+
+        }
+        elseif (
+            array_key_exists('version', $schema) === true &&
+            version_compare($schema['version'], $object->getVersion()) < 0
+        ){
+            $this->loger->debug('The new mapping has a version number higher then the already present version, the object is data is updated',['schemaVersion'=>$schema['version'],'objectVersion'=>$object->getVersion()]);
+            $object->fromSchema($schema);
+        }
+        elseif (array_key_exists('version', $schema) === false){
+            $this->loger->debug('The new mapping don\'t have a version number, the object is data is updated',['schemaVersion'=>$schema['version'],'objectVersion'=>$object->getVersion()]);
+            $object->fromSchema($schema);
+
+        }
+
+        // Lets see if it is a new object
+        if($this->em->contains($object) === false){
+            $this->loger->info('A new object has been created trough the installation service',
+                [
+                    "class"=> get_class($object),
+                    "object"=> $object->toSchema(),
+                ]
+            );
+        }
+
+        return $object;
+    }//end handleObject()
 
     public function handleInstaller($file)
     {
@@ -653,7 +607,7 @@ class InstallationService
         $installationService->setStyle($this->io);
 
         return $installationService->install();
-    }
+    }// handleInstaller()
 
     /**
      * Handles forced id's on object entities.
@@ -783,5 +737,5 @@ class InstallationService
         $this->em->flush();
 
         return $objectEntity;
-    }
+    }//end saveOnFixedId()
 }
