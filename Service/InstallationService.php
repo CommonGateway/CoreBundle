@@ -168,9 +168,8 @@ class InstallationService
 
             // Check atributes.
             foreach ($schema->getAttributes() as $attribute) {
-                // Specific checks for objects
-                if ($attribute->getType() == 'object') {
-
+                // Specific checks for objects.
+                if ($attribute->getType() === 'object') {
                     // Check for object link.
                     if ($attribute->getObject() === false) {
                         $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an object';
@@ -183,7 +182,6 @@ class InstallationService
 
                     // Check for reference link.
                     if ($attribute->getReference() === false) {
-
                         //$message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an reference';
                         //$this->logger->info($message);
                         //if ($this->io) { $this->io->info($message);}
@@ -192,13 +190,13 @@ class InstallationService
                 }//end if
 
                 // Check for reference link.
-                if ($attribute->getReference() && $attribute->getType() !== 'object') {
+                if ($attribute->getReference() === true && $attribute->getType() !== 'object') {
                     $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that has a reference ('.$attribute->getReference().') but isn\'t of the type object';
                     $this->logger->error($message);
                     $statusOk = false;
                 }
 
-            }
+            }//end foreach
 
             if ($statusOk === true) {
                 $this->logger->info('Schema '.$schema->getName().' ('.$schema->getId().') has been checked and is fine');
@@ -209,7 +207,7 @@ class InstallationService
         }//end foreach
 
         return 1;
-    }//validateSchemas ()
+    }//end validateSchemas()
 
     /**
      * Installs the files from a bundle
@@ -221,7 +219,7 @@ class InstallationService
     public function install(string $bundle, array $config = []): bool
     {
 
-        $this->logger->debug('Installing plugin '.$bundle,['bundle'=>$bundle]);
+        $this->logger->debug('Installing plugin '.$bundle,['bundle' => $bundle]);
 
         $vendorFolder = 'vendor';
 
@@ -236,7 +234,7 @@ class InstallationService
         // Handling al the files.
         $this->logger->debug('Found '.count($this->objects).' schema types for '.$bundle,['bundle' => $bundle]);
 
-        foreach ($this->objects as $ref => $schemas){
+        foreach ($this->objects as $ref => $schemas) {
             $this->logger->debug('Found '.count($schemas).' objects types for schema '.$ref,['bundle' => $bundle,"reference" => $ref]);
             foreach($schemas as $schema){
                 $object = $this->handleObject($schema);
@@ -259,7 +257,8 @@ class InstallationService
      * @param string $location The location of the folder
      * @return bool Whether or not the function was succefully executed
      */
-    public function readDirectory(string $location): bool{
+    public function readDirectory(string $location): bool
+    {
 
         // Lets see if the folder exisits to start with,
         if ($this->filesystem->exists($location) === false) {
@@ -271,10 +270,10 @@ class InstallationService
         $hits = new Finder();
         $hits = $hits->in($location);
 
-        // Handle files
+        // Handle files.
         $this->logger->debug('Found '.count($hits->files()). 'files for installer',["location"=>$location,"files" => count($hits->files())]);
 
-        if(count($hits->files()) > 32){
+        if(count($hits->files()) > 32) {
             $this->logger->warning('Found more then 32 files in directory, try limiting your files to 32 per directory',["location"=>$location,"files" => count($hits->files())]);
         }
 
@@ -294,23 +293,23 @@ class InstallationService
     public function readfile(File $file): mixed
     {
 
-        // Check if it is a valid json object
+        // Check if it is a valid json object.
         $mappingSchema = json_decode($file->getContents(), true);
         if ($mappingSchema === false) {
             $this->logger->error($file->getFilename().' is not a valid json object');
             return false;
         }
 
-        // Check if it is a valid schema
+        // Check if it is a valid schema.
         $mappingSchema = $this->validateJsonMapping($mappingSchema);
 
-        if ($this->validateJsonMapping($mappingSchema)) {
+        if ($this->validateJsonMapping($mappingSchema) === true) {
             $this->logger->error($file->getFilename().' is not a valid json-mapping object');
 
             return false;
         }
 
-        // Add the file to the object
+        // Add the file to the object.
         return $this->addToObjects($mappingSchema);
     }//end readfile()
 
@@ -321,22 +320,24 @@ class InstallationService
      * @param array $schema The schema
      * @return bool|array The file contents, or false if content could not be establisched
      */
-    public function addToObjects(array $schema): mixed{
+    public function addToObjects(array $schema): mixed
+    {
 
-        // It is a schema so lets save it like that
+        // It is a schema so lets save it like that.
         if(array_key_exists('$schema', $schema) === true){
             $this->objects[$schema['$schema']] = $schema;
             return $schema;
         }
 
-        //If it is not a schema of itself it might be an array of objects
-        foreach($schema as $key => $value){
-            if(is_array($value)){
+        // If it is not a schema of itself it might be an array of objects.
+        foreach($schema as $key => $value) {
+            if(is_array($value)) {
                 $this->objects[$key] = $value;
                 continue;
             }
 
-            $this->logger->error("Expected to find array for schema type ".$key." but found ".gettype($value)." instead",["value"=>$value,"schema"=>$key]);
+            // The use of gettype is discoureged, but we don't use it as a bl here and only for logging text purposes. So a design decicion was made te allow it.
+            $this->logger->error("Expected to find array for schema type ".$key." but found ".gettype($value)." instead",["value" => $value,"schema" => $key]);
         }
 
         return true;
@@ -353,191 +354,190 @@ class InstallationService
      */
     public function handleObject(string $type, array $schema):bool
     {
-        // Only base we need it the assumption that on object isn't valid until we made is so
+        // Only base we need it the assumption that on object isn't valid until we made is so.
         $object = null;
 
-        switch ($type){
+        switch ($type) {
             case 'https://json-schema.org/draft/2020-12/action':
-                //Load it if we have it
+                // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true) {
                     $object = $this->em->getRepository('App:Action')->findOneBy(['reference' => $schema['$id']]);
                 }
 
-                //Create it if we don't
-                if($object === null){
-                    $object = New Action;
+                // Create it if we don't.
+                if($object === null) {
+                    $object = new Action;
                 }
                 break;
             case 'https://json-schema.org/draft/2020-12/source':
-                //Load it if we have it
+                // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true) {
                     $object = $this->em->getRepository('App:Source')->findOneBy(['reference' => $schema['$id']]);
                 }
 
-                //Create it if we don't
-                if($object === null){
-                    $object = New Source;
+                // Create it if we don't.
+                if($object === null) {
+                    $object = new Source;
                 }
                 break;
             case 'https://json-schema.org/draft/2020-12/entity':
-                //Load it if we have it
+                // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true) {
                     $object = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']]);
                 }
 
-                //Create it if we don't
-                if($object === null){
-                    $object = New Entity;
+                // Create it if we don't.
+                if($object === null) {
+                    $object = new Entity;
                 }
                 break;
             case 'https://json-schema.org/draft/2020-12/mapping':
-                //Load it if we have it
+                // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true ) {
                     $object = $this->em->getRepository('App:Mapping')->findOneBy(['reference' => $schema['$id']]);
                 }
 
-                //Create it if we don't
-                if($object === null){
-                    $object = New Mapping;
+                // Create it if we don't.
+                if($object === null) {
+                    $object = new Mapping;
                 }
                 break;
             case 'https://json-schema.org/draft/2020-12/organization':
-                //Load it if we have it
+                // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true) {
                     $object = $this->em->getRepository('App:Organization')->findOneBy(['reference' => $schema['$id']]);
                 }
 
-                //Create it if we don't
-                if($object === null){
-                    $object = New Organization;
+                // Create it if we don't.
+                if($object === null) {
+                    $object = new Organization;
                 }
                 break;
             case 'https://json-schema.org/draft/2020-12/application':
-                //Load it if we have it
+                // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true) {
                     $object = $this->em->getRepository('App:Application')->findOneBy(['reference' => $schema['$id']]);
                 }
 
-                //Create it if we don't
-                if($object === null){
-                    $object = New Application;
+                // Create it if we don't.
+                if($object === null) {
+                    $object = new Application;
                 }
             case 'https://json-schema.org/draft/2020-12/cronjob':
-                //Load it if we have it
+                // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true) {
                     $object = $this->em->getRepository('App:Cronjob')->findOneBy(['reference' => $schema['$id']]);
                 }
 
-                //Create it if we don't
-                if($object === null){
-                    $object = New Cronjob;
+                // Create it if we don't.
+                if($object === null) {
+                    $object = new Cronjob;
                 }
             case 'https://json-schema.org/draft/2020-12/securityGroup':
-                //Load it if we have it
+                // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true) {
                     $object = $this->em->getRepository('App:SecurityGroup')->findOneBy(['reference' => $schema['$id']]);
                 }
 
-                //Create it if we dont
-                if($object === null){
-                    $object = New SecurityGroup;
+                // Create it if we dont.
+                if($object === null) {
+                    $object = new SecurityGroup;
                 }
             case 'https://json-schema.org/draft/2020-12/user':
-                //Load it if we have it
+                // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true) {
                     $object = $this->em->getRepository('App:User')->findOneBy(['reference' => $schema['$id']]);
                 }
 
-                //Create it if we don't
-                if($object === null){
-                    $object = New User;
+                // Create it if we don't.
+                if($object === null) {
+                    $object = new User;
                 }
             case 'https://json-schema.org/draft/2020-12/endpoint':
-                //Load it if we have it
+                // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true) {
                     $object = $this->em->getRepository('App:Endpoint')->findOneBy(['reference' => $schema['$id']]);
                 }
 
-                //Create it if we don't
-                if($object === null){
-                    $object = New Endpoint;
+                // Create it if we don't.
+                if($object === null) {
+                    $object = new Endpoint;
                 }
 
-                // Add to collection
+                // Add to collection.
                 if (isset($this->collection)) {
                     $object->addCollection($this->collection);
                 }
             case 'https://json-schema.org/draft/2020-12/schema':
-                //Load it if we have it
+                // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true){
                     $object = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']]);
                 }
 
-                //Create it if we don't
-                if($object === null){
-                    $object = New Entity;
+                // Create it if we don't.
+                if($object === null) {
+                    $object = new Entity;
                 }
 
-                // Add to collection
+                // Add to collection.
                 if (isset($this->collection)) {
                     $object->addCollection($this->collection);
                 }
             default:
-                // We have an undifned type so lets try to find it
+                // We have an undifned type so lets try to find it.
                 $entity = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $type]);
-                if($entity === null){
-                    $this->logger->error('trying to create data for non-exisitng entity',['reference'=>$type,"object"=> $object->toSchema()]);
+                if($entity === null) {
+                    $this->logger->error('trying to create data for non-exisitng entity',['reference'=>$type,"object" => $object->toSchema()]);
                     return false;
                 }
 
-                // If we have an id let try to grab an object
-                if(array_key_exists('id', $schema)){
+                // If we have an id let try to grab an object.
+                if(array_key_exists('id', $schema) === true) {
                     $object = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $schema['$id']]);
                 }
 
-                //Create it if we don't
-                if($object === null){
-                    $object = New ObjectEntity($entity);
+                // Create it if we don't.
+                if($object === null) {
+                    $object = new ObjectEntity($entity);
                 }
 
                 // Now it gets a bit specif but for EAV data we allow nested fixed id's so let dive deep.
-                if($this->em->contains($object) === false && (array_key_exists('id', $schema) || array_key_exists('_id', $schema))){
+                if($this->em->contains($object) === false && (array_key_exists('id', $schema) === true || array_key_exists('_id', $schema) === true )) {
                     $object = $this->saveOnFixedId($object, $schema);
                     break;
                 }
 
-                // EAV objects arn't cast from schema but hydrated from array's
+                // EAV objects arn't cast from schema but hydrated from array's.
                 $object->hydrate($schema);
                 break;
         }//end switch
 
-        // Load the data
-        if (
+        // Load the data.
+        if(
             array_key_exists('version', $schema) === true &&
             version_compare($schema['version'], $object->getVersion()) <= 0
         ) {
-            $this->loger->debug('The new mapping has a version number equal or lower then the already present version, the object is NOT is updated',['schemaVersion'=>$schema['version'],'objectVersion'=>$object->getVersion()]);
-
+            $this->loger->debug('The new mapping has a version number equal or lower then the already present version, the object is NOT is updated',['schemaVersion' => $schema['version'],'objectVersion' => $object->getVersion()]);
         }
-        elseif (
+        else if(
             array_key_exists('version', $schema) === true &&
             version_compare($schema['version'], $object->getVersion()) < 0
-        ){
-            $this->loger->debug('The new mapping has a version number higher then the already present version, the object is data is updated',['schemaVersion'=>$schema['version'],'objectVersion'=>$object->getVersion()]);
+        ) {
+            $this->loger->debug('The new mapping has a version number higher then the already present version, the object is data is updated',['schemaVersion' => $schema['version'],'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
         }
-        elseif (array_key_exists('version', $schema) === false){
-            $this->loger->debug('The new mapping don\'t have a version number, the object is data is updated',['schemaVersion'=>$schema['version'],'objectVersion'=>$object->getVersion()]);
+        else if(array_key_exists('version', $schema) === false) {
+            $this->loger->debug('The new mapping don\'t have a version number, the object is data is updated',['schemaVersion' => $schema['version'],'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
 
         }
 
-        // Lets see if it is a new object
-        if($this->em->contains($object) === false){
+        // Lets see if it is a new object.
+        if($this->em->contains($object) === false) {
             $this->loger->info('A new object has been created trough the installation service',
                 [
-                    "class"=> get_class($object),
-                    "object"=> $object->toSchema(),
+                    "class" => get_class($object),
+                    "object" => $object->toSchema(),
                 ]
             );
         }
@@ -545,9 +545,15 @@ class InstallationService
         return $object;
     }//end handleObject()
 
-    public function handleInstaller($file)
+    /**
+     * Specifcially handles the installation file
+     *
+     * @param $file The installation file
+     * @return bool
+     */
+    public function handleInstaller($file): bool
     {
-        $data = json_decode($file->getContents(), true)
+        $data = json_decode($file->getContents(), true);
         if ($data === false) {
             $this->logger->error($file->getFilename().' is not a valid json object');
 
@@ -575,74 +581,73 @@ class InstallationService
      * Handles forced id's on object entities.
      *
      * @param ObjectEntity $objectEntity The object entity on wich to force an id
+     * @param array $hydrate The data to hydrate
      *
      * @return ObjectEntity The PERSISTED object entity on the forced id
      */
     private function saveOnFixedId(ObjectEntity $objectEntity, array $hydrate = []): ObjectEntity
     {
-        // This savetey dosn't make sense but we need it
+        // This savetey dosn't make sense but we need it/
         if ($objectEntity->getEntity() === null) {
             $this->logger->error('Object can\'t be persisted due to missing schema');
 
             return $objectEntity;
         }
 
-        // Save the values
+        // Save the values.
         //$values = $objectEntity->getObjectValues()->toArray();
         //$objectEntity->clearAllValues();
 
-        // We have an object entity with a fixed id that isn't in the database, so we need to act
-        if (isset($hydrate['id']) && $this->em->contains($objectEntity) === false) {
+        // We have an object entity with a fixed id that isn't in the database, so we need to act.
+        if (isset($hydrate['id']) === true && $this->em->contains($objectEntity) === false) {
             $this->logger->debug('Creating new object ('.$objectEntity->getEntity()->getName().') on a fixed id ('.$hydrate['id'].')');
 
-            // save the id
+            // Save the id.
             $id = $hydrate['id'];
-            // Create the entity
+            // Create the entity.
             $this->em->persist($objectEntity);
             $this->em->flush();
             $this->em->refresh($objectEntity);
-            // Reset the id
+            // Reset the id.
             $objectEntity->setId($id);
             $this->em->persist($objectEntity);
             $this->em->flush();
             $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
-
 
             $this->logger->debug('Defintive object id ('.$objectEntity->getId().')');
         } else {
             $this->logger->debug('Creating new object ('.$objectEntity->getEntity()->getName().') on a generated id');
         }
 
-        // We already dit this so lets skip it
+        // We already dit this so lets skip it.
         unset($hydrate['_id']);
 
         foreach ($hydrate as $key => $value) {
-            // Try to get a value object
+            // Try to get a value object.
             $valueObject = $objectEntity->getValueObject($key);
 
-            // If we find the Value object we set the value
+            // If we find the Value object we set the value.
             if ($valueObject instanceof Value) {
-                // Value is an array so lets create an object
+                // Value is an array so lets create an object.
                 if ($valueObject->getAttribute()->getType() == 'object') {
-
                     // I hate arrays
                     if ($valueObject->getAttribute()->getMultiple()) {
-
                         $this->logger->debug('an array for objects');
-                        if (is_array($value)) {
+                        if (is_array($value) === true) {
                             foreach ($value as $subvalue) {
                                 // Savety
                                 if ($valueObject->getAttribute()->getObject() === null) {
                                     continue;
                                 }
-                                // is array
+                                // Is array.
 
-                                if (is_array($subvalue)) {
+                                if (is_array($subvalue) === true) {
                                     $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
                                     $newObject = $this->saveOnFixedId($newObject, $subvalue);
                                     $valueObject->addObject($newObject);
                                 }
-                                // Is not an array
+
+                                // Is not an array.
                                 else {
                                     $idValue = $subvalue;
                                     $subvalue = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
@@ -655,30 +660,32 @@ class InstallationService
                                 }
                             }
                         } else {
+                            // The use of gettype is discoureged, but we don't use it as a bl here and only for logging text purposes. So a design decicion was made te allow it.
                             $this->logger->error($valueObject->getAttribute()->getName().' Is a multiple so should be filled with an array, but provided value was '.$value.'(type: '.gettype($value).')');
-
                         }
                         continue;
                     }
-                    // End of array hate, we are friends again
+                    // End of array hate, we are friends again.
 
-                    // is array
-                    if (is_array($value)) {
+                    // is array.
+                    if (is_array($value) === true) {
                         // Savety
-                        if (!$valueObject->getAttribute()->getObject()) {
+                        if ($valueObject->getAttribute()->getObject() === null) {
                             $this->logger->error('Could not find an object for atribute  '.$valueObject->getAttribute()->getname().' ('.$valueObject->getAttribute()->getId().')');
                             continue;
                         }
+
                         $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
                         $value = $this->saveOnFixedId($newObject, $value);
                         $valueObject->setValue($value);
                     }
-                    // Is not an array
+
+                    // Is not an array.
                     else {
                         $idValue = $value;
                         $value = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
                         // Savety
-                        if (!$value) {
+                        if($value === null) {
                             $this->logger->error('Could not find an object for id '.$idValue);
                         } else {
                             $valueObject->setValue($value);
@@ -688,12 +695,12 @@ class InstallationService
                     $valueObject->setValue($value);
                 }
 
-                // Do the normaul stuf
+                // Do the normaul stuf.
                 $objectEntity->addObjectValue($valueObject);
             }
         }
 
-        // Lets force the default values
+        // Lets force the default values.
         $objectEntity->hydrate([]);
 
         $this->em->persist($objectEntity);
