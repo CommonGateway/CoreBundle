@@ -14,7 +14,9 @@
 |[checkHS256](#authenticationservicecheckhs256)|Decides if the provided JWT token is signed with the HS256 Algorithm.|
 |[checkHeadersAndGetJWK](#authenticationservicecheckheadersandgetjwk)|Checks the algorithm of the JWT token and decides how to generate a JWK from the provided public key.|
 |[checkRS512](#authenticationservicecheckrs512)|Decides if the provided JWT token is signed with the RS512 Algorithm.|
+|[convertRSAKeyToJWK](#authenticationserviceconvertrsakeytojwk)||
 |[convertRSAtoJWK](#authenticationserviceconvertrsatojwk)||
+|[createJwtToken](#authenticationservicecreatejwttoken)||
 |[getAlgorithm](#authenticationservicegetalgorithm)||
 |[getApplicationId](#authenticationservicegetapplicationid)||
 |[getAuthentication](#authenticationservicegetauthentication)||
@@ -137,12 +139,60 @@ Decides if the provided JWT token is signed with the RS512 Algorithm.
 <hr />
 
 
+### AuthenticationService::convertRSAKeyToJWK  
+
+**Description**
+
+```php
+ convertRSAKeyToJWK (void)
+```
+
+ 
+
+ 
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`void`
+
+
+<hr />
+
+
 ### AuthenticationService::convertRSAtoJWK  
 
 **Description**
 
 ```php
  convertRSAtoJWK (void)
+```
+
+ 
+
+ 
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`void`
+
+
+<hr />
+
+
+### AuthenticationService::createJwtToken  
+
+**Description**
+
+```php
+ createJwtToken (void)
 ```
 
  
