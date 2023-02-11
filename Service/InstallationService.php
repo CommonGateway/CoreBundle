@@ -28,10 +28,6 @@ class InstallationService
      */
     private EntityManagerInterface $em;
 
-    /**
-     * @var SymfonyStyle
-     */
-    private SymfonyStyle $io;
 
     /**
      * @var
@@ -84,27 +80,13 @@ class InstallationService
     {
         $plugins = $this->composerService->getAll();
 
-        if ($this->io) {
-            $this->io->writeln([
-                '',
-                '<info>Common Gateway Bundle Updater</info>',
-                '============',
-                '',
-                'Found: <comment> '.count($plugins).' </comment> to check for updates',
-                '',
-            ]);
-        }
-
         $this->logger->debug('Running plugin installer');
 
         foreach ($plugins as $plugin) {
             $this->install($plugin['name'], $config);
         }
 
-        if ($this->io) {
-            $this->cacheService->setStyle($this->io);
-            $this->cacheService->warmup();
-        }
+        $this->cacheService->warmup();
 
         return Command::SUCCESS;
     }//end composerupdate()
@@ -118,11 +100,6 @@ class InstallationService
     {
         $objects = $this->em->getRepository('App:ObjectEntity')->findAll();
 
-        if ($this->io) {
-            $this->io->writeln([
-                'Validating: <comment> '.count($objects).' </comment> objects\'s',
-            ]);
-        }
         $this->logger->info('Validating:'.count($objects).'objects\'s');
 
         // Lets go go go !
@@ -141,11 +118,6 @@ class InstallationService
     {
         $values = $this->em->getRepository('App:Value')->findAll();
 
-        if ($this->io) {
-            $this->io->writeln([
-                'Validating: <comment> '.count($values).' </comment> values\'s',
-            ]);
-        }
         $this->logger->info('Validating:'.count($values).'values\'s');
 
         // Lets go go go !
@@ -165,11 +137,6 @@ class InstallationService
     {
         $schemas = $this->em->getRepository('App:Entity')->findAll();
 
-        if ($this->io) {
-            $this->io->writeln([
-                'Validating: <comment> '.count($schemas).' </comment> schema\'s',
-            ]);
-        }
         $this->logger->info('Validating:'.count($schemas).'schema\'s');
 
         // Lets go go go !
@@ -197,53 +164,39 @@ class InstallationService
                 if ($attribute->getType() == 'object') {
 
                     // Check for object link
-                    if (!$attribute->getObject()) {
+                    if ($attribute->getObject() === false) {
                         $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an object';
                         $this->logger->error($message);
-                        if ($this->io) {
-                            $this->io->error($message);
-                        }
-                        $statusOk = false;
+                         $statusOk = false;
                     } else {
                         $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is linked to object '.$attribute->getObject()->getName().' ('.$attribute->getObject()->getId();
                         $this->logger->debug($message);
-                        if ($this->io) {
-                            $this->io->note($message);
-                        }
+
                     }
+
                     // Check for reference link
-                    if (!$attribute->getReference()) {
+                    if ($attribute->getReference() === false) {
 
                         //$message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an reference';
                         //$this->logger->info($message);
                         //if ($this->io) { $this->io->info($message);}
                     }
+
                 }
 
                 // Specific wierdnes
                 // Check for reference link
-                if ($attribute->getReference() && !$attribute->getType() == 'object') {
+                if ($attribute->getReference() && $attribute->getType() !== 'object') {
                     $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that has a reference ('.$attribute->getReference().') but isn\'t of the type object';
                     $this->logger->error($message);
-                    if ($this->io) {
-                        $this->io->error($message);
-                    }
                     $statusOk = false;
                 }
             }
 
             if ($statusOk) {
-                $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has been checked and is fine';
-                $this->logger->info($message);
-                if ($this->io) {
-                    $this->io->info($message);
-                }
+                $this->logger->info('Schema '.$schema->getName().' ('.$schema->getId().') has been checked and is fine');
             } else {
-                $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has been checked and has an error';
-                $this->logger->error($message);
-                if ($this->io) {
-                    $this->io->error($message);
-                }
+                $this->logger->error('Schema '.$schema->getName().' ('.$schema->getId().') has been checked and has an error');
             }
         }
 
@@ -586,20 +539,21 @@ class InstallationService
 
     public function handleInstaller($file)
     {
-        if (!$data = json_decode($file->getContents(), true)) {
-            $this->io->writeln($file->getFilename().' is not a valid json object');
+        $data = json_decode($file->getContents(), true)
+        if ($data === false) {
+            $this->logger->error($file->getFilename().' is not a valid json object');
 
             return false;
         }
 
-        if (!isset($data['installationService']) || !$installationService = $data['installationService']) {
-            $this->io->writeln($file->getFilename().' Doesn\'t contain an installation service');
+        if (isset($data['installationService']) === false || $installationService = $data['installationService'] === false) {
+            $this->logger->error($file->getFilename().' Doesn\'t contain an installation service');
 
             return false;
         }
 
-        if (!$installationService = $this->container->get($installationService)) {
-            $this->io->writeln($file->getFilename().' Could not be loaded from container');
+        if ($installationService = $this->container->get($installationService) === false) {
+            $this->logger->error($file->getFilename().' Could not be loaded from container');
 
             return false;
         }
@@ -612,16 +566,15 @@ class InstallationService
     /**
      * Handles forced id's on object entities.
      *
-     * @param ObjectEntity $objectEntity
+     * @param ObjectEntity $objectEntity The object entity on wich to force an id
      *
-     * @return ObjectEntity
+     * @return ObjectEntity The PERSISTED object entity on the forced id
      */
     private function saveOnFixedId(ObjectEntity $objectEntity, array $hydrate = []): ObjectEntity
     {
         // This savetey dosn't make sense but we need it
-        if (!$objectEntity->getEntity()) {
+        if ($objectEntity->getEntity() === null) {
             $this->logger->error('Object can\'t be persisted due to missing schema');
-            $this->io->writeln(['', 'Object can\'t be persisted due to missing schema']);
 
             return $objectEntity;
         }
@@ -631,8 +584,8 @@ class InstallationService
         //$objectEntity->clearAllValues();
 
         // We have an object entity with a fixed id that isn't in the database, so we need to act
-        if (isset($hydrate['id']) && !$this->em->contains($objectEntity)) {
-            $this->io->writeln(['Creating new object ('.$objectEntity->getEntity()->getName().') on a fixed id ('.$hydrate['id'].')']);
+        if (isset($hydrate['id']) && $this->em->contains($objectEntity) === false) {
+            $this->logger->debug('Creating new object ('.$objectEntity->getEntity()->getName().') on a fixed id ('.$hydrate['id'].')');
 
             // save the id
             $id = $hydrate['id'];
@@ -646,9 +599,10 @@ class InstallationService
             $this->em->flush();
             $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
 
-            $this->io->writeln(['Defintive object id ('.$objectEntity->getId().')']);
+
+            $this->logger->debug('Defintive object id ('.$objectEntity->getId().')');
         } else {
-            $this->io->writeln(['Creating new object ('.$objectEntity->getEntity()->getName().') on a generated id']);
+            $this->logger->debug('Creating new object ('.$objectEntity->getEntity()->getName().') on a generated id');
         }
 
         // We already dit this so lets skip it
@@ -665,12 +619,12 @@ class InstallationService
 
                     // I hate arrays
                     if ($valueObject->getAttribute()->getMultiple()) {
-                        $this->io->info('an array for objects
-                        ');
+
+                        $this->logger->debug('an array for objects');
                         if (is_array($value)) {
                             foreach ($value as $subvalue) {
                                 // Savety
-                                if (!$valueObject->getAttribute()->getObject()) {
+                                if ($valueObject->getAttribute()->getObject() === null) {
                                     continue;
                                 }
                                 // is array
@@ -685,7 +639,7 @@ class InstallationService
                                     $idValue = $subvalue;
                                     $subvalue = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
                                     // Savety
-                                    if (!$subvalue) {
+                                    if ($subvalue === null) {
                                         $this->io->error('Could not find an object for id '.$idValue);
                                     } else {
                                         $valueObject->addObject($subvalue);
@@ -693,7 +647,8 @@ class InstallationService
                                 }
                             }
                         } else {
-                            $this->io->error($valueObject->getAttribute()->getName().' Is a multiple so should be filled with an array, but provided value was '.$value.'(type: '.gettype($value).')');
+                            $this->logger->error($valueObject->getAttribute()->getName().' Is a multiple so should be filled with an array, but provided value was '.$value.'(type: '.gettype($value).')');
+
                         }
                         continue;
                     }
@@ -703,7 +658,7 @@ class InstallationService
                     if (is_array($value)) {
                         // Savety
                         if (!$valueObject->getAttribute()->getObject()) {
-                            $this->io->error('Could not find an object for atribute  '.$valueObject->getAttribute()->getname().' ('.$valueObject->getAttribute()->getId().')');
+                            $this->logger->error('Could not find an object for atribute  '.$valueObject->getAttribute()->getname().' ('.$valueObject->getAttribute()->getId().')');
                             continue;
                         }
                         $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
@@ -716,7 +671,7 @@ class InstallationService
                         $value = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
                         // Savety
                         if (!$value) {
-                            $this->io->error('Could not find an object for id '.$idValue);
+                            $this->logger->error('Could not find an object for id '.$idValue);
                         } else {
                             $valueObject->setValue($value);
                         }
