@@ -15,6 +15,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class InstallationService
 {
@@ -26,13 +27,12 @@ class InstallationService
     /**
      * @var EntityManagerInterface
      */
-    private EntityManagerInterface $em;
-
+    private EntityManagerInterface $entityManager;
 
     /**
-     * @var
+     * @var ContainerInterface
      */
-    private $container;
+    private ContainerInterface $container;
 
     /**
      * @var Logger
@@ -55,19 +55,20 @@ class InstallationService
     private array $objects;
 
     /**
-     * @param ComposerService $composerService
-     * @param EntityManagerInterface $em
-     * @param Kernel $kernel
-     * @param CacheService $cacheService
+     *
+     * @param ComposerService $composerService The Composer service
+     * @param EntityManagerInterface $entityManager The entity manager
+     * @param Kernel $kernel The kernel
+     * @param CacheService $cacheService The cache service
      */
     public function __construct(
         ComposerService $composerService,
-        EntityManagerInterface $em,
+        EntityManagerInterface $entityManager,
         Kernel $kernel,
         CacheService $cacheService
     ) {
         $this->composerService = $composerService;
-        $this->em = $em;
+        $this->entityManager = $entityManager;
         $this->container = $kernel->getContainer();
         $this->collection = null;
         $this->logger = new Logger('installation');
@@ -104,13 +105,13 @@ class InstallationService
      */
     public function validateObjects(): int
     {
-        $objects = $this->em->getRepository('App:ObjectEntity')->findAll();
+        $objects = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
 
         $this->logger->info('Validating:'.count($objects).'objects\'s');
 
         // Lets go go go !
         foreach ($objects as $object) {
-            if ($object->get == true) {
+            if ($object->get === true) {
                 // ToDo: Build
             }
         }
@@ -123,14 +124,14 @@ class InstallationService
      */
     public function validateValues(): int
     {
-        $values = $this->em->getRepository('App:Value')->findAll();
+        $values = $this->entityManager->getRepository('App:Value')->findAll();
 
         $this->logger->info('Validating:'.count($values).'values\'s');
 
         // Lets go go go !
         foreach ($values as $value) {
             if ($value->getObjectEntity() === null) {
-                $message = 'Value '.$value->getStringValue().' ('.$value->getId().') that belongs to  '.$value->getAttribute()->getName().' ('.$value->getAttribute()->getId().') is orpahned';
+                $this->logger->error('Value '.$value->getStringValue().' ('.$value->getId().') that belongs to  '.$value->getAttribute()->getName().' ('.$value->getAttribute()->getId().') is orpahned');
             }
         }
     }//end validateValues()
@@ -142,72 +143,109 @@ class InstallationService
      */
     public function validateSchemas(): int
     {
-        $schemas = $this->em->getRepository('App:Entity')->findAll();
+        $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
 
         $this->logger->info('Validating:'.count($schemas).'schema\'s');
 
         // Lets go go go !
         foreach ($schemas as $schema) {
-            $statusOk = true;
-            // Gereric check
-            if ($schema->getReference() === null) {
-                $this->logger->info('Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a reference');
-            }
-
-            // Gereric check.
-
-            /*
-            if(!$schema->getApplication()){
-                $this->logger->info( 'Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a application');
-            }
-            // Gereric check
-            if(!$schema->getOrganization()){
-                $this->logger->info( 'Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a organization');
-            }
-            */
-
-            // Check atributes.
-            foreach ($schema->getAttributes() as $attribute) {
-                // Specific checks for objects.
-                if ($attribute->getType() === 'object') {
-                    // Check for object link.
-                    if ($attribute->getObject() === false) {
-                        $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an object';
-                        $this->logger->error($message);
-                         $statusOk = false;
-                    } else {
-                        $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is linked to object '.$attribute->getObject()->getName().' ('.$attribute->getObject()->getId();
-                        $this->logger->debug($message);
-                    }
-
-                    // Check for reference link.
-                    if ($attribute->getReference() === false) {
-                        //$message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an reference';
-                        //$this->logger->info($message);
-                        //if ($this->io) { $this->io->info($message);}
-                    }
-
-                }//end if
-
-                // Check for reference link.
-                if ($attribute->getReference() === true && $attribute->getType() !== 'object') {
-                    $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that has a reference ('.$attribute->getReference().') but isn\'t of the type object';
-                    $this->logger->error($message);
-                    $statusOk = false;
-                }
-
-            }//end foreach
-
-            if ($statusOk === true) {
-                $this->logger->info('Schema '.$schema->getName().' ('.$schema->getId().') has been checked and is fine');
-            } else {
-                $this->logger->error('Schema '.$schema->getName().' ('.$schema->getId().') has been checked and has an error');
-            }
-
+            $this->validateSchema($schema);
         }//end foreach
 
         return 1;
     }//end validateSchemas()
+
+
+    /**
+     * Validates a single schema
+     *
+     * @param Entity $entity
+     * @return bool
+     */
+    public function validateSchema(Entity $schema): bool
+    {
+        $status = true;
+
+        // Does the schema have an reference?
+        if ($schema->getReference() === null) {
+            $this->logger->debug('Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a reference');
+            $status = false;
+        }
+
+        // Does the schema have an application?
+        if($schema->getApplication() === null) {
+            $this->logger->debug( 'Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a application');
+            $status = false;
+        }
+
+        // Does the schema have an organization?
+        if($schema->getOrganization() === null) {
+            $this->logger->debug( 'Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a organization');
+            $status = false;
+        }
+
+        // Does the schema have an owner?
+        if($schema->getOwner() === null) {
+            $this->logger->debug( 'Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a owner');
+            $status = false;
+        }
+
+        // Check atributes.
+        foreach ($schema->getAttributes() as $attribute) {
+            $valid = $this->validateAtribute($attribute);
+            // If the atribute isn't valid then the schema isn't valid
+            if($valid === false && $status === true ){
+                $status = false;
+            }
+        }
+
+        if ($status === true) {
+            $this->logger->info('Schema '.$schema->getName().' ('.$schema->getId().') has been checked and is fine');
+        } else {
+            $this->logger->error('Schema '.$schema->getName().' ('.$schema->getId().') has been checked and has an error');
+        }
+
+        return $status;
+    }
+
+    /**
+     * Validates a single atribute
+     *
+     * @param Attribute $attribute
+     * @return bool
+     */
+    public function validateAtribute(Attribute  $attribute):bool
+    {
+        // Specific checks for objects.
+        if ($attribute->getType() === 'object') {
+            // Check for object link.
+            if ($attribute->getObject() === false) {
+                $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an object';
+                $this->logger->error($message);
+                $statusOk = false;
+            } else {
+                $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is linked to object '.$attribute->getObject()->getName().' ('.$attribute->getObject()->getId();
+                $this->logger->debug($message);
+            }
+
+            // Check for reference link.
+            if ($attribute->getReference() === false) {
+                //$message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an reference';
+                //$this->logger->info($message);
+                //if ($this->io) { $this->io->info($message);}
+            }
+
+        }//end if
+
+        // Check for reference link.
+        if ($attribute->getReference() === true && $attribute->getType() !== 'object') {
+            $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that has a reference ('.$attribute->getReference().') but isn\'t of the type object';
+            $this->logger->error($message);
+            $statusOk = false;
+        }
+
+        return true;
+    }
 
     /**
      * Installs the files from a bundle
@@ -239,12 +277,12 @@ class InstallationService
             foreach($schemas as $schema){
                 $object = $this->handleObject($schema);
                 // Save it to the database
-                $this->em->persist($object);
+                $this->entityManager->persist($object);
             }
         }
 
         // Save the results to the database.
-        $this->em->flush();
+        $this->entityManager->flush();
 
         $this->logger->debug('All Done installing plugin '.$bundle,['bundle' => $bundle]);
 
@@ -361,7 +399,7 @@ class InstallationService
             case 'https://json-schema.org/draft/2020-12/action':
                 // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true) {
-                    $object = $this->em->getRepository('App:Action')->findOneBy(['reference' => $schema['$id']]);
+                    $object = $this->entityManager->getRepository('App:Action')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
@@ -372,7 +410,7 @@ class InstallationService
             case 'https://json-schema.org/draft/2020-12/source':
                 // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true) {
-                    $object = $this->em->getRepository('App:Source')->findOneBy(['reference' => $schema['$id']]);
+                    $object = $this->entityManager->getRepository('App:Source')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
@@ -383,7 +421,7 @@ class InstallationService
             case 'https://json-schema.org/draft/2020-12/entity':
                 // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true) {
-                    $object = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']]);
+                    $object = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
@@ -394,7 +432,7 @@ class InstallationService
             case 'https://json-schema.org/draft/2020-12/mapping':
                 // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true ) {
-                    $object = $this->em->getRepository('App:Mapping')->findOneBy(['reference' => $schema['$id']]);
+                    $object = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
@@ -405,7 +443,7 @@ class InstallationService
             case 'https://json-schema.org/draft/2020-12/organization':
                 // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true) {
-                    $object = $this->em->getRepository('App:Organization')->findOneBy(['reference' => $schema['$id']]);
+                    $object = $this->entityManager->getRepository('App:Organization')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
@@ -416,7 +454,7 @@ class InstallationService
             case 'https://json-schema.org/draft/2020-12/application':
                 // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true) {
-                    $object = $this->em->getRepository('App:Application')->findOneBy(['reference' => $schema['$id']]);
+                    $object = $this->entityManager->getRepository('App:Application')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
@@ -426,7 +464,7 @@ class InstallationService
             case 'https://json-schema.org/draft/2020-12/cronjob':
                 // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true) {
-                    $object = $this->em->getRepository('App:Cronjob')->findOneBy(['reference' => $schema['$id']]);
+                    $object = $this->entityManager->getRepository('App:Cronjob')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
@@ -436,7 +474,7 @@ class InstallationService
             case 'https://json-schema.org/draft/2020-12/securityGroup':
                 // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true) {
-                    $object = $this->em->getRepository('App:SecurityGroup')->findOneBy(['reference' => $schema['$id']]);
+                    $object = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we dont.
@@ -446,7 +484,7 @@ class InstallationService
             case 'https://json-schema.org/draft/2020-12/user':
                 // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true) {
-                    $object = $this->em->getRepository('App:User')->findOneBy(['reference' => $schema['$id']]);
+                    $object = $this->entityManager->getRepository('App:User')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
@@ -456,7 +494,7 @@ class InstallationService
             case 'https://json-schema.org/draft/2020-12/endpoint':
                 // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true) {
-                    $object = $this->em->getRepository('App:Endpoint')->findOneBy(['reference' => $schema['$id']]);
+                    $object = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
@@ -471,7 +509,7 @@ class InstallationService
             case 'https://json-schema.org/draft/2020-12/schema':
                 // Load it if we have it.
                 if(array_key_exists('$id', $schema) === true){
-                    $object = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']]);
+                    $object = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
@@ -485,7 +523,7 @@ class InstallationService
                 }
             default:
                 // We have an undifned type so lets try to find it.
-                $entity = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $type]);
+                $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $type]);
                 if($entity === null) {
                     $this->logger->error('trying to create data for non-exisitng entity',['reference'=>$type,"object" => $object->toSchema()]);
                     return false;
@@ -493,7 +531,7 @@ class InstallationService
 
                 // If we have an id let try to grab an object.
                 if(array_key_exists('id', $schema) === true) {
-                    $object = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $schema['$id']]);
+                    $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
@@ -502,7 +540,7 @@ class InstallationService
                 }
 
                 // Now it gets a bit specif but for EAV data we allow nested fixed id's so let dive deep.
-                if($this->em->contains($object) === false && (array_key_exists('id', $schema) === true || array_key_exists('_id', $schema) === true )) {
+                if($this->entityManager->contains($object) === false && (array_key_exists('id', $schema) === true || array_key_exists('_id', $schema) === true )) {
                     $object = $this->saveOnFixedId($object, $schema);
                     break;
                 }
@@ -533,7 +571,7 @@ class InstallationService
         }
 
         // Lets see if it is a new object.
-        if($this->em->contains($object) === false) {
+        if($this->entityManager->contains($object) === false) {
             $this->loger->info('A new object has been created trough the installation service',
                 [
                     "class" => get_class($object),
@@ -599,20 +637,20 @@ class InstallationService
         //$objectEntity->clearAllValues();
 
         // We have an object entity with a fixed id that isn't in the database, so we need to act.
-        if (isset($hydrate['id']) === true && $this->em->contains($objectEntity) === false) {
+        if (isset($hydrate['id']) === true && $this->entityManager->contains($objectEntity) === false) {
             $this->logger->debug('Creating new object ('.$objectEntity->getEntity()->getName().') on a fixed id ('.$hydrate['id'].')');
 
             // Save the id.
             $id = $hydrate['id'];
             // Create the entity.
-            $this->em->persist($objectEntity);
-            $this->em->flush();
-            $this->em->refresh($objectEntity);
+            $this->entityManager->persist($objectEntity);
+            $this->entityManager->flush();
+            $this->entityManager->refresh($objectEntity);
             // Reset the id.
             $objectEntity->setId($id);
-            $this->em->persist($objectEntity);
-            $this->em->flush();
-            $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
+            $this->entityManager->persist($objectEntity);
+            $this->entityManager->flush();
+            $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
 
             $this->logger->debug('Defintive object id ('.$objectEntity->getId().')');
         } else {
@@ -650,7 +688,7 @@ class InstallationService
                                 // Is not an array.
                                 else {
                                     $idValue = $subvalue;
-                                    $subvalue = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
+                                    $subvalue = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
                                     // Savety
                                     if ($subvalue === null) {
                                         $this->io->error('Could not find an object for id '.$idValue);
@@ -683,7 +721,7 @@ class InstallationService
                     // Is not an array.
                     else {
                         $idValue = $value;
-                        $value = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
+                        $value = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
                         // Savety
                         if($value === null) {
                             $this->logger->error('Could not find an object for id '.$idValue);
@@ -703,8 +741,8 @@ class InstallationService
         // Lets force the default values.
         $objectEntity->hydrate([]);
 
-        $this->em->persist($objectEntity);
-        $this->em->flush();
+        $this->entityManager->persist($objectEntity);
+        $this->entityManager->flush();
 
         return $objectEntity;
     }//end saveOnFixedId()
