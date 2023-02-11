@@ -20,6 +20,8 @@ use Jose\Component\Signature\JWSVerifier;
 use Jose\Component\Signature\Serializer\CompactSerializer;
 use Jose\Component\Signature\Serializer\JWSSerializerManager;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
 class AuthenticationService
@@ -31,6 +33,17 @@ class AuthenticationService
     {
         $this->parameterBag = $parameterBag;
         $this->fileService = new FileService();
+    }
+
+    public function convertRSAKeyToJWK(string $key): JWK
+    {
+        $filesystem = new Filesystem();
+        $filename = '/srv/api/var/privatekey'.microtime().getmypid();
+        $filesystem->dumpFile($filename, $key);
+        $jwk = JWKFactory::createFromKeyFile($filename, null, ['use' => 'sig']);
+        $filesystem->remove([$filename]);
+
+        return $jwk;
     }
 
     /**
@@ -54,6 +67,7 @@ class AuthenticationService
             ]
         );
         $this->fileService->removeFile($filename);
+        return $jwk;
     }
 
     public function getAlgorithm(Source $source): string
@@ -98,6 +112,20 @@ class AuthenticationService
             'user_id'             => $this->parameterBag->get('app_name'),
             'user_representation' => $this->parameterBag->get('app_name'),
         ]);
+    }
+
+    public function createJwtToken(string $key, array $payload): string
+    {
+        $algorithmManager = new AlgorithmManager([new RS512()]);
+        $jwsBuilder = new JWSBuilder($algorithmManager);
+
+        $jwk = $this->convertRSAKeytoJWK($key);
+
+        $jws = $jwsBuilder
+            ->create()
+            ->withPayload($payload)
+            ->addSignature($jwk, ['alg' => 'RS512'])
+            ->build();
     }
 
     /**
