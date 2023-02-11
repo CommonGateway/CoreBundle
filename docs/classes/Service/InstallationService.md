@@ -13,7 +13,7 @@
 |[__construct](#installationservice__construct)||
 |[addToObjects](#installationserviceaddtoobjects)|Adds an object to the objects stack if it is vallid|
 |[composerupdate](#installationservicecomposerupdate)|Updates all commonground bundles on the common gateway installation.|
-|[handleInstaller](#installationservicehandleinstaller)||
+|[handleInstaller](#installationservicehandleinstaller)|Specifcially handles the installation file|
 |[handleObject](#installationservicehandleobject)|Create an object bases on an type and a schema (the object as an array)|
 |[install](#installationserviceinstall)|Installs the files from a bundle|
 |[readDirectory](#installationservicereaddirectory)|This function read a folder to find other folders or json objects|
@@ -91,6 +91,7 @@ Updates all commonground bundles on the common gateway installation.
 **Parameters**
 
 * `(array) $config`
+: The (optional) configuration  
 
 **Return Values**
 
@@ -107,20 +108,23 @@ Updates all commonground bundles on the common gateway installation.
 **Description**
 
 ```php
- handleInstaller (void)
+public handleInstaller ( $file)
 ```
 
- 
+Specifcially handles the installation file 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `() $file`
+: The installation file  
 
 **Return Values**
 
-`void`
+`bool`
+
+
 
 
 <hr />
