@@ -54,6 +54,12 @@ class InstallationService
      */
     private array $objects;
 
+    /**
+     * @param ComposerService $composerService
+     * @param EntityManagerInterface $em
+     * @param Kernel $kernel
+     * @param CacheService $cacheService
+     */
     public function __construct(
         ComposerService $composerService,
         EntityManagerInterface $em,
@@ -72,7 +78,7 @@ class InstallationService
     /**
      * Updates all commonground bundles on the common gateway installation.
      *
-     * @param array $config
+     * @param array $config The (optional) configuration
      *
      * @return int
      */
@@ -104,7 +110,8 @@ class InstallationService
 
         // Lets go go go !
         foreach ($objects as $object) {
-            if ($object->get) {
+            if ($object->get == true) {
+                // ToDo: Build
             }
         }
     }//end validateObjects()
@@ -122,7 +129,7 @@ class InstallationService
 
         // Lets go go go !
         foreach ($values as $value) {
-            if (!$value->getObjectEntity()) {
+            if ($value->getObjectEntity() === null) {
                 $message = 'Value '.$value->getStringValue().' ('.$value->getId().') that belongs to  '.$value->getAttribute()->getName().' ('.$value->getAttribute()->getId().') is orpahned';
             }
         }
@@ -143,11 +150,12 @@ class InstallationService
         foreach ($schemas as $schema) {
             $statusOk = true;
             // Gereric check
-            if (!$schema->getReference()) {
+            if ($schema->getReference() === null) {
                 $this->logger->info('Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a reference');
             }
 
-            // Gereric check
+            // Gereric check.
+
             /*
             if(!$schema->getApplication()){
                 $this->logger->info( 'Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a application');
@@ -158,12 +166,12 @@ class InstallationService
             }
             */
 
-            // Check atributes
+            // Check atributes.
             foreach ($schema->getAttributes() as $attribute) {
                 // Specific checks for objects
                 if ($attribute->getType() == 'object') {
 
-                    // Check for object link
+                    // Check for object link.
                     if ($attribute->getObject() === false) {
                         $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an object';
                         $this->logger->error($message);
@@ -171,10 +179,9 @@ class InstallationService
                     } else {
                         $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is linked to object '.$attribute->getObject()->getName().' ('.$attribute->getObject()->getId();
                         $this->logger->debug($message);
-
                     }
 
-                    // Check for reference link
+                    // Check for reference link.
                     if ($attribute->getReference() === false) {
 
                         //$message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an reference';
@@ -182,23 +189,24 @@ class InstallationService
                         //if ($this->io) { $this->io->info($message);}
                     }
 
-                }
+                }//end if
 
-                // Specific wierdnes
-                // Check for reference link
+                // Check for reference link.
                 if ($attribute->getReference() && $attribute->getType() !== 'object') {
                     $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that has a reference ('.$attribute->getReference().') but isn\'t of the type object';
                     $this->logger->error($message);
                     $statusOk = false;
                 }
+
             }
 
-            if ($statusOk) {
+            if ($statusOk === true) {
                 $this->logger->info('Schema '.$schema->getName().' ('.$schema->getId().') has been checked and is fine');
             } else {
                 $this->logger->error('Schema '.$schema->getName().' ('.$schema->getId().') has been checked and has an error');
             }
-        }
+
+        }//end foreach
 
         return 1;
     }//validateSchemas ()
@@ -210,13 +218,14 @@ class InstallationService
      * @param array $config Optional config
      * @return bool The result of the installation
      */
-    public function install(string $bundle, array $config = []): bool{
+    public function install(string $bundle, array $config = []): bool
+    {
 
         $this->logger->debug('Installing plugin '.$bundle,['bundle'=>$bundle]);
 
         $vendorFolder = 'vendor';
 
-        // Lets check the basic folders for lagacy pruposes
+        // Lets check the basic folders for lagacy pruposes.
         $this->logger->debug('Installing plugin '.$bundle);
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Action');
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Schema');
@@ -224,12 +233,11 @@ class InstallationService
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Data');
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Installation');
 
-
-        // Handling al the files
-        $this->logger->debug('Found '.count($this->objects).' schema types for '.$bundle,['bundle'=>$bundle]);
+        // Handling al the files.
+        $this->logger->debug('Found '.count($this->objects).' schema types for '.$bundle,['bundle' => $bundle]);
 
         foreach ($this->objects as $ref => $schemas){
-            $this->logger->debug('Found '.count($schemas).' objects types for schema '.$ref,['bundle'=>$bundle,"reference"=>$ref]);
+            $this->logger->debug('Found '.count($schemas).' objects types for schema '.$ref,['bundle' => $bundle,"reference" => $ref]);
             foreach($schemas as $schema){
                 $object = $this->handleObject($schema);
                 // Save it to the database
@@ -237,13 +245,13 @@ class InstallationService
             }
         }
 
-        // Save the results to the database
+        // Save the results to the database.
         $this->em->flush();
 
-        $this->logger->debug('All Done installing plugin '.$bundle,['bundle'=>$bundle]);
+        $this->logger->debug('All Done installing plugin '.$bundle,['bundle' => $bundle]);
 
         return true;
-    }//end lookforFiles()
+    }//end install()
 
     /**
      * This function read a folder to find other folders or json objects
@@ -253,21 +261,21 @@ class InstallationService
      */
     public function readDirectory(string $location): bool{
 
-        // Lets see if the folder exisits to start with
+        // Lets see if the folder exisits to start with,
         if ($this->filesystem->exists($location) === false) {
-            $this->logger->debug('Installation folder not found',["location"=>$location]);
+            $this->logger->debug('Installation folder not found',["location" => $location]);
             return false;
         }
 
-        // Get the folder content
+        // Get the folder content.
         $hits = new Finder();
         $hits = $hits->in($location);
 
         // Handle files
-        $this->logger->debug('Found '.count($hits->files()). 'files for installer',["location"=>$location,"files"=>count($hits->files())]);
+        $this->logger->debug('Found '.count($hits->files()). 'files for installer',["location"=>$location,"files" => count($hits->files())]);
 
         if(count($hits->files()) > 32){
-            $this->logger->warning('Found more then 32 files in directory, try limiting your files to 32 per directory',["location"=>$location,"files"=>count($hits->files())]);
+            $this->logger->warning('Found more then 32 files in directory, try limiting your files to 32 per directory',["location"=>$location,"files" => count($hits->files())]);
         }
 
         foreach ($hits->files() as $file) {
