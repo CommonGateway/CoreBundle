@@ -18,7 +18,9 @@
 |[install](#installationserviceinstall)|Installs the files from a bundle|
 |[readDirectory](#installationservicereaddirectory)|This function read a folder to find other folders or json objects|
 |[readfile](#installationservicereadfile)|This function read a folder to find other folders or json objects|
+|[validateAtribute](#installationservicevalidateatribute)|Validates a single atribute|
 |[validateObjects](#installationservicevalidateobjects)|Validates the objects in the EAV setup.|
+|[validateSchema](#installationservicevalidateschema)|Validates a single schema|
 |[validateSchemas](#installationservicevalidateschemas)|Validates the schemas in the EAV setup.|
 |[validateValues](#installationservicevalidatevalues)|Validates the objects in the EAV setup.|
 
@@ -242,6 +244,32 @@ This function read a folder to find other folders or json objects
 <hr />
 
 
+### InstallationService::validateAtribute  
+
+**Description**
+
+```php
+public validateAtribute (\Attribute $attribute)
+```
+
+Validates a single atribute 
+
+ 
+
+**Parameters**
+
+* `(\Attribute) $attribute`
+
+**Return Values**
+
+`bool`
+
+
+
+
+<hr />
+
+
 ### InstallationService::validateObjects  
 
 **Description**
@@ -261,6 +289,32 @@ Validates the objects in the EAV setup.
 **Return Values**
 
 `void`
+
+
+
+
+<hr />
+
+
+### InstallationService::validateSchema  
+
+**Description**
+
+```php
+public validateSchema (\Entity $entity)
+```
+
+Validates a single schema 
+
+ 
+
+**Parameters**
+
+* `(\Entity) $entity`
+
+**Return Values**
+
+`bool`
 
 
 
