@@ -15,7 +15,7 @@
 |[composerupdate](#installationservicecomposerupdate)|Updates all commonground bundles on the common gateway installation.|
 |[handleInstaller](#installationservicehandleinstaller)|Specifcially handles the installation file.|
 |[handleObject](#installationservicehandleobject)|Create an object bases on an type and a schema (the object as an array).|
-|[install](#installationserviceinstall)|Installs the files from a bundle|
+|[install](#installationserviceinstall)|Installs the files from a bundle.|
 |[readDirectory](#installationservicereaddirectory)|This function read a folder to find other folders or json objects.|
 |[readfile](#installationservicereadfile)|This function read a folder to find other folders or json objects.|
 
@@ -164,7 +164,7 @@ This function breaks complexity rules, but since a switch is the most effective 
 public install (string $bundle, array $config)
 ```
 
-Installs the files from a bundle 
+Installs the files from a bundle. 
 
 Based on the default action handler so schould supoprt a config parrameter even if we do not use it 
 
