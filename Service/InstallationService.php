@@ -103,11 +103,12 @@ class InstallationService
     }//end composerupdate()
 
     /**
-     * Installs the files from a bundle.
+     * Installs the files from a bundle
+     *
+     * Based on the default action handler so schould supoprt a config parrameter even if we do not use it
      *
      * @param string $bundle The bundle
-     * @param array  $config Optional config
-     *
+     * @param array $config Optional config (ignored on this function)
      * @return bool The result of the installation
      */
     public function install(string $bundle, array $config = []): bool
@@ -131,7 +132,7 @@ class InstallationService
             $this->logger->debug('Found '.count($schemas).' objects types for schema '.$ref, ['bundle' => $bundle, 'reference' => $ref]);
             foreach ($schemas as $schema) {
                 $object = $this->handleObject($schema);
-                // Save it to the database
+                // Save it to the database.
                 $this->entityManager->persist($object);
             }
         }
@@ -154,7 +155,7 @@ class InstallationService
     public function readDirectory(string $location): bool
     {
 
-        // Lets see if the folder exisits to start with,
+        // Lets see if the folder exisits to start with.
         if ($this->filesystem->exists($location) === false) {
             $this->logger->debug('Installation folder not found', ['location' => $location]);
 
@@ -168,8 +169,8 @@ class InstallationService
         // Handle files.
         $this->logger->debug('Found '.count($hits->files()).'files for installer', ['location'=>$location, 'files' => count($hits->files())]);
 
-        if (count($hits->files()) > 32) {
-            $this->logger->warning('Found more then 32 files in directory, try limiting your files to 32 per directory', ['location'=>$location, 'files' => count($hits->files())]);
+        if(count($hits->files()) > 32) {
+            $this->logger->warning('Found more then 32 files in directory, try limiting your files to 32 per directory',["location" => $location,"files" => count($hits->files())]);
         }
 
         foreach ($hits->files() as $file) {
@@ -228,8 +229,8 @@ class InstallationService
         }
 
         // If it is not a schema of itself it might be an array of objects.
-        foreach ($schema as $key => $value) {
-            if (is_array($value)) {
+        foreach($schema as $key => $value) {
+            if(is_array($value) === true) {
                 $this->objects[$key] = $value;
                 continue;
             }
