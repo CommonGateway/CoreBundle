@@ -169,7 +169,7 @@ class InstallationService
         // Handle files.
         $this->logger->debug('Found '.count($hits->files()).'files for installer', ['location' => $location, 'files' => count($hits->files())]);
 
-        if(count($hits->files()) > 32) {
+        if (count($hits->files()) > 32) {
             $this->logger->warning('Found more then 32 files in directory, try limiting your files to 32 per directory',["location" => $location,"files" => count($hits->files())]);
         }
 
@@ -229,8 +229,8 @@ class InstallationService
         }
 
         // If it is not a schema of itself it might be an array of objects.
-        foreach($schema as $key => $value) {
-            if(is_array($value) === true) {
+        foreach ($schema as $key => $value) {
+            if (is_array($value) === true) {
                 $this->objects[$key] = $value;
                 continue;
             }
@@ -257,7 +257,7 @@ class InstallationService
         // Only base we need it the assumption that on object isn't valid until we made is so.
         $object = null;
 
-        // For security reasons we define allowed resources
+        // For security reasons we define allowed resources.
         $allowdCoreObjects =
             [
                 'https://docs.commongateway.nl/schemas/Action.schema.json',
@@ -272,9 +272,9 @@ class InstallationService
                 'https://docs.commongateway.nl/schemas/Endpoint.schema.json'
             ];
 
-        // Handle core schema's
-        if(in_array($type, $allowdCoreObjects) === true){
-            // Clearup the entity
+        // Handle core schema's.
+        if (in_array($type, $allowdCoreObjects) === true){
+            // Clearup the entity.
             $entity = str_replace("https://docs.commongateway.nl/schemas/", "",$type);
             $entity = str_replace(".schema.json", "",$type);
 
@@ -289,29 +289,22 @@ class InstallationService
             }
 
             // Load the data.
-            if (
-                array_key_exists('version', $schema) === true &&
-                version_compare($schema['version'], $object->getVersion()) <= 0
-            ) {
+            if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) <= 0) {
                 $this->loger->debug('The new mapping has a version number equal or lower then the already present version, the object is NOT is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
-            } elseif (
-                array_key_exists('version', $schema) === true &&
-                version_compare($schema['version'], $object->getVersion()) < 0
-            ) {
+            } else if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) < 0) {
                 $this->loger->debug('The new mapping has a version number higher then the already present version, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
                 $object->fromSchema($schema);
-            } elseif (array_key_exists('version', $schema) === false) {
+            } else if (array_key_exists('version', $schema) === false) {
                 $this->loger->debug('The new mapping don\'t have a version number, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
                 $object->fromSchema($schema);
             }
-        }
+        }//end if
 
-        // Handle Other schema's
-        if(in_array($type, $allowdCoreObjects) === false){
-
+        // Handle Other schema's.
+        if(in_array($type, $allowdCoreObjects) === false) {
             $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $type]);
             if ($entity === null) {
-                $this->logger->error('trying to create data for non-exisitng entity', ['reference'=>$type, 'object' => $object->toSchema()]);
+                $this->logger->error('trying to create data for non-exisitng entity', ['reference' => $type, 'object' => $object->toSchema()]);
 
                 return false;
             }
@@ -329,12 +322,11 @@ class InstallationService
             // Now it gets a bit specif but for EAV data we allow nested fixed id's so let dive deep.
             if ($this->entityManager->contains($object) === false && (array_key_exists('id', $schema) === true || array_key_exists('_id', $schema) === true)) {
                 $object = $this->schemaService->hydrate($object, $schema);
-                break;
             }
 
             // EAV objects arn't cast from schema but hydrated from array's.
             $object->hydrate($schema);
-        }
+        }//end if
 
         // Lets see if it is a new object.
         if ($this->entityManager->contains($object) === false) {
@@ -381,5 +373,5 @@ class InstallationService
         $installationService->setStyle($this->io);
 
         return $installationService->install();
-    }// handleInstaller()
-}
+    }//end handleInstaller()
+}//end InstallationService

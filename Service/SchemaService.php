@@ -132,7 +132,7 @@ class SchemaService
 
         if ($status === true) {
             $this->logger->info('Schema '.$schema->getName().' ('.$schema->getId().') has been checked and is fine');
-        } else {
+        } else if($status === false){
             $this->logger->error('Schema '.$schema->getName().' ('.$schema->getId().') has been checked and has an error');
         }
 
