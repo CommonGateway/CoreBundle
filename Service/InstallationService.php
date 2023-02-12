@@ -37,11 +37,6 @@ class InstallationService
     private Logger $logger;
 
     /**
-     * @var CacheService
-     */
-    private CacheService $cacheService;
-
-    /**
      * @var Filesystem
      */
     private Filesystem $filesystem;
@@ -60,14 +55,12 @@ class InstallationService
      * @param ComposerService        $composerService The Composer service
      * @param EntityManagerInterface $entityManager   The entity manager
      * @param Kernel                 $kernel          The kernel
-     * @param CacheService           $cacheService    The cache service
      * @param SchemaService          $schemaService   The schema service
      */
     public function __construct(
         ComposerService $composerService,
         EntityManagerInterface $entityManager,
         Kernel $kernel,
-        CacheService $cacheService,
         SchemaService $schemaService
     ) {
         $this->composerService = $composerService;
@@ -75,7 +68,6 @@ class InstallationService
         $this->container = $kernel->getContainer();
         $this->collection = null;
         $this->logger = new Logger('installation');
-        $this->cacheService = $cacheService;
         $this->schemaService = $schemaService;
         $this->filesystem = new Filesystem();
     }//end __construct()
@@ -96,8 +88,6 @@ class InstallationService
         foreach ($plugins as $plugin) {
             $this->install($plugin['name'], $config);
         }
-
-        $this->cacheService->warmup();
 
         return Command::SUCCESS;
     }//end composerupdate()
