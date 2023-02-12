@@ -264,58 +264,12 @@ class InstallationService
 
         // Handle core schema's.
         if (in_array($type, $allowdCoreObjects) === true) {
-            // Clearup the entity.
-            $entity = str_replace("https://docs.commongateway.nl/schemas/", "",$type);
-            $entity = str_replace(".schema.json", "",$entity);
-
-            // Load it if we have it.
-            if (array_key_exists('$id', $schema) === true) {
-                $object = $this->entityManager->getRepository('App:'.$entity)->findOneBy(['reference' => $schema['$id']]);
-            }
-
-            // Create it if we don't.
-            if ($object === null) {
-                $object = new $type();
-            }
-
-            // Load the data.
-            if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) <= 0) {
-                $this->loger->debug('The new mapping has a version number equal or lower then the already present version, the object is NOT is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
-            } else if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) < 0) {
-                $this->loger->debug('The new mapping has a version number higher then the already present version, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
-                $object->fromSchema($schema);
-            } else if (array_key_exists('version', $schema) === false) {
-                $this->loger->debug('The new mapping don\'t have a version number, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
-                $object->fromSchema($schema);
-            }
+            $object = $this->loadCoreSchema($schema, $type);
         }//end if
 
         // Handle Other schema's.
         if (in_array($type, $allowdCoreObjects) === false) {
-            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $type]);
-            if ($entity === null) {
-                $this->logger->error('trying to create data for non-exisitng entity', ['reference' => $type, 'object' => $object->toSchema()]);
-
-                return false;
-            }
-
-            // If we have an id let try to grab an object.
-            if (array_key_exists('id', $schema) === true) {
-                $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $schema['$id']]);
-            }
-
-            // Create it if we don't.
-            if ($object === null) {
-                $object = new ObjectEntity($entity);
-            }
-
-            // Now it gets a bit specif but for EAV data we allow nested fixed id's so let dive deep.
-            if ($this->entityManager->contains($object) === false && (array_key_exists('id', $schema) === true || array_key_exists('_id', $schema) === true)) {
-                $object = $this->schemaService->hydrate($object, $schema);
-            }
-
-            // EAV objects arn't cast from schema but hydrated from array's.
-            $object->hydrate($schema);
+            $object = $this->loadSchema($schema, $type);
         }//end if
 
         // Lets see if it is a new object.
@@ -331,6 +285,81 @@ class InstallationService
 
         return $object;
     }//end handleObject()
+
+    /**
+     * This function loads a core schema
+     *
+     * @param array $schema  The schema
+     * @param string $type  The type of the schema
+     * @return ObjectEntity The loaded object
+     */
+    private function loadCoreSchema(array $schema, string $type): ObjectEntity
+    {
+        // Clearup the entity.
+        $entity = str_replace("https://docs.commongateway.nl/schemas/", "",$type);
+        $entity = str_replace(".schema.json", "",$entity);
+
+        // Load it if we have it.
+        if (array_key_exists('$id', $schema) === true) {
+            $object = $this->entityManager->getRepository('App:'.$entity)->findOneBy(['reference' => $schema['$id']]);
+        }
+
+        // Create it if we don't.
+        if ($object === null) {
+            $object = new $type();
+        }
+
+        // Load the data.
+        if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) <= 0) {
+            $this->loger->debug('The new mapping has a version number equal or lower then the already present version, the object is NOT is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
+        } else if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) < 0) {
+            $this->loger->debug('The new mapping has a version number higher then the already present version, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
+            $object->fromSchema($schema);
+        } else if (array_key_exists('version', $schema) === false) {
+            $this->loger->debug('The new mapping don\'t have a version number, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
+            $object->fromSchema($schema);
+        }
+
+        return $object;
+    }
+
+
+    /**
+     * This function loads an non-core schema
+     *
+     * @param array $schema  The schema
+     * @param string $type  The type of the schema
+     * @return ObjectEntity The loaded object
+     */
+    private function loadSchema(array $schema, string $type): ObjectEntity
+    {
+        $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $type]);
+        if ($entity === null) {
+            $this->logger->error('trying to create data for non-exisitng entity', ['reference' => $type]);
+
+            return false;
+        }
+
+        // If we have an id let try to grab an object.
+        if (array_key_exists('id', $schema) === true) {
+            $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $schema['$id']]);
+        }
+
+        // Create it if we don't.
+        if ($object === null) {
+            $object = new ObjectEntity($entity);
+        }
+
+        // Now it gets a bit specif but for EAV data we allow nested fixed id's so let dive deep.
+        if ($this->entityManager->contains($object) === false && (array_key_exists('id', $schema) === true || array_key_exists('_id', $schema) === true)) {
+            $object = $this->schemaService->hydrate($object, $schema);
+        }
+
+        // EAV objects arn't cast from schema but hydrated from array's.
+        $object->hydrate($schema);
+
+        return $object;
+    }
 
     /**
      * Specifcially handles the installation file.
