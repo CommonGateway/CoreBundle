@@ -133,7 +133,7 @@ class SchemaService
 
         if ($status === true) {
             $this->logger->info('Schema '.$schema->getName().' ('.$schema->getId().') has been checked and is fine');
-        } else if ($status === false) {
+        } elseif ($status === false) {
             $this->logger->error('Schema '.$schema->getName().' ('.$schema->getId().') has been checked and has an error');
         }
 
@@ -244,8 +244,7 @@ class SchemaService
                                     $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
                                     $newObject = $this->saveOnFixedId($newObject, $subvalue);
                                     $valueObject->addObject($newObject);
-                                }
-                                else { // Is not an array.
+                                } else { // Is not an array.
                                     $idValue = $subvalue;
                                     $subvalue = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
                                     // Savety.

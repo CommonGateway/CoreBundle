@@ -4,7 +4,6 @@ namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Action;
 use App\Entity\Entity;
-use App\Entity\Mapping;
 use App\Entity\ObjectEntity;
 use App\Kernel;
 use Doctrine\ORM\EntityManagerInterface;
@@ -93,12 +92,13 @@ class InstallationService
     }//end composerupdate()
 
     /**
-     * Installs the files from a bundle
+     * Installs the files from a bundle.
      *
      * Based on the default action handler so schould supoprt a config parrameter even if we do not use it
      *
      * @param string $bundle The bundle
-     * @param array $config Optional config (ignored on this function)
+     * @param array  $config Optional config (ignored on this function)
+     *
      * @return bool The result of the installation
      */
     public function install(string $bundle, array $config = []): bool
@@ -160,7 +160,7 @@ class InstallationService
         $this->logger->debug('Found '.count($hits->files()).'files for installer', ['location' => $location, 'files' => count($hits->files())]);
 
         if (count($hits->files()) > 32) {
-            $this->logger->warning('Found more then 32 files in directory, try limiting your files to 32 per directory',["location" => $location,"files" => count($hits->files())]);
+            $this->logger->warning('Found more then 32 files in directory, try limiting your files to 32 per directory', ['location' => $location, 'files' => count($hits->files())]);
         }
 
         foreach ($hits->files() as $file) {
@@ -259,7 +259,7 @@ class InstallationService
                 'https://docs.commongateway.nl/schemas/User.schema.json',
                 'https://docs.commongateway.nl/schemas/SecurityGroup.schema.json',
                 'https://docs.commongateway.nl/schemas/Cronjob.schema.json',
-                'https://docs.commongateway.nl/schemas/Endpoint.schema.json'
+                'https://docs.commongateway.nl/schemas/Endpoint.schema.json',
             ];
 
         // Handle core schema's.
@@ -287,17 +287,18 @@ class InstallationService
     }//end handleObject()
 
     /**
-     * This function loads a core schema
+     * This function loads a core schema.
      *
-     * @param array $schema  The schema
-     * @param string $type  The type of the schema
+     * @param array  $schema The schema
+     * @param string $type   The type of the schema
+     *
      * @return ObjectEntity The loaded object
      */
     private function loadCoreSchema(array $schema, string $type): ObjectEntity
     {
         // Clearup the entity.
-        $entity = str_replace("https://docs.commongateway.nl/schemas/", "",$type);
-        $entity = str_replace(".schema.json", "",$entity);
+        $entity = str_replace('https://docs.commongateway.nl/schemas/', '', $type);
+        $entity = str_replace('.schema.json', '', $entity);
 
         // Load it if we have it.
         if (array_key_exists('$id', $schema) === true) {
@@ -312,10 +313,10 @@ class InstallationService
         // Load the data.
         if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) <= 0) {
             $this->loger->debug('The new mapping has a version number equal or lower then the already present version, the object is NOT is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
-        } else if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) < 0) {
+        } elseif (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) < 0) {
             $this->loger->debug('The new mapping has a version number higher then the already present version, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
-        } else if (array_key_exists('version', $schema) === false) {
+        } elseif (array_key_exists('version', $schema) === false) {
             $this->loger->debug('The new mapping don\'t have a version number, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
         }
@@ -323,12 +324,12 @@ class InstallationService
         return $object;
     }//end loadCoreSchema()
 
-
     /**
-     * This function loads an non-core schema
+     * This function loads an non-core schema.
      *
-     * @param array $schema  The schema
-     * @param string $type  The type of the schema
+     * @param array  $schema The schema
+     * @param string $type   The type of the schema
+     *
      * @return ObjectEntity The loaded object
      */
     private function loadSchema(array $schema, string $type): ObjectEntity
