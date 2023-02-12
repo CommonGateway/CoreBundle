@@ -11,13 +11,13 @@
 | Name | Description |
 |------|-------------|
 |[__construct](#installationservice__construct)||
-|[addToObjects](#installationserviceaddtoobjects)|Adds an object to the objects stack if it is vallid|
+|[addToObjects](#installationserviceaddtoobjects)|Adds an object to the objects stack if it is vallid.|
 |[composerupdate](#installationservicecomposerupdate)|Updates all commonground bundles on the common gateway installation.|
-|[handleInstaller](#installationservicehandleinstaller)|Specifcially handles the installation file|
-|[handleObject](#installationservicehandleobject)|Create an object bases on an type and a schema (the object as an array)|
-|[install](#installationserviceinstall)|Installs the files from a bundle|
-|[readDirectory](#installationservicereaddirectory)|This function read a folder to find other folders or json objects|
-|[readfile](#installationservicereadfile)|This function read a folder to find other folders or json objects|
+|[handleInstaller](#installationservicehandleinstaller)|Specifcially handles the installation file.|
+|[handleObject](#installationservicehandleobject)|Create an object bases on an type and a schema (the object as an array).|
+|[install](#installationserviceinstall)|Installs the files from a bundle.|
+|[readDirectory](#installationservicereaddirectory)|This function read a folder to find other folders or json objects.|
+|[readfile](#installationservicereadfile)|This function read a folder to find other folders or json objects.|
 
 
 
@@ -54,7 +54,7 @@
 public addToObjects (array $schema)
 ```
 
-Adds an object to the objects stack if it is vallid 
+Adds an object to the objects stack if it is vallid. 
 
  
 
@@ -108,7 +108,7 @@ Updates all commonground bundles on the common gateway installation.
 public handleInstaller ( $file)
 ```
 
-Specifcially handles the installation file 
+Specifcially handles the installation file. 
 
  
 
@@ -135,7 +135,7 @@ Specifcially handles the installation file
 public handleObject (string $type, array $schema)
 ```
 
-Create an object bases on an type and a schema (the object as an array) 
+Create an object bases on an type and a schema (the object as an array). 
 
 This function breaks complexity rules, but since a switch is the most effective way of doing it a design decicion was made to allow it 
 
@@ -164,7 +164,7 @@ This function breaks complexity rules, but since a switch is the most effective 
 public install (string $bundle, array $config)
 ```
 
-Installs the files from a bundle 
+Installs the files from a bundle. 
 
  
 
@@ -193,7 +193,7 @@ Installs the files from a bundle
 public readDirectory (string $location)
 ```
 
-This function read a folder to find other folders or json objects 
+This function read a folder to find other folders or json objects. 
 
  
 
@@ -220,7 +220,7 @@ This function read a folder to find other folders or json objects
 public readfile (\File $file)
 ```
 
-This function read a folder to find other folders or json objects 
+This function read a folder to find other folders or json objects. 
 
  
 
