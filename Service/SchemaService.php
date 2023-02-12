@@ -229,8 +229,8 @@ class SchemaService
             if ($valueObject instanceof Value) {
                 // Value is an array so lets create an object.
                 if ($valueObject->getAttribute()->getType() === 'object') {
-                    // I hate arrays
-                    if ($valueObject->getAttribute()->getMultiple()) {
+                    // I hate arrays.
+                    if ($valueObject->getAttribute()->getMultiple() === true) {
                         $this->logger->debug('an array for objects');
                         if (is_array($value) === true) {
                             foreach ($value as $subvalue) {
@@ -259,8 +259,9 @@ class SchemaService
                             // The use of gettype is discoureged, but we don't use it as a bl here and only for logging text purposes. So a design decicion was made te allow it.
                             $this->logger->error($valueObject->getAttribute()->getName().' Is a multiple so should be filled with an array, but provided value was '.$value.'(type: '.gettype($value).')');
                         }
+
                         continue;
-                    }
+                    }//end if
 
                     // Is array.
                     if (is_array($value) === true) {
@@ -273,13 +274,10 @@ class SchemaService
                         $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
                         $value = $this->saveOnFixedId($newObject, $value);
                         $valueObject->setValue($value);
-                    }
-
-                    // Is not an array.
-                    else {
+                    } else { // Is not an array.
                         $idValue = $value;
                         $value = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
-                        // Savety
+                        // Savety.
                         if ($value === null) {
                             $this->logger->error('Could not find an object for id '.$idValue);
                         } else {
@@ -292,8 +290,8 @@ class SchemaService
 
                 // Do the normal stuf.
                 $objectEntity->addObjectValue($valueObject);
-            }
-        }
+            }//end if
+        }//end foreach
 
         // Lets force the default values.
         $objectEntity->hydrate([]);

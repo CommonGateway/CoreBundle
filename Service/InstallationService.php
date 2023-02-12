@@ -313,10 +313,10 @@ class InstallationService
         // Load the data.
         if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) <= 0) {
             $this->loger->debug('The new mapping has a version number equal or lower then the already present version, the object is NOT is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
-        } elseif (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) < 0) {
+        } else if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) < 0) {
             $this->loger->debug('The new mapping has a version number higher then the already present version, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
-        } elseif (array_key_exists('version', $schema) === false) {
+        } else if (array_key_exists('version', $schema) === false) {
             $this->loger->debug('The new mapping don\'t have a version number, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
         }
