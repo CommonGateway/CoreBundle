@@ -258,8 +258,8 @@ class InstallationService
         $object = null;
 
         // For security reasons we define allowed resources.
-        $allowdCoreObjects =
-            [
+        $allowdCoreObjects
+            = [
                 'https://docs.commongateway.nl/schemas/Action.schema.json',
                 'https://docs.commongateway.nl/schemas/Action.schema.json',
                 'https://docs.commongateway.nl/schemas/Entity.schema.json',
@@ -273,10 +273,10 @@ class InstallationService
             ];
 
         // Handle core schema's.
-        if (in_array($type, $allowdCoreObjects) === true){
+        if (in_array($type, $allowdCoreObjects) === true) {
             // Clearup the entity.
             $entity = str_replace("https://docs.commongateway.nl/schemas/", "",$type);
-            $entity = str_replace(".schema.json", "",$type);
+            $entity = str_replace(".schema.json", "",$entity);
 
             // Load it if we have it.
             if (array_key_exists('$id', $schema) === true) {
@@ -301,7 +301,7 @@ class InstallationService
         }//end if
 
         // Handle Other schema's.
-        if(in_array($type, $allowdCoreObjects) === false) {
+        if (in_array($type, $allowdCoreObjects) === false) {
             $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $type]);
             if ($entity === null) {
                 $this->logger->error('trying to create data for non-exisitng entity', ['reference' => $type, 'object' => $object->toSchema()]);
@@ -374,4 +374,4 @@ class InstallationService
 
         return $installationService->install();
     }//end handleInstaller()
-}//end InstallationService
+}//end class

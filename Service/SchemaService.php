@@ -14,6 +14,7 @@ class SchemaService
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
+
     /**
      * @var Logger
      */
@@ -89,7 +90,7 @@ class SchemaService
     /**
      * Validates a single schema.
      *
-     * @param Entity $entity
+     * @param Entity $schema The schema to validate
      *
      * @return bool
      */
@@ -124,7 +125,7 @@ class SchemaService
         // Check atributes.
         foreach ($schema->getAttributes() as $attribute) {
             $valid = $this->validateAtribute($attribute);
-            // If the atribute isn't valid then the schema isn't valid
+            // If the atribute isn't valid then the schema isn't valid.
             if ($valid === false && $status === true) {
                 $status = false;
             }
@@ -142,7 +143,7 @@ class SchemaService
     /**
      * Validates a single atribute.
      *
-     * @param Attribute $attribute
+     * @param Attribute $attribute The atribute to validate
      *
      * @return bool
      */
@@ -176,7 +177,7 @@ class SchemaService
             $status = false;
         }
 
-        return true;
+        return $status;
     }//end validateAtribute()
 
     /**
@@ -189,16 +190,12 @@ class SchemaService
      */
     public function hydrate(ObjectEntity $objectEntity, array $hydrate = []): ObjectEntity
     {
-        // This savetey dosn't make sense but we need it/
+        // This savety dosn't make sense but we need it.
         if ($objectEntity->getEntity() === null) {
             $this->logger->error('Object can\'t be persisted due to missing schema');
 
             return $objectEntity;
         }
-
-        // Save the values.
-        //$values = $objectEntity->getObjectValues()->toArray();
-        //$objectEntity->clearAllValues();
 
         // We have an object entity with a fixed id that isn't in the database, so we need to act.
         if (isset($hydrate['id']) === true && $this->entityManager->contains($objectEntity) === false) {
@@ -237,7 +234,7 @@ class SchemaService
                         $this->logger->debug('an array for objects');
                         if (is_array($value) === true) {
                             foreach ($value as $subvalue) {
-                                // Savety
+                                // Savety.
                                 if ($valueObject->getAttribute()->getObject() === null) {
                                     continue;
                                 }
@@ -297,7 +294,7 @@ class SchemaService
                     $valueObject->setValue($value);
                 }
 
-                // Do the normaul stuf.
+                // Do the normal stuf.
                 $objectEntity->addObjectValue($valueObject);
             }
         }
@@ -310,4 +307,4 @@ class SchemaService
 
         return $objectEntity;
     }//end saveOnFixedId()
-}
+}//end class
