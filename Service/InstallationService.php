@@ -321,7 +321,7 @@ class InstallationService
         }
 
         return $object;
-    }
+    }//end loadCoreSchema()
 
 
     /**
@@ -359,7 +359,7 @@ class InstallationService
         $object->hydrate($schema);
 
         return $object;
-    }
+    }//end loadSchema()
 
     /**
      * Specifcially handles the installation file.

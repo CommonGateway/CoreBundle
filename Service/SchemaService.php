@@ -133,7 +133,7 @@ class SchemaService
 
         if ($status === true) {
             $this->logger->info('Schema '.$schema->getName().' ('.$schema->getId().') has been checked and is fine');
-        } else if($status === false){
+        } else if ($status === false) {
             $this->logger->error('Schema '.$schema->getName().' ('.$schema->getId().') has been checked and has an error');
         }
 
@@ -228,7 +228,7 @@ class SchemaService
             // If we find the Value object we set the value.
             if ($valueObject instanceof Value) {
                 // Value is an array so lets create an object.
-                if ($valueObject->getAttribute()->getType() == 'object') {
+                if ($valueObject->getAttribute()->getType() === 'object') {
                     // I hate arrays
                     if ($valueObject->getAttribute()->getMultiple()) {
                         $this->logger->debug('an array for objects');
@@ -238,37 +238,34 @@ class SchemaService
                                 if ($valueObject->getAttribute()->getObject() === null) {
                                     continue;
                                 }
-                                // Is array.
 
+                                // Is array.
                                 if (is_array($subvalue) === true) {
                                     $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
                                     $newObject = $this->saveOnFixedId($newObject, $subvalue);
                                     $valueObject->addObject($newObject);
                                 }
-
-                                // Is not an array.
-                                else {
+                                else { // Is not an array.
                                     $idValue = $subvalue;
                                     $subvalue = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
-                                    // Savety
+                                    // Savety.
                                     if ($subvalue === null) {
                                         $this->io->error('Could not find an object for id '.$idValue);
                                     } else {
                                         $valueObject->addObject($subvalue);
                                     }
                                 }
-                            }
+                            }//end foreach
                         } else {
                             // The use of gettype is discoureged, but we don't use it as a bl here and only for logging text purposes. So a design decicion was made te allow it.
                             $this->logger->error($valueObject->getAttribute()->getName().' Is a multiple so should be filled with an array, but provided value was '.$value.'(type: '.gettype($value).')');
                         }
                         continue;
                     }
-                    // End of array hate, we are friends again.
 
-                    // is array.
+                    // Is array.
                     if (is_array($value) === true) {
-                        // Savety
+                        // Savety.
                         if ($valueObject->getAttribute()->getObject() === null) {
                             $this->logger->error('Could not find an object for atribute  '.$valueObject->getAttribute()->getname().' ('.$valueObject->getAttribute()->getId().')');
                             continue;
@@ -306,5 +303,5 @@ class SchemaService
         $this->entityManager->flush();
 
         return $objectEntity;
-    }//end saveOnFixedId()
+    }//end hydrate()
 }//end class
