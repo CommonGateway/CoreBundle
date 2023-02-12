@@ -2,23 +2,14 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
-use App\Entity\Action;
-use App\Entity\CollectionEntity;
 use App\Entity\Entity;
-use App\Entity\Mapping;
 use App\Entity\ObjectEntity;
 use App\Entity\Value;
 use Doctrine\ORM\EntityManagerInterface;
 use Monolog\Logger;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class SchemaService
 {
-
     /**
      * @var EntityManagerInterface
      */
@@ -29,17 +20,14 @@ class SchemaService
     private Logger $logger;
 
     /**
-     *
      * @param EntityManagerInterface $entityManager The entity manager
      */
-
     public function __construct(
         EntityManagerInterface $entityManager
     ) {
         $this->entityManager = $entityManager;
         $this->logger = new Logger('installation');
     }//end __construct()
-
 
     /**
      * Validates the  objects in the EAV setup.
@@ -98,9 +86,8 @@ class SchemaService
         return 1;
     }//end validateSchemas()
 
-
     /**
-     * Validates a single schema
+     * Validates a single schema.
      *
      * @param Entity $entity
      *
@@ -117,20 +104,20 @@ class SchemaService
         }
 
         // Does the schema have an application?
-        if($schema->getApplication() === null) {
-            $this->logger->debug( 'Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a application');
+        if ($schema->getApplication() === null) {
+            $this->logger->debug('Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a application');
             $status = false;
         }
 
         // Does the schema have an organization?
-        if($schema->getOrganization() === null) {
-            $this->logger->debug( 'Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a organization');
+        if ($schema->getOrganization() === null) {
+            $this->logger->debug('Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a organization');
             $status = false;
         }
 
         // Does the schema have an owner?
-        if($schema->getOwner() === null) {
-            $this->logger->debug( 'Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a owner');
+        if ($schema->getOwner() === null) {
+            $this->logger->debug('Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a owner');
             $status = false;
         }
 
@@ -138,7 +125,7 @@ class SchemaService
         foreach ($schema->getAttributes() as $attribute) {
             $valid = $this->validateAtribute($attribute);
             // If the atribute isn't valid then the schema isn't valid
-            if($valid === false && $status === true ){
+            if ($valid === false && $status === true) {
                 $status = false;
             }
         }
@@ -153,12 +140,13 @@ class SchemaService
     }//end validateSchema()
 
     /**
-     * Validates a single atribute
+     * Validates a single atribute.
      *
      * @param Attribute $attribute
+     *
      * @return bool
      */
-    public function validateAtribute(Attribute  $attribute):bool
+    public function validateAtribute(Attribute $attribute): bool
     {
         $status = true;
 
@@ -179,7 +167,6 @@ class SchemaService
                 $message = 'Attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an reference';
                 $this->logger->debug($message);
             }
-
         }//end if
 
         // Check for reference link.
@@ -196,7 +183,7 @@ class SchemaService
      * Handles forced id's on object entities.
      *
      * @param ObjectEntity $objectEntity The object entity on wich to force an id
-     * @param array $hydrate The data to hydrate
+     * @param array        $hydrate      The data to hydrate
      *
      * @return ObjectEntity The PERSISTED object entity on the forced id
      */
@@ -300,7 +287,7 @@ class SchemaService
                         $idValue = $value;
                         $value = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
                         // Savety
-                        if($value === null) {
+                        if ($value === null) {
                             $this->logger->error('Could not find an object for id '.$idValue);
                         } else {
                             $valueObject->setValue($value);

@@ -3,19 +3,16 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Action;
-use App\Entity\CollectionEntity;
 use App\Entity\Entity;
 use App\Entity\Mapping;
 use App\Entity\ObjectEntity;
-use App\Entity\Value;
 use App\Kernel;
 use Doctrine\ORM\EntityManagerInterface;
 use Monolog\Logger;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class InstallationService
 {
@@ -60,12 +57,11 @@ class InstallationService
     private array $objects = [];
 
     /**
-     *
-     * @param ComposerService $composerService The Composer service
-     * @param EntityManagerInterface $entityManager The entity manager
-     * @param Kernel $kernel The kernel
-     * @param CacheService $cacheService The cache service
-     * @param SchemaService $schemaService The schema service
+     * @param ComposerService        $composerService The Composer service
+     * @param EntityManagerInterface $entityManager   The entity manager
+     * @param Kernel                 $kernel          The kernel
+     * @param CacheService           $cacheService    The cache service
+     * @param SchemaService          $schemaService   The schema service
      */
     public function __construct(
         ComposerService $composerService,
@@ -106,17 +102,17 @@ class InstallationService
         return Command::SUCCESS;
     }//end composerupdate()
 
-        /**
-     * Installs the files from a bundle
+    /**
+     * Installs the files from a bundle.
      *
      * @param string $bundle The bundle
-     * @param array $config Optional config
+     * @param array  $config Optional config
+     *
      * @return bool The result of the installation
      */
     public function install(string $bundle, array $config = []): bool
     {
-
-        $this->logger->debug('Installing plugin '.$bundle,['bundle' => $bundle]);
+        $this->logger->debug('Installing plugin '.$bundle, ['bundle' => $bundle]);
 
         $vendorFolder = 'vendor';
 
@@ -129,11 +125,11 @@ class InstallationService
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Installation');
 
         // Handling al the files.
-        $this->logger->debug('Found '.count($this->objects).' schema types for '.$bundle,['bundle' => $bundle]);
+        $this->logger->debug('Found '.count($this->objects).' schema types for '.$bundle, ['bundle' => $bundle]);
 
         foreach ($this->objects as $ref => $schemas) {
-            $this->logger->debug('Found '.count($schemas).' objects types for schema '.$ref,['bundle' => $bundle,"reference" => $ref]);
-            foreach($schemas as $schema){
+            $this->logger->debug('Found '.count($schemas).' objects types for schema '.$ref, ['bundle' => $bundle, 'reference' => $ref]);
+            foreach ($schemas as $schema) {
                 $object = $this->handleObject($schema);
                 // Save it to the database
                 $this->entityManager->persist($object);
@@ -143,15 +139,16 @@ class InstallationService
         // Save the results to the database.
         $this->entityManager->flush();
 
-        $this->logger->debug('All Done installing plugin '.$bundle,['bundle' => $bundle]);
+        $this->logger->debug('All Done installing plugin '.$bundle, ['bundle' => $bundle]);
 
         return true;
     }//end install()
 
     /**
-     * This function read a folder to find other folders or json objects
+     * This function read a folder to find other folders or json objects.
      *
      * @param string $location The location of the folder
+     *
      * @return bool Whether or not the function was succefully executed
      */
     public function readDirectory(string $location): bool
@@ -159,7 +156,8 @@ class InstallationService
 
         // Lets see if the folder exisits to start with,
         if ($this->filesystem->exists($location) === false) {
-            $this->logger->debug('Installation folder not found',["location" => $location]);
+            $this->logger->debug('Installation folder not found', ['location' => $location]);
+
             return false;
         }
 
@@ -168,10 +166,10 @@ class InstallationService
         $hits = $hits->in($location);
 
         // Handle files.
-        $this->logger->debug('Found '.count($hits->files()). 'files for installer',["location"=>$location,"files" => count($hits->files())]);
+        $this->logger->debug('Found '.count($hits->files()).'files for installer', ['location'=>$location, 'files' => count($hits->files())]);
 
-        if(count($hits->files()) > 32) {
-            $this->logger->warning('Found more then 32 files in directory, try limiting your files to 32 per directory',["location"=>$location,"files" => count($hits->files())]);
+        if (count($hits->files()) > 32) {
+            $this->logger->warning('Found more then 32 files in directory, try limiting your files to 32 per directory', ['location'=>$location, 'files' => count($hits->files())]);
         }
 
         foreach ($hits->files() as $file) {
@@ -182,9 +180,10 @@ class InstallationService
     }//end readDirectory()
 
     /**
-     * This function read a folder to find other folders or json objects
+     * This function read a folder to find other folders or json objects.
      *
      * @param File $file The file location
+     *
      * @return bool|array The file contents, or false if content could not be establisched
      */
     public function readfile(File $file): mixed
@@ -194,6 +193,7 @@ class InstallationService
         $mappingSchema = json_decode($file->getContents(), true);
         if ($mappingSchema === false) {
             $this->logger->error($file->getFilename().' is not a valid json object');
+
             return false;
         }
 
@@ -210,46 +210,48 @@ class InstallationService
         return $this->addToObjects($mappingSchema);
     }//end readfile()
 
-
     /**
-     * Adds an object to the objects stack if it is vallid
+     * Adds an object to the objects stack if it is vallid.
      *
      * @param array $schema The schema
+     *
      * @return bool|array The file contents, or false if content could not be establisched
      */
     public function addToObjects(array $schema): mixed
     {
 
         // It is a schema so lets save it like that.
-        if(array_key_exists('$schema', $schema) === true){
+        if (array_key_exists('$schema', $schema) === true) {
             $this->objects[$schema['$schema']] = $schema;
+
             return $schema;
         }
 
         // If it is not a schema of itself it might be an array of objects.
-        foreach($schema as $key => $value) {
-            if(is_array($value)) {
+        foreach ($schema as $key => $value) {
+            if (is_array($value)) {
                 $this->objects[$key] = $value;
                 continue;
             }
 
             // The use of gettype is discoureged, but we don't use it as a bl here and only for logging text purposes. So a design decicion was made te allow it.
-            $this->logger->error("Expected to find array for schema type ".$key." but found ".gettype($value)." instead",["value" => $value,"schema" => $key]);
+            $this->logger->error('Expected to find array for schema type '.$key.' but found '.gettype($value).' instead', ['value' => $value, 'schema' => $key]);
         }
 
         return true;
     }//end addToObjects()
 
     /**
-     * Create an object bases on an type and a schema (the object as an array)
+     * Create an object bases on an type and a schema (the object as an array).
      *
      * This function breaks complexity rules, but since a switch is the most effective way of doing it a design decicion was made to allow it
      *
-     * @param string $type The type of the object
-     * @param array $schema The object as an array
+     * @param string $type   The type of the object
+     * @param array  $schema The object as an array
+     *
      * @return bool|object
      */
-    public function handleObject(string $type, array $schema):bool
+    public function handleObject(string $type, array $schema): bool
     {
         // Only base we need it the assumption that on object isn't valid until we made is so.
         $object = null;
@@ -257,108 +259,108 @@ class InstallationService
         switch ($type) {
             case 'https://json-schema.org/draft/2020-12/action':
                 // Load it if we have it.
-                if(array_key_exists('$id', $schema) === true) {
+                if (array_key_exists('$id', $schema) === true) {
                     $object = $this->entityManager->getRepository('App:Action')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
-                if($object === null) {
-                    $object = new Action;
+                if ($object === null) {
+                    $object = new Action();
                 }
                 break;
             case 'https://json-schema.org/draft/2020-12/source':
                 // Load it if we have it.
-                if(array_key_exists('$id', $schema) === true) {
+                if (array_key_exists('$id', $schema) === true) {
                     $object = $this->entityManager->getRepository('App:Source')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
-                if($object === null) {
-                    $object = new Source;
+                if ($object === null) {
+                    $object = new Source();
                 }
                 break;
             case 'https://json-schema.org/draft/2020-12/entity':
                 // Load it if we have it.
-                if(array_key_exists('$id', $schema) === true) {
+                if (array_key_exists('$id', $schema) === true) {
                     $object = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
-                if($object === null) {
-                    $object = new Entity;
+                if ($object === null) {
+                    $object = new Entity();
                 }
                 break;
             case 'https://json-schema.org/draft/2020-12/mapping':
                 // Load it if we have it.
-                if(array_key_exists('$id', $schema) === true ) {
+                if (array_key_exists('$id', $schema) === true) {
                     $object = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
-                if($object === null) {
-                    $object = new Mapping;
+                if ($object === null) {
+                    $object = new Mapping();
                 }
                 break;
             case 'https://json-schema.org/draft/2020-12/organization':
                 // Load it if we have it.
-                if(array_key_exists('$id', $schema) === true) {
+                if (array_key_exists('$id', $schema) === true) {
                     $object = $this->entityManager->getRepository('App:Organization')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
-                if($object === null) {
-                    $object = new Organization;
+                if ($object === null) {
+                    $object = new Organization();
                 }
                 break;
             case 'https://json-schema.org/draft/2020-12/application':
                 // Load it if we have it.
-                if(array_key_exists('$id', $schema) === true) {
+                if (array_key_exists('$id', $schema) === true) {
                     $object = $this->entityManager->getRepository('App:Application')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
-                if($object === null) {
-                    $object = new Application;
+                if ($object === null) {
+                    $object = new Application();
                 }
             case 'https://json-schema.org/draft/2020-12/cronjob':
                 // Load it if we have it.
-                if(array_key_exists('$id', $schema) === true) {
+                if (array_key_exists('$id', $schema) === true) {
                     $object = $this->entityManager->getRepository('App:Cronjob')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
-                if($object === null) {
-                    $object = new Cronjob;
+                if ($object === null) {
+                    $object = new Cronjob();
                 }
             case 'https://json-schema.org/draft/2020-12/securityGroup':
                 // Load it if we have it.
-                if(array_key_exists('$id', $schema) === true) {
+                if (array_key_exists('$id', $schema) === true) {
                     $object = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we dont.
-                if($object === null) {
-                    $object = new SecurityGroup;
+                if ($object === null) {
+                    $object = new SecurityGroup();
                 }
             case 'https://json-schema.org/draft/2020-12/user':
                 // Load it if we have it.
-                if(array_key_exists('$id', $schema) === true) {
+                if (array_key_exists('$id', $schema) === true) {
                     $object = $this->entityManager->getRepository('App:User')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
-                if($object === null) {
-                    $object = new User;
+                if ($object === null) {
+                    $object = new User();
                 }
             case 'https://json-schema.org/draft/2020-12/endpoint':
                 // Load it if we have it.
-                if(array_key_exists('$id', $schema) === true) {
+                if (array_key_exists('$id', $schema) === true) {
                     $object = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
-                if($object === null) {
-                    $object = new Endpoint;
+                if ($object === null) {
+                    $object = new Endpoint();
                 }
 
                 // Add to collection.
@@ -367,13 +369,13 @@ class InstallationService
                 }
             case 'https://json-schema.org/draft/2020-12/schema':
                 // Load it if we have it.
-                if(array_key_exists('$id', $schema) === true){
+                if (array_key_exists('$id', $schema) === true) {
                     $object = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
-                if($object === null) {
-                    $object = new Entity;
+                if ($object === null) {
+                    $object = new Entity();
                 }
 
                 // Add to collection.
@@ -383,23 +385,24 @@ class InstallationService
             default:
                 // We have an undifned type so lets try to find it.
                 $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $type]);
-                if($entity === null) {
-                    $this->logger->error('trying to create data for non-exisitng entity',['reference'=>$type,"object" => $object->toSchema()]);
+                if ($entity === null) {
+                    $this->logger->error('trying to create data for non-exisitng entity', ['reference'=>$type, 'object' => $object->toSchema()]);
+
                     return false;
                 }
 
                 // If we have an id let try to grab an object.
-                if(array_key_exists('id', $schema) === true) {
+                if (array_key_exists('id', $schema) === true) {
                     $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $schema['$id']]);
                 }
 
                 // Create it if we don't.
-                if($object === null) {
+                if ($object === null) {
                     $object = new ObjectEntity($entity);
                 }
 
                 // Now it gets a bit specif but for EAV data we allow nested fixed id's so let dive deep.
-                if($this->entityManager->contains($object) === false && (array_key_exists('id', $schema) === true || array_key_exists('_id', $schema) === true )) {
+                if ($this->entityManager->contains($object) === false && (array_key_exists('id', $schema) === true || array_key_exists('_id', $schema) === true)) {
                     $object = $this->schemaService->hydrate($object, $schema);
                     break;
                 }
@@ -410,31 +413,29 @@ class InstallationService
         }//end switch
 
         // Load the data.
-        if(
+        if (
             array_key_exists('version', $schema) === true &&
             version_compare($schema['version'], $object->getVersion()) <= 0
         ) {
-            $this->loger->debug('The new mapping has a version number equal or lower then the already present version, the object is NOT is updated',['schemaVersion' => $schema['version'],'objectVersion' => $object->getVersion()]);
-        }
-        else if(
+            $this->loger->debug('The new mapping has a version number equal or lower then the already present version, the object is NOT is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
+        } elseif (
             array_key_exists('version', $schema) === true &&
             version_compare($schema['version'], $object->getVersion()) < 0
         ) {
-            $this->loger->debug('The new mapping has a version number higher then the already present version, the object is data is updated',['schemaVersion' => $schema['version'],'objectVersion' => $object->getVersion()]);
+            $this->loger->debug('The new mapping has a version number higher then the already present version, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
-        }
-        else if(array_key_exists('version', $schema) === false) {
-            $this->loger->debug('The new mapping don\'t have a version number, the object is data is updated',['schemaVersion' => $schema['version'],'objectVersion' => $object->getVersion()]);
+        } elseif (array_key_exists('version', $schema) === false) {
+            $this->loger->debug('The new mapping don\'t have a version number, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
-
         }
 
         // Lets see if it is a new object.
-        if($this->entityManager->contains($object) === false) {
-            $this->loger->info('A new object has been created trough the installation service',
+        if ($this->entityManager->contains($object) === false) {
+            $this->loger->info(
+                'A new object has been created trough the installation service',
                 [
-                    "class" => get_class($object),
-                    "object" => $object->toSchema(),
+                    'class'  => get_class($object),
+                    'object' => $object->toSchema(),
                 ]
             );
         }
@@ -443,9 +444,10 @@ class InstallationService
     }//end handleObject()
 
     /**
-     * Specifcially handles the installation file
+     * Specifcially handles the installation file.
      *
      * @param $file The installation file
+     *
      * @return bool
      */
     public function handleInstaller($file): bool
