@@ -167,7 +167,7 @@ class InstallationService
         $hits = $hits->in($location);
 
         // Handle files.
-        $this->logger->debug('Found '.count($hits->files()).'files for installer', ['location'=>$location, 'files' => count($hits->files())]);
+        $this->logger->debug('Found '.count($hits->files()).'files for installer', ['location' => $location, 'files' => count($hits->files())]);
 
         if(count($hits->files()) > 32) {
             $this->logger->warning('Found more then 32 files in directory, try limiting your files to 32 per directory',["location" => $location,"files" => count($hits->files())]);
@@ -257,177 +257,83 @@ class InstallationService
         // Only base we need it the assumption that on object isn't valid until we made is so.
         $object = null;
 
-        switch ($type) {
-            case 'https://json-schema.org/draft/2020-12/action':
-                // Load it if we have it.
-                if (array_key_exists('$id', $schema) === true) {
-                    $object = $this->entityManager->getRepository('App:Action')->findOneBy(['reference' => $schema['$id']]);
-                }
+        // For security reasons we define allowed resources
+        $allowdCoreObjects =
+            [
+                'https://docs.commongateway.nl/schemas/Action.schema.json',
+                'https://docs.commongateway.nl/schemas/Action.schema.json',
+                'https://docs.commongateway.nl/schemas/Entity.schema.json',
+                'https://docs.commongateway.nl/schemas/Mapping.schema.json',
+                'https://docs.commongateway.nl/schemas/Organization.schema.json',
+                'https://docs.commongateway.nl/schemas/Application.schema.json',
+                'https://docs.commongateway.nl/schemas/User.schema.json',
+                'https://docs.commongateway.nl/schemas/SecurityGroup.schema.json',
+                'https://docs.commongateway.nl/schemas/Cronjob.schema.json',
+                'https://docs.commongateway.nl/schemas/Endpoint.schema.json'
+            ];
 
-                // Create it if we don't.
-                if ($object === null) {
-                    $object = new Action();
-                }
+        // Handle core schema's
+        if(in_array($type, $allowdCoreObjects) === true){
+            // Clearup the entity
+            $entity = str_replace("https://docs.commongateway.nl/schemas/", "",$type);
+            $entity = str_replace(".schema.json", "",$type);
+
+            // Load it if we have it.
+            if (array_key_exists('$id', $schema) === true) {
+                $object = $this->entityManager->getRepository('App:'.$entity)->findOneBy(['reference' => $schema['$id']]);
+            }
+
+            // Create it if we don't.
+            if ($object === null) {
+                $object = new $type();
+            }
+
+            // Load the data.
+            if (
+                array_key_exists('version', $schema) === true &&
+                version_compare($schema['version'], $object->getVersion()) <= 0
+            ) {
+                $this->loger->debug('The new mapping has a version number equal or lower then the already present version, the object is NOT is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
+            } elseif (
+                array_key_exists('version', $schema) === true &&
+                version_compare($schema['version'], $object->getVersion()) < 0
+            ) {
+                $this->loger->debug('The new mapping has a version number higher then the already present version, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
+                $object->fromSchema($schema);
+            } elseif (array_key_exists('version', $schema) === false) {
+                $this->loger->debug('The new mapping don\'t have a version number, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
+                $object->fromSchema($schema);
+            }
+        }
+
+        // Handle Other schema's
+        if(in_array($type, $allowdCoreObjects) === false){
+
+            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $type]);
+            if ($entity === null) {
+                $this->logger->error('trying to create data for non-exisitng entity', ['reference'=>$type, 'object' => $object->toSchema()]);
+
+                return false;
+            }
+
+            // If we have an id let try to grab an object.
+            if (array_key_exists('id', $schema) === true) {
+                $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $schema['$id']]);
+            }
+
+            // Create it if we don't.
+            if ($object === null) {
+                $object = new ObjectEntity($entity);
+            }
+
+            // Now it gets a bit specif but for EAV data we allow nested fixed id's so let dive deep.
+            if ($this->entityManager->contains($object) === false && (array_key_exists('id', $schema) === true || array_key_exists('_id', $schema) === true)) {
+                $object = $this->schemaService->hydrate($object, $schema);
                 break;
-            case 'https://json-schema.org/draft/2020-12/source':
-                // Load it if we have it.
-                if (array_key_exists('$id', $schema) === true) {
-                    $object = $this->entityManager->getRepository('App:Source')->findOneBy(['reference' => $schema['$id']]);
-                }
+            }
 
-                // Create it if we don't.
-                if ($object === null) {
-                    $object = new Source();
-                }
-                break;
-            case 'https://json-schema.org/draft/2020-12/entity':
-                // Load it if we have it.
-                if (array_key_exists('$id', $schema) === true) {
-                    $object = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']]);
-                }
-
-                // Create it if we don't.
-                if ($object === null) {
-                    $object = new Entity();
-                }
-                break;
-            case 'https://json-schema.org/draft/2020-12/mapping':
-                // Load it if we have it.
-                if (array_key_exists('$id', $schema) === true) {
-                    $object = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $schema['$id']]);
-                }
-
-                // Create it if we don't.
-                if ($object === null) {
-                    $object = new Mapping();
-                }
-                break;
-            case 'https://json-schema.org/draft/2020-12/organization':
-                // Load it if we have it.
-                if (array_key_exists('$id', $schema) === true) {
-                    $object = $this->entityManager->getRepository('App:Organization')->findOneBy(['reference' => $schema['$id']]);
-                }
-
-                // Create it if we don't.
-                if ($object === null) {
-                    $object = new Organization();
-                }
-                break;
-            case 'https://json-schema.org/draft/2020-12/application':
-                // Load it if we have it.
-                if (array_key_exists('$id', $schema) === true) {
-                    $object = $this->entityManager->getRepository('App:Application')->findOneBy(['reference' => $schema['$id']]);
-                }
-
-                // Create it if we don't.
-                if ($object === null) {
-                    $object = new Application();
-                }
-            case 'https://json-schema.org/draft/2020-12/cronjob':
-                // Load it if we have it.
-                if (array_key_exists('$id', $schema) === true) {
-                    $object = $this->entityManager->getRepository('App:Cronjob')->findOneBy(['reference' => $schema['$id']]);
-                }
-
-                // Create it if we don't.
-                if ($object === null) {
-                    $object = new Cronjob();
-                }
-            case 'https://json-schema.org/draft/2020-12/securityGroup':
-                // Load it if we have it.
-                if (array_key_exists('$id', $schema) === true) {
-                    $object = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['reference' => $schema['$id']]);
-                }
-
-                // Create it if we dont.
-                if ($object === null) {
-                    $object = new SecurityGroup();
-                }
-            case 'https://json-schema.org/draft/2020-12/user':
-                // Load it if we have it.
-                if (array_key_exists('$id', $schema) === true) {
-                    $object = $this->entityManager->getRepository('App:User')->findOneBy(['reference' => $schema['$id']]);
-                }
-
-                // Create it if we don't.
-                if ($object === null) {
-                    $object = new User();
-                }
-            case 'https://json-schema.org/draft/2020-12/endpoint':
-                // Load it if we have it.
-                if (array_key_exists('$id', $schema) === true) {
-                    $object = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $schema['$id']]);
-                }
-
-                // Create it if we don't.
-                if ($object === null) {
-                    $object = new Endpoint();
-                }
-
-                // Add to collection.
-                if (isset($this->collection)) {
-                    $object->addCollection($this->collection);
-                }
-            case 'https://json-schema.org/draft/2020-12/schema':
-                // Load it if we have it.
-                if (array_key_exists('$id', $schema) === true) {
-                    $object = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']]);
-                }
-
-                // Create it if we don't.
-                if ($object === null) {
-                    $object = new Entity();
-                }
-
-                // Add to collection.
-                if (isset($this->collection)) {
-                    $object->addCollection($this->collection);
-                }
-            default:
-                // We have an undifned type so lets try to find it.
-                $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $type]);
-                if ($entity === null) {
-                    $this->logger->error('trying to create data for non-exisitng entity', ['reference'=>$type, 'object' => $object->toSchema()]);
-
-                    return false;
-                }
-
-                // If we have an id let try to grab an object.
-                if (array_key_exists('id', $schema) === true) {
-                    $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $schema['$id']]);
-                }
-
-                // Create it if we don't.
-                if ($object === null) {
-                    $object = new ObjectEntity($entity);
-                }
-
-                // Now it gets a bit specif but for EAV data we allow nested fixed id's so let dive deep.
-                if ($this->entityManager->contains($object) === false && (array_key_exists('id', $schema) === true || array_key_exists('_id', $schema) === true)) {
-                    $object = $this->schemaService->hydrate($object, $schema);
-                    break;
-                }
-
-                // EAV objects arn't cast from schema but hydrated from array's.
-                $object->hydrate($schema);
-                break;
-        }//end switch
-
-        // Load the data.
-        if (
-            array_key_exists('version', $schema) === true &&
-            version_compare($schema['version'], $object->getVersion()) <= 0
-        ) {
-            $this->loger->debug('The new mapping has a version number equal or lower then the already present version, the object is NOT is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
-        } elseif (
-            array_key_exists('version', $schema) === true &&
-            version_compare($schema['version'], $object->getVersion()) < 0
-        ) {
-            $this->loger->debug('The new mapping has a version number higher then the already present version, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
-            $object->fromSchema($schema);
-        } elseif (array_key_exists('version', $schema) === false) {
-            $this->loger->debug('The new mapping don\'t have a version number, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
-            $object->fromSchema($schema);
+            // EAV objects arn't cast from schema but hydrated from array's.
+            $object->hydrate($schema);
         }
 
         // Lets see if it is a new object.
