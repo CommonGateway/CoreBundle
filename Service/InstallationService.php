@@ -112,7 +112,7 @@ class InstallationService
         // Lets go go go !
         foreach ($objects as $object) {
             if ($object->get === true) {
-                // ToDo: Build
+                // ToDo: Build.
             }
         }
     }//end validateObjects()
@@ -160,6 +160,7 @@ class InstallationService
      * Validates a single schema
      *
      * @param Entity $entity
+     *
      * @return bool
      */
     public function validateSchema(Entity $schema): bool
@@ -206,7 +207,7 @@ class InstallationService
         }
 
         return $status;
-    }
+    }//end validateSchema()
 
     /**
      * Validates a single atribute
@@ -216,36 +217,37 @@ class InstallationService
      */
     public function validateAtribute(Attribute  $attribute):bool
     {
+        $status = true;
+
         // Specific checks for objects.
         if ($attribute->getType() === 'object') {
             // Check for object link.
             if ($attribute->getObject() === false) {
-                $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an object';
+                $message = 'Attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an object';
                 $this->logger->error($message);
-                $statusOk = false;
+                $status = false;
             } else {
-                $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is linked to object '.$attribute->getObject()->getName().' ('.$attribute->getObject()->getId();
+                $message = 'Attribute '.$attribute->getName().' ('.$attribute->getId().') that is linked to object '.$attribute->getObject()->getName().' ('.$attribute->getObject()->getId();
                 $this->logger->debug($message);
             }
 
             // Check for reference link.
             if ($attribute->getReference() === false) {
-                //$message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an reference';
-                //$this->logger->info($message);
-                //if ($this->io) { $this->io->info($message);}
+                $message = 'Attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an reference';
+                $this->logger->debug($message);
             }
 
         }//end if
 
         // Check for reference link.
         if ($attribute->getReference() === true && $attribute->getType() !== 'object') {
-            $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that has a reference ('.$attribute->getReference().') but isn\'t of the type object';
+            $message = 'Attribute '.$attribute->getName().' ('.$attribute->getId().') that has a reference ('.$attribute->getReference().') but isn\'t of the type object';
             $this->logger->error($message);
-            $statusOk = false;
+            $status = false;
         }
 
         return true;
-    }
+    }//end validateAtribute()
 
     /**
      * Installs the files from a bundle
