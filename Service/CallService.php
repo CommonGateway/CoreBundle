@@ -100,7 +100,7 @@ class CallService
      *
      * @param array $config The configuration with filenames.
      *
-     * @return void Nothing.
+     * @return void This function doesn't return anything.
      */
     public function removeFiles(array $config): void
     {

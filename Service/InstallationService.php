@@ -137,7 +137,7 @@ class InstallationService
     /**
      * Validates the  objects in the EAV setup.
      *
-     * @return void Nothing.
+     * @return void This function doesn't return anything.
      */
     public function validateObjects(): int
     {
@@ -160,7 +160,7 @@ class InstallationService
     /**
      * Validates the  objects in the EAV setup.
      *
-     * @return void Nothing.
+     * @return void This function doesn't return anything.
      */
     public function validateValues(): int
     {
@@ -179,7 +179,7 @@ class InstallationService
     /**
      * Validates the schemas in the EAV setup.
      *
-     * @return void Nothing.
+     * @return void This function doesn't return anything.
      */
     public function validateSchemas(): int
     {

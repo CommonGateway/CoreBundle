@@ -48,7 +48,7 @@ class FileService
     /**
      * @param mixed $filename The name of the file to remove
      *
-     * @return void Nothing.
+     * @return void This function doesn't return anything.
      */
     public function removeFile($filename): void
     {

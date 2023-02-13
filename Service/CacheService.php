@@ -90,7 +90,7 @@ class CacheService
     /**
      * Remove non-existing items from the cache.
      *
-     * @return void Nothing.
+     * @return void This function doesn't return anything.
      */
     public function cleanup()
     {
@@ -104,7 +104,7 @@ class CacheService
     /**
      * Throws all available objects into the cache.
      *
-     * @return void Nothing.
+     * @return void This function doesn't return anything.
      */
     public function warmup()
     {
@@ -169,7 +169,7 @@ class CacheService
      * @param Collection $collection The collection to use.
      * @param string     $type       The (symfony) entity entity type.
      *
-     * @return void Nothing.
+     * @return void This function doesn't return anything.
      */
     private function removeDataFromCache(Collection $collection, string $type): void
     {
@@ -240,7 +240,7 @@ class CacheService
      *
      * @param ObjectEntity $object The ObjectEntity to remove.
      *
-     * @return void Nothing.
+     * @return void This function doesn't return anything.
      */
     public function removeObject(ObjectEntity $object): void
     {
@@ -374,7 +374,7 @@ class CacheService
      *
      * @param array $filter The applied filter.
      *
-     * @return void Nothing.
+     * @return void This function doesn't return anything.
      */
     private function queryBackwardsCompatibility(array &$filter)
     {
@@ -399,7 +399,7 @@ class CacheService
      *
      * @throws Exception A basic Exception.
      *
-     * @return void Nothing.
+     * @return void This function doesn't return anything.
      */
     private function handleFilter(string $key, &$value)
     {
@@ -651,7 +651,7 @@ class CacheService
      * @param array       $completeFilter The complete filer.
      * @param string|null $search         The thing you are searching for.
      *
-     * @return void Nothing.
+     * @return void This function doesn't return anything.
      */
     private function handleSearch(array &$filter, array $completeFilter, ?string $search)
     {
@@ -793,7 +793,7 @@ class CacheService
      *
      * @param Endpoint $endpoint The endpoint to remove.
      *
-     * @return void Nothing.
+     * @return void This function doesn't return anything.
      */
     public function removeEndpoint(Endpoint $endpoint): void
     {
@@ -920,7 +920,7 @@ class CacheService
      *
      * @param Entity $entity The entity to remove from cache.
      *
-     * @return void Nothing.
+     * @return void This function doesn't return anything.
      */
     public function removeSchema(Entity $entity): void
     {

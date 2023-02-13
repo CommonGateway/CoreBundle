@@ -61,7 +61,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args LifecycleEventArgs.
      *
-     * @return void Nothing.
+     * @return void This function doesn't return anything.
      */
     public function prePersist(LifecycleEventArgs $args): void
     {
@@ -104,7 +104,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args LifecycleEventArgs.
      *
-     * @return void Nothing.
+     * @return void This function doesn't return anything.
      */
     public function preUpdate(LifecycleEventArgs $args): void
     {

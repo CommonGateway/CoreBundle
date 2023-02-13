@@ -31,7 +31,7 @@ class ComposerUpdateCommand extends Command
     }//end __construct()
 
     /**
-     * @return void Nothing.
+     * @return void This function doesn't return anything.
      */
     protected function configure(): void
     {

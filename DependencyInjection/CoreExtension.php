@@ -19,7 +19,7 @@ class CoreExtension extends Extension
      * @param array            $configs   The configuration (un used but required from the extend).
      * @param ContainerBuilder $container The container.
      *
-     * @return void Nothing.
+     * @return void This function doesn't return anything.
      */
     public function load(array $configs, ContainerBuilder $container)
     {

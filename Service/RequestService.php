@@ -184,7 +184,7 @@ class RequestService
      * @param string $nameKey The full $name of the query param, unless it contains [] like: ?queryParam[$nameKey]=$value.
      * @param string $value   The full $value of the query param, like this: ?$name=$value.
      *
-     * @return void Nothing.
+     * @return void This function doesn't return anything.
      */
     private function recursiveRequestQueryKey(array &$vars, string $name, string $nameKey, string $value)
     {
@@ -715,7 +715,7 @@ class RequestService
      * @param array $result       The result array.
      * @param array $metadataSelf If query param _self.anything is used everything after _self is added to an array, this array.
      *
-     * @return void Nothing.
+     * @return void This function doesn't return anything.
      */
     private function handleMetadataSelf(&$result, array $metadataSelf)
     {
