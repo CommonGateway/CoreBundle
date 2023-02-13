@@ -439,10 +439,10 @@ class AuthenticationService
      *
      * @return array
      */
-    public function serializeUser(User $user, string $duration, SessionInterface $session, string $url): array
+    public function serializeUser(User $user, string $duration, SessionInterface $session): array
     {
         $time = new \DateTime();
-        $expiry = new \DateTime("+$duration seconds");
+        $expiry = new \DateTime("+{$this->parameterBag->get('app_session_duration')} seconds");
         $scopes = [];
         foreach ($user->getSecurityGroups() as $securityGroup) {
             $scopes = array_merge($securityGroup->getScopes(), $scopes);
@@ -455,7 +455,7 @@ class AuthenticationService
             'locale'       => $user->getLocale(),
             'roles'        => $scopes,
             'session'      => $session->getId(),
-            'iss'          => $url,
+            'iss'          => $this->parameterBag->get('app_url'),
             'ias'          => $time->getTimestamp(),
             'exp'          => $expiry->getTimestamp(),
         ];
