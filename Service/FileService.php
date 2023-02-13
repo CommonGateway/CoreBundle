@@ -19,7 +19,7 @@ class FileService
     private LoggerInterface $logger;
 
     /**
-     * @param LoggerInterface $fileLogger The logger interface
+     * @param LoggerInterface $fileLogger The logger interface.
      */
     public function __construct(
         LoggerInterface $fileLogger
@@ -28,10 +28,12 @@ class FileService
     }//end __construct()
 
     /**
-     * @param string $baseFileName The name of the file to write
-     * @param string $contents     The content to wrtie into het file
+     * Todo
      *
-     * @return string
+     * @param string $baseFileName The name of the file to write.
+     * @param string $contents     The content to write into het file.
+     *
+     * @return string Todo
      */
     public function writeFile(string $baseFileName, string $contents): string
     {
@@ -42,7 +44,7 @@ class FileService
     }// end writeFile()
 
     /**
-     * @param $filename The name of the file to remove
+     * @param mixed $filename The name of the file to remove
      *
      * @return void Nothing.
      */
