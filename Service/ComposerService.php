@@ -2,6 +2,7 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use GuzzleHttp\Client;
 use function PHPUnit\Framework\throwException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Exception\ProcessFailedException;
@@ -31,10 +32,18 @@ class ComposerService
     ) {
         $this->logger = $pluginLogger;
     }//end __construct()
-
+    
+    /**
+     *  Todo
+     *
+     * @param array $array An array.
+     * @param array $enum An enum.
+     *
+     * @return bool Todo
+     */
     private function arrayEnum(array $array, array $enum): bool
     {
-        // Lets see if the values in the array arry pressent in the enum
+        // Let's see if the values in the array are present in the enum.
         foreach ($array as $value) {
             if (!in_array($value, $enum)) {
                 return false;
@@ -42,21 +51,21 @@ class ComposerService
         }
 
         return true;
-    }
+    }//end __arrayEnum()
 
     /**
      * Make a call to composer.
      *
      * @param string      $call     The call that you want to make to composer shoul be one of show, init, install
-     * @param string|null $packadge
-     * @param array       $options
+     * @param string|null $package  Todo
+     * @param array       $options  Todo
      *
-     * @return array|string
+     * @return array|string Todo
      */
-    private function composerCall(string $call, array $options = [], string $packadge = '')
+    private function composerCall(string $call, array $options = [], string $package = '')
     {
         $optionsList = [];
-        // Lets check for valid calls
+        // Lets check for valid calls.
         switch ($call) {
             case 'init':
                 $optionsList = [];
@@ -268,33 +277,33 @@ class ComposerService
                 break;
         }
 
-        // Prepare the comand
+        // Prepare the comand.
         $cmd = ['composer', $call];
 
-        if ($packadge != '') {
-            $cmd[] = strtolower($packadge);
+        if ($package != '') {
+            $cmd[] = strtolower($package);
         }
 
-        // Check the enums
+        // Check the enums.
         if ($options and !$this->arrayEnum($options, $optionsList)) {
             // @todo throwException();
         }
 
-        // Force JSON output where supported
+        // Force JSON output where supported.
         if (in_array('--format', $optionsList) && !in_array('--format json', $options)) {
             $options[] = '--format=json';
         }
 
-        // Include options
+        // Include options.
         $cmd = array_merge_recursive($cmd, $options);
 
-        // Start the procces
+        // Start the process.
         $process = new Process($cmd);
         $process->setWorkingDirectory('/srv/api');
         $process->setTimeout(3600);
         $process->run();
 
-        // executes after the command finishes
+        // executes after the command finishes.
         if (!$process->isSuccessful()) {
             //throw new ProcessFailedException($process);
             //var_dump('error');
@@ -303,7 +312,7 @@ class ComposerService
             $content = $process->getOutput();
         }
 
-        // Turn in into simpethin workable
+        // Turn in into simpethin workable.
         if (in_array('--format=json', $options)) {
             $content = json_decode($content, true);
         } else {
@@ -311,10 +320,12 @@ class ComposerService
         }
 
         return $content;
-    }
-
+    }//end composerCall()
+    
     /**
      * Gets all installed plugins from the lock file.
+     *
+     * @return array Todo
      */
     public function getLockFile(): array
     {
@@ -325,17 +336,16 @@ class ComposerService
         }
 
         $plugins = json_decode($plugins, true);
-        $results = $plugins['packages'];
-
-        return $results;
-    }
+        
+        return $plugins['packages'];
+    }//end getLockFile()
 
     /**
-     * Show al packadges installed trough composer.
+     * Show al packages installed trough composer.
      *
-     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
      *
-     * @return array
+     * @return array An array of all packages.
      */
     public function getAll(): array
     {
@@ -352,64 +362,67 @@ class ComposerService
         }
 
         return $plugins;
-    }
-
+    }//end getAll()
+    
     /**
-     * Show a single packadge installed trough composer.
+     * Show a single package installed trough composer.
      *
-     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
      *
-     * @param array $options
+     * @param string $package A package.
+     * @param array $options Todo
      *
-     * @return array
+     * @return array Todo
      */
-    public function require(string $packadge, array $options = []): array
+    public function require(string $package, array $options = []): array
     {
-        return $this->composerCall('require', $options, $packadge);
-    }
-
+        return $this->composerCall('require', $options, $package);
+    }//end require()
+    
     /**
-     * Show a single packadge installed trough composer.
+     * Show a single package installed trough composer.
      *
-     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
      *
-     * @param array $options
+     * @param string $package A package.
+     * @param array $options Todo
      *
-     * @return array
+     * @return array Todo
      */
-    public function upgrade(string $packadge, array $options = []): array
+    public function upgrade(string $package, array $options = []): array
     {
-        return $this->composerCall('upgrade', $options, $packadge);
-    }
-
+        return $this->composerCall('upgrade', $options, $package);
+    }//end upgrade()
+    
     /**
-     * Show a single packadge installed trough composer.
+     * Show a single package installed trough composer.
      *
-     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
      *
-     * @param array $options
+     * @param string $package A package.
+     * @param array $options Todo
      *
-     * @return array
+     * @return array Todo
      */
-    public function remove(string $packadge, array $options = []): array
+    public function remove(string $package, array $options = []): array
     {
-        return $this->composerCall('remove', $options, $packadge);
-    }
-
+        return $this->composerCall('remove', $options, $package);
+    }//end remove()
+    
     /**
-     * Show a single packadge installed trough composer.
+     * Show a single package installed trough composer.
      *
-     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
      *
-     * @param array $options
+     * @param string $package A package.
      *
-     * @return array
+     * @return array A package as array.
      */
-    public function getSingle(string $packadge): array
+    public function getSingle(string $package): array
     {
-        $url = 'https://packagist.org/packages/'.$packadge.'.json';
+        $url = 'https://packagist.org/packages/'.$package.'.json';
 
-        $client = new \GuzzleHttp\Client();
+        $client = new Client();
         $response = $client->request('GET', $url);
         $plugin = json_decode($response->getBody()->getContents(), true)['package'];
 
@@ -420,7 +433,7 @@ class ComposerService
                 $plugin = array_merge($installedPlugin, $plugin);
                 $plugin['update'] = false;
 
-                // Lets see if we have newer versions than currently installer
+                // Lets see if we have newer versions than currently installer.
                 foreach ($plugin['versions']  as $version => $versionDetails) {
                     if (version_compare($plugin['version'], $version) < 0) {
                         if (!$plugin['update']) {
@@ -435,16 +448,16 @@ class ComposerService
         }
 
         return $plugin;
-    }
-
+    }//end getSingle()
+    
     /**
      * Search for a given term.
      *
-     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
      *
-     * @param array $options
+     * @param string|null $search Todo
      *
-     * @return array
+     * @return array Todo
      */
     public function search(string $search = null): array
     {
@@ -454,7 +467,7 @@ class ComposerService
             $query['q'] = $search;
         }
 
-        $client = new \GuzzleHttp\Client();
+        $client = new Client();
         $response = $client->request('GET', 'https://packagist.org/search.json', [
             'query' => $query,
         ]);
@@ -467,19 +480,19 @@ class ComposerService
         }
 
         return $plugins;
-    }
+    }//end search()
 
     /**
      * Search for a given term.
      *
-     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
      *
-     * @param array $options
+     * @param array $options Todo
      *
-     * @return array
+     * @return array Todo
      */
     public function audit(array $options = []): array
     {
         return $this->composerCall('audit', $options);
-    }
+    }//end audit()
 }
