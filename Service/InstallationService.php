@@ -231,7 +231,7 @@ class InstallationService
 
                         //$message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an reference';
                         //$this->logger->info($message);
-                        //if ($this->io) { $this->io->info($message);}
+                        //if ($this->symfonyStyle) { $this->symfonyStyle->info($message);}
                     }
                 }
 
@@ -465,34 +465,34 @@ class InstallationService
      */
     public function handleAction($file)
     {
-        if (!$action = json_decode($file->getContents(), true)) {
+        if (!$actionSchema = json_decode($file->getContents(), true)) {
             $this->symfonyStyle->writeln($file->getFilename().' is not a valid json object');
 
             return false;
         }
 
-        if (!$this->validateJsonSchema($action)) {
+        if (!$this->validateJsonAction($actionSchema)) {
             $this->symfonyStyle->writeln($file->getFilename().' is not a valid json-schema object');
 
             return false;
         }
 
-        if (!$entity = $this->entityManager->getRepository('App:Action')->findOneBy(['reference' => $action['$id']])) {
-            $this->symfonyStyle->writeln('Action not present, creating action '.$action['title'].' under reference '.$action['$id']);
-            $entity = new Action();
+        if (!$actionObject = $this->entityManager->getRepository('App:Action')->findOneBy(['reference' => $actionSchema['$id']])) {
+            $this->symfonyStyle->writeln('Action not present, creating action '.$actionSchema['title'].' under reference '.$actionSchema['$id']);
+            $actionObject = new Action();
         } else {
             $this->symfonyStyle->writeln('Action already present, looking to update');
-            if (array_key_exists('version', $action) && version_compare($action['version'], $entity->getVersion()) < 0) {
+            if (array_key_exists('version', $actionSchema) && version_compare($actionSchema['version'], $actionObject->getVersion()) < 0) {
                 $this->symfonyStyle->writeln('The new action has a version number equal or lower then the already present version');
             }
         }
 
-        $entity->fromSchema($action);
+        $actionObject->fromSchema($actionSchema);
 
-        $this->entityManager->persist($entity);
+        $this->entityManager->persist($actionObject);
 
         $this->entityManager->flush();
-        $this->symfonyStyle->writeln('Done with action '.$entity->getName());
+        $this->symfonyStyle->writeln('Done with action '.$actionObject->getName());
     }
 
     /**
@@ -502,33 +502,33 @@ class InstallationService
      */
     public function handleMapping($file)
     {
-        if (!$mapping = json_decode($file->getContents(), true)) {
+        if (!$mappingSchema = json_decode($file->getContents(), true)) {
             $this->symfonyStyle->writeln($file->getFilename().' is not a valid json object');
 
             return false;
         }
 
-        if (!$this->validateJsonMapping($mapping)) {
+        if (!$this->validateJsonMapping($mappingSchema)) {
             $this->symfonyStyle->writeln($file->getFilename().' is not a valid json-mapping object');
 
             return false;
         }
 
-        if (!$entity = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $mapping['$id']])) {
-            $this->symfonyStyle->writeln('Maping not present, creating mapping '.$mapping['title'].' under reference '.$mapping['$id']);
-            $entity = new Mapping();
+        if (!$mappingObject = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $mappingSchema['$id']])) {
+            $this->symfonyStyle->writeln('Maping not present, creating mapping '.$mappingSchema['title'].' under reference '.$mappingSchema['$id']);
+            $mappingObject = new Mapping();
         } else {
             $this->symfonyStyle->writeln('Mapping already present, looking to update');
-            if (array_key_exists('version', $mapping) && version_compare($mapping['version'], $entity->getVersion()) < 0) {
+            if (array_key_exists('version', $mappingSchema) && version_compare($mappingSchema['version'], $mappingObject->getVersion()) < 0) {
                 $this->symfonyStyle->writeln('The new mapping has a version number equal or lower then the already present version');
             }
         }
 
-        $entity->fromSchema($mapping);
+        $mappingObject->fromSchema($mappingSchema);
 
-        $this->entityManager->persist($entity);
+        $this->entityManager->persist($mappingObject);
         $this->entityManager->flush();
-        $this->symfonyStyle->writeln('Done with mapping '.$entity->getName());
+        $this->symfonyStyle->writeln('Done with mapping '.$mappingObject->getName());
     }
 
     /**
@@ -538,43 +538,65 @@ class InstallationService
      */
     public function handleSchema($file)
     {
-        if (!$schema = json_decode($file->getContents(), true)) {
+        if (!$entitySchema = json_decode($file->getContents(), true)) {
             $this->symfonyStyle->writeln($file->getFilename().' is not a valid json object');
 
             return false;
         }
 
-        if (!$this->validateJsonSchema($schema)) {
+        if (!$this->validateJsonSchema($entitySchema)) {
             $this->symfonyStyle->writeln($file->getFilename().' is not a valid json-schema object');
 
             return false;
         }
 
-        if (!$entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']])) {
-            $this->symfonyStyle->writeln('Schema not present, creating schema '.$schema['title'].' under reference '.$schema['$id']);
-            $entity = new Entity();
+        if (!$entityObject = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $entitySchema['$id']])) {
+            $this->symfonyStyle->writeln('Schema not present, creating schema '.$entitySchema['title'].' under reference '.$entitySchema['$id']);
+            $entityObject = new Entity();
         } else {
             $this->symfonyStyle->writeln('Schema already present, looking to update');
-            if (array_key_exists('version', $schema) && version_compare($schema['version'], $entity->getVersion()) < 0) {
+            if (array_key_exists('version', $entitySchema) && version_compare($entitySchema['version'], $entityObject->getVersion()) < 0) {
                 $this->symfonyStyle->writeln('The new schema has a version number equal or lower then the already present version');
             }
         }
 
-        $entity->fromSchema($schema);
+        $entityObject->fromSchema($entitySchema);
 
-        $this->entityManager->persist($entity);
+        $this->entityManager->persist($entityObject);
 
         // Add the schema to collection
         if (isset($this->collection)) {
-            $entity->addCollection($this->collection);
+            $entityObject->addCollection($this->collection);
         }
 
         $this->entityManager->flush();
-        $this->symfonyStyle->writeln('Done with schema '.$entity->getName());
+        $this->symfonyStyle->writeln('Done with schema '.$entityObject->getName());
     }
 
     /**
-     * Perform a very basic check to see if a schema file is a valid json-schema file.
+     * Perform a very basic check to see if a schema file is a valid json-action file.
+     *
+     * @param array $schema
+     *
+     * @return bool
+     */
+    public function validateJsonAction(array $schema): bool
+    {
+        if (
+            array_key_exists('$id', $schema) &&
+            array_key_exists('$schema', $schema) &&
+            $schema['$schema'] == 'https://json-schema.org/draft/2020-12/action' &&
+            array_key_exists('listens', $schema) &&
+            array_key_exists('class', $schema)
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Perform a very basic check to see if a schema file is a valid json-mapping file.
      *
      * @param array $schema
      *

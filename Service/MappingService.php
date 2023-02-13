@@ -149,6 +149,9 @@ class MappingService
                     }
                     break;
                 // Todo: Add more casts
+                case 'jsonToArray':
+                    $value = str_replace(['&quot;', '&amp;quot;'], '"', $value);
+                    $value = json_decode($value, true);
                 default:
                     $this->logger->error('Trying to cast to an unsupported cast type', ['mapping' => $mappingObject->toSchema(), 'property' =>$key, 'cast' => $cast]);
                     break;
