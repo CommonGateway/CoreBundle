@@ -738,7 +738,7 @@ class InstallationService
             $this->symfonyStyle->writeln(['Creating new object ('.$objectEntity->getEntity()->getName().') on a generated id']);
         }
 
-        // We already dit this so lets skip it
+        // We already dit this so let's skip it
         unset($hydrate['_id']);
 
         foreach ($hydrate as $key => $value) {
@@ -747,7 +747,7 @@ class InstallationService
 
             // If we find the Value object we set the value
             if ($valueObject instanceof Value) {
-                // Value is an array so lets create an object
+                // Value is an array so let's create an object
                 if ($valueObject->getAttribute()->getType() == 'object') {
 
                     // I hate arrays
