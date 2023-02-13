@@ -438,7 +438,7 @@ class ComposerService
                     if (version_compare($plugin['version'], $version) < 0) {
                         if (!$plugin['update']) {
                             $plugin['update'] = $version;
-                        } elseif (version_compare($plugin['update'], $version) < 0) {
+                        } else if (version_compare($plugin['update'], $version) < 0) {
                             $plugin['update'] = $version;
                         }
                     }

@@ -457,7 +457,7 @@ class CacheService
             // int_compare
             if (array_key_exists('int_compare', $value) && is_array($value['int_compare'])) {
                 $value = array_map('intval', $value['int_compare']);
-            } elseif (array_key_exists('int_compare', $value)) {
+            } else if (array_key_exists('int_compare', $value)) {
                 $value = (int) $value['int_compare'];
 
                 return true;
@@ -465,7 +465,7 @@ class CacheService
             // bool_compare
             if (array_key_exists('bool_compare', $value) && is_array($value['bool_compare'])) {
                 $value = array_map('boolval', $value['bool_compare']);
-            } elseif (array_key_exists('bool_compare', $value)) {
+            } else if (array_key_exists('bool_compare', $value)) {
                 $value = (bool) $value['bool_compare'];
 
                 return true;
@@ -489,7 +489,7 @@ class CacheService
             // Like (like).
             if (array_key_exists('like', $value) === true && is_array($value['like']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('like', $value) === true) {
+            } else if (array_key_exists('like', $value) === true) {
                 $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value['like']);
                 $value = ['$regex' => ".*$value.*", '$options' => 'im'];
 
@@ -498,7 +498,7 @@ class CacheService
             // Regex (regex).
             if (array_key_exists('regex', $value) === true && is_array($value['regex']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('regex', $value) === true) {
+            } else if (array_key_exists('regex', $value) === true) {
                 $value = ['$regex' => $value['regex']];
 
                 return true;
@@ -506,7 +506,7 @@ class CacheService
             // Greater then or equel (>=).
             if (array_key_exists('>=', $value) === true && is_array($value['>=']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('>=', $value) === true) {
+            } else if (array_key_exists('>=', $value) === true) {
                 $value = ['$gte' => (int) $value['>=']];
 
                 return true;
@@ -514,7 +514,7 @@ class CacheService
             // Greather then (>).
             if (array_key_exists('>', $value) === true && is_array($value['>']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('>', $value) === true) {
+            } else if (array_key_exists('>', $value) === true) {
                 $value = ['$gt' => (int) $value['>']];
 
                 return true;
@@ -522,7 +522,7 @@ class CacheService
             // Smaller than or equal  (<=).
             if (array_key_exists('<=', $value) === true && is_array($value['<=']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('<=', $value) === true) {
+            } else if (array_key_exists('<=', $value) === true) {
                 $value = ['$lte '=> (int) $value['<=']];
 
                 return true;
@@ -530,7 +530,7 @@ class CacheService
             // Smaller then (<).
             if (array_key_exists('<', $value) === true && is_array($value['<']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('<', $value) === true) {
+            } else if (array_key_exists('<', $value) === true) {
                 $value = ['$lt' => (int) $value['<']];
 
                 return true;
@@ -538,7 +538,7 @@ class CacheService
             // Exact (exact).
             if (array_key_exists('exact', $value) === true && is_array($value['exact']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('exact', $value) === true) {
+            } else if (array_key_exists('exact', $value) === true) {
                 $value = $value;
 
                 return true;
@@ -546,7 +546,7 @@ class CacheService
             // Case insensitive (case_insensitive).
             if (array_key_exists('case_insensitive', $value) === true && is_array($value['case_insensitive']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('case_insensitive', $value) === true) {
+            } else if (array_key_exists('case_insensitive', $value) === true) {
                 $value = ['$regex' => $value['case_insensitive'], '$options' => 'i'];
 
                 return true;
@@ -554,7 +554,7 @@ class CacheService
             // Case sensitive (case_sensitive).
             if (array_key_exists('case_sensitive', $value) === true && is_array($value['case_sensitive']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } elseif (array_key_exists('case_sensitive', $value) === true) {
+            } else if (array_key_exists('case_sensitive', $value) === true) {
                 $value = ['$regex' => $value['case_sensitive']];
 
                 return true;
@@ -671,7 +671,7 @@ class CacheService
                 ];
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value.
-        elseif (is_array($search) === true) {
+        else if (is_array($search) === true) {
             $searchRegex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $search[array_key_first($search)]);
             if (empty($searchRegex)) {
                 return;
@@ -704,9 +704,9 @@ class CacheService
         $start = 0;
         if (isset($filters['_start']) === true) {
             $start = intval($filters['_start']);
-        } elseif (isset($filters['_offset']) === true) {
+        } else if (isset($filters['_offset']) === true) {
             $start = intval($filters['_offset']);
-        } elseif (isset($filters['_page']) === true) {
+        } else if (isset($filters['_page']) === true) {
             $start = (intval($filters['_page']) - 1) * $limit;
         }
 
@@ -869,7 +869,7 @@ class CacheService
 
         if (count($endpoints) > 1) {
             throw new NonUniqueResultException();
-        } elseif (count($endpoints) == 1) {
+        } else if (count($endpoints) == 1) {
             //@TODO: We actually want to use the denormalizer, but that breaks on not setting ids
             return $this->entityManager->find('App\Entity\Endpoint', $endpoints[0]['id']);
         } else {

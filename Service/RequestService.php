@@ -214,19 +214,19 @@ class RequestService
         // Try to grap an id
         if (isset($this->data['path']['{id}']) === true) {
             return $this->data['path']['{id}'];
-        } elseif (isset($this->data['path']['[id]']) === true) {
+        } else if (isset($this->data['path']['[id]']) === true) {
             return $this->data['path']['[id]'];
-        } elseif (isset($this->data['query']['id']) === true) {
+        } else if (isset($this->data['query']['id']) === true) {
             return $this->data['query']['id'];
-        } elseif (isset($this->data['path']['id']) === true) {
+        } else if (isset($this->data['path']['id']) === true) {
             return$this->data['path']['id'];
-        } elseif (isset($this->data['path']['{uuid}']) === true) {
+        } else if (isset($this->data['path']['{uuid}']) === true) {
             return $this->data['path']['{uuid}'];
-        } elseif (isset($this->data['query']['uuid']) === true) {
+        } else if (isset($this->data['query']['uuid']) === true) {
             return$this->data['query']['uuid'];
-        } elseif (isset($this->content['id']) === true) { // The id might also be passed trough the object itself
+        } else if (isset($this->content['id']) === true) { // The id might also be passed trough the object itself
             return $this->content['id'];
-        } elseif (isset($this->content['uuid']) === true) {
+        } else if (isset($this->content['uuid']) === true) {
             return $this->content['uuid'];
         }
 
