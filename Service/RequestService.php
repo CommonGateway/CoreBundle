@@ -66,9 +66,8 @@ class RequestService
     /**
      * @var mixed Todo: clean this mess up, why is this not a local variable? and why has it no type?
      */
-    private $schema; // Todo: cast to Entity|Boolean in php 8.
+    private $schema;
 
-    // Todo: we might want to move or rewrite code instead of using the ResponseService & ObjectEntityService here.
     /**
      * @var ResponseService The response service.
      */
@@ -211,7 +210,7 @@ class RequestService
      */
     public function getId()
     {
-        // Try to grap an id
+        // Try to grap an id.
         if (isset($this->data['path']['{id}']) === true) {
             return $this->data['path']['{id}'];
         } else if (isset($this->data['path']['[id]']) === true) {
@@ -224,14 +223,15 @@ class RequestService
             return $this->data['path']['{uuid}'];
         } else if (isset($this->data['query']['uuid']) === true) {
             return$this->data['query']['uuid'];
-        } else if (isset($this->content['id']) === true) { // The id might also be passed trough the object itself
+        } else if (isset($this->content['id']) === true) {
+            // The id might also be passed trough the object itself.
             return $this->content['id'];
         } else if (isset($this->content['uuid']) === true) {
             return $this->content['uuid'];
         }
 
         return false;
-    }
+    }//end getId()
 
     /**
      * Get the schema from given parameters returns false if no schema could be established.
@@ -263,17 +263,19 @@ class RequestService
 
         // In normal securmtances we expect a all to com form an endpoint so...
         if (isset($parameters['endpoint']) === true) {
-            // The endpoint contains exactly one schema
-            if (count($this->data['endpoint']->getEntities()) == 1) {
+            // The endpoint contains exactly one schema.
+            if (count($this->data['endpoint']->getEntities()) === 1) {
                 return $this->data['endpoint']->getEntities()->first();
             }
-            // The endpoint contains multiple schema's
+
+            // The endpoint contains multiple schema's.
             if (count($this->data['endpoint']->getEntities()) >= 1) {
-                // todo: so right now if we don't have an id or ref and multpile options we "guese" the first, it that smart?
+                // Todo: so right now if we don't have an id or ref and multpile options we "guese" the first, it that smart?
                 $criteria = Criteria::create()->orderBy(['date_created' => Criteria::DESC]);
                 if (isset($id) === true) {
                     $criteria->where(['id' => $id]);
                 }
+
                 if (isset($reference) === true) {
                     $criteria->where(['reference' => $reference]);
                 }
@@ -287,14 +289,14 @@ class RequestService
         if (isset($id) === true) {
             return $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $id]);
         }
+
         if (isset($reference) === true) {
             return $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference]);
         }
+
         // There is no way to establish an schema so.
-        else {
-            return false;
-        }
-    }
+        return false;
+    }//end getSchema()
 
     /**
      * Handles a proxy.
@@ -309,8 +311,8 @@ class RequestService
         $this->data = $data;
         $this->configuration = $configuration;
 
-        // We only do proxing if the endpoint forces it
-        if (!$data['endpoint'] instanceof Endpoint || !$proxy = $data['endpoint']->getProxy()) {
+        // We only do proxing if the endpoint forces it/
+        if ($data['endpoint'] instanceof Endpoint === false|| !$proxy = $data['endpoint']->getProxy()) {
             $message = !$data['endpoint'] instanceof Endpoint ?
                 "No Endpoint in data['endpoint']" :
                 "This Endpoint has no Proxy: {$data['endpoint']->getName()}";
@@ -330,11 +332,11 @@ class RequestService
             );
         }
 
-        // Get clean query paramters without all the symfony shizzle
+        // Get clean query paramters without all the symfony shizzle.
         $query = $this->realRequestQueryAll($this->data['method']);
         $this->data['path'] = '/'.$data['path']['{route}'];
 
-        // Make a guzzle call to the source bassed on the incomming call
+        // Make a guzzle call to the source bassed on the incomming call.
         $result = $this->callService->call(
             $proxy,
             $this->data['path'],
@@ -346,7 +348,7 @@ class RequestService
             ]
         );
 
-        // Let create a responce from the guzle call
+        // Let create a responce from the guzle call.
         $responce = new Response(
             $result->getBody()->getContents(),
             $result->getStatusCode(),
@@ -355,9 +357,9 @@ class RequestService
 
         // @todo the above might need a try catch
 
-        // And don so let's return what we have
+        // And don so let's return what we have.
         return $responce;
-    }
+    }//end proxyHandler()
 
     /**
      * Get a scopes array for the current user (or of the anonymus if no user s logged in).
@@ -375,9 +377,9 @@ class RequestService
             }
         }
 
-        // Lets play it save
+        // Lets play it save.
         return [];
-    }
+    }//end getScopes()
 
     /**
      * Handles incoming requests and is responsible for generating a response.
@@ -396,7 +398,7 @@ class RequestService
 
         $filters = [];
 
-        // haat aan de de _
+        // haat aan de de _.
         if (isset($this->data['querystring']) === true) {
             //            $query = explode('&',$this->data['querystring']);
             //            foreach ($query as $row) {
@@ -659,7 +661,7 @@ class RequestService
 //        $result = $this->shouldWeUnsetEmbedded($result, $this->data['headers']['accept'] ?? null, $isCollection ?? false);
 
         return $this->createResponse($result);
-    }
+    }//end requestHandler()
 
     /**
      * If embedded should be shown or not.
@@ -688,7 +690,7 @@ class RequestService
         }
 
         return $result;
-    }
+    }//end shouldWeUnsetEmbedded()
 
     /**
      * If embedded should be shown or not.
@@ -704,7 +706,7 @@ class RequestService
         }
 
         return $result;
-    }
+    }//end checkEmbedded()
 
     /**
      * This function adds metadata to the result of an api-call, after we already got the data from the cache.
@@ -752,7 +754,7 @@ class RequestService
         $resultMetadataSelf = (array) $result['_self'];
         $this->responseService->addToMetadata($resultMetadataSelf, 'dateRead', $objectEntity);
         $result['_self'] = $resultMetadataSelf;
-    }
+    }//end handleMetadataSelf()
 
     /**
      * Handle an item request call: GET, PUT, PATCH or DELETE an item (read: 'object)'.
@@ -800,7 +802,6 @@ class RequestService
                 $this->entityManager->remove($this->object);
 
                 return new Response('', '202');
-                break;
             default:
                 break;
         }
@@ -808,7 +809,7 @@ class RequestService
         $this->entityManager->flush();
 
         return $this->createResponse($this->object);
-    }
+    }//end itemRequestHandler()
 
     /**
      * This function searches all the objectEntities and formats the data.
@@ -844,12 +845,12 @@ class RequestService
         );
 
         return $this->data;
-    }
+    }//end searchRequestHandler()
 
     /**
      * Creating the response object.
      *
-     * @param mixed $data Todo
+     * @param mixed $data The data
      *
      * @return Response A Response.
      */
@@ -858,7 +859,7 @@ class RequestService
         if ($data instanceof ObjectEntity) {
             $data = $data->toArray();
         } else {
-            //
+
         }
 
         return new Response(
@@ -866,5 +867,5 @@ class RequestService
             200,
             ['content-type' => 'application/json']
         );
-    }
-}
+    }//end createResponse()
+}//end class
