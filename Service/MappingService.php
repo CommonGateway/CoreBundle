@@ -22,14 +22,12 @@ use Twig\Environment;
 class MappingService
 {
     /**
-     * Create a private variable to store the twig environment.
-     *
-     * @var Environment
+     * @var Environment Create a private variable to store the twig environment.
      */
     private Environment $twig;
 
     /**
-     * @var SessionInterface
+     * @var SessionInterface The current session.
      */
     private SessionInterface $session;
 
@@ -41,9 +39,9 @@ class MappingService
     /**
      * Setting up the base class with required services.
      *
-     * @param Environment      $twig          The twig environment
-     * @param SessionInterface $session       The session interface
-     * @param LoggerInterface  $mappingLogger The logger
+     * @param Environment      $twig          The twig environment.
+     * @param SessionInterface $session       The current session.
+     * @param LoggerInterface  $mappingLogger The logger.
      */
     public function __construct(
         Environment $twig,
@@ -58,10 +56,10 @@ class MappingService
     /**
      * Maps (transforms) an array (input) to a different array (output).
      *
-     * @param Mapping $mappingObject The mapping object that forms the recipe for the mapping
-     * @param array   $input         The array that need to be mapped (transformed) otherwise known as input
+     * @param Mapping $mappingObject The mapping object that forms the recipe for the mapping.
+     * @param array   $input         The array that need to be mapped (transformed) otherwise known as input.
      *
-     * @return array The result (output) of the mapping process
+     * @return array The result (output) of the mapping process.
      */
     public function mapping(Mapping $mappingObject, array $input): array
     {
@@ -110,15 +108,15 @@ class MappingService
         $this->session->remove('mapping');
 
         return $output;
-    }
+    }//end mapping()
 
     /**
      * Cast values to a specific type.
      *
-     * @param Mapping $mappingObject The mapping object used to map
-     * @param Dot     $dotArray      The current status of the mappings as a dot array
+     * @param Mapping $mappingObject The mapping object used to map.
+     * @param Dot     $dotArray      The current status of the mappings as a dot array.
      *
-     * @return Dot The status of the mapping afther casting has been applied
+     * @return Dot The status of the mapping afther casting has been applied.
      */
     public function cast(Mapping $mappingObject, Dot $dotArray): Dot
     {
@@ -163,5 +161,5 @@ class MappingService
         }
 
         return $dotArray;
-    }
+    }//end cast()
 }

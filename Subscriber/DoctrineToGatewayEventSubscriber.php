@@ -40,7 +40,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     private EntityManagerInterface $entityManager;
 
     /**
-     * @var SessionInterface
+     * @var SessionInterface The current session.
      */
     private SessionInterface $session;
 
