@@ -435,11 +435,12 @@ class AuthenticationService
     /**
      * Serializes a user to be used by the token authenticator.
      *
-     * @param User $user The user to be serialized
+     * @param User              $user    The user to be serialized
+     * @param SessionInterface  $session The session to use
      *
      * @return array
      */
-    public function serializeUser(User $user, string $duration, SessionInterface $session): array
+    public function serializeUser(User $user, SessionInterface $session): array
     {
         $time = new \DateTime();
         $expiry = new \DateTime("+{$this->parameterBag->get('app_session_duration')} seconds");
