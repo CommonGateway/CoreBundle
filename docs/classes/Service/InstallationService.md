@@ -1,6 +1,6 @@
 # CommonGateway\CoreBundle\Service\InstallationService  
 
-The installation service handled the installation of plugins (bundles) and is based on composer and packadgist.
+The installation service handled the installation of plugins (bundles) and is based on composer and packagist.
 
 
 

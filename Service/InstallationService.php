@@ -17,7 +17,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
 /**
- * The installation service handled the installation of plugins (bundles) and is based on composer and packadgist.
+ * The installation service handled the installation of plugins (bundles) and is based on composer and packagist.
  *
  * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
  *
@@ -28,24 +28,22 @@ use Symfony\Component\Finder\Finder;
 class InstallationService
 {
     /**
-     * @var ComposerService
+     * @var ComposerService The composer service.
      */
     private ComposerService $composerService;
 
     /**
      * @var EntityManagerInterface The entity manager.
      */
-    private EntityManagerInterface $em;
+    private EntityManagerInterface $entityManager;
 
     /**
-     * @var SymfonyStyle
+     * @var SymfonyStyle Symfony style for user feedback in command line.
      */
-    private SymfonyStyle $io;
+    private SymfonyStyle $symfonyStyle;
 
     /**
-     * Holds the symfony container interface.
-     *
-     * @var
+     * @var mixed Holds the symfony container interface.
      */
     private $container;
 
@@ -58,23 +56,28 @@ class InstallationService
      * @var CacheService The cache service.
      */
     private CacheService $cacheService;
+    
+    /**
+     * @var CollectionEntity|null A collectionEntity.
+     */
+    private ?CollectionEntity $collection;
 
     /**
-     * @param ComposerService        $composerService
-     * @param EntityManagerInterface $em
-     * @param Kernel                 $kernel
-     * @param CacheService           $cacheService
-     * @param LoggerInterface        $pluginLogger
+     * @param ComposerService        $composerService   The composer service.
+     * @param EntityManagerInterface $entityManager     The entity manager.
+     * @param Kernel                 $kernel            Todo ?
+     * @param CacheService           $cacheService      The cache service.
+     * @param LoggerInterface        $pluginLogger      The logger interface.
      */
     public function __construct(
-        ComposerService $composerService,
-        EntityManagerInterface $em,
-        Kernel $kernel,
-        CacheService $cacheService,
-        LoggerInterface $pluginLogger
+        ComposerService        $composerService,
+        EntityManagerInterface $entityManager,
+        Kernel                 $kernel,
+        CacheService           $cacheService,
+        LoggerInterface        $pluginLogger
     ) {
         $this->composerService = $composerService;
-        $this->em = $em;
+        $this->entityManager = $entityManager;
         $this->container = $kernel->getContainer();
         $this->collection = null;
         $this->logger = $pluginLogger;
@@ -84,13 +87,13 @@ class InstallationService
     /**
      * Set symfony style in order to output to the console.
      *
-     * @param SymfonyStyle $io
+     * @param SymfonyStyle $symfonyStyle Symfony style for user feedback in command line.
      *
-     * @return self
+     * @return self This installationService.
      */
-    public function setStyle(SymfonyStyle $io): self
+    public function setStyle(SymfonyStyle $symfonyStyle): self
     {
-        $this->io = $io;
+        $this->symfonyStyle = $symfonyStyle;
 
         return $this;
     }
@@ -106,8 +109,8 @@ class InstallationService
     {
         $plugins = $this->composerService->getAll();
 
-        if ($this->io) {
-            $this->io->writeln([
+        if (isset($this->symfonyStyle) === true) {
+            $this->symfonyStyle->writeln([
                 '',
                 '<info>Common Gateway Bundle Updater</info>',
                 '============',
@@ -123,8 +126,8 @@ class InstallationService
             $this->install($plugin['name'], $config);
         }
 
-        if ($this->io) {
-            $this->cacheService->setStyle($this->io);
+        if (isset($this->symfonyStyle) === true) {
+            $this->cacheService->setStyle($this->symfonyStyle);
             $this->cacheService->warmup();
         }
 
@@ -138,10 +141,10 @@ class InstallationService
      */
     public function validateObjects(): int
     {
-        $objects = $this->em->getRepository('App:ObjectEntity')->findAll();
+        $objects = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
 
-        if ($this->io) {
-            $this->io->writeln([
+        if (isset($this->symfonyStyle) === true) {
+            $this->symfonyStyle->writeln([
                 'Validating: <comment> '.count($objects).' </comment> objects\'s',
             ]);
         }
@@ -161,7 +164,7 @@ class InstallationService
      */
     public function validateValues(): int
     {
-        $values = $this->em->getRepository('App:Value')->findAll();
+        $values = $this->entityManager->getRepository('App:Value')->findAll();
 
         $this->logger->debug('Validating:'.count($values).'values\'s');
 
@@ -180,7 +183,7 @@ class InstallationService
      */
     public function validateSchemas(): int
     {
-        $schemas = $this->em->getRepository('App:Entity')->findAll();
+        $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
 
         $this->logger->debug('Validating:'.count($schemas).'schema\'s');
 
@@ -212,15 +215,15 @@ class InstallationService
                     if (!$attribute->getObject()) {
                         $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an object';
                         $this->logger->error($message);
-                        if ($this->io) {
-                            $this->io->error($message);
+                        if (isset($this->symfonyStyle) === true) {
+                            $this->symfonyStyle->error($message);
                         }
                         $statusOk = false;
                     } else {
                         $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is linked to object '.$attribute->getObject()->getName().' ('.$attribute->getObject()->getId();
                         $this->logger->debug($message);
-                        if ($this->io) {
-                            $this->io->note($message);
+                        if (isset($this->symfonyStyle) === true) {
+                            $this->symfonyStyle->note($message);
                         }
                     }
                     // Check for reference link
@@ -237,8 +240,8 @@ class InstallationService
                 if ($attribute->getReference() && !$attribute->getType() == 'object') {
                     $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that has a reference ('.$attribute->getReference().') but isn\'t of the type object';
                     $this->logger->error($message);
-                    if ($this->io) {
-                        $this->io->error($message);
+                    if (isset($this->symfonyStyle) === true) {
+                        $this->symfonyStyle->error($message);
                     }
                     $statusOk = false;
                 }
@@ -247,14 +250,14 @@ class InstallationService
             if ($statusOk) {
                 $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has been checked and is fine';
                 $this->logger->info($message);
-                if ($this->io) {
-                    $this->io->info($message);
+                if (isset($this->symfonyStyle) === true) {
+                    $this->symfonyStyle->info($message);
                 }
             } else {
                 $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has been checked and has an error';
                 $this->logger->error($message);
-                if ($this->io) {
-                    $this->io->error($message);
+                if (isset($this->symfonyStyle) === true) {
+                    $this->symfonyStyle->error($message);
                 }
             }
         }
@@ -272,8 +275,8 @@ class InstallationService
      */
     public function install(string $bundle, array $config = []): int
     {
-        if ($this->io) {
-            $this->io->writeln([
+        if (isset($this->symfonyStyle) === true) {
+            $this->symfonyStyle->writeln([
                 'Trying to install: <comment> '.$bundle.' </comment>',
                 '',
             ]);
@@ -289,7 +292,7 @@ class InstallationService
 
         $package = reset($found);
         if ($package) {
-            $this->io->writeln([
+            $this->symfonyStyle->writeln([
                 '<info>Package '.$bundle.' found</info>',
                 '',
                 'Name: '.$package['name'],
@@ -299,7 +302,7 @@ class InstallationService
                 'Source: '.$package['source']['url'],
             ]);
         } else {
-            $this->io->error($bundle.' not found');
+            $this->symfonyStyle->error($bundle.' not found');
 
             return Command::FAILURE;
         }
@@ -308,30 +311,30 @@ class InstallationService
         $filesystem = new Filesystem();
 
         // Handling the actions's
-        $this->io->section('Looking for actions\'s');
+        $this->symfonyStyle->section('Looking for actions\'s');
         $actionDir = $vendorFolder.'/'.$bundle.'/Action';
         if ($filesystem->exists($actionDir)) {
-            $this->io->writeln('Action folder found');
+            $this->symfonyStyle->writeln('Action folder found');
             $actions = new Finder();
             $actions = $actions->in($actionDir);
-            $this->io->writeln('Files found: '.count($actions));
+            $this->symfonyStyle->writeln('Files found: '.count($actions));
             foreach ($actions->files() as $action) {
                 $this->handleAction($action);
             }
 
             //$progressBar->finish();
         } else {
-            $this->io->writeln('No action folder found');
+            $this->symfonyStyle->writeln('No action folder found');
         }
 
         // Handling the mappings
-        $this->io->section('Looking for mappings\'s');
+        $this->symfonyStyle->section('Looking for mappings\'s');
         $mappingDir = $vendorFolder.'/'.$bundle.'/Mapping';
         if ($filesystem->exists($mappingDir)) {
-            $this->io->writeln('Mapping folder found');
+            $this->symfonyStyle->writeln('Mapping folder found');
             $mappings = new Finder();
             $mappings = $mappings->in($mappingDir);
-            $this->io->writeln('Files found: '.count($mappings));
+            $this->symfonyStyle->writeln('Files found: '.count($mappings));
 
             foreach ($mappings->files() as $mapping) {
                 $this->handleMapping($mapping);
@@ -339,38 +342,38 @@ class InstallationService
 
             //$progressBar->finish();
         } else {
-            $this->io->writeln('No mapping folder found');
+            $this->symfonyStyle->writeln('No mapping folder found');
         }
 
         // Handling the schema's
-        $this->io->section('Looking for schema\'s');
+        $this->symfonyStyle->section('Looking for schema\'s');
         $schemaDir = $vendorFolder.'/'.$bundle.'/Schema';
 
         if ($filesystem->exists($schemaDir)) {
-            $this->io->writeln('Schema folder found');
+            $this->symfonyStyle->writeln('Schema folder found');
             $schemas = new Finder();
             $schemas = $schemas->in($schemaDir);
-            $this->io->writeln('Files found: '.count($schemas));
+            $this->symfonyStyle->writeln('Files found: '.count($schemas));
 
             // We want each plugin to also be a collection (if it contains schema's that is)
             if (count($schemas) > 0) {
-                if (!$this->collection = $this->em->getRepository('App:CollectionEntity')->findOneBy(['plugin' => $package['name']])) {
+                if (!$this->collection = $this->entityManager->getRepository('App:CollectionEntity')->findOneBy(['plugin' => $package['name']])) {
                     $this->logger->debug('Created a collection for plugin '.$bundle);
-                    $this->io->writeln(['Created a collection for this plugin', '']);
+                    $this->symfonyStyle->writeln(['Created a collection for this plugin', '']);
                     $this->collection = new CollectionEntity();
                     $this->collection->setName($package['name']);
                     $this->collection->setPlugin($package['name']);
                     isset($package['description']) && $this->collection->setDescription($package['description']);
                 } else {
-                    $this->io->writeln(['Found a collection for this plugin', '']);
+                    $this->symfonyStyle->writeln(['Found a collection for this plugin', '']);
                     $this->logger->debug('Found a collection for plugin '.$bundle);
                 }
             }
 
             // Persist collection
             if (isset($this->collection)) {
-                $this->em->persist($this->collection);
-                $this->em->flush();
+                $this->entityManager->persist($this->collection);
+                $this->entityManager->flush();
             }
             foreach ($schemas->files() as $schema) {
                 $this->handleSchema($schema);
@@ -378,20 +381,20 @@ class InstallationService
 
             //$progressBar->finish();
         } else {
-            $this->io->writeln('No schema folder found');
+            $this->symfonyStyle->writeln('No schema folder found');
             $this->logger->debug('No schema folder found for plugin '.$bundle);
         }
 
         // Handling the data
-        $this->io->section('Looking for data');
+        $this->symfonyStyle->section('Looking for data');
         if (array_key_exists('data', $config) && $config['data']) {
             $dataDir = $vendorFolder.'/'.$bundle.'/Data';
 
             if ($filesystem->exists($dataDir)) {
-                $this->io->writeln('Data folder found');
+                $this->symfonyStyle->writeln('Data folder found');
                 $datas = new Finder();
                 $datas = $datas->in($dataDir);
-                $this->io->writeln('Files found: '.count($datas));
+                $this->symfonyStyle->writeln('Files found: '.count($datas));
 
                 foreach ($datas->files() as $data) {
                     $this->handleData($data);
@@ -400,30 +403,30 @@ class InstallationService
                 // We need to clear the finder
             } else {
                 $this->logger->debug('No data folder found for plugin '.$bundle);
-                $this->io->writeln('No data folder found');
+                $this->symfonyStyle->writeln('No data folder found');
             }
         } else {
-            $this->io->warning('No test data loaded for bundle, run command with -data to load (test) data');
+            $this->symfonyStyle->warning('No test data loaded for bundle, run command with -data to load (test) data');
         }
 
         // Handling the installations
-        $this->io->section('Looking for installers');
+        $this->symfonyStyle->section('Looking for installers');
         $installationDir = $vendorFolder.'/'.$bundle.'/Installation';
         if ($filesystem->exists($installationDir)) {
-            $this->io->writeln('Installation folder found');
+            $this->symfonyStyle->writeln('Installation folder found');
             $installers = new Finder();
             $installers = $installers->in($installationDir);
-            $this->io->writeln('Files found: '.count($installers));
+            $this->symfonyStyle->writeln('Files found: '.count($installers));
 
             foreach ($installers->files() as $installer) {
                 $this->handleInstaller($installer);
             }
         } else {
             $this->logger->debug('No Installation folder found for plugin '.$bundle);
-            $this->io->writeln('No Installation folder found');
+            $this->symfonyStyle->writeln('No Installation folder found');
         }
 
-        $this->io->success('All Done');
+        $this->symfonyStyle->success('All Done');
         $this->logger->debug('All Done installing plugin '.$bundle);
 
         return Command::SUCCESS;
@@ -463,33 +466,33 @@ class InstallationService
     public function handleAction($file)
     {
         if (!$action = json_decode($file->getContents(), true)) {
-            $this->io->writeln($file->getFilename().' is not a valid json object');
+            $this->symfonyStyle->writeln($file->getFilename().' is not a valid json object');
 
             return false;
         }
 
         if (!$this->validateJsonSchema($action)) {
-            $this->io->writeln($file->getFilename().' is not a valid json-schema object');
+            $this->symfonyStyle->writeln($file->getFilename().' is not a valid json-schema object');
 
             return false;
         }
 
-        if (!$entity = $this->em->getRepository('App:Action')->findOneBy(['reference' => $action['$id']])) {
-            $this->io->writeln('Action not present, creating action '.$action['title'].' under reference '.$action['$id']);
+        if (!$entity = $this->entityManager->getRepository('App:Action')->findOneBy(['reference' => $action['$id']])) {
+            $this->symfonyStyle->writeln('Action not present, creating action '.$action['title'].' under reference '.$action['$id']);
             $entity = new Action();
         } else {
-            $this->io->writeln('Action already present, looking to update');
+            $this->symfonyStyle->writeln('Action already present, looking to update');
             if (array_key_exists('version', $action) && version_compare($action['version'], $entity->getVersion()) < 0) {
-                $this->io->writeln('The new action has a version number equal or lower then the already present version');
+                $this->symfonyStyle->writeln('The new action has a version number equal or lower then the already present version');
             }
         }
 
         $entity->fromSchema($action);
 
-        $this->em->persist($entity);
+        $this->entityManager->persist($entity);
 
-        $this->em->flush();
-        $this->io->writeln('Done with action '.$entity->getName());
+        $this->entityManager->flush();
+        $this->symfonyStyle->writeln('Done with action '.$entity->getName());
     }
 
     /**
@@ -500,32 +503,32 @@ class InstallationService
     public function handleMapping($file)
     {
         if (!$mapping = json_decode($file->getContents(), true)) {
-            $this->io->writeln($file->getFilename().' is not a valid json object');
+            $this->symfonyStyle->writeln($file->getFilename().' is not a valid json object');
 
             return false;
         }
 
         if (!$this->validateJsonMapping($mapping)) {
-            $this->io->writeln($file->getFilename().' is not a valid json-mapping object');
+            $this->symfonyStyle->writeln($file->getFilename().' is not a valid json-mapping object');
 
             return false;
         }
 
-        if (!$entity = $this->em->getRepository('App:Mapping')->findOneBy(['reference' => $mapping['$id']])) {
-            $this->io->writeln('Maping not present, creating mapping '.$mapping['title'].' under reference '.$mapping['$id']);
+        if (!$entity = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $mapping['$id']])) {
+            $this->symfonyStyle->writeln('Maping not present, creating mapping '.$mapping['title'].' under reference '.$mapping['$id']);
             $entity = new Mapping();
         } else {
-            $this->io->writeln('Mapping already present, looking to update');
+            $this->symfonyStyle->writeln('Mapping already present, looking to update');
             if (array_key_exists('version', $mapping) && version_compare($mapping['version'], $entity->getVersion()) < 0) {
-                $this->io->writeln('The new mapping has a version number equal or lower then the already present version');
+                $this->symfonyStyle->writeln('The new mapping has a version number equal or lower then the already present version');
             }
         }
 
         $entity->fromSchema($mapping);
 
-        $this->em->persist($entity);
-        $this->em->flush();
-        $this->io->writeln('Done with mapping '.$entity->getName());
+        $this->entityManager->persist($entity);
+        $this->entityManager->flush();
+        $this->symfonyStyle->writeln('Done with mapping '.$entity->getName());
     }
 
     /**
@@ -536,38 +539,38 @@ class InstallationService
     public function handleSchema($file)
     {
         if (!$schema = json_decode($file->getContents(), true)) {
-            $this->io->writeln($file->getFilename().' is not a valid json object');
+            $this->symfonyStyle->writeln($file->getFilename().' is not a valid json object');
 
             return false;
         }
 
         if (!$this->validateJsonSchema($schema)) {
-            $this->io->writeln($file->getFilename().' is not a valid json-schema object');
+            $this->symfonyStyle->writeln($file->getFilename().' is not a valid json-schema object');
 
             return false;
         }
 
-        if (!$entity = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']])) {
-            $this->io->writeln('Schema not present, creating schema '.$schema['title'].' under reference '.$schema['$id']);
+        if (!$entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema['$id']])) {
+            $this->symfonyStyle->writeln('Schema not present, creating schema '.$schema['title'].' under reference '.$schema['$id']);
             $entity = new Entity();
         } else {
-            $this->io->writeln('Schema already present, looking to update');
+            $this->symfonyStyle->writeln('Schema already present, looking to update');
             if (array_key_exists('version', $schema) && version_compare($schema['version'], $entity->getVersion()) < 0) {
-                $this->io->writeln('The new schema has a version number equal or lower then the already present version');
+                $this->symfonyStyle->writeln('The new schema has a version number equal or lower then the already present version');
             }
         }
 
         $entity->fromSchema($schema);
 
-        $this->em->persist($entity);
+        $this->entityManager->persist($entity);
 
         // Add the schema to collection
         if (isset($this->collection)) {
             $entity->addCollection($this->collection);
         }
 
-        $this->em->flush();
-        $this->io->writeln('Done with schema '.$entity->getName());
+        $this->entityManager->flush();
+        $this->symfonyStyle->writeln('Done with schema '.$entity->getName());
     }
 
     /**
@@ -621,19 +624,19 @@ class InstallationService
     public function handleData($file)
     {
         if (!$data = json_decode($file->getContents(), true)) {
-            $this->io->writeln($file->getFilename().' is not a valid json object');
+            $this->symfonyStyle->writeln($file->getFilename().' is not a valid json object');
 
             return false;
         }
 
         foreach ($data as $reference => $objects) {
             // Lets see if we actuelly have a shema to upload the objects to
-            if (!$entity = $this->em->getRepository('App:Entity')->findOneBy(['reference' => $reference])) {
-                $this->io->writeln('No Schema found for reference '.$reference);
+            if (!$entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference])) {
+                $this->symfonyStyle->writeln('No Schema found for reference '.$reference);
                 continue;
             }
 
-            $this->io->writeln([
+            $this->symfonyStyle->writeln([
                 '',
                 '<info> Found data for schema '.$reference.'</info> containing '.count($objects).' object(s)',
             ]);
@@ -648,17 +651,17 @@ class InstallationService
                     unset($object['_id']);
                 }
 
-                if (isset($object['id']) && $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $object['id']])) {
-                    $this->io->writeln(['', 'Object '.$object['id'].' already exists, so updating']);
+                if (isset($object['id']) && $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $object['id']])) {
+                    $this->symfonyStyle->writeln(['', 'Object '.$object['id'].' already exists, so updating']);
                 } else {
                     $objectEntity = new ObjectEntity($entity);
                 }
 
-                $this->io->writeln('Writing data to the object');
+                $this->symfonyStyle->writeln('Writing data to the object');
 
                 $this->saveOnFixedId($objectEntity, $object);
 
-                $this->io->writeln(['Object saved as '.$objectEntity->getId(), '']);
+                $this->symfonyStyle->writeln(['Object saved as '.$objectEntity->getId(), '']);
             }
         }
     }
@@ -671,24 +674,24 @@ class InstallationService
     public function handleInstaller($file)
     {
         if (!$data = json_decode($file->getContents(), true)) {
-            $this->io->writeln($file->getFilename().' is not a valid json object');
+            $this->symfonyStyle->writeln($file->getFilename().' is not a valid json object');
 
             return false;
         }
 
         if (!isset($data['installationService']) || !$installationService = $data['installationService']) {
-            $this->io->writeln($file->getFilename().' Doesn\'t contain an installation service');
+            $this->symfonyStyle->writeln($file->getFilename().' Doesn\'t contain an installation service');
 
             return false;
         }
 
         if (!$installationService = $this->container->get($installationService)) {
-            $this->io->writeln($file->getFilename().' Could not be loaded from container');
+            $this->symfonyStyle->writeln($file->getFilename().' Could not be loaded from container');
 
             return false;
         }
 
-        $installationService->setStyle($this->io);
+        $installationService->setStyle($this->symfonyStyle);
 
         return $installationService->install();
     }
@@ -705,7 +708,7 @@ class InstallationService
         // This savetey dosn't make sense but we need it
         if (!$objectEntity->getEntity()) {
             $this->logger->error('Object can\'t be persisted due to missing schema');
-            $this->io->writeln(['', 'Object can\'t be persisted due to missing schema']);
+            $this->symfonyStyle->writeln(['', 'Object can\'t be persisted due to missing schema']);
 
             return $objectEntity;
         }
@@ -715,24 +718,24 @@ class InstallationService
         //$objectEntity->clearAllValues();
 
         // We have an object entity with a fixed id that isn't in the database, so we need to act
-        if (isset($hydrate['id']) && !$this->em->contains($objectEntity)) {
-            $this->io->writeln(['Creating new object ('.$objectEntity->getEntity()->getName().') on a fixed id ('.$hydrate['id'].')']);
+        if (isset($hydrate['id']) && !$this->entityManager->contains($objectEntity)) {
+            $this->symfonyStyle->writeln(['Creating new object ('.$objectEntity->getEntity()->getName().') on a fixed id ('.$hydrate['id'].')']);
 
             // save the id
             $id = $hydrate['id'];
             // Create the entity
-            $this->em->persist($objectEntity);
-            $this->em->flush();
-            $this->em->refresh($objectEntity);
+            $this->entityManager->persist($objectEntity);
+            $this->entityManager->flush();
+            $this->entityManager->refresh($objectEntity);
             // Reset the id
             $objectEntity->setId($id);
-            $this->em->persist($objectEntity);
-            $this->em->flush();
-            $objectEntity = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
+            $this->entityManager->persist($objectEntity);
+            $this->entityManager->flush();
+            $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
 
-            $this->io->writeln(['Defintive object id ('.$objectEntity->getId().')']);
+            $this->symfonyStyle->writeln(['Defintive object id ('.$objectEntity->getId().')']);
         } else {
-            $this->io->writeln(['Creating new object ('.$objectEntity->getEntity()->getName().') on a generated id']);
+            $this->symfonyStyle->writeln(['Creating new object ('.$objectEntity->getEntity()->getName().') on a generated id']);
         }
 
         // We already dit this so lets skip it
@@ -749,7 +752,7 @@ class InstallationService
 
                     // I hate arrays
                     if ($valueObject->getAttribute()->getMultiple()) {
-                        $this->io->info('an array for objects
+                        $this->symfonyStyle->info('an array for objects
                         ');
                         if (is_array($value)) {
                             foreach ($value as $subvalue) {
@@ -767,17 +770,17 @@ class InstallationService
                                 // Is not an array
                                 else {
                                     $idValue = $subvalue;
-                                    $subvalue = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
+                                    $subvalue = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
                                     // Savety
                                     if (!$subvalue) {
-                                        $this->io->error('Could not find an object for id '.$idValue);
+                                        $this->symfonyStyle->error('Could not find an object for id '.$idValue);
                                     } else {
                                         $valueObject->addObject($subvalue);
                                     }
                                 }
                             }
                         } else {
-                            $this->io->error($valueObject->getAttribute()->getName().' Is a multiple so should be filled with an array, but provided value was '.$value.'(type: '.gettype($value).')');
+                            $this->symfonyStyle->error($valueObject->getAttribute()->getName().' Is a multiple so should be filled with an array, but provided value was '.$value.'(type: '.gettype($value).')');
                         }
                         continue;
                     }
@@ -787,7 +790,7 @@ class InstallationService
                     if (is_array($value)) {
                         // Savety
                         if (!$valueObject->getAttribute()->getObject()) {
-                            $this->io->error('Could not find an object for atribute  '.$valueObject->getAttribute()->getname().' ('.$valueObject->getAttribute()->getId().')');
+                            $this->symfonyStyle->error('Could not find an object for atribute  '.$valueObject->getAttribute()->getname().' ('.$valueObject->getAttribute()->getId().')');
                             continue;
                         }
                         $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
@@ -797,10 +800,10 @@ class InstallationService
                     // Is not an array
                     else {
                         $idValue = $value;
-                        $value = $this->em->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
+                        $value = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
                         // Savety
                         if (!$value) {
-                            $this->io->error('Could not find an object for id '.$idValue);
+                            $this->symfonyStyle->error('Could not find an object for id '.$idValue);
                         } else {
                             $valueObject->setValue($value);
                         }
@@ -817,8 +820,8 @@ class InstallationService
         // Lets force the default values
         $objectEntity->hydrate([]);
 
-        $this->em->persist($objectEntity);
-        $this->em->flush();
+        $this->entityManager->persist($objectEntity);
+        $this->entityManager->flush();
 
         return $objectEntity;
     }

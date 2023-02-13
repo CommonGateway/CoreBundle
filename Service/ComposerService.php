@@ -25,7 +25,7 @@ class ComposerService
     private LoggerInterface $logger;
 
     /**
-     * @param LoggerInterface $pluginLogger
+     * @param LoggerInterface $pluginLogger The logger interface.
      */
     public function __construct(
         LoggerInterface $pluginLogger
