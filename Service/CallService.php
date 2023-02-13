@@ -4,6 +4,7 @@ namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
@@ -29,7 +30,7 @@ use Symfony\Component\Serializer\Encoder\YamlEncoder;
 class CallService
 {
     /**
-     * @var AuthenticationService
+     * @var AuthenticationService The authentication service.
      */
     private AuthenticationService $authenticationService;
 
@@ -54,10 +55,10 @@ class CallService
     private LoggerInterface $logger;
 
     /**
-     * @param AuthenticationService  $authenticationService
-     * @param EntityManagerInterface $entityManager
-     * @param FileService            $fileService
-     * @param LoggerInterface        $callLogger
+     * @param AuthenticationService  $authenticationService The authentication service.
+     * @param EntityManagerInterface $entityManager         The entity manager.
+     * @param FileService            $fileService           The file service.
+     * @param LoggerInterface        $callLogger            The logger interface.
      */
     public function __construct(
         AuthenticationService $authenticationService,
@@ -74,9 +75,9 @@ class CallService
     /**
      * Writes the certificate and ssl keys to disk, returns the filenames.
      *
-     * @param array $config The configuration as stored in the source
+     * @param array $config The configuration as stored in the source.
      *
-     * @return array The overrides on the configuration with filenames instead of certificate contents
+     * @return array The overrides on the configuration with filenames instead of certificate contents.
      */
     public function getCertificate(array $config): array
     {
@@ -97,7 +98,7 @@ class CallService
     /**
      * Removes certificates and private keys from disk if they are not necessary anymore.
      *
-     * @param array $config The configuration with filenames
+     * @param array $config The configuration with filenames.
      *
      * @return void Nothing.
      */
@@ -113,13 +114,13 @@ class CallService
             $this->fileService->removeFile($config['verify']);
         }
     }
-
+    
     /**
      * Removes empty headers and sets array to string values.
      *
-     * @param array $headers Http headers
+     * @param array $headers Http headers.
      *
-     * @return string
+     * @return array|null Headers array.
      */
     private function removeEmptyHeaders(array $headers): ?array
     {
@@ -135,17 +136,18 @@ class CallService
 
         return $headers;
     }
-
+    
     /**
      * Calls a source according to given configuration.
      *
-     * @param Source $source       The source to call
-     * @param string $endpoint     The endpoint on the source to call
-     * @param string $method       The method on which to call the source
-     * @param array  $config       The additional configuration to call the source
-     * @param bool   $asynchronous Whether or not to call the source asynchronously
+     * @param Source $source The source to call.
+     * @param string $endpoint The endpoint on the source to call.
+     * @param string $method The method on which to call the source.
+     * @param array $config The additional configuration to call the source.
+     * @param bool $asynchronous Whether to call the source asynchronously.
+     * @param bool $createCertificates If we should create Certificates.
      *
-     * @return Response
+     * @return Response The response of the call from the given source.
      */
     public function call(
         Source $source,
@@ -181,31 +183,21 @@ class CallService
                 $response = $this->client->requestAsync($method, $url, $config);
             }
         } catch (ServerException|ClientException|RequestException|Exception $e) {
-            $stopTimer = microtime(true);
-            /*
-            $log->setResponseStatus('');
-            if ($e->getResponse()) {
-                $log->setResponseStatusCode($e->getResponse()->getStatusCode());
-                $log->setResponseBody($e->getResponse()->getBody()->getContents());
-                $log->setResponseHeaders($e->getResponse()->getHeaders());
-            } else {
-                $log->setResponseStatusCode(0);
-                $log->setResponseBody($e->getMessage());
-            }
-            */
-
+            $this->logger->error($e->getMessage());
+            // Todo: log something more? like response time, status code and response headers/body ?
+            // Todo: because we wont reach the info log below...
+            
             throw $e;
         } catch (GuzzleException $e) {
             $this->logger->error($e->getMessage());
+            
+            // Todo: do we want to continue at this point?
         }
         $stopTimer = microtime(true);
 
         $responseClone = clone $response;
 
-        // Disabled because you cannot getBody after passing it here
-        // $log->setResponseBody($responseClone->getBody()->getContents());
-
-        $this->logge->info('Made external call', [
+        $this->logger->info('Made external call', [
             'source'             => $source->getId()->toString(),
             'endpoint'           => $source->getLocation().$endpoint,
             'method'             => $method,
@@ -225,12 +217,12 @@ class CallService
     }
 
     /**
-     * Determine the content type of a response.
+     * Determine the content type of response.
      *
-     * @param Response $response The response to determine the content type for
-     * @param Source   $source   The source that has been called to create the response
+     * @param Response $response The response to determine the content type for.
+     * @param Source   $source   The source that has been called to create the response.
      *
-     * @return string The (assumed) content type of the response
+     * @return string The (assumed) content type of the response.
      */
     private function getContentType(Response $response, Source $source): string
     {
@@ -248,12 +240,12 @@ class CallService
     /**
      * Decodes a response based on the source it belongs to.
      *
-     * @param Source   $source   The source that has been called
-     * @param Response $response The response to decode
+     * @param Source   $source   The source that has been called.
+     * @param Response $response The response to decode.
      *
-     * @throws \Exception Thrown if the response does not fit any supported content type
+     * @throws Exception Thrown if the response does not fit any supported content type.
      *
-     * @return array The decoded response
+     * @return array The decoded response.
      */
     public function decodeResponse(
         Source $source,
@@ -293,17 +285,17 @@ class CallService
             $result = $xmlEncoder->decode($responseBody, 'xml');
 
             return $result;
-        } catch (\Exception $exception) {
-            throw new \Exception('Could not decode body, content type could not be determined');
+        } catch (Exception $exception) {
+            throw new Exception('Could not decode body, content type could not be determined');
         }
     }
 
     /**
      * Determines the authentication procedure based upon a source.
      *
-     * @param Source $source The source to base the authentication procedure on
+     * @param Source $source The source to base the authentication procedure on.
      *
-     * @return array The config parameters needed to authenticate on the source
+     * @return array The config parameters needed to authenticate on the source.
      */
     private function getAuthentication(Source $source): array
     {
@@ -315,11 +307,11 @@ class CallService
      *
      * @TODO: This is based on some assumptions
      *
-     * @param Source $source   The source to call
-     * @param string $endpoint The endpoint on the source to call
-     * @param array  $config   The additional configuration to call the source
+     * @param Source $source   The source to call.
+     * @param string $endpoint The endpoint on the source to call.
+     * @param array  $config   The additional configuration to call the source.
      *
-     * @return array The array of results
+     * @return array The array of results.
      */
     public function getAllResults(Source $source, string $endpoint = '', array $config = []): array
     {
@@ -343,7 +335,7 @@ class CallService
                     break;
                 }
                 $previousResult = $decodedResponse;
-            } catch (\Exception $exception) {
+            } catch (Exception $exception) {
                 $errorCount++;
             }
             if (isset($decodedResponse['results'])) {
