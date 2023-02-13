@@ -435,8 +435,8 @@ class AuthenticationService
     /**
      * Serializes a user to be used by the token authenticator.
      *
-     * @param User              $user    The user to be serialized
-     * @param SessionInterface  $session The session to use
+     * @param User             $user    The user to be serialized
+     * @param SessionInterface $session The session to use
      *
      * @return array
      */
