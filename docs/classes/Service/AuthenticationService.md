@@ -14,16 +14,16 @@
 |[checkHS256](#authenticationservicecheckhs256)|Decides if the provided JWT token is signed with the HS256 Algorithm.|
 |[checkHeadersAndGetJWK](#authenticationservicecheckheadersandgetjwk)|Checks the algorithm of the JWT token and decides how to generate a JWK from the provided public key.|
 |[checkRS512](#authenticationservicecheckrs512)|Decides if the provided JWT token is signed with the RS512 Algorithm.|
-|[convertRSAKeyToJWK](#authenticationserviceconvertrsakeytojwk)||
-|[convertRSAtoJWK](#authenticationserviceconvertrsatojwk)||
-|[createJwtToken](#authenticationservicecreatejwttoken)||
-|[getAlgorithm](#authenticationservicegetalgorithm)||
-|[getApplicationId](#authenticationservicegetapplicationid)||
+|[convertRSAKeyToJWK](#authenticationserviceconvertrsakeytojwk)|Converts a string RSA key to a JWK via the filesystem|
+|[convertRSAtoJWK](#authenticationserviceconvertrsatojwk)|Converts a RSA private key to a JWK|
+|[createJwtToken](#authenticationservicecreatejwttoken)|Creates a JWT token to identify with on the application|
+|[getAlgorithm](#authenticationservicegetalgorithm)|Determines the algorithm for the JWT token to create from the source|
+|[getApplicationId](#authenticationservicegetapplicationid)|Gets an application id for a source|
 |[getAuthentication](#authenticationservicegetauthentication)||
 |[getCertificate](#authenticationservicegetcertificate)|Writes the certificate and ssl keys to disk, returns the filenames.|
 |[getHmacToken](#authenticationservicegethmactoken)||
-|[getJWK](#authenticationservicegetjwk)||
-|[getJwtPayload](#authenticationservicegetjwtpayload)||
+|[getJWK](#authenticationservicegetjwk)|Gets a JWK for a source based on the algorithm of the source|
+|[getJwtPayload](#authenticationservicegetjwtpayload)|Creates the JWT payload to identify at an external source|
 |[getJwtToken](#authenticationservicegetjwttoken)|Create a JWT token from Component settings.|
 |[getTokenFromUrl](#authenticationservicegettokenfromurl)||
 |[removeFiles](#authenticationserviceremovefiles)|Removes certificates and private keys from disk if they are not necessary anymore.|
@@ -145,20 +145,23 @@ Decides if the provided JWT token is signed with the RS512 Algorithm.
 **Description**
 
 ```php
- convertRSAKeyToJWK (void)
+public convertRSAKeyToJWK (string $key)
 ```
 
- 
+Converts a string RSA key to a JWK via the filesystem 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(string) $key`
+: The key to load  
 
 **Return Values**
 
-`void`
+`\JWK`
+
+
 
 
 <hr />
@@ -169,20 +172,22 @@ Decides if the provided JWT token is signed with the RS512 Algorithm.
 **Description**
 
 ```php
- convertRSAtoJWK (void)
+public convertRSAtoJWK (\Source $source)
 ```
 
- 
+Converts a RSA private key to a JWK 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(\Source) $source`
 
 **Return Values**
 
-`void`
+`\JWK`
+
+
 
 
 <hr />
@@ -193,20 +198,25 @@ Decides if the provided JWT token is signed with the RS512 Algorithm.
 **Description**
 
 ```php
- createJwtToken (void)
+public createJwtToken (string $key, array $payload)
 ```
 
- 
+Creates a JWT token to identify with on the application 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(string) $key`
+: The private key to create a JWT token with  
+* `(array) $payload`
+: The payload to create a JWT token with  
 
 **Return Values**
 
-`void`
+`string`
+
+
 
 
 <hr />
@@ -217,20 +227,23 @@ Decides if the provided JWT token is signed with the RS512 Algorithm.
 **Description**
 
 ```php
- getAlgorithm (void)
+public getAlgorithm (\Source $source)
 ```
 
- 
+Determines the algorithm for the JWT token to create from the source 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(\Source) $source`
+: The source to determine the algorithm for  
 
 **Return Values**
 
-`void`
+`string`
+
+
 
 
 <hr />
@@ -241,20 +254,23 @@ Decides if the provided JWT token is signed with the RS512 Algorithm.
 **Description**
 
 ```php
- getApplicationId (void)
+public getApplicationId (\Source $source)
 ```
 
- 
+Gets an application id for a source 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(\Source) $source`
+: The source to dermine the application id for  
 
 **Return Values**
 
-`void`
+`string`
+
+
 
 
 <hr />
@@ -340,20 +356,23 @@ Writes the certificate and ssl keys to disk, returns the filenames.
 **Description**
 
 ```php
- getJWK (void)
+public getJWK (string $algorithm, \Source $source)
 ```
 
- 
+Gets a JWK for a source based on the algorithm of the source 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(string) $algorithm`
+* `(\Source) $source`
 
 **Return Values**
 
-`void`
+`\JWK`
+
+
 
 
 <hr />
@@ -364,20 +383,23 @@ Writes the certificate and ssl keys to disk, returns the filenames.
 **Description**
 
 ```php
- getJwtPayload (void)
+public getJwtPayload (\Source $source)
 ```
 
- 
+Creates the JWT payload to identify at an external source 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(\Source) $source`
+: The source to create a payload for  
 
 **Return Values**
 
-`void`
+`string`
+
+
 
 
 <hr />
