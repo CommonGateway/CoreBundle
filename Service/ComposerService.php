@@ -32,12 +32,12 @@ class ComposerService
     ) {
         $this->logger = $pluginLogger;
     }//end __construct()
-    
+
     /**
-     *  Todo
+     *  Todo.
      *
      * @param array $array An array.
-     * @param array $enum An enum.
+     * @param array $enum  An enum.
      *
      * @return bool Todo
      */
@@ -56,9 +56,9 @@ class ComposerService
     /**
      * Make a call to composer.
      *
-     * @param string      $call     The call that you want to make to composer shoul be one of show, init, install
-     * @param string|null $package  Todo
-     * @param array       $options  Todo
+     * @param string      $call    The call that you want to make to composer shoul be one of show, init, install
+     * @param string|null $package Todo
+     * @param array       $options Todo
      *
      * @return array|string Todo
      */
@@ -321,7 +321,7 @@ class ComposerService
 
         return $content;
     }//end composerCall()
-    
+
     /**
      * Gets all installed plugins from the lock file.
      *
@@ -336,7 +336,7 @@ class ComposerService
         }
 
         $plugins = json_decode($plugins, true);
-        
+
         return $plugins['packages'];
     }//end getLockFile()
 
@@ -363,14 +363,14 @@ class ComposerService
 
         return $plugins;
     }//end getAll()
-    
+
     /**
      * Show a single package installed trough composer.
      *
      * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
      *
      * @param string $package A package.
-     * @param array $options Todo
+     * @param array  $options Todo
      *
      * @return array Todo
      */
@@ -378,14 +378,14 @@ class ComposerService
     {
         return $this->composerCall('require', $options, $package);
     }//end require()
-    
+
     /**
      * Show a single package installed trough composer.
      *
      * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
      *
      * @param string $package A package.
-     * @param array $options Todo
+     * @param array  $options Todo
      *
      * @return array Todo
      */
@@ -393,14 +393,14 @@ class ComposerService
     {
         return $this->composerCall('upgrade', $options, $package);
     }//end upgrade()
-    
+
     /**
      * Show a single package installed trough composer.
      *
      * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
      *
      * @param string $package A package.
-     * @param array $options Todo
+     * @param array  $options Todo
      *
      * @return array Todo
      */
@@ -408,7 +408,7 @@ class ComposerService
     {
         return $this->composerCall('remove', $options, $package);
     }//end remove()
-    
+
     /**
      * Show a single package installed trough composer.
      *
@@ -449,7 +449,7 @@ class ComposerService
 
         return $plugin;
     }//end getSingle()
-    
+
     /**
      * Search for a given term.
      *

@@ -8,7 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Todo
+ * Todo.
  *
  * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
  *
@@ -85,7 +85,7 @@ class EavService
         if ($attribute->getReference() === false || $attribute->getObject() === true) {
             return $attribute;
         }
-    
+
         $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $attribute->getReference()]);
         if ($entity instanceof Entity === true) {
             $attribute->setObject($entity);
