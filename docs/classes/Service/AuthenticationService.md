@@ -14,20 +14,20 @@
 |[checkHS256](#authenticationservicecheckhs256)|Decides if the provided JWT token is signed with the HS256 Algorithm.|
 |[checkHeadersAndGetJWK](#authenticationservicecheckheadersandgetjwk)|Checks the algorithm of the JWT token and decides how to generate a JWK from the provided public key.|
 |[checkRS512](#authenticationservicecheckrs512)|Decides if the provided JWT token is signed with the RS512 Algorithm.|
-|[convertRSAKeyToJWK](#authenticationserviceconvertrsakeytojwk)|Converts a string RSA key to a JWK via the filesystem|
-|[convertRSAtoJWK](#authenticationserviceconvertrsatojwk)|Converts a RSA private key to a JWK|
-|[createJwtToken](#authenticationservicecreatejwttoken)|Creates a JWT token to identify with on the application|
-|[getAlgorithm](#authenticationservicegetalgorithm)|Determines the algorithm for the JWT token to create from the source|
-|[getApplicationId](#authenticationservicegetapplicationid)|Gets an application id for a source|
+|[convertRSAKeyToJWK](#authenticationserviceconvertrsakeytojwk)|Converts a string RSA key to a JWK via the filesystem.|
+|[convertRSAtoJWK](#authenticationserviceconvertrsatojwk)|Converts a RSA private key to a JWK.|
+|[createJwtToken](#authenticationservicecreatejwttoken)|Creates a JWT token to identify with on the application.|
+|[getAlgorithm](#authenticationservicegetalgorithm)|Determines the algorithm for the JWT token to create from the source.|
+|[getApplicationId](#authenticationservicegetapplicationid)|Gets an application id for a source.|
 |[getAuthentication](#authenticationservicegetauthentication)||
 |[getCertificate](#authenticationservicegetcertificate)|Writes the certificate and ssl keys to disk, returns the filenames.|
 |[getHmacToken](#authenticationservicegethmactoken)||
-|[getJWK](#authenticationservicegetjwk)|Gets a JWK for a source based on the algorithm of the source|
-|[getJwtPayload](#authenticationservicegetjwtpayload)|Creates the JWT payload to identify at an external source|
+|[getJWK](#authenticationservicegetjwk)|Gets a JWK for a source based on the algorithm of the source.|
+|[getJwtPayload](#authenticationservicegetjwtpayload)|Creates the JWT payload to identify at an external source.|
 |[getJwtToken](#authenticationservicegetjwttoken)|Create a JWT token from Component settings.|
 |[getTokenFromUrl](#authenticationservicegettokenfromurl)||
 |[removeFiles](#authenticationserviceremovefiles)|Removes certificates and private keys from disk if they are not necessary anymore.|
-|[serializeUser](#authenticationserviceserializeuser)|Serializes a user to be used by the token authenticator|
+|[serializeUser](#authenticationserviceserializeuser)|Serializes a user to be used by the token authenticator.|
 |[verifyJWTToken](#authenticationserviceverifyjwttoken)|Verifies the JWT token and returns the payload if the JWT token is valid.|
 
 
@@ -148,7 +148,7 @@ Decides if the provided JWT token is signed with the RS512 Algorithm.
 public convertRSAKeyToJWK (string $key)
 ```
 
-Converts a string RSA key to a JWK via the filesystem 
+Converts a string RSA key to a JWK via the filesystem. 
 
  
 
@@ -175,7 +175,7 @@ Converts a string RSA key to a JWK via the filesystem
 public convertRSAtoJWK (\Source $source)
 ```
 
-Converts a RSA private key to a JWK 
+Converts a RSA private key to a JWK. 
 
  
 
@@ -201,7 +201,7 @@ Converts a RSA private key to a JWK
 public createJwtToken (string $key, array $payload)
 ```
 
-Creates a JWT token to identify with on the application 
+Creates a JWT token to identify with on the application. 
 
  
 
@@ -230,7 +230,7 @@ Creates a JWT token to identify with on the application
 public getAlgorithm (\Source $source)
 ```
 
-Determines the algorithm for the JWT token to create from the source 
+Determines the algorithm for the JWT token to create from the source. 
 
  
 
@@ -257,7 +257,7 @@ Determines the algorithm for the JWT token to create from the source
 public getApplicationId (\Source $source)
 ```
 
-Gets an application id for a source 
+Gets an application id for a source. 
 
  
 
@@ -359,7 +359,7 @@ Writes the certificate and ssl keys to disk, returns the filenames.
 public getJWK (string $algorithm, \Source $source)
 ```
 
-Gets a JWK for a source based on the algorithm of the source 
+Gets a JWK for a source based on the algorithm of the source. 
 
  
 
@@ -386,7 +386,7 @@ Gets a JWK for a source based on the algorithm of the source
 public getJwtPayload (\Source $source)
 ```
 
-Creates the JWT payload to identify at an external source 
+Creates the JWT payload to identify at an external source. 
 
  
 
@@ -491,7 +491,7 @@ Removes certificates and private keys from disk if they are not necessary anymor
 public serializeUser (\User $user)
 ```
 
-Serializes a user to be used by the token authenticator 
+Serializes a user to be used by the token authenticator. 
 
  
 
