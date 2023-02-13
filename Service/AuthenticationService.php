@@ -123,9 +123,11 @@ class AuthenticationService
 
         $jws = $jwsBuilder
             ->create()
-            ->withPayload($payload)
+            ->withPayload(json_encode($payload))
             ->addSignature($jwk, ['alg' => 'RS512'])
             ->build();
+        $jwsSerializer = new CompactSerializer();
+        return $jwsSerializer->serialize($jws, 0);
     }
 
     /**
