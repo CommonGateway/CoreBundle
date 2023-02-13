@@ -187,6 +187,7 @@ class AuthenticationService
      * Create a JWT token from Component settings.
      *
      * @param Source $source The source to authenticate to
+     *
      * @return string The resulting JWT token
      */
     public function getJwtToken(Source $source): string
