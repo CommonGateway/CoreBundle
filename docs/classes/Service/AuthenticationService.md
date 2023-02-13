@@ -161,7 +161,7 @@ Converts a string RSA key to a JWK via the filesystem.
 
 `\JWK`
 
-
+> The resulting Json Web Key
 
 
 <hr />
@@ -187,7 +187,7 @@ Converts a RSA private key to a JWK.
 
 `\JWK`
 
-
+> The resulting Json Web Key
 
 
 <hr />
@@ -216,7 +216,7 @@ Creates a JWT token to identify with on the application.
 
 `string`
 
-
+> The resulting JWT token
 
 
 <hr />
@@ -243,7 +243,7 @@ Determines the algorithm for the JWT token to create from the source.
 
 `string`
 
-
+> The algorithm to use
 
 
 <hr />
@@ -270,7 +270,7 @@ Gets an application id for a source.
 
 `string`
 
-
+> The application ID to use
 
 
 <hr />
@@ -372,7 +372,7 @@ Gets a JWK for a source based on the algorithm of the source.
 
 `\JWK`
 
-
+> The resulting Json Web Key
 
 
 <hr />
@@ -399,7 +399,7 @@ Creates the JWT payload to identify at an external source.
 
 `string`
 
-
+> The JWT payload to use
 
 
 <hr />
@@ -410,7 +410,7 @@ Creates the JWT payload to identify at an external source.
 **Description**
 
 ```php
-public getJwtToken (array $component, string $)
+public getJwtToken (\Source $source)
 ```
 
 Create a JWT token from Component settings. 
@@ -419,14 +419,14 @@ Create a JWT token from Component settings.
 
 **Parameters**
 
-* `(array) $component`
-: The code of the component  
-* `(string) $`
-: The JWT token  
+* `(\Source) $source`
+: The source to authenticate to  
 
 **Return Values**
 
-`void`
+`string`
+
+> The resulting JWT token
 
 
 <hr />
@@ -506,7 +506,7 @@ Serializes a user to be used by the token authenticator.
 
 `array`
 
-
+> The serialized user
 
 
 <hr />
