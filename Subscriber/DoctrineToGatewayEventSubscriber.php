@@ -30,7 +30,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
 {
     /**
-     * @var CacheService $cacheService The cache service.
+     * @var CacheService The cache service.
      */
     private CacheService $cacheService;
 

@@ -16,7 +16,7 @@ class CacheWarmupCommand extends Command
     protected static $defaultName = 'commongateway:cache:warmup';
 
     /**
-     * @var CacheService $cacheService The cache service.
+     * @var CacheService The cache service.
      */
     private CacheService $cacheService;
 

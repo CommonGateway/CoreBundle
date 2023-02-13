@@ -16,7 +16,7 @@ class CacheClearCommand extends Command
     protected static $defaultName = 'commongateway:cache:clear';
 
     /**
-     * @var CacheService $cacheService The cache service.
+     * @var CacheService The cache service.
      */
     private CacheService $cacheService;
 

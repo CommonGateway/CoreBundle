@@ -22,7 +22,7 @@ class EavService
     private EntityManagerInterface $entityManager;
 
     /**
-     * @var CacheService $cacheService The cache service.
+     * @var CacheService The cache service.
      */
     private CacheService $cacheService;
 

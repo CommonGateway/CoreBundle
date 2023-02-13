@@ -18,7 +18,7 @@ class InstallCommand extends Command
     protected static $defaultName = 'commongateway:install';
 
     /**
-     * @var InstallationService $installationService The installation service.
+     * @var InstallationService The installation service.
      */
     private InstallationService $installationService;
 

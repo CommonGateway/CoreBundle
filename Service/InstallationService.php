@@ -55,7 +55,7 @@ class InstallationService
     private LoggerInterface $logger;
 
     /**
-     * @var CacheService $cacheService The cache service.
+     * @var CacheService The cache service.
      */
     private CacheService $cacheService;
 

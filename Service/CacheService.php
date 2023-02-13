@@ -166,8 +166,8 @@ class CacheService
     /**
      * Loop trough an collection and remove any vallues that no longer exists.
      *
-     * @param Collection    $collection The collection to use.
-     * @param string        $type       The (symfony) entity entity type.
+     * @param Collection $collection The collection to use.
+     * @param string     $type       The (symfony) entity entity type.
      *
      * @return void Nothing.
      */
@@ -293,16 +293,17 @@ class CacheService
 
         return false;
     }
-    
+
     /**
      * Searches the cache for objects containing the search string.
      *
-     * @param string|null $search a string to search for within the given context.
-     * @param array $filter an array of dot notation filters for which to search with.
-     * @param array $entities schemas to limit te search to.
+     * @param string|null $search   a string to search for within the given context.
+     * @param array       $filter   an array of dot notation filters for which to search with.
+     * @param array       $entities schemas to limit te search to.
+     *
+     * @throws Exception A basic Exception.
      *
      * @return array|null The objects found.
-     * @throws Exception A basic Exception.
      */
     public function searchObjects(string $search = null, array $filter = [], array $entities = []): ?array
     {
@@ -394,7 +395,7 @@ class CacheService
      * Handles a single filter used on a get collection api call. This function makes sure special filters work correctly.
      *
      * @param string $key   The key.
-     * @param mixed $value The value.
+     * @param mixed  $value The value.
      *
      * @throws Exception A basic Exception.
      *
@@ -447,7 +448,7 @@ class CacheService
      * @throws Exception A basic Exception.
      *
      * @return bool Returns true if $value is an array with the correct structure, and we can deal with the specific filter.
-     * Returns false if $value is not an array, or if $value is structured incorrectly for the filters we handle here.
+     *              Returns false if $value is not an array, or if $value is structured incorrectly for the filters we handle here.
      */
     private function handleFilterArray($key, &$value): bool
     {
@@ -670,7 +671,7 @@ class CacheService
                 ];
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value.
-        else if (is_array($search) === true) {
+        elseif (is_array($search) === true) {
             $searchRegex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $search[array_key_first($search)]);
             if (empty($searchRegex)) {
                 return;
@@ -687,9 +688,9 @@ class CacheService
     /**
      * Decides the pagination values.
      *
-     * @param int|null  $limit   The resulting limit.
-     * @param int|null  $start   The resulting start value.
-     * @param array     $filters The filters.
+     * @param int|null $limit   The resulting limit.
+     * @param int|null $start   The resulting start value.
+     * @param array    $filters The filters.
      *
      * @return array The filters array (unchanged).
      */
@@ -703,9 +704,9 @@ class CacheService
         $start = 0;
         if (isset($filters['_start']) === true) {
             $start = intval($filters['_start']);
-        } else if (isset($filters['_offset']) === true) {
+        } elseif (isset($filters['_offset']) === true) {
             $start = intval($filters['_offset']);
-        } else if (isset($filters['_page']) === true) {
+        } elseif (isset($filters['_page']) === true) {
             $start = (intval($filters['_page']) - 1) * $limit;
         }
 
@@ -774,10 +775,10 @@ class CacheService
         $endpointArray = $this->serializer->normalize($endpoint);
 
         if ($collection->findOneAndReplace(
-                ['id' => $endpoint->getId()->toString()],
-                $endpointArray,
-                ['upsert'=>true]
-            ) === true
+            ['id' => $endpoint->getId()->toString()],
+            $endpointArray,
+            ['upsert'=>true]
+        ) === true
         ) {
             $this->logger->debug('Updated endpoint '.$endpoint->getId()->toString().' to cache');
         } else {
@@ -821,17 +822,17 @@ class CacheService
         }
 
         $collection = $this->client->endpoints->json;
-        
+
         $object = $collection->findOne(['id' => $id]);
         if (empty($object) === false) {
             return $object;
         }
-    
+
         $object = $this->entityManager->getRepository('App:Endpoint')->find($id);
         if ($object instanceof Endpoint === true) {
             return $this->serializer->normalize($object);
         }
-    
+
         $this->logger->error('Endpoint does not seem to exist', ['endpoint' => $id]);
 
         return null;
@@ -946,7 +947,7 @@ class CacheService
         }
 
         $collection = $this->client->schemas->json;
-        
+
         return null;
     }
 }
