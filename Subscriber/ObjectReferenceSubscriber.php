@@ -11,6 +11,8 @@ use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 
 /**
+ * Todo
+ *
  * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
@@ -20,7 +22,7 @@ use Doctrine\Persistence\Event\LifecycleEventArgs;
 class ObjectReferenceSubscriber implements EventSubscriberInterface
 {
     /**
-     * @var EavService
+     * @var EavService The eav service.
      */
     private EavService $eavService;
 
@@ -30,8 +32,8 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     private EntityManagerInterface $entityManager;
 
     /**
-     * @param EntityManagerInterface $entityManager The EntityManagerInterface
-     * @param EavService             $eavService    The EavService
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param EavService             $eavService    The eav service.
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -42,7 +44,9 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     }// end __construct()
 
     /**
-     * @return array
+     * Gets the subscribed events.
+     *
+     * @return array an array containing the subscribed events.
      */
     public function getSubscribedEvents(): array
     {
@@ -53,9 +57,9 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     }// end getSubscribedEvents()
 
     /**
-     * Checks whether we should check attributes and entities for connections.
+     * Checks whether we should check attributes and entities for connections before we insert an object into the database.
      *
-     * @param LifecycleEventArgs $args
+     * @param LifecycleEventArgs $args LifecycleEventArgs.
      *
      * @return void Nothing.
      */
@@ -63,11 +67,11 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     {
         $object = $args->getObject();
 
-        // Let see if we need to hook an attribute to an entity
+        // Let see if we need to hook an attribute to an entity.
         if (
-            $object instanceof Attribute // It's an attribute
-            && $object->getSchema() // It has a reference
-            && !$object->getObject() // It isn't currently connected to a schema
+            $object instanceof Attribute === true // It's an attribute.
+            && empty($object->getSchema()) === false // It has a reference.
+            && empty($object->getObject()) === true // It isn't currently connected to a schema.
         ) {
             $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $object->getSchema()]);
             if ($entity) {
@@ -77,16 +81,16 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
             return;
         }
         if (
-            $object instanceof Entity // Is it an antity
-            && $object->getReference() // Does it have a reference
+            $object instanceof Entity === true // Is it an entity.
+            && empty($object->getReference()) === false // Does it have a reference.
         ) {
             $attributes = $this->entityManager->getRepository('App:Attribute')->findBy(['schema' => $object->getReference()]);
             foreach ($attributes as $attribute) {
-                if (!$attribute instanceof Attribute) {
+                if ($attribute instanceof Attribute === false) {
                     continue;
                 }
                 $attribute->setObject($object);
-                if ($attribute->getInversedByPropertyName() && !$attribute->getInversedBy()) {
+                if (empty($attribute->getInversedByPropertyName()) === false && empty($attribute->getInversedBy()) === true) {
                     $attribute->setInversedBy($object->getAttributeByName($attribute->getInversedByPropertyName()));
                 }
             }
@@ -96,7 +100,9 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     }// end prePersist()
 
     /**
-     * @param LifecycleEventArgs $args
+     * Checks whether we should check attributes and entities for connections before we update an object in the database.
+     *
+     * @param LifecycleEventArgs $args LifecycleEventArgs.
      *
      * @return void Nothing.
      */

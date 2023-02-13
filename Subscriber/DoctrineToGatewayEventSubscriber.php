@@ -78,7 +78,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     /**
      * Get the subscribed events.
      *
-     * @return array An array with the subscribed events.
+     * @return array an array containing the subscribed events.
      */
     public function getSubscribedEvents(): array
     {
