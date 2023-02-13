@@ -388,7 +388,7 @@ class AuthenticationService
      *
      * @return array
      */
-    public function serializeUser(User $user, string $duration, SessionInterface $session): array
+    public function serializeUser(User $user, string $duration, SessionInterface $session, string $url): array
     {
         $time = new \DateTime();
         $expiry = new \DateTime("+$duration seconds");
@@ -404,7 +404,7 @@ class AuthenticationService
             'locale' => $user->getLocale(),
             'roles' => $scopes,
             'session' => $session->getId(),
-            'iss' => $this->getParameter('app_url'),
+            'iss' => $url,
             'ias' => $time->getTimestamp(),
             'exp' => $expiry->getTimestamp(),
         ];
