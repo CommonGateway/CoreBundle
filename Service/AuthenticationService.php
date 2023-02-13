@@ -37,6 +37,12 @@ class AuthenticationService
         $this->fileService = new FileService();
     }
 
+    /**
+     * Converts a string RSA key to a JWK via the filesystem
+     *
+     * @param string $key The key to load
+     * @return JWK
+     */
     public function convertRSAKeyToJWK(string $key): JWK
     {
         $filesystem = new Filesystem();
@@ -46,11 +52,14 @@ class AuthenticationService
         $filesystem->remove([$filename]);
 
         return $jwk;
-    }
+    }//end convertRSAKeyToJWK()
 
     /**
-     * @param array $component
+     * Converts a RSA private key to a JWK
      *
+     * @TODO: This can be merged with the function above by getting the key from the source earlier
+     *
+     * @param Source $source
      * @return JWK
      */
     public function convertRSAtoJWK(Source $source): JWK
@@ -59,7 +68,7 @@ class AuthenticationService
             $rsa = base64_decode($source->getPrivateKey());
         } else {
             $rsa = base64_decode($this->parameterBag->get('jwt.privateKey'));
-        }
+        }//end if
         $filename = $this->fileService->writeFile('privateKey', $rsa);
         $jwk = JWKFactory::createFromKeyFile(
             $filename,
@@ -70,17 +79,29 @@ class AuthenticationService
         );
         $this->fileService->removeFile($filename);
         return $jwk;
-    }
+    }//end convertRSAtoJWK()
 
+    /**
+     * Determines the algorithm for the JWT token to create from the source
+     *
+     * @param Source $source The source to determine the algorithm for
+     * @return string
+     */
     public function getAlgorithm(Source $source): string
     {
         if ($source->getAuth() == 'jwt-HS256' || $source->getAuth() == 'jwt') {
             return 'HS256';
         } else {
             return 'RS512';
-        }
-    }
+        }//end if
+    }//end getAlgorithm()
 
+    /**
+     * Gets a JWK for a source based on the algorithm of the source
+     * @param string $algorithm
+     * @param Source $source
+     * @return JWK
+     */
     public function getJWK(string $algorithm, Source $source): JWK
     {
         if ($algorithm == 'HS256') {
@@ -90,18 +111,30 @@ class AuthenticationService
             ]);
         } else {
             return $this->convertRSAtoJWK($source);
-        }
-    }
+        }//end if
+    }//end getJWK()
 
+    /**
+     * Gets an application id for a source
+     *
+     * @param Source $source The source to dermine the application id for
+     * @return string
+     */
     public function getApplicationId(Source $source): string
     {
         if ($source->getJwtId()) {
             return $source->getJwtId();
         } else {
             return $source->getId();
-        }
-    }
+        }//end if
+    }//end getApplicationId()
 
+    /**
+     * Creates the JWT payload to identify at an external source
+     *
+     * @param Source $source The source to create a payload for
+     * @return string
+     */
     public function getJwtPayload(Source $source): string
     {
         $now = new DateTime('now');
@@ -114,8 +147,17 @@ class AuthenticationService
             'user_id'             => $this->parameterBag->get('app_name'),
             'user_representation' => $this->parameterBag->get('app_name'),
         ]);
-    }
+    }//end getJwtPayload()
 
+    /**
+     * Creates a JWT token to identify with on the application
+     *
+     * @TODO Merge with getJwtToken by splitting the getting of keys and payloads
+     *
+     * @param string $key     The private key to create a JWT token with
+     * @param array $payload  The payload to create a JWT token with
+     * @return string
+     */
     public function createJwtToken(string $key, array $payload): string
     {
         $algorithmManager = new AlgorithmManager([new RS512()]);
@@ -130,7 +172,7 @@ class AuthenticationService
             ->build();
         $jwsSerializer = new CompactSerializer();
         return $jwsSerializer->serialize($jws, 0);
-    }
+    }//end createJwtToken()
 
     /**
      * Create a JWT token from Component settings.
@@ -157,7 +199,7 @@ class AuthenticationService
         $jwsSerializer = new CompactSerializer();
 
         return $jwsSerializer->serialize($jws, 0);
-    }
+    }//end getJwtToken()
 
     /**
      * Writes the certificate and ssl keys to disk, returns the filenames.
@@ -171,16 +213,16 @@ class AuthenticationService
         $configs = [];
         if (isset($config['cert'])) {
             $configs['cert'] = $this->fileService->writeFile('certificate', $config['cert']);
-        }
+        }//end if
         if (isset($config['ssl_key'])) {
             $configs['ssl_key'] = $this->fileService->writeFile('privateKey', $config['ssl_key']);
-        }
+        }//end if
         if (isset($config['verify']) && is_string($config['verify'])) {
             $configs['verify'] = $this->fileService->writeFile('verify', $config['ssl_key']);
-        }
+        }//end if
 
         return $configs;
-    }
+    }//end getCertificate()
 
     /**
      * Removes certificates and private keys from disk if they are not necessary anymore.
@@ -193,14 +235,14 @@ class AuthenticationService
     {
         if (isset($config['cert'])) {
             $this->fileService->removeFile($config['cert']);
-        }
+        }//end if
         if (isset($config['ssl_key'])) {
             $this->fileService->removeFile($config['ssl_key']);
-        }
+        }//end if
         if (isset($config['verify']) && is_string($config['verify'])) {
             $this->fileService->removeFile($config['verify']);
-        }
-    }
+        }//end if
+    }//end removeFiles()
 
     public function getTokenFromUrl(Source $source): string
     {
@@ -303,8 +345,8 @@ class AuthenticationService
             return true;
         } catch (InvalidHeaderException $exception) {
             return false;
-        }
-    }
+        }//end try
+    }//end checkRS512()
 
     /**
      * Decides if the provided JWT token is signed with the HS256 Algorithm.
@@ -323,8 +365,8 @@ class AuthenticationService
             return true;
         } catch (InvalidHeaderException $exception) {
             return false;
-        }
-    }
+        }//end try
+    }//end checkHS256()
 
     /**
      * Checks the algorithm of the JWT token and decides how to generate a JWK from the provided public key.
@@ -342,7 +384,7 @@ class AuthenticationService
             $headerChecker->check($token, 0);
         } catch (InvalidHeaderException $exception) {
             throw $exception;
-        }
+        }//end try
 
         if ($this->checkRS512($token)) {
             $publicKeyFile = $this->fileService->writeFile('publickey', $publicKey);
@@ -352,8 +394,8 @@ class AuthenticationService
             return $jwk;
         } elseif ($this->checkHS256($token)) {
             return JWKFactory::createFromSecret($publicKey, ['alg' => 'HS256', 'use' => 'sig']);
-        }
-    }
+        }//end if
+    }//end checkHeadersAndGetJWK()
 
     /**
      * Verifies the JWT token and returns the payload if the JWT token is valid.
@@ -378,8 +420,8 @@ class AuthenticationService
             return json_decode($jws->getPayload(), true);
         } else {
             throw new AuthenticationException('Unauthorized: The provided Authorization header is invalid', 401);
-        }
-    }
+        }//end if
+    }//end verifyJWTToken()
 
     /**
      * Serializes a user to be used by the token authenticator
@@ -395,7 +437,7 @@ class AuthenticationService
         $scopes = [];
         foreach($user->getSecurityGroups() as $securityGroup) {
             $scopes = array_merge($securityGroup->getScopes(), $scopes);
-        }
+        }//end foreach
 
         $payload = [
             'userId' => $user->getId(),
@@ -410,5 +452,5 @@ class AuthenticationService
         ];
 
         return $payload;
-    }
-}
+    }//end serializeUser
+}//end class
