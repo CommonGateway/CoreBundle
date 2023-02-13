@@ -44,7 +44,7 @@ class InstallCommand extends Command
             ->addOption('unsafe', 'u', InputOption::VALUE_OPTIONAL, 'Update existing schema\'s and data sets', false)
             ->setDescription('This command runs the installation service on a commongateway bundle')
             ->setHelp('This command allows you to run further installation an configuration actions afther installing a plugin');
-    }// end configure()
+    }//end configure()
 
     /**
      * @param InputInterface  $input  Symfony style input.

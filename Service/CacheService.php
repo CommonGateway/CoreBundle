@@ -99,7 +99,7 @@ class CacheService
         $objects = $collection->find($filter)->toArray();
 
         $this->logger->info('Removed '.count($objects).' object from the cache');
-    }// end cleanup()
+    }//end cleanup()
 
     /**
      * Throws all available objects into the cache.

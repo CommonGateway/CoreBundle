@@ -70,7 +70,7 @@ class EavService
         }
 
         return $entity;
-    }// end checkEntityforAttribute()
+    }//end checkEntityforAttribute()
 
     /**
      * Checks an attribute to see if a schema for its reference has become available.
@@ -92,5 +92,5 @@ class EavService
         }
 
         return $attribute;
-    }// end checkAttributeforEntity()
+    }//end checkAttributeforEntity()
 }

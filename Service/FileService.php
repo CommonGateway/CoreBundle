@@ -43,7 +43,7 @@ class FileService
         file_put_contents("/srv/api/var/$baseFileName-$stamp", $contents);
 
         return "/srv/api/var/$baseFileName-$stamp";
-    }// end writeFile()
+    }//end writeFile()
 
     /**
      * @param mixed $filename The name of the file to remove
@@ -53,5 +53,5 @@ class FileService
     public function removeFile($filename): void
     {
         unlink($filename);
-    }// end removeFile
+    }//end removeFile
 }

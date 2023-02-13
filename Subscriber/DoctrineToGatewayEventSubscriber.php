@@ -73,7 +73,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         $this->session = $session;
         $this->eventDispatcher = $eventDispatcher;
         $this->logger = new Logger('object');
-    }// end __construct()
+    }//end __construct()
 
     /**
      * Get the subscribed events.
@@ -93,7 +93,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             Events::preFlush,
             Events::postFlush,
         ];
-    }// end getSubscribedEvents()
+    }//end getSubscribedEvents()
 
     /**
      * Log and throw an event before we remove and object from te database.
@@ -123,7 +123,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         // Throw the event.
         $event = new ActionEvent('commongateway.object.pre.delete', ['object' => $object]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.pre.delete');
-    }// end preRemove()
+    }//end preRemove()
 
     /**
      * Log and throw an event before we put a new object into te database.
@@ -153,7 +153,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         // Throw the event.
         $event = new ActionEvent('commongateway.object.pre.create', ['object' => $object]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.pre.create');
-    }// end prePersist()
+    }//end prePersist()
 
     /**
      * Log and throw an event before we update an object into te database.
@@ -183,7 +183,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         // Throw the event.
         $event = new ActionEvent('commongateway.object.pre.update', ['object' => $object]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.pre.update');
-    }// end preUpdate()
+    }//end preUpdate()
 
     /**
      * Log and throw an event after we remove and object from te database.
@@ -211,7 +211,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         // Throw the event.
         $event = new ActionEvent('commongateway.object.post.delete', []);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.post.delete');
-    }// end postRemove()
+    }//end postRemove()
 
     /**
      * Log and throw an event after we put a new object into te database.
@@ -241,7 +241,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         // Throw the event.
         $event = new ActionEvent('commongateway.object.post.create', ['object' => $object]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.post.create');
-    }// end postPersist()
+    }//end postPersist()
 
     /**
      * Log and throw an event after we update an object into te database.
@@ -271,7 +271,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         // Throw the event.
         $event = new ActionEvent('commongateway.object.post.update', ['object' => $object]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.post.update');
-    }// end postUpdate()
+    }//end postUpdate()
 
     /**
      * Log and throw an event after we get an object from te database.
@@ -300,7 +300,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         // Throw the event.
         $event = new ActionEvent('commongateway.object.post.read', ['object' => $object]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.post.read');
-    }// end postLoad()
+    }//end postLoad()
 
     /**
      * Log and throw an event before we flush the entity manager.
@@ -321,7 +321,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         // Throw the event.
         $event = new ActionEvent('commongateway.object.pre.flush', []);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.pre.flush');
-    }// end preFlush()
+    }//end preFlush()
 
     /**
      * Log and throw an event after we flush the entity manager.
@@ -342,5 +342,5 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         // Throw the event.
         $event = new ActionEvent('commongateway.object.post.flush', []);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.post.flush');
-    }// end postFlush()
+    }//end postFlush()
 }

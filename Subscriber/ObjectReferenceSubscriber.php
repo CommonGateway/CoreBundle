@@ -41,7 +41,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     ) {
         $this->entityManager = $entityManager;
         $this->eavService = $eavService;
-    }// end __construct()
+    }//end __construct()
 
     /**
      * Gets the subscribed events.
@@ -54,7 +54,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
             Events::prePersist,
             Events::preUpdate,
         ];
-    }// end getSubscribedEvents()
+    }//end getSubscribedEvents()
 
     /**
      * Checks whether we should check attributes and entities for connections before we insert an object into the database.
@@ -97,7 +97,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
 
             return;
         }
-    }// end prePersist()
+    }//end prePersist()
 
     /**
      * Checks whether we should check attributes and entities for connections before we update an object in the database.
@@ -110,5 +110,5 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     {
         // We do the same stuff as during pre persist so we can just call that.
         $this->prePersist($args);
-    }// end preUpdate()
+    }//end preUpdate()
 }

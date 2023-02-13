@@ -169,7 +169,7 @@ class RequestService
         }
 
         return [];
-    }// end realRequestQueryAll()
+    }//end realRequestQueryAll()
 
     /**
      * This function adds a single query param to the given $vars array. ?$name=$value
