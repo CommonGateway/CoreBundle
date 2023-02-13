@@ -17,7 +17,7 @@ class ComposerUpdateCommand extends Command
     protected static $defaultName = 'commongateway:composer:update';
 
     /**
-     * @var InstallationService $installationService The installation service.
+     * @var InstallationService The installation service.
      */
     private InstallationService $installationService;
 

@@ -10,7 +10,7 @@ use CommonGateway\CoreBundle\Service\RequestService;
 class RequestCollectionHandler implements ActionHandlerInterface
 {
     /**
-     * @var RequestService $requestService The request service.
+     * @var RequestService The request service.
      */
     private RequestService $requestService;
 

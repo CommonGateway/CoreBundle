@@ -54,9 +54,9 @@ class AuthenticationService
         $this->parameterBag = $parameterBag;
         $this->fileService = new FileService();
     }//end __construct()
-    
+
     /**
-     * Todo
+     * Todo.
      *
      * @param Source $source
      *
@@ -79,9 +79,9 @@ class AuthenticationService
         );
         $this->fileService->removeFile($filename);
     }
-    
+
     /**
-     * Todo
+     * Todo.
      *
      * @param Source $source
      *
@@ -95,9 +95,9 @@ class AuthenticationService
             return 'RS512';
         }
     }
-    
+
     /**
-     * Todo
+     * Todo.
      *
      * @param string $algorithm
      * @param Source $source
@@ -115,9 +115,9 @@ class AuthenticationService
             return $this->convertRSAtoJWK($source);
         }
     }
-    
+
     /**
-     * Todo
+     * Todo.
      *
      * @param Source $source
      *
@@ -131,9 +131,9 @@ class AuthenticationService
             return $source->getId();
         }
     }
-    
+
     /**
-     * Todo
+     * Todo.
      *
      * @param Source $source
      *
@@ -152,7 +152,7 @@ class AuthenticationService
             'user_representation' => $this->parameterBag->get('app_name'),
         ]);
     }
-    
+
     /**
      * Create a JWT token from Component settings.
      *
@@ -223,9 +223,9 @@ class AuthenticationService
             $this->fileService->removeFile($config['verify']);
         }
     }
-    
+
     /**
-     * Todo
+     * Todo.
      *
      * @param Source $source
      *
@@ -247,11 +247,11 @@ class AuthenticationService
 
         return $body['access_token'];
     }
-    
+
     /**
-     * Todo
+     * Todo.
      *
-     * @param array $requestOptions
+     * @param array  $requestOptions
      * @param Source $source
      *
      * @return string
@@ -283,9 +283,9 @@ class AuthenticationService
 
         return 'hmac '.$websiteKey.':'.$hmac.':'.$nonce.':'.$time;
     }
-    
+
     /**
-     * Todo
+     * Todo.
      *
      * @param Source $source
      *
