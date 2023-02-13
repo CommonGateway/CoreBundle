@@ -3,6 +3,7 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
+use App\Entity\User;
 use DateTime;
 use GuzzleHttp\Client;
 use Jose\Component\Checker\AlgorithmChecker;
@@ -377,5 +378,36 @@ class AuthenticationService
         } else {
             throw new AuthenticationException('Unauthorized: The provided Authorization header is invalid', 401);
         }
+    }
+
+    /**
+     * Serializes a user to be used by the token authenticator
+     *
+     * @param User $user The user to be serialized
+     *
+     * @return array
+     */
+    public function serializeUser(User $user): array
+    {
+        $time = new \DateTime();
+        $expiry = new \DateTime("+{$this->getParameter('app_session_duration')} seconds");
+        $scopes = [];
+        foreach($user->getSecurityGroups() as $securityGroup) {
+            $scopes = array_merge($securityGroup->getScopes(), $scopes);
+        }
+
+        $payload = [
+            'userId' => $user->getId(),
+            'username' => $user->getEmail(),
+            'organization' => $user->getOrganisation()->getId()->toString(),
+            'locale' => $user->getLocale(),
+            'roles' => $scopes,
+            'session' => $this->session->getId(),
+            'iss' => $this->getParameter('app_url'),
+            'ias' => $time->getTimestamp(),
+            'exp' => $expiry->getTimestamp(),
+        ];
+
+        return $payload;
     }
 }
