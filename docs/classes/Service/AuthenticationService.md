@@ -27,6 +27,7 @@
 |[getJwtToken](#authenticationservicegetjwttoken)|Create a JWT token from Component settings.|
 |[getTokenFromUrl](#authenticationservicegettokenfromurl)||
 |[removeFiles](#authenticationserviceremovefiles)|Removes certificates and private keys from disk if they are not necessary anymore.|
+|[serializeUser](#authenticationserviceserializeuser)|Serializes a user to be used by the token authenticator|
 |[verifyJWTToken](#authenticationserviceverifyjwttoken)|Verifies the JWT token and returns the payload if the JWT token is valid.|
 
 
@@ -453,6 +454,33 @@ Removes certificates and private keys from disk if they are not necessary anymor
 **Return Values**
 
 `void`
+
+
+
+
+<hr />
+
+
+### AuthenticationService::serializeUser  
+
+**Description**
+
+```php
+public serializeUser (\User $user)
+```
+
+Serializes a user to be used by the token authenticator 
+
+ 
+
+**Parameters**
+
+* `(\User) $user`
+: The user to be serialized  
+
+**Return Values**
+
+`array`
 
 
 
