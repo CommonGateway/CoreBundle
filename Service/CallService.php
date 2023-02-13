@@ -325,8 +325,7 @@ class CallService
                 $pageCount++;
                 $response = $this->call($source, $endpoint, 'GET', $config);
                 $decodedResponse = $this->decodeResponse($source, $response);
-                if (
-                    $decodedResponse === [] ||
+                if (                    $decodedResponse === [] ||
                     isset($decodedResponse['results']) && $decodedResponse['results'] === [] ||
                     isset($decodedResponse['items']) && $decodedResponse['items'] == [] ||
                     isset($decodedResponse['page']) && $decodedResponse['page'] !== $pageCount - 1 ||

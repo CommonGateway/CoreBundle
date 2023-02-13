@@ -671,8 +671,7 @@ class RequestService
      */
     public function shouldWeUnsetEmbedded($result = null, ?array $accept, ?bool $isCollection = false)
     {
-        if (
-            isset($result) === true &&
+        if (            isset($result) === true &&
             (isset($accept) === true &&
                 in_array('application/json+ld', $accept) === false &&
                 in_array('application/ld+json', $accept) === false)

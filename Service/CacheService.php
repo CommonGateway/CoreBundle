@@ -164,7 +164,7 @@ class CacheService
     }
 
     /**
-     * Loop trough an collection and remove any vallues that no longer exists.
+     * Loop through a collection and remove any vallues that no longer exists.
      *
      * @param Collection $collection The collection to use.
      * @param string     $type       The (symfony) entity entity type.

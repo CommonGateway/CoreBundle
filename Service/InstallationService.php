@@ -582,8 +582,7 @@ class InstallationService
      */
     public function validateJsonAction(array $schema): bool
     {
-        if (
-            array_key_exists('$id', $schema) &&
+        if (            array_key_exists('$id', $schema) &&
             array_key_exists('$schema', $schema) &&
             $schema['$schema'] == 'https://json-schema.org/draft/2020-12/action' &&
             array_key_exists('listens', $schema) &&
@@ -604,8 +603,7 @@ class InstallationService
      */
     public function validateJsonMapping(array $schema): bool
     {
-        if (
-            array_key_exists('$id', $schema) &&
+        if (            array_key_exists('$id', $schema) &&
             array_key_exists('$schema', $schema) &&
             $schema['$schema'] == 'https://json-schema.org/draft/2020-12/mapping'
         ) {
@@ -624,8 +622,7 @@ class InstallationService
      */
     public function validateJsonSchema(array $schema): bool
     {
-        if (
-            array_key_exists('$id', $schema) &&
+        if (            array_key_exists('$id', $schema) &&
             array_key_exists('$schema', $schema) &&
             $schema['$schema'] == 'https://json-schema.org/draft/2020-12/schema' &&
             array_key_exists('type', $schema) &&
