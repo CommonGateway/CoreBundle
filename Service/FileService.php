@@ -14,7 +14,7 @@ use Psr\Log\LoggerInterface;
 class FileService
 {
     /**
-     * @var LoggerInterface
+     * @var LoggerInterface The logger interface.
      */
     private LoggerInterface $logger;
 
@@ -44,7 +44,7 @@ class FileService
     /**
      * @param $filename The name of the file to remove
      *
-     * @return void
+     * @return void Nothing.
      */
     public function removeFile($filename): void
     {

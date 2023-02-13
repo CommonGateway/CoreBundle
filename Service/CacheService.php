@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use MongoDB\Client;
+use MongoDB\Collection;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
@@ -31,43 +32,43 @@ use Symfony\Component\Serializer\SerializerInterface;
 class CacheService
 {
     /**
-     * @var Client
+     * @var Client The MongoDB client.
      */
     private Client $client;
 
     /**
-     * @var EntityManagerInterface
+     * @var EntityManagerInterface The entity manager.
      */
     private EntityManagerInterface $entityManager;
 
     /**
-     * @var CacheInterface
+     * @var CacheInterface Symfony AdapterInterface as CacheInterface.
      */
     private CacheInterface $cache;
 
     /**
-     * @var ParameterBagInterface
+     * @var ParameterBagInterface The environmental values.
      */
     private ParameterBagInterface $parameters;
 
     /**
-     * @var SerializerInterface
+     * @var SerializerInterface The serializer.
      */
     private SerializerInterface $serializer;
 
     /**
-     * @var LoggerInterface
+     * @var LoggerInterface The logger interface.
      */
     private LoggerInterface $logger;
 
     /**
      * Setting up the base class with required services.
      *
-     * @param EntityManagerInterface $entityManager The EntityManagerInterface
-     * @param CacheInterface         $cache         The CacheInterface
-     * @param ParameterBagInterface  $parameters    The ParameterBagInterface
-     * @param SerializerInterface    $serializer    The SerializerInterface
-     * @param LoggerInterface        $cacheLogger   The LoggerInterface
+     * @param EntityManagerInterface $entityManager The EntityManagerInterface.
+     * @param CacheInterface         $cache         The CacheInterface.
+     * @param ParameterBagInterface  $parameters    The ParameterBagInterface.
+     * @param SerializerInterface    $serializer    The SerializerInterface.
+     * @param LoggerInterface        $cacheLogger   The LoggerInterface.
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -81,15 +82,15 @@ class CacheService
         $this->parameters = $parameters;
         $this->serializer = $serializer;
         $this->logger = $cacheLogger;
-        if ($this->parameters->get('cache_url', false) === true) {
+        if (empty($this->parameters->get('cache_url', false)) === false) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }
     }//end __construct()
 
     /**
-     * Remove non-exisitng items from the cashe.
+     * Remove non-existing items from the cache.
      *
-     * @return void
+     * @return void Nothing.
      */
     public function cleanup()
     {
@@ -103,13 +104,13 @@ class CacheService
     /**
      * Throws all available objects into the cache.
      *
-     * @return void
+     * @return void Nothing.
      */
     public function warmup()
     {
         $this->logger->debut('Connecting to'.$this->parameters->get('cache_url'));
 
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             $this->logger->error('No cache client found, halting warmup');
 
@@ -165,16 +166,17 @@ class CacheService
     /**
      * Loop trough an collection and remove any vallues that no longer exists.
      *
-     * @param \MongoDB\Collection $collection The collection to use
-     * @param string              $type       The (symfony) entity entity type
+     * @param Collection    $collection The collection to use.
+     * @param string        $type       The (symfony) entity entity type.
      *
-     * @return void
+     * @return void Nothing.
      */
-    private function removeDataFromCache(\MongoDB\Collection $collection, string $type): void
+    private function removeDataFromCache(Collection $collection, string $type): void
     {
         $endpoints = $collection->find()->toArray();
         foreach ($endpoints as $endpoint) {
-            if ($this->entityManager->find($type, $endpoint['id']) === false) {
+            $symfonyObject = $this->entityManager->find($type, $endpoint['id']);
+            if (empty($symfonyObject) === true) {
                 $this->logger->info("removing {$endpoint['id']} from cache", ['type' => $type, 'id' => $endpoint['id']]);
                 $collection->findOneAndDelete(['id' => $endpoint['id']]);
             }
@@ -184,18 +186,18 @@ class CacheService
     /**
      * Put a single object into the cache.
      *
-     * @param ObjectEntity $objectEntity ObjectEntity
+     * @param ObjectEntity $objectEntity The ObjectEntity to cache.
      *
-     * @return ObjectEntity
+     * @return ObjectEntity The cached ObjectEntity.
      */
     public function cacheObject(ObjectEntity $objectEntity): ObjectEntity
     {
         // For when we can't generate a schema for an ObjectEntity (for example setting an id on ObjectEntity created with testData).
-        if ($objectEntity->getEntity() === false) {
+        if (empty($objectEntity->getEntity()) === true) {
             return $objectEntity;
         }
 
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return $objectEntity;
         }
@@ -236,13 +238,13 @@ class CacheService
     /**
      * Removes an object from the cache.
      *
-     * @param ObjectEntity $object ObjectEntity
+     * @param ObjectEntity $object The ObjectEntity to remove.
      *
-     * @return void
+     * @return void Nothing.
      */
     public function removeObject(ObjectEntity $object): void
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return;
         }
@@ -258,13 +260,13 @@ class CacheService
     /**
      * Get a single object from the cache.
      *
-     * @param string $id The id of the object
+     * @param string $id The id of the object.
      *
-     * @return array|null
+     * @return mixed The ObjectEntity as an array or false.
      */
     public function getObject(string $id)
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return false;
         }
@@ -272,14 +274,16 @@ class CacheService
         $collection = $this->client->objects->json;
 
         // Check if object is in the cache ????
-        if ($object = $collection->findOne(['_id' => $id]) === true) {
+        $object = $collection->findOne(['_id' => $id]);
+        if (empty($object) === false) {
             $this->logger->debug('Retrieved object from cache', ['object' => $id]);
 
             return $object;
         }
 
-        // Fall back tot the entity manager.
-        if ($object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]) === true) {
+        // Fall back to the entity manager.
+        $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
+        if ($object instanceof ObjectEntity === true) {
             $this->logger->debug('Could not retrieve object from cache', ['object' => $id]);
 
             return $this->cacheObject($object)->toArray(['embedded' => true]);
@@ -289,21 +293,20 @@ class CacheService
 
         return false;
     }
-
+    
     /**
-     * Searches the object store for objects containing the search string.
+     * Searches the cache for objects containing the search string.
      *
-     * @param string $search   a string to search for within the given context
-     * @param array  $filter   an array of dot.notation filters for wich to search with
-     * @param array  $entities schemas to limit te search to
+     * @param string|null $search a string to search for within the given context.
+     * @param array $filter an array of dot notation filters for which to search with.
+     * @param array $entities schemas to limit te search to.
      *
-     * @throws Exception
-     *
-     * @return array|null
+     * @return array|null The objects found.
+     * @throws Exception A basic Exception.
      */
     public function searchObjects(string $search = null, array $filter = [], array $entities = []): ?array
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return [];
         }
@@ -326,7 +329,7 @@ class CacheService
 
         // Search for the correct entity / entities.
         // todo: make this if into a function?
-        if (empty($entities) === true) {
+        if (empty($entities) === false) {
             foreach ($entities as $entity) {
                 // todo: disable this for now, put back later!
 //                $orderError = $this->handleOrderCheck($entity, $completeFilter['_order'] ?? null);
@@ -366,22 +369,22 @@ class CacheService
     }
 
     /**
-     * Make sure we still support the old query params. By translating them to the new ones with _.
+     * Make sure we still support the old query params. By translating them to the new ones starting with _.
      *
-     * @param array $filter THe appliad filter
+     * @param array $filter The applied filter.
      *
-     * @return void
+     * @return void Nothing.
      */
     private function queryBackwardsCompatibility(array &$filter)
     {
         $oldParameters = ['start', 'offset', 'limit', 'page', 'extend', 'search', 'order', 'fields'];
 
         foreach ($oldParameters as $oldParameter) {
-            // We don't need to do anything if the old parameters wasn't used or the new one is used
+            // We don't need to do anything if the old parameters wasn't used or the new one is used.
             if (isset($filter[$oldParameter]) === false || isset($filter['_'.$oldParameter]) === true) {
                 continue;
             }
-            // But if we end up here we need to come into action
+            // But if we end up here we need to come into action.
             $filter['_'.$oldParameter] = $filter[$oldParameter];
             unset($filter[$oldParameter]);
         }
@@ -390,14 +393,14 @@ class CacheService
     /**
      * Handles a single filter used on a get collection api call. This function makes sure special filters work correctly.
      *
-     * @param string $key   The key
-     * @param string $value The value
+     * @param string $key   The key.
+     * @param mixed $value The value.
      *
-     * @throws Exception
+     * @throws Exception A basic Exception.
      *
-     * @return void
+     * @return void Nothing.
      */
-    private function handleFilter($key, &$value)
+    private function handleFilter(string $key, &$value)
     {
         if (substr($key, 0, 1) === '_') {
             // Todo: deal with filters starting with _ like: _dateCreated.
@@ -436,17 +439,19 @@ class CacheService
 
     /**
      * Handles a single filter used on a get collection api call. Specifically an filter where the value is an array.
+     * Todo: make code in this function abstract or split it into multiple functions.
      *
-     * @param string       $key   The key
-     * @param string|array $value The value
+     * @param string       $key   The key.
+     * @param string|array $value The value.
      *
-     * @throws Exception
+     * @throws Exception A basic Exception.
      *
-     * @return bool
+     * @return bool Returns true if $value is an array with the correct structure, and we can deal with the specific filter.
+     * Returns false if $value is not an array, or if $value is structured incorrectly for the filters we handle here.
      */
     private function handleFilterArray($key, &$value): bool
     {
-        // Lets check for the methods like in
+        // Lets check for the methods like in.
         if (is_array($value) === true) {
             // int_compare
             if (array_key_exists('int_compare', $value) && is_array($value['int_compare'])) {
@@ -466,7 +471,7 @@ class CacheService
             }
             // After, before, strictly_after,strictly_before (after, before, strictly_after,strictly_before).
             if (empty(array_intersect_key($value, array_flip(['after', 'before', 'strictly_after', 'strictly_before']))) === false) {
-                // Compare datetime
+                // Compare datetime.
                 if (empty(array_intersect_key($value, array_flip(['after', 'strictly_after']))) === false) {
                     $after = array_key_exists('strictly_after', $value) ? 'strictly_after' : 'after';
                     $compareDate = new DateTime($value[$after]);
@@ -482,7 +487,7 @@ class CacheService
             }
             // Like (like).
             if (array_key_exists('like', $value) === true && is_array($value['like']) === true) {
-                //$value = array_map('like', $value['like']);
+                //$value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('like', $value) === true) {
                 $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value['like']);
                 $value = ['$regex' => ".*$value.*", '$options' => 'im'];
@@ -554,7 +559,7 @@ class CacheService
                 return true;
             }
 
-            // Handle filter value = array (example: ?property=a,b,c) also works if the property we are filtering on is an array
+            // Handle filter value = array (example: ?property=a,b,c) also works if the property we are filtering on is an array.
             $value = ['$in' => $value];
 
             return true;
@@ -568,7 +573,7 @@ class CacheService
      * Uses ObjectEntityRepository->getOrderParameters() to check if we are allowed to order, see eavService->handleSearch() $orderCheck.
      *
      * @param Entity           $entity The entity we are going to check for allowed attributes to order on.
-     * @param mixed|array|null $order  The order query param, should be an array or null. (but could be a string)
+     * @param mixed|array|null $order  The order query param, should be an array or null. (but could be a string).
      *
      * @return string|null Returns null if given order query param is correct/allowed or when it is not present. Else an error message.
      */
@@ -589,11 +594,11 @@ class CacheService
             $message = 'Only one order query param at the time is allowed.';
         }
 
-        if (is_array($order) === true && !in_array(strtoupper(array_values($order)[0]), ['DESC', 'ASC'])) {
+        if (is_array($order) === true && in_array(strtoupper(array_values($order)[0]), ['DESC', 'ASC']) === false) {
             $message = 'Please use desc or asc as value for your order query param, not: '.array_values($order)[0];
         }
 
-        if (is_array($order) === true && !in_array(array_keys($order)[0], $orderCheck)) {
+        if (is_array($order) === true && in_array(array_keys($order)[0], $orderCheck) === false) {
             $orderCheckStr = implode(', ', $orderCheck);
             $message = 'Unsupported order query parameter ('.array_keys($order)[0].'). Supported order query parameters: '.$orderCheckStr;
         }
@@ -641,11 +646,11 @@ class CacheService
      * the _search query is present in $completeFilter query params, then we use that instead.
      * _search query param supports filtering on specific properties with ?_search[property1,property2]=value.
      *
-     * @param array       $filter         The filter
-     * @param array       $completeFilter The complete filer
-     * @param string|null $search         The thing you are searching for
+     * @param array       $filter         The filter.
+     * @param array       $completeFilter The complete filer.
+     * @param string|null $search         The thing you are searching for.
      *
-     * @return void
+     * @return void Nothing.
      */
     private function handleSearch(array &$filter, array $completeFilter, ?string $search)
     {
@@ -665,7 +670,7 @@ class CacheService
                 ];
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value.
-        elseif (is_array($search) === true) {
+        else if (is_array($search) === true) {
             $searchRegex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $search[array_key_first($search)]);
             if (empty($searchRegex)) {
                 return;
@@ -682,13 +687,13 @@ class CacheService
     /**
      * Decides the pagination values.
      *
-     * @param int   $limit   The resulting limit
-     * @param int   $start   The resulting start value
-     * @param array $filters The filters
+     * @param int|null  $limit   The resulting limit.
+     * @param int|null  $start   The resulting start value.
+     * @param array     $filters The filters.
      *
-     * @return array
+     * @return array The filters array (unchanged).
      */
-    public function setPagination(&$limit, &$start, array $filters): array
+    public function setPagination(?int &$limit, ?int &$start, array $filters): array
     {
         $limit = 30;
         if (isset($filters['_limit']) === true) {
@@ -696,9 +701,11 @@ class CacheService
         }
 
         $start = 0;
-        if (isset($filters['_start']) === true || isset($filters['_offset']) === true) {
-            $start = isset($filters['_start']) ? intval($filters['_start']) : intval($filters['_offset']);
-        } elseif (isset($filters['_page']) === true) {
+        if (isset($filters['_start']) === true) {
+            $start = intval($filters['_start']);
+        } else if (isset($filters['_offset']) === true) {
+            $start = intval($filters['_offset']);
+        } else if (isset($filters['_page']) === true) {
             $start = (intval($filters['_page']) - 1) * $limit;
         }
 
@@ -708,9 +715,9 @@ class CacheService
     /**
      * Adds pagination variables to an array with the results we found with searchObjects().
      *
-     * @param array $filter  The filters
-     * @param array $results The results
-     * @param int   $total   The total
+     * @param array $filter  The filters.
+     * @param array $results The results.
+     * @param int   $total   The total.
      *
      * @return array the result with pagination.
      */
@@ -742,13 +749,13 @@ class CacheService
     /**
      * Put a single endpoint into the cache.
      *
-     * @param Endpoint $endpoint The endpoint
+     * @param Endpoint $endpoint The endpoint to cache.
      *
-     * @return Endpoint
+     * @return Endpoint The cached endpoint.
      */
     public function cacheEndpoint(Endpoint $endpoint): Endpoint
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return $endpoint;
         }
@@ -767,10 +774,11 @@ class CacheService
         $endpointArray = $this->serializer->normalize($endpoint);
 
         if ($collection->findOneAndReplace(
-            ['id' => $endpoint->getId()->toString()],
-            $endpointArray,
-            ['upsert'=>true]
-        )) {
+                ['id' => $endpoint->getId()->toString()],
+                $endpointArray,
+                ['upsert'=>true]
+            ) === true
+        ) {
             $this->logger->debug('Updated endpoint '.$endpoint->getId()->toString().' to cache');
         } else {
             $this->logger->debug('Wrote object '.$endpoint->getId()->toString().' to cache');
@@ -782,13 +790,13 @@ class CacheService
     /**
      * Removes an endpoint from the cache.
      *
-     * @param Endpoint $endpoint The endpoint
+     * @param Endpoint $endpoint The endpoint to remove.
      *
-     * @return void
+     * @return void Nothing.
      */
     public function removeEndpoint(Endpoint $endpoint): void
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (!isset($this->client)) {
             return;
         }
@@ -801,40 +809,46 @@ class CacheService
     /**
      * Get a single endpoint from the cache.
      *
-     * @param Uuid $id The uuid of the endpoint
+     * @param string $id The uuid of the endpoint.
      *
-     * @return array|null
+     * @return array|null The Endpoint as an array, empty array or null.
      */
     public function getEndpoint(string $id): ?array
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (!isset($this->client)) {
             return [];
         }
 
         $collection = $this->client->endpoints->json;
-
-        if ($object = $collection->findOne(['id' => $id])) {
+        
+        $object = $collection->findOne(['id' => $id]);
+        if (empty($object) === false) {
             return $object;
         }
-
-        if ($object = $this->entityManager->getRepository('App:Endpoint')->find($id)) {
+    
+        $object = $this->entityManager->getRepository('App:Endpoint')->find($id);
+        if ($object instanceof Endpoint === true) {
             return $this->serializer->normalize($object);
         }
+    
+        $this->logger->error('Endpoint does not seem to exist', ['endpoint' => $id]);
 
         return null;
     }
 
     /**
-     * @param array $filter The applied filter
+     * Get endpoints from cache.
      *
-     * @return Endpoint|null
+     * @param array $filter The applied filter.
+     *
+     * @return Endpoint|null Todo this should probably be array or something?
      */
     public function getEndpoints(array $filter): ?Endpoint
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
-            return [];
+            return null;
         }
 
         $collection = $this->client->endpoints->json;
@@ -865,13 +879,13 @@ class CacheService
     /**
      * Put a single schema into the cache.
      *
-     * @param Entity $entity The Entity
+     * @param Entity $entity The Entity to cache.
      *
-     * @return Entity
+     * @return Entity The cached Entity.
      */
     public function cacheShema(Entity $entity): Entity
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return $entity;
         }
@@ -901,15 +915,15 @@ class CacheService
     }
 
     /**
-     * Removes an Schema from the cache.
+     * Removes a Schema from the cache.
      *
-     * @param Entity $entity The entity
+     * @param Entity $entity The entity to remove from cache.
      *
-     * @return void
+     * @return void Nothing.
      */
     public function removeSchema(Entity $entity): void
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return;
         }
@@ -920,17 +934,19 @@ class CacheService
     /**
      * Get a single schema from the cache.
      *
-     * @param Uuid $id The uuid of the schema
+     * @param string $id The uuid of the schema
      *
-     * @return array|null
+     * @return array|null An Entity as array or null.
      */
-    public function getSchema(Uuid $id): ?array
+    public function getSchema(string $id): ?array
     {
-        // Backwards compatablity
+        // Backwards compatibility.
         if (isset($this->client) === false) {
-            return [];
+            return null;
         }
 
         $collection = $this->client->schemas->json;
+        
+        return null;
     }
 }

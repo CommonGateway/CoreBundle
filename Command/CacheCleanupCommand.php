@@ -11,17 +11,17 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class CacheCleanupCommand extends Command
 {
     /**
-     * @var string
+     * @var string The name of the command (the part after "bin/console").
      */
     protected static $defaultName = 'commongateway:cache:cleanup';
 
     /**
-     * @var CacheService
+     * @var CacheService $cacheService The cache service.
      */
-    private $cacheService;
+    private CacheService $cacheService;
 
     /**
-     * @param CacheService $cacheService The cache serice
+     * @param CacheService $cacheService The cache service.
      */
     public function __construct(CacheService $cacheService)
     {
@@ -30,7 +30,7 @@ class CacheCleanupCommand extends Command
     }//end __construct()
 
     /**
-     * @return void
+     * @return void Nothing.
      */
     protected function configure(): void
     {
@@ -40,10 +40,10 @@ class CacheCleanupCommand extends Command
     }//end configure()
 
     /**
-     * @param InputInterface  $input  Symfony style
-     * @param OutputInterface $output Symfony style
+     * @param InputInterface  $input  Symfony style input.
+     * @param OutputInterface $output Symfony style output.
      *
-     * @return int Succes or failure of the command
+     * @return int Succes (0) or failure (1) of the command.
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {

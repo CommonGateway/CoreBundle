@@ -33,12 +33,12 @@ use Symfony\Component\Serializer\SerializerInterface;
 class RequestService
 {
     /**
-     * @var EntityManagerInterface
+     * @var EntityManagerInterface The entity manager.
      */
     private EntityManagerInterface $entityManager;
 
     /**
-     * @var CacheService
+     * @var CacheService $cacheService The cache service.
      */
     private CacheService $cacheService;
 
@@ -80,7 +80,7 @@ class RequestService
     private ObjectEntityService $objectEntityService;
 
     /**
-     * @var LoggerInterface
+     * @var LoggerInterface The logger interface.
      */
     private LoggerInterface $logger;
 
@@ -100,7 +100,7 @@ class RequestService
     private EventDispatcherInterface $eventDispatcher;
 
     /**
-     * @var SerializerInterface
+     * @var SerializerInterface The serializer.
      */
     private SerializerInterface $serializer;
 
@@ -278,7 +278,7 @@ class RequestService
      * @param string $nameKey The full $name of the query param, unless it contains [] like: ?queryParam[$nameKey]=$value
      * @param string $value   The full $value of the query param, like this: ?$name=$value
      *
-     * @return void
+     * @return void Nothing.
      */
     private function recursiveRequestQueryKey(array &$vars, string $name, string $nameKey, string $value)
     {
@@ -705,7 +705,7 @@ class RequestService
      * @param array $result
      * @param array $metadataSelf
      *
-     * @return void
+     * @return void Nothing.
      */
     private function handleMetadataSelf(&$result, array $metadataSelf)
     {

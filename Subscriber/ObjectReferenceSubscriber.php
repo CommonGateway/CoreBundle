@@ -25,7 +25,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     private EavService $eavService;
 
     /**
-     * @var EntityManagerInterface
+     * @var EntityManagerInterface The entity manager.
      */
     private EntityManagerInterface $entityManager;
 
@@ -57,7 +57,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args
      *
-     * @return void
+     * @return void Nothing.
      */
     public function prePersist(LifecycleEventArgs $args): void
     {
@@ -98,7 +98,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     /**
      * @param LifecycleEventArgs $args
      *
-     * @return void
+     * @return void Nothing.
      */
     public function preUpdate(LifecycleEventArgs $args): void
     {

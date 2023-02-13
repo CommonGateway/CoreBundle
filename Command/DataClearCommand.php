@@ -14,44 +14,36 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 class DataClearCommand extends Command
 {
     /**
-     * @var string
+     * @var string The name of the command (the part after "bin/console").
      */
     protected static $defaultName = 'commongateway:data:clear';
 
     /**
-     * @var CacheService
+     * @var EntityManagerInterface The entity manager.
      */
-    private $cacheService;
+    private EntityManagerInterface $entityManager;
 
     /**
-     * @var EntityManagerInterface
-     */
-    private EntityManagerInterface $entityManagerInterface;
-
-    /**
-     * @var ParameterBagInterface
+     * @var ParameterBagInterface The environmental values.
      */
     private ParameterBagInterface $parameterBagInterface;
 
     /**
-     * @param CacheService           $cacheService           The cache servie
-     * @param EntityManagerInterface $entityManagerInterface The entity manager
-     * @param ParameterBagInterface  $parameterBagInterface  The environmental values
+     * @param EntityManagerInterface $entityManagerInterface The entity manager.
+     * @param ParameterBagInterface  $parameterBagInterface  The environmental values.
      */
     public function __construct(
-        CacheService $cacheService,
         EntityManagerInterface $entityManagerInterface,
         ParameterBagInterface $parameterBagInterface
     ) {
-        $this->cacheService = $cacheService;
-        $this->entitymanager = $entityManagerInterface;
+        $this->entityManager = $entityManagerInterface;
         $this->parameterBagInterface = $parameterBagInterface;
 
         parent::__construct();
     }//end __construct()
 
     /**
-     * @return void
+     * @return void Nothing.
      */
     protected function configure(): void
     {
@@ -61,10 +53,10 @@ class DataClearCommand extends Command
     }
 
     /**
-     * @param InputInterface  $input  Symfony style
-     * @param OutputInterface $output Symfony style
+     * @param InputInterface  $input  Symfony style input.
+     * @param OutputInterface $output Symfony style output.
      *
-     * @return int Succes or failure of the command
+     * @return int Succes (0) or failure (1) of the command.
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -86,7 +78,7 @@ class DataClearCommand extends Command
             return Command::FAILURE;
         }
 
-        $objects = $this->entitymanager->getRepository('App:ObjectEntity')->findAll();
+        $objects = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
 
         $io->writeln('Found '.count($objects).' objects');
 
@@ -102,12 +94,12 @@ class DataClearCommand extends Command
             $progressBar->advance();
 
             // You can also advance the progress bar by more than 1 unit.
-            $this->entitymanager->remove($object);
+            $this->entityManager->remove($object);
         }
 
         // Ensures that the progress bar is at 100%.
         $progressBar->finish();
-        $this->entitymanager->flush();
+        $this->entityManager->flush();
 
         $io->writeln('');
         $io->success('All done');

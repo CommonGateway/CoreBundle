@@ -10,12 +10,12 @@ use CommonGateway\CoreBundle\Service\RequestService;
 class RequestSearchHandler implements ActionHandlerInterface
 {
     /**
-     * @var RequestService
+     * @var RequestService $requestService The request service.
      */
     private RequestService $requestService;
 
     /**
-     * @param RequestService $requestService The request service
+     * @param RequestService $requestService The request service.
      */
     public function __construct(RequestService $requestService)
     {

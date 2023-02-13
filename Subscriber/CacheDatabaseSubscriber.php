@@ -22,12 +22,12 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 class CacheDatabaseSubscriber implements EventSubscriberInterface
 {
     /**
-     * @var CacheService
+     * @var CacheService $cacheService The cache service.
      */
     private CacheService $cacheService;
 
     /**
-     * @var EntityManagerInterface
+     * @var EntityManagerInterface The entity manager.
      */
     private EntityManagerInterface $entityManager;
 
@@ -66,7 +66,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
     /**
      * @param LifecycleEventArgs $args LifecycleEventArgs
      *
-     * @return void
+     * @return void Nothing.
      */
     public function postUpdate(LifecycleEventArgs $args): void
     {
@@ -78,7 +78,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args LifecycleEventArgs
      *
-     * @return void
+     * @return void Nothing.
      */
     public function postPersist(LifecycleEventArgs $args): void
     {
@@ -104,7 +104,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
     /**
      * @param LifecycleEventArgs $args LifecycleEventArgs
      *
-     * @return void
+     * @return void Nothing.
      */
     public function preUpdate(LifecycleEventArgs $args): void
     {
@@ -114,7 +114,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
     /**
      * @param LifecycleEventArgs $args LifecycleEventArgs
      *
-     * @return void
+     * @return void Nothing.
      */
     public function prePersist(LifecycleEventArgs $args): void
     {
@@ -130,7 +130,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args LifecycleEventArgs
      *
-     * @return void
+     * @return void Nothing.
      */
     public function preRemove(LifecycleEventArgs $args): void
     {

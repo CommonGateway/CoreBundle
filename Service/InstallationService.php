@@ -33,7 +33,7 @@ class InstallationService
     private ComposerService $composerService;
 
     /**
-     * @var EntityManagerInterface
+     * @var EntityManagerInterface The entity manager.
      */
     private EntityManagerInterface $em;
 
@@ -50,12 +50,12 @@ class InstallationService
     private $container;
 
     /**
-     * @var LoggerInterface
+     * @var LoggerInterface The logger interface.
      */
     private LoggerInterface $logger;
 
     /**
-     * @var CacheService
+     * @var CacheService $cacheService The cache service.
      */
     private CacheService $cacheService;
 
@@ -134,7 +134,7 @@ class InstallationService
     /**
      * Validates the  objects in the EAV setup.
      *
-     * @return void
+     * @return void Nothing.
      */
     public function validateObjects(): int
     {
@@ -157,7 +157,7 @@ class InstallationService
     /**
      * Validates the  objects in the EAV setup.
      *
-     * @return void
+     * @return void Nothing.
      */
     public function validateValues(): int
     {
@@ -176,7 +176,7 @@ class InstallationService
     /**
      * Validates the schemas in the EAV setup.
      *
-     * @return void
+     * @return void Nothing.
      */
     public function validateSchemas(): int
     {

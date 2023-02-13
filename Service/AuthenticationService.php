@@ -35,17 +35,17 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
 class AuthenticationService
 {
     /**
-     * @var ParameterBagInterface
+     * @var ParameterBagInterface The environmental values.
      */
     private ParameterBagInterface $parameterBag;
 
     /**
-     * @var FileService
+     * @var FileService The file service.
      */
     private FileService $fileService;
 
     /**
-     * @var LoggerInterface
+     * @var LoggerInterface The logger interface.
      */
     private LoggerInterface $logger;
 
@@ -54,9 +54,11 @@ class AuthenticationService
         $this->parameterBag = $parameterBag;
         $this->fileService = new FileService();
     }//end __construct()
-
+    
     /**
-     * @param array $component
+     * Todo
+     *
+     * @param Source $source
      *
      * @return JWK
      */
@@ -77,7 +79,14 @@ class AuthenticationService
         );
         $this->fileService->removeFile($filename);
     }
-
+    
+    /**
+     * Todo
+     *
+     * @param Source $source
+     *
+     * @return string
+     */
     public function getAlgorithm(Source $source): string
     {
         if ($source->getAuth() == 'jwt-HS256' || $source->getAuth() == 'jwt') {
@@ -86,7 +95,15 @@ class AuthenticationService
             return 'RS512';
         }
     }
-
+    
+    /**
+     * Todo
+     *
+     * @param string $algorithm
+     * @param Source $source
+     *
+     * @return JWK
+     */
     public function getJWK(string $algorithm, Source $source): JWK
     {
         if ($algorithm == 'HS256') {
@@ -98,7 +115,14 @@ class AuthenticationService
             return $this->convertRSAtoJWK($source);
         }
     }
-
+    
+    /**
+     * Todo
+     *
+     * @param Source $source
+     *
+     * @return string
+     */
     public function getApplicationId(Source $source): string
     {
         if ($source->getJwtId()) {
@@ -107,7 +131,14 @@ class AuthenticationService
             return $source->getId();
         }
     }
-
+    
+    /**
+     * Todo
+     *
+     * @param Source $source
+     *
+     * @return string
+     */
     public function getJwtPayload(Source $source): string
     {
         $now = new DateTime('now');
@@ -121,12 +152,13 @@ class AuthenticationService
             'user_representation' => $this->parameterBag->get('app_name'),
         ]);
     }
-
+    
     /**
      * Create a JWT token from Component settings.
      *
-     * @param array $component The code of the component
-     * @param string The JWT token
+     * @param Source $source
+     *
+     * @return string The JWT token.
      */
     public function getJwtToken(Source $source): string
     {
@@ -152,9 +184,9 @@ class AuthenticationService
     /**
      * Writes the certificate and ssl keys to disk, returns the filenames.
      *
-     * @param array $config The configuration as stored in the source
+     * @param array $config The configuration as stored in the source.
      *
-     * @return array The overrides on the configuration with filenames instead of certificate contents
+     * @return array The overrides on the configuration with filenames instead of certificate contents.
      */
     public function getCertificate(array $config): array
     {
@@ -175,9 +207,9 @@ class AuthenticationService
     /**
      * Removes certificates and private keys from disk if they are not necessary anymore.
      *
-     * @param array $config The configuration with filenames
+     * @param array $config The configuration with filenames.
      *
-     * @return void
+     * @return void Nothing.
      */
     public function removeFiles(array $config): void
     {
@@ -191,7 +223,14 @@ class AuthenticationService
             $this->fileService->removeFile($config['verify']);
         }
     }
-
+    
+    /**
+     * Todo
+     *
+     * @param Source $source
+     *
+     * @return string
+     */
     public function getTokenFromUrl(Source $source): string
     {
         $guzzleConfig = array_merge($source->getConfiguration(), [
@@ -208,7 +247,15 @@ class AuthenticationService
 
         return $body['access_token'];
     }
-
+    
+    /**
+     * Todo
+     *
+     * @param array $requestOptions
+     * @param Source $source
+     *
+     * @return string
+     */
     public function getHmacToken(array $requestOptions, Source $source): string
     {
         // todo: what if we don't have a body, method or url in $requestOptions?
@@ -236,7 +283,14 @@ class AuthenticationService
 
         return 'hmac '.$websiteKey.':'.$hmac.':'.$nonce.':'.$time;
     }
-
+    
+    /**
+     * Todo
+     *
+     * @param Source $source
+     *
+     * @return array
+     */
     public function getAuthentication(Source $source): array
     {
         $requestOptions = [];
@@ -279,9 +333,9 @@ class AuthenticationService
     /**
      * Decides if the provided JWT token is signed with the RS512 Algorithm.
      *
-     * @param JWT $token The token provided by the user
+     * @param JWT $token The token provided by the user.
      *
-     * @return bool Whether the token is in HS256 or not
+     * @return bool Whether the token is in HS256 or not.
      */
     public function checkRS512(JWT $token)
     {
@@ -299,9 +353,9 @@ class AuthenticationService
     /**
      * Decides if the provided JWT token is signed with the HS256 Algorithm.
      *
-     * @param JWT $token The token provided by the user
+     * @param JWT $token The token provided by the user.
      *
-     * @return bool Whether the token is in HS256 or not
+     * @return bool Whether the token is in HS256 or not.
      */
     public function checkHS256(JWT $token)
     {
@@ -319,10 +373,10 @@ class AuthenticationService
     /**
      * Checks the algorithm of the JWT token and decides how to generate a JWK from the provided public key.
      *
-     * @param JWT    $token     The JWT token sent by the user
-     * @param string $publicKey The public key provided by the application
+     * @param JWT    $token     The JWT token sent by the user.
+     * @param string $publicKey The public key provided by the application.
      *
-     * @return JWK The resulting JWK for verifying the JWT
+     * @return JWK The resulting JWK for verifying the JWT.
      */
     public function checkHeadersAndGetJWK(JWT $token, string $publicKey): JWK
     {
@@ -348,12 +402,12 @@ class AuthenticationService
     /**
      * Verifies the JWT token and returns the payload if the JWT token is valid.
      *
-     * @param string $token     The token to verify
-     * @param string $publicKey The public key to verify the token to
+     * @param string $token     The token to verify.
+     * @param string $publicKey The public key to verify the token to.
      *
-     * @throws HttpException Thrown when the token cannot be verified
+     * @throws HttpException Thrown when the token cannot be verified.
      *
-     * @return array The payload of the token
+     * @return array The payload of the token.
      */
     public function verifyJWTToken(string $token, string $publicKey): array
     {

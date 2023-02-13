@@ -19,7 +19,7 @@ use Symfony\Component\Process\Process;
 class ComposerService
 {
     /**
-     * @var LoggerInterface
+     * @var LoggerInterface The logger interface.
      */
     private LoggerInterface $logger;
 

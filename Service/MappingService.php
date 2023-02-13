@@ -34,7 +34,7 @@ class MappingService
     private SessionInterface $session;
 
     /**
-     * @var LoggerInterface
+     * @var LoggerInterface The logger interface.
      */
     private LoggerInterface $logger;
 

@@ -30,12 +30,12 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
 {
     /**
-     * @var CacheService
+     * @var CacheService $cacheService The cache service.
      */
     private CacheService $cacheService;
 
     /**
-     * @var EntityManagerInterface
+     * @var EntityManagerInterface The entity manager.
      */
     private EntityManagerInterface $entityManager;
 
@@ -98,7 +98,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args LifecycleEventArgs
      *
-     * @return void
+     * @return void Nothing.
      */
     public function preRemove(LifecycleEventArgs $args): void
     {
@@ -128,7 +128,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args LifecycleEventArgs
      *
-     * @return void
+     * @return void Nothing.
      */
     public function prePersist(LifecycleEventArgs $args): void
     {
@@ -158,7 +158,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args LifecycleEventArgs
      *
-     * @return void
+     * @return void Nothing.
      */
     public function preUpdate(LifecycleEventArgs $args): void
     {
@@ -188,7 +188,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args LifecycleEventArgs
      *
-     * @return void
+     * @return void Nothing.
      */
     public function postRemove(LifecycleEventArgs $args): void
     {
@@ -216,7 +216,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args LifecycleEventArgs
      *
-     * @return void
+     * @return void Nothing.
      */
     public function postPersist(LifecycleEventArgs $args): void
     {
@@ -246,7 +246,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args LifecycleEventArgs
      *
-     * @return void
+     * @return void Nothing.
      */
     public function postUpdate(LifecycleEventArgs $args): void
     {
@@ -276,7 +276,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args LifecycleEventArgs
      *
-     * @return void
+     * @return void Nothing.
      */
     public function postLoad(LifecycleEventArgs $args): void
     {
@@ -305,7 +305,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args LifecycleEventArgs
      *
-     * @return void
+     * @return void Nothing.
      */
     public function preFlush(): void
     {
@@ -326,7 +326,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args LifecycleEventArgs
      *
-     * @return void
+     * @return void Nothing.
      */
     public function postFlush(): void
     {

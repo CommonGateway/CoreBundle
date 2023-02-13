@@ -34,22 +34,22 @@ class CallService
     private AuthenticationService $authenticationService;
 
     /**
-     * @var Client
+     * @var Client The MongoDB client.
      */
     private Client $client;
 
     /**
-     * @var EntityManagerInterface
+     * @var EntityManagerInterface The entity manager.
      */
     private EntityManagerInterface $entityManager;
 
     /**
-     * @var FileService
+     * @var FileService The file service.
      */
     private FileService $fileService;
 
     /**
-     * @var LoggerInterface
+     * @var LoggerInterface The logger interface.
      */
     private LoggerInterface $logger;
 
@@ -99,7 +99,7 @@ class CallService
      *
      * @param array $config The configuration with filenames
      *
-     * @return void
+     * @return void Nothing.
      */
     public function removeFiles(array $config): void
     {

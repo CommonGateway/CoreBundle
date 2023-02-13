@@ -5,17 +5,17 @@ namespace CommonGateway\CoreBundle\ActionHandler;
 use CommonGateway\CoreBundle\Service\RequestService;
 
 /**
- * Handlers the COLLECTION requests on an endpoint.
+ * Handles the COLLECTION requests on an endpoint.
  */
 class RequestCollectionHandler implements ActionHandlerInterface
 {
     /**
-     * @var RequestService
+     * @var RequestService $requestService The request service.
      */
     private RequestService $requestService;
 
     /**
-     * @param RequestService $requestService The request service
+     * @param RequestService $requestService The request service.
      */
     public function __construct(RequestService $requestService)
     {

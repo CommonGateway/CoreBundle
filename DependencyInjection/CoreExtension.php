@@ -12,14 +12,14 @@ class CoreExtension extends Extension
     /**
      * The basic symfony loaders.
      *
-     * Must config array, so unused $configs parameter is allowed as a design desicion
+     * Must config array, so unused $configs parameter is allowed as a design decision.
      *
      * @codeCoverageIgnore
      *
-     * @param array            $configs   The configuration (un used but required from the extend)
-     * @param ContainerBuilder $container The container
+     * @param array            $configs   The configuration (un used but required from the extend).
+     * @param ContainerBuilder $container The container.
      *
-     * @return void
+     * @return void Nothing.
      */
     public function load(array $configs, ContainerBuilder $container)
     {

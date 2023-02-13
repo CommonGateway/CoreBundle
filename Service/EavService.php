@@ -17,17 +17,17 @@ use Psr\Log\LoggerInterface;
 class EavService
 {
     /**
-     * @var EntityManagerInterface
+     * @var EntityManagerInterface The entity manager.
      */
     private EntityManagerInterface $entityManager;
 
     /**
-     * @var CacheService
+     * @var CacheService $cacheService The cache service.
      */
     private CacheService $cacheService;
 
     /**
-     * @var LoggerInterface
+     * @var LoggerInterface The logger interface.
      */
     private LoggerInterface $logger;
 
