@@ -488,7 +488,7 @@ Removes certificates and private keys from disk if they are not necessary anymor
 **Description**
 
 ```php
-public serializeUser (\User $user)
+public serializeUser (\User $user, \SessionInterface $session)
 ```
 
 Serializes a user to be used by the token authenticator. 
@@ -499,6 +499,8 @@ Serializes a user to be used by the token authenticator.
 
 * `(\User) $user`
 : The user to be serialized  
+* `(\SessionInterface) $session`
+: The session to use  
 
 **Return Values**
 
