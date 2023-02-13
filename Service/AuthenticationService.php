@@ -41,7 +41,7 @@ class AuthenticationService
      *
      * @param string $key The key to load
      *
-     * @return JWK
+     * @return JWK The resulting Json Web Key
      */
     public function convertRSAKeyToJWK(string $key): JWK
     {
@@ -61,7 +61,7 @@ class AuthenticationService
      *
      * @param Source $source
      *
-     * @return JWK
+     * @return JWK The resulting Json Web Key
      */
     public function convertRSAtoJWK(Source $source): JWK
     {
@@ -88,7 +88,7 @@ class AuthenticationService
      *
      * @param Source $source The source to determine the algorithm for
      *
-     * @return string
+     * @return string The algorithm to use
      */
     public function getAlgorithm(Source $source): string
     {
@@ -105,7 +105,7 @@ class AuthenticationService
      * @param string $algorithm
      * @param Source $source
      *
-     * @return JWK
+     * @return JWK The resulting Json Web Key
      */
     public function getJWK(string $algorithm, Source $source): JWK
     {
@@ -124,7 +124,7 @@ class AuthenticationService
      *
      * @param Source $source The source to dermine the application id for
      *
-     * @return string
+     * @return string The application ID to use
      */
     public function getApplicationId(Source $source): string
     {
@@ -140,7 +140,7 @@ class AuthenticationService
      *
      * @param Source $source The source to create a payload for
      *
-     * @return string
+     * @return string The JWT payload to use
      */
     public function getJwtPayload(Source $source): string
     {
@@ -164,7 +164,7 @@ class AuthenticationService
      * @param string $key     The private key to create a JWT token with
      * @param array  $payload The payload to create a JWT token with
      *
-     * @return string
+     * @return string The resulting JWT token
      */
     public function createJwtToken(string $key, array $payload): string
     {
@@ -186,8 +186,8 @@ class AuthenticationService
     /**
      * Create a JWT token from Component settings.
      *
-     * @param array $component The code of the component
-     * @param string The JWT token
+     * @param Source $source The source to authenticate to
+     * @return string The resulting JWT token
      */
     public function getJwtToken(Source $source): string
     {
@@ -438,7 +438,7 @@ class AuthenticationService
      * @param User             $user    The user to be serialized
      * @param SessionInterface $session The session to use
      *
-     * @return array
+     * @return array The serialized user
      */
     public function serializeUser(User $user, SessionInterface $session): array
     {
