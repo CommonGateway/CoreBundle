@@ -96,7 +96,7 @@ class AuthenticationService
             return 'HS256';
         } else {
             return 'RS512';
-        }//end if
+        }
     }//end getAlgorithm()
 
     /**
@@ -116,7 +116,7 @@ class AuthenticationService
             ]);
         } else {
             return $this->convertRSAtoJWK($source);
-        }//end if
+        }
     }//end getJWK()
 
     /**
@@ -132,7 +132,7 @@ class AuthenticationService
             return $source->getJwtId();
         } else {
             return $source->getId();
-        }//end if
+        }
     }//end getApplicationId()
 
     /**
@@ -222,13 +222,13 @@ class AuthenticationService
         $configs = [];
         if (isset($config['cert'])) {
             $configs['cert'] = $this->fileService->writeFile('certificate', $config['cert']);
-        }//end if
+        }
         if (isset($config['ssl_key'])) {
             $configs['ssl_key'] = $this->fileService->writeFile('privateKey', $config['ssl_key']);
-        }//end if
+        }
         if (isset($config['verify']) && is_string($config['verify'])) {
             $configs['verify'] = $this->fileService->writeFile('verify', $config['ssl_key']);
-        }//end if
+        }
 
         return $configs;
     }//end getCertificate()
@@ -244,13 +244,13 @@ class AuthenticationService
     {
         if (isset($config['cert'])) {
             $this->fileService->removeFile($config['cert']);
-        }//end if
+        }
         if (isset($config['ssl_key'])) {
             $this->fileService->removeFile($config['ssl_key']);
-        }//end if
+        }
         if (isset($config['verify']) && is_string($config['verify'])) {
             $this->fileService->removeFile($config['verify']);
-        }//end if
+        }
     }//end removeFiles()
 
     public function getTokenFromUrl(Source $source): string
@@ -354,7 +354,7 @@ class AuthenticationService
             return true;
         } catch (InvalidHeaderException $exception) {
             return false;
-        }//end try
+        }
     }//end checkRS512()
 
     /**
@@ -374,7 +374,7 @@ class AuthenticationService
             return true;
         } catch (InvalidHeaderException $exception) {
             return false;
-        }//end try
+        }
     }//end checkHS256()
 
     /**
@@ -403,7 +403,7 @@ class AuthenticationService
             return $jwk;
         } elseif ($this->checkHS256($token)) {
             return JWKFactory::createFromSecret($publicKey, ['alg' => 'HS256', 'use' => 'sig']);
-        }//end if
+        }
     }//end checkHeadersAndGetJWK()
 
     /**
@@ -429,7 +429,7 @@ class AuthenticationService
             return json_decode($jws->getPayload(), true);
         } else {
             throw new AuthenticationException('Unauthorized: The provided Authorization header is invalid', 401);
-        }//end if
+        }
     }//end verifyJWTToken()
 
     /**
