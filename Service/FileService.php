@@ -5,7 +5,7 @@ namespace CommonGateway\CoreBundle\Service;
 use Psr\Log\LoggerInterface;
 
 /**
- * Todo
+ * Todo.
  *
  * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
  *
@@ -30,7 +30,7 @@ class FileService
     }//end __construct()
 
     /**
-     * Todo
+     * Todo.
      *
      * @param string $baseFileName The name of the file to write.
      * @param string $contents     The content to write into het file.

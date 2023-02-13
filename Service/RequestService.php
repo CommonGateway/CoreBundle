@@ -67,7 +67,7 @@ class RequestService
      * @var mixed Todo: clean this mess up, why is this not a local variable? and why has it no type?
      */
     private $schema; // Todo: cast to Entity|Boolean in php 8.
-    
+
     // Todo: we might want to move or rewrite code instead of using the ResponseService & ObjectEntityService here.
     /**
      * @var ResponseService The response service.
@@ -170,7 +170,7 @@ class RequestService
 
         return [];
     }// end realRequestQueryAll()
-    
+
     /**
      * This function adds a single query param to the given $vars array. ?$name=$value
      * Will check if request query $name has [...] inside the parameter, like this: ?queryParam[$nameKey]=$value.
@@ -203,7 +203,7 @@ class RequestService
             $vars[$nameKey] = $value;
         }
     }//end recursiveRequestQueryKey()
-    
+
     /**
      * Get the ID from given parameters.
      *
@@ -378,15 +378,16 @@ class RequestService
         // Lets play it save
         return [];
     }
-    
+
     /**
      * Handles incoming requests and is responsible for generating a response.
      *
-     * @param array $data The data from the call.
+     * @param array $data          The data from the call.
      * @param array $configuration The configuration from the call.
      *
-     * @return Response The modified data.
      * @throws Exception A basic Exception.
+     *
+     * @return Response The modified data.
      */
     public function requestHandler(array $data, array $configuration): Response
     {
@@ -706,7 +707,7 @@ class RequestService
      * This function is specifically for adding metadata to the _self array of the result of one specific Object,
      * or for an array of objects if $result has the key 'result' and $this->data has 'method' === 'GET' (a get collection api call).
      *
-     * @param array $result The result array.
+     * @param array $result       The result array.
      * @param array $metadataSelf If query param _self.anything is used everything after _self is added to an array, this array.
      *
      * @return void Nothing.
@@ -840,7 +841,7 @@ class RequestService
 
         return $this->data;
     }
-    
+
     /**
      * Creating the response object.
      *

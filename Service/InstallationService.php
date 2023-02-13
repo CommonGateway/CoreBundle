@@ -56,25 +56,25 @@ class InstallationService
      * @var CacheService The cache service.
      */
     private CacheService $cacheService;
-    
+
     /**
      * @var CollectionEntity|null A collectionEntity.
      */
     private ?CollectionEntity $collection;
 
     /**
-     * @param ComposerService        $composerService   The composer service.
-     * @param EntityManagerInterface $entityManager     The entity manager.
-     * @param Kernel                 $kernel            Todo ?
-     * @param CacheService           $cacheService      The cache service.
-     * @param LoggerInterface        $pluginLogger      The logger interface.
+     * @param ComposerService        $composerService The composer service.
+     * @param EntityManagerInterface $entityManager   The entity manager.
+     * @param Kernel                 $kernel          Todo ?
+     * @param CacheService           $cacheService    The cache service.
+     * @param LoggerInterface        $pluginLogger    The logger interface.
      */
     public function __construct(
-        ComposerService        $composerService,
+        ComposerService $composerService,
         EntityManagerInterface $entityManager,
-        Kernel                 $kernel,
-        CacheService           $cacheService,
-        LoggerInterface        $pluginLogger
+        Kernel $kernel,
+        CacheService $cacheService,
+        LoggerInterface $pluginLogger
     ) {
         $this->composerService = $composerService;
         $this->entityManager = $entityManager;
@@ -695,12 +695,12 @@ class InstallationService
 
         return $installationService->install();
     }
-    
+
     /**
      * Handles forced id's on object entities.
      *
      * @param ObjectEntity $objectEntity
-     * @param array $hydrate
+     * @param array        $hydrate
      *
      * @return ObjectEntity
      */
