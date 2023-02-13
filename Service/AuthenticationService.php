@@ -23,6 +23,7 @@ use Jose\Component\Signature\Serializer\JWSSerializerManager;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
 class AuthenticationService
@@ -387,10 +388,10 @@ class AuthenticationService
      *
      * @return array
      */
-    public function serializeUser(User $user): array
+    public function serializeUser(User $user, string $duration, Session $session): array
     {
         $time = new \DateTime();
-        $expiry = new \DateTime("+{$this->getParameter('app_session_duration')} seconds");
+        $expiry = new \DateTime("+$duration seconds");
         $scopes = [];
         foreach($user->getSecurityGroups() as $securityGroup) {
             $scopes = array_merge($securityGroup->getScopes(), $scopes);
@@ -402,7 +403,7 @@ class AuthenticationService
             'organization' => $user->getOrganisation()->getId()->toString(),
             'locale' => $user->getLocale(),
             'roles' => $scopes,
-            'session' => $this->session->getId(),
+            'session' => $session->getId(),
             'iss' => $this->getParameter('app_url'),
             'ias' => $time->getTimestamp(),
             'exp' => $expiry->getTimestamp(),
