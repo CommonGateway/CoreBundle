@@ -388,7 +388,7 @@ class AuthenticationService
      *
      * @return array
      */
-    public function serializeUser(User $user, string $duration, Session $session): array
+    public function serializeUser(User $user, string $duration, SessionInterface $session): array
     {
         $time = new \DateTime();
         $expiry = new \DateTime("+$duration seconds");
