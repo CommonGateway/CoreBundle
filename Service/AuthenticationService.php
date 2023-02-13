@@ -3,6 +3,7 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
+use App\Entity\User;
 use DateTime;
 use GuzzleHttp\Client;
 use Jose\Component\Checker\AlgorithmChecker;
@@ -20,6 +21,8 @@ use Jose\Component\Signature\JWSVerifier;
 use Jose\Component\Signature\Serializer\CompactSerializer;
 use Jose\Component\Signature\Serializer\JWSSerializerManager;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
 class AuthenticationService
@@ -34,9 +37,31 @@ class AuthenticationService
     }
 
     /**
-     * @param array $component
+     * Converts a string RSA key to a JWK via the filesystem.
      *
-     * @return JWK
+     * @param string $key The key to load
+     *
+     * @return JWK The resulting Json Web Key
+     */
+    public function convertRSAKeyToJWK(string $key): JWK
+    {
+        $filesystem = new Filesystem();
+        $filename = '/srv/api/var/privatekey'.microtime().getmypid();
+        $filesystem->dumpFile($filename, $key);
+        $jwk = JWKFactory::createFromKeyFile($filename, null, ['use' => 'sig']);
+        $filesystem->remove([$filename]);
+
+        return $jwk;
+    }//end convertRSAKeyToJWK()
+
+    /**
+     * Converts a RSA private key to a JWK.
+     *
+     * @TODO: This can be merged with the function above by getting the key from the source earlier
+     *
+     * @param Source $source
+     *
+     * @return JWK The resulting Json Web Key
      */
     public function convertRSAtoJWK(Source $source): JWK
     {
@@ -44,7 +69,7 @@ class AuthenticationService
             $rsa = base64_decode($source->getPrivateKey());
         } else {
             $rsa = base64_decode($this->parameterBag->get('jwt.privateKey'));
-        }
+        }//end if
         $filename = $this->fileService->writeFile('privateKey', $rsa);
         $jwk = JWKFactory::createFromKeyFile(
             $filename,
@@ -54,8 +79,17 @@ class AuthenticationService
             ]
         );
         $this->fileService->removeFile($filename);
-    }
 
+        return $jwk;
+    }//end convertRSAtoJWK()
+
+    /**
+     * Determines the algorithm for the JWT token to create from the source.
+     *
+     * @param Source $source The source to determine the algorithm for
+     *
+     * @return string The algorithm to use
+     */
     public function getAlgorithm(Source $source): string
     {
         if ($source->getAuth() == 'jwt-HS256' || $source->getAuth() == 'jwt') {
@@ -63,8 +97,16 @@ class AuthenticationService
         } else {
             return 'RS512';
         }
-    }
+    }//end getAlgorithm()
 
+    /**
+     * Gets a JWK for a source based on the algorithm of the source.
+     *
+     * @param string $algorithm
+     * @param Source $source
+     *
+     * @return JWK The resulting Json Web Key
+     */
     public function getJWK(string $algorithm, Source $source): JWK
     {
         if ($algorithm == 'HS256') {
@@ -75,8 +117,15 @@ class AuthenticationService
         } else {
             return $this->convertRSAtoJWK($source);
         }
-    }
+    }//end getJWK()
 
+    /**
+     * Gets an application id for a source.
+     *
+     * @param Source $source The source to dermine the application id for
+     *
+     * @return string The application ID to use
+     */
     public function getApplicationId(Source $source): string
     {
         if ($source->getJwtId()) {
@@ -84,8 +133,15 @@ class AuthenticationService
         } else {
             return $source->getId();
         }
-    }
+    }//end getApplicationId()
 
+    /**
+     * Creates the JWT payload to identify at an external source.
+     *
+     * @param Source $source The source to create a payload for
+     *
+     * @return string The JWT payload to use
+     */
     public function getJwtPayload(Source $source): string
     {
         $now = new DateTime('now');
@@ -98,13 +154,41 @@ class AuthenticationService
             'user_id'             => $this->parameterBag->get('app_name'),
             'user_representation' => $this->parameterBag->get('app_name'),
         ]);
-    }
+    }//end getJwtPayload()
+
+    /**
+     * Creates a JWT token to identify with on the application.
+     *
+     * @TODO Merge with getJwtToken by splitting the getting of keys and payloads
+     *
+     * @param string $key     The private key to create a JWT token with
+     * @param array  $payload The payload to create a JWT token with
+     *
+     * @return string The resulting JWT token
+     */
+    public function createJwtToken(string $key, array $payload): string
+    {
+        $algorithmManager = new AlgorithmManager([new RS512()]);
+        $jwsBuilder = new JWSBuilder($algorithmManager);
+
+        $jwk = $this->convertRSAKeytoJWK($key);
+
+        $jws = $jwsBuilder
+            ->create()
+            ->withPayload(json_encode($payload))
+            ->addSignature($jwk, ['alg' => 'RS512'])
+            ->build();
+        $jwsSerializer = new CompactSerializer();
+
+        return $jwsSerializer->serialize($jws, 0);
+    }//end createJwtToken()
 
     /**
      * Create a JWT token from Component settings.
      *
-     * @param array $component The code of the component
-     * @param string The JWT token
+     * @param Source $source The source to authenticate to
+     *
+     * @return string The resulting JWT token
      */
     public function getJwtToken(Source $source): string
     {
@@ -125,7 +209,7 @@ class AuthenticationService
         $jwsSerializer = new CompactSerializer();
 
         return $jwsSerializer->serialize($jws, 0);
-    }
+    }//end getJwtToken()
 
     /**
      * Writes the certificate and ssl keys to disk, returns the filenames.
@@ -148,7 +232,7 @@ class AuthenticationService
         }
 
         return $configs;
-    }
+    }//end getCertificate()
 
     /**
      * Removes certificates and private keys from disk if they are not necessary anymore.
@@ -168,7 +252,7 @@ class AuthenticationService
         if (isset($config['verify']) && is_string($config['verify'])) {
             $this->fileService->removeFile($config['verify']);
         }
-    }
+    }//end removeFiles()
 
     public function getTokenFromUrl(Source $source): string
     {
@@ -272,7 +356,7 @@ class AuthenticationService
         } catch (InvalidHeaderException $exception) {
             return false;
         }
-    }
+    }//end checkRS512()
 
     /**
      * Decides if the provided JWT token is signed with the HS256 Algorithm.
@@ -292,7 +376,7 @@ class AuthenticationService
         } catch (InvalidHeaderException $exception) {
             return false;
         }
-    }
+    }//end checkHS256()
 
     /**
      * Checks the algorithm of the JWT token and decides how to generate a JWK from the provided public key.
@@ -310,7 +394,7 @@ class AuthenticationService
             $headerChecker->check($token, 0);
         } catch (InvalidHeaderException $exception) {
             throw $exception;
-        }
+        }//end try
 
         if ($this->checkRS512($token)) {
             $publicKeyFile = $this->fileService->writeFile('publickey', $publicKey);
@@ -321,7 +405,7 @@ class AuthenticationService
         } elseif ($this->checkHS256($token)) {
             return JWKFactory::createFromSecret($publicKey, ['alg' => 'HS256', 'use' => 'sig']);
         }
-    }
+    }//end checkHeadersAndGetJWK()
 
     /**
      * Verifies the JWT token and returns the payload if the JWT token is valid.
@@ -347,5 +431,37 @@ class AuthenticationService
         } else {
             throw new AuthenticationException('Unauthorized: The provided Authorization header is invalid', 401);
         }
-    }
-}
+    }//end verifyJWTToken()
+
+    /**
+     * Serializes a user to be used by the token authenticator.
+     *
+     * @param User             $user    The user to be serialized
+     * @param SessionInterface $session The session to use
+     *
+     * @return array The serialized user
+     */
+    public function serializeUser(User $user, SessionInterface $session): array
+    {
+        $time = new \DateTime();
+        $expiry = new \DateTime("+{$this->parameterBag->get('app_session_duration')} seconds");
+        $scopes = [];
+        foreach ($user->getSecurityGroups() as $securityGroup) {
+            $scopes = array_merge($securityGroup->getScopes(), $scopes);
+        }//end foreach
+
+        $payload = [
+            'userId'       => $user->getId(),
+            'username'     => $user->getEmail(),
+            'organization' => $user->getOrganisation()->getId()->toString(),
+            'locale'       => $user->getLocale(),
+            'roles'        => $scopes,
+            'session'      => $session->getId(),
+            'iss'          => $this->parameterBag->get('app_url'),
+            'ias'          => $time->getTimestamp(),
+            'exp'          => $expiry->getTimestamp(),
+        ];
+
+        return $payload;
+    }//end serializeUser()
+}//end class
