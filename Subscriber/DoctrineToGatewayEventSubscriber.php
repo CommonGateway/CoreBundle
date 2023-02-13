@@ -16,7 +16,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
- * Provides commongateway events and logs based on doctrine events.
+ * Provides common gateway events and logs based on doctrine events.
  *
  * This subscriber turns doctrine events into common gateway action events an provides those to listeners.
  * As a second function it also creates appropriate logging for doctrine events
@@ -45,22 +45,22 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     private SessionInterface $session;
 
     /**
-     * @var EventDispatcherInterface
+     * @var EventDispatcherInterface The event dispatcher.
      */
     private EventDispatcherInterface $eventDispatcher;
 
     /**
-     * @var Logger
+     * @var Logger The logger interface.
      */
     private Logger $logger;
 
     /**
-     * Load requiered services, schould not be aprouched directly.
+     * Load required services, should not be approached directly.
      *
-     * @param CacheService             $cacheService    The CacheService
-     * @param EntityManagerInterface   $entityManager   The EntityManagerInterface
-     * @param SessionInterface         $session         The SessionInterface
-     * @param EventDispatcherInterface $eventDispatcher The EventDispatcherInterface
+     * @param CacheService             $cacheService    The cache service.
+     * @param EntityManagerInterface   $entityManager   The entity manager.
+     * @param SessionInterface         $session         The current session.
+     * @param EventDispatcherInterface $eventDispatcher The event dispatcher.
      */
     public function __construct(
         CacheService $cacheService,
@@ -76,7 +76,9 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     }// end __construct()
 
     /**
-     * @return array
+     * Get the subscribed events.
+     *
+     * @return array An array with the subscribed events.
      */
     public function getSubscribedEvents(): array
     {
@@ -94,9 +96,9 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     }// end getSubscribedEvents()
 
     /**
-     * Deleting object from database.
+     * Log and throw an event before we remove and object from te database.
      *
-     * @param LifecycleEventArgs $args LifecycleEventArgs
+     * @param LifecycleEventArgs $args LifecycleEventArgs.
      *
      * @return void Nothing.
      */
@@ -124,9 +126,9 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     }// end preRemove()
 
     /**
-     * Creating object in database.
+     * Log and throw an event before we put a new object into te database.
      *
-     * @param LifecycleEventArgs $args LifecycleEventArgs
+     * @param LifecycleEventArgs $args LifecycleEventArgs.
      *
      * @return void Nothing.
      */
@@ -154,9 +156,9 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     }// end prePersist()
 
     /**
-     * Updating object to database.
+     * Log and throw an event before we update an object into te database.
      *
-     * @param LifecycleEventArgs $args LifecycleEventArgs
+     * @param LifecycleEventArgs $args LifecycleEventArgs.
      *
      * @return void Nothing.
      */
@@ -184,7 +186,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     }// end preUpdate()
 
     /**
-     * Deleted object from database.
+     * Log and throw an event after we remove and object from te database.
      *
      * @param LifecycleEventArgs $args LifecycleEventArgs
      *
@@ -212,7 +214,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     }// end postRemove()
 
     /**
-     * Created object in database.
+     * Log and throw an event after we put a new object into te database.
      *
      * @param LifecycleEventArgs $args LifecycleEventArgs
      *
@@ -242,7 +244,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     }// end postPersist()
 
     /**
-     * Updated object in database.
+     * Log and throw an event after we update an object into te database.
      *
      * @param LifecycleEventArgs $args LifecycleEventArgs
      *
@@ -272,7 +274,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     }// end postUpdate()
 
     /**
-     * Read object from database.
+     * Log and throw an event after we get an object from te database.
      *
      * @param LifecycleEventArgs $args LifecycleEventArgs
      *
@@ -301,7 +303,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     }// end postLoad()
 
     /**
-     * Flushing entity manager.
+     * Log and throw an event before we flush the entity manager.
      *
      * @param LifecycleEventArgs $args LifecycleEventArgs
      *
@@ -322,7 +324,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     }// end preFlush()
 
     /**
-     * Flushed entity manager.
+     * Log and throw an event after we flush the entity manager.
      *
      * @param LifecycleEventArgs $args LifecycleEventArgs
      *
@@ -337,7 +339,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             ]
         );
 
-        // Throw the event
+        // Throw the event.
         $event = new ActionEvent('commongateway.object.post.flush', []);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.post.flush');
     }// end postFlush()

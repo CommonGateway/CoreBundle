@@ -19,7 +19,7 @@ use Symfony\Component\Finder\Finder;
 /**
  * The installation service handled the installation of plugins (bundles) and is based on composer and packagist.
  *
- * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
+ * @Author Wilco Louwerse <wilco@conduction.nl>, Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
@@ -695,11 +695,12 @@ class InstallationService
 
         return $installationService->install();
     }
-
+    
     /**
      * Handles forced id's on object entities.
      *
      * @param ObjectEntity $objectEntity
+     * @param array $hydrate
      *
      * @return ObjectEntity
      */
