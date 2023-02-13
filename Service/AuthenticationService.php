@@ -462,5 +462,5 @@ class AuthenticationService
         ];
 
         return $payload;
-    }//end serializeUser
+    }//end serializeUser()
 }//end class
