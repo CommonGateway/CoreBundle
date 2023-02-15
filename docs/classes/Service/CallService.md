@@ -122,7 +122,7 @@ Decodes a response based on the source it belongs to.
 **Description**
 
 ```php
-public getAllResults (\Source $source, string $endpoint, array $config, array $objectsLocation)
+public getAllResults (\Source $source, string $endpoint, array $config, ?string $objectsLocation)
 ```
 
 Fetches all pages for a source and merges the result arrays to one array. 
@@ -137,7 +137,7 @@ Fetches all pages for a source and merges the result arrays to one array.
 : The endpoint on the source to call  
 * `(array) $config`
 : The additional configuration to call the source  
-* `(array) $objectsLocation`
+* `(?string) $objectsLocation`
 : The additional configuration to call the source  
 
 **Return Values**
