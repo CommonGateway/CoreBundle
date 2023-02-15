@@ -2,6 +2,7 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+// use App\Entity\CallLog;
 use Adbar\Dot;
 use App\Entity\Gateway as Source;
 use Doctrine\ORM\EntityManagerInterface;
