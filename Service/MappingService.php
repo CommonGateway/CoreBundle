@@ -60,11 +60,13 @@ class MappingService
         foreach ($array as $key => $value) {
             $newKey = str_replace($toReplace, $replacement, $key);
 
-            if (\is_array($value) && $value) {
+            if (\is_array($value) && $value !== []) {
                 $result[$newKey] = $this->encodeArrayKeys($value, $toReplace, $replacement);
                 continue;
             }
-            $result[$newKey] = $value;        }
+
+            $result[$newKey] = $value;
+        }
 
         return $result;
     }//end encodeArrayKeys()
