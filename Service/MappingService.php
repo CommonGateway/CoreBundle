@@ -64,7 +64,8 @@ class MappingService
                 $result[$newKey] = $this->encodeArrayKeys($value, $toReplace, $replacement);
                 continue;
             }
-            $result[$newKey] = $value;        }
+            $result[$newKey] = $value;
+        }
 
         return $result;
     }//end encodeArrayKeys()
