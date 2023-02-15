@@ -300,10 +300,10 @@ class CallService
      *
      * @TODO: This is based on some assumptions
      *
-     * @param Source $source            The source to call
-     * @param string $endpoint          The endpoint on the source to call
-     * @param array  $config            The additional configuration to call the source
-     * @param array  $objectsLocation   The additional configuration to call the source
+     * @param Source $source          The source to call
+     * @param string $endpoint        The endpoint on the source to call
+     * @param array  $config          The additional configuration to call the source
+     * @param array  $objectsLocation The additional configuration to call the source
      *
      * @return array The array of results
      */
