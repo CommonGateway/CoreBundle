@@ -1,6 +1,6 @@
 # CommonGateway\CoreBundle\Service\InstallationService  
 
-
+The installation service is used to install plugins (or actually symfony bundles) on the gateway.
 
 
 
@@ -12,12 +12,13 @@
 |------|-------------|
 |[__construct](#installationservice__construct)||
 |[addToObjects](#installationserviceaddtoobjects)|Adds an object to the objects stack if it is vallid.|
-|[composerupdate](#installationservicecomposerupdate)|Updates all commonground bundles on the common gateway installation.|
 |[handleInstaller](#installationservicehandleinstaller)|Specifcially handles the installation file.|
 |[handleObject](#installationservicehandleobject)|Create an object bases on an type and a schema (the object as an array).|
+|[handleObjectType](#installationservicehandleobjecttype)|Handels schemas of a certain type|
 |[install](#installationserviceinstall)|Installs the files from a bundle.|
 |[readDirectory](#installationservicereaddirectory)|This function read a folder to find other folders or json objects.|
 |[readfile](#installationservicereadfile)|This function read a folder to find other folders or json objects.|
+|[update](#installationserviceupdate)|Updates all commonground bundles on the common gateway installation.|
 
 
 
@@ -73,33 +74,6 @@ Adds an object to the objects stack if it is vallid.
 <hr />
 
 
-### InstallationService::composerupdate  
-
-**Description**
-
-```php
-public composerupdate (array $config)
-```
-
-Updates all commonground bundles on the common gateway installation. 
-
- 
-
-**Parameters**
-
-* `(array) $config`
-: The (optional) configuration  
-
-**Return Values**
-
-`int`
-
-
-
-
-<hr />
-
-
 ### InstallationService::handleInstaller  
 
 **Description**
@@ -149,6 +123,33 @@ This function breaks complexity rules, but since a switch is the most effective 
 **Return Values**
 
 `bool|object`
+
+
+
+
+<hr />
+
+
+### InstallationService::handleObjectType  
+
+**Description**
+
+```php
+public handleObjectType (array $schemas)
+```
+
+Handels schemas of a certain type 
+
+ 
+
+**Parameters**
+
+* `(array) $schemas`
+: The schemas to handle  
+
+**Return Values**
+
+`void`
 
 
 
@@ -234,6 +235,33 @@ This function read a folder to find other folders or json objects.
 `bool|array`
 
 > The file contents, or false if content could not be establisched
+
+
+<hr />
+
+
+### InstallationService::update  
+
+**Description**
+
+```php
+public update (array $config)
+```
+
+Updates all commonground bundles on the common gateway installation. 
+
+This functions serves as the jump of point for the `commengateway:plugins:update` command 
+
+**Parameters**
+
+* `(array) $config`
+: The (optional) configuration  
+
+**Return Values**
+
+`int`
+
+
 
 
 <hr />
