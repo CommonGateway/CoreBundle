@@ -19,7 +19,6 @@ use Symfony\Component\Finder\Finder;
  * This class breacks complixity,methods and coupling rules. This could be solved by devidng the class into smaller classes but that would deminisch the readbilly of the code as a whole. All the code in this class is only used in an installation context and it makes more sence to keep it together. Therefore a design decicion was made to keep al this code in one class.
  *
  * @author Ruben van der Linde
- *
  */
 class InstallationService
 {
@@ -96,6 +95,7 @@ class InstallationService
         if (isset($config['plugin']) === true) {
             $this->logger->debug('Running plugin installer for a single plugin: '.$config['plugin']);
             $this->install($config['plugin'], $config);
+
             return Command::SUCCESS;
         }
 
@@ -270,14 +270,14 @@ class InstallationService
         return true;
     }//end addToObjects()
 
-
     /**
-     * Handels schemas of a certain type
+     * Handels schemas of a certain type.
      *
      * @param array $schemas The schemas to handle
+     *
      * @return void
      */
-    private function handleObjectType(array $schemas):void
+    private function handleObjectType(array $schemas): void
     {
         foreach ($schemas as $schema) {
             $object = $this->handleObject($schema);
@@ -285,7 +285,6 @@ class InstallationService
             $this->entityManager->persist($object);
         }
 
-        return;
     }//end handleObjectType();
 
     /**
@@ -368,10 +367,10 @@ class InstallationService
         // Load the data.
         if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) <= 0) {
             $this->loger->debug('The new mapping has a version number equal or lower then the already present version, the object is NOT is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
-        } else if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) < 0) {
+        } elseif (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) < 0) {
             $this->loger->debug('The new mapping has a version number higher then the already present version, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
-        } else if (array_key_exists('version', $schema) === false) {
+        } elseif (array_key_exists('version', $schema) === false) {
             $this->loger->debug('The new mapping don\'t have a version number, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
         }
@@ -469,12 +468,11 @@ class InstallationService
         return $installationService->install();
     }//end handleInstaller()
 
-
-
     /**
-     * This functions creates dashboard cars for an array of endpoints, sources, schema's or objects
+     * This functions creates dashboard cars for an array of endpoints, sources, schema's or objects.
      *
      * @param array $handlers An array of references of handlers for wih actions schould be created
+     *
      * @return array An array of Action objects
      */
     private function createCards(array $handlers = []): array
@@ -503,7 +501,7 @@ class InstallationService
                 default:
                     // Euhm we cant't do anything so...
                     $this->logger->error('Unknown type used for the creation of a dashboard card '.$type);
-                    continue;
+                    break;
             }//end switch
 
             // Then we can handle some data.
@@ -520,7 +518,6 @@ class InstallationService
                 $this->entityManager->persist($dashboardCard);
                 $this->logger->debug('Dashboard Card created for '.$reference);
             }
-
         }//end foreach
 
         $this->logger->info(count($cards).' Cards Created');
@@ -529,9 +526,10 @@ class InstallationService
     }//end createCards()
 
     /**
-     * This function creates endpoints for an array of schema references
+     * This function creates endpoints for an array of schema references.
      *
      * @param array $schemas An array of references of schema's for wich endpoints hould be created
+     *
      * @return array An array of endpoints
      */
     private function createEndpoints(array $schemas = []): array
@@ -557,9 +555,10 @@ class InstallationService
     }//end createEndpoints()
 
     /**
-     * This functions creates actions for an array of handlers
+     * This functions creates actions for an array of handlers.
      *
      * @param array $handlers An array of references of handlers for wih actions schould be created
+     *
      * @return array An array of Action objects
      */
     private function createActions(array $handlers = []): array
@@ -586,16 +585,16 @@ class InstallationService
             $this->logger->debug('Action created for '.$handler);
         }
 
-
         $this->logger->info(count($actions).' Actions Created');
 
         return $actions;
     }//end createActions()
 
     /**
-     * This function creates cronjobs for an array of action references
+     * This function creates cronjobs for an array of action references.
      *
      * @param array $actions An array of references of actions for wih actions cronjobs be created
+     *
      * @return array An array of cronjobs
      */
     private function createCronjobs(array $actions = []): array
@@ -609,7 +608,6 @@ class InstallationService
                 $this->logger->error('No action found for reference'.$reference);
                 continue;
             }
-
 
             $cronjob = new Cronjob($action);
             $this->entityManager->persist($cronjob);
