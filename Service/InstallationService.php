@@ -89,13 +89,13 @@ class InstallationService
     public function update(array $config = []): int
     {
         // Let's see if we are trying to update a single plugin.
-        if(isset($config['plugin']) === true){
+        if (isset($config['plugin']) === true) {
             $this->logger->debug('Running plugin installer for a single plugin: '.$config['plugin']);
             $this->install($config['plugin'], $config);
             return Command::SUCCESS;
         }
 
-        // If we don't want to update a single plugin then we want to install al the plugins
+        // If we don't want to update a single plugin then we want to install al the plugins.
         $plugins = $this->composerService->getAll();
 
         $this->logger->debug('Running plugin installer for all plugins');
@@ -105,7 +105,7 @@ class InstallationService
         }
 
         return Command::SUCCESS;
-    }//end composerupdate()
+    }//end update()
 
     /**
      * Installs the files from a bundle.
@@ -123,7 +123,7 @@ class InstallationService
 
         $vendorFolder = 'vendor';
 
-        // First we want to read all the filles so that we have all the content the we should instll
+        // First we want to read all the filles so that we have all the content the we should install.
         $this->logger->debug('Installing plugin '.$bundle);
 
         // Lets check the basic folders for lagacy pruposes.
@@ -138,23 +138,22 @@ class InstallationService
         // Handling al the found  files.
         $this->logger->debug('Found '.count($this->objects).' schema types for '.$bundle, ['bundle' => $bundle]);
 
-        // There is a certain order to this, meaning that we want to handle certain schema types before other schema types
-        if(isset($this->object['https://docs.commongateway.nl/schemas/Entity.schema.json']) === true && is_array($this->object['https://docs.commongateway.nl/schemas/Entity.schema.json']) === true ){
+        // There is a certain order to this, meaning that we want to handle certain schema types before other schema types.
+        if (isset($this->object['https://docs.commongateway.nl/schemas/Entity.schema.json']) === true && is_array($this->object['https://docs.commongateway.nl/schemas/Entity.schema.json']) === true ) {
             $schemas = $this->object['https://docs.commongateway.nl/schemas/Entity.schema.json'];
             $this->logger->debug('Found '.count($schemas).' objects types for schema https://docs.commongateway.nl/schemas/Entity.schema.json', ['bundle' => $bundle, 'reference' => 'https://docs.commongateway.nl/schemas/Entity.schema.json']);
             $this->handleObjectType($schemas);
             unset($this->objects[$this->object['https://docs.commongateway.nl/schemas/Organization.schema.json']]);
         }
 
-
-        // Handle all the other objects
+        // Handle all the other objects.
         foreach ($this->objects as $ref => $schemas) {
             $this->logger->debug('Found '.count($schemas).' objects types for schema '.$ref, ['bundle' => $bundle, 'reference' => $ref]);
             $this->handleObjectType($schemas);
             unset($this->objects[$ref]);
         }
 
-        // find and handle the installation.json file
+        // Find and handle the installation.json file.
         if ($this->filesystem->exists($vendorFolder.'/'.$bundle.'/Installation/installation.json') !== false) {
             $finder = new Finder();
             foreach ($finder->in($vendorFolder.'/'.$bundle.'/Installation/installation.json') as $file) {
@@ -177,7 +176,7 @@ class InstallationService
      *
      * @return bool Whether or not the function was succefully executed
      */
-    public function readDirectory(string $location): bool
+    private function readDirectory(string $location): bool
     {
 
         // Lets see if the folder exisits to start with.
@@ -212,7 +211,7 @@ class InstallationService
      *
      * @return bool|array The file contents, or false if content could not be establisched
      */
-    public function readfile(File $file): mixed
+    private function readfile(File $file): mixed
     {
 
         // Check if it is a valid json object.
@@ -243,7 +242,7 @@ class InstallationService
      *
      * @return bool|array The file contents, or false if content could not be establisched
      */
-    public function addToObjects(array $schema): mixed
+    private function addToObjects(array $schema): mixed
     {
 
         // It is a schema so lets save it like that.
@@ -274,7 +273,8 @@ class InstallationService
      * @param array $schemas The schemas to handle
      * @return void
      */
-    public function handleObjectType(array $schemas):void{
+    private function handleObjectType(array $schemas):void
+    {
         foreach ($schemas as $schema) {
             $object = $this->handleObject($schema);
             // Save it to the database.
@@ -294,7 +294,7 @@ class InstallationService
      *
      * @return bool|object
      */
-    public function handleObject(string $type, array $schema): bool
+    private function handleObject(string $type, array $schema): bool
     {
         // Only base we need it the assumption that on object isn't valid until we made is so.
         $object = null;
@@ -420,7 +420,7 @@ class InstallationService
      *
      * @return bool
      */
-    public function handleInstaller($file): bool
+    private function handleInstaller($file): bool
     {
         $data = json_decode($file->getContents(), true);
 
@@ -429,23 +429,24 @@ class InstallationService
 
             return false;
         }
-        // Endpoints for schema's
-        if(isset($data['endpoints']['schemas']) === true){
+
+        // Endpoints for schema's.
+        if (isset($data['endpoints']['schemas']) === true) {
             $this->createEndpoints($data['endpoints']['schemas']);
         }
 
-        // Actions for action handlers
-        if(isset($data['actions']['handlers']) === true){
+        // Actions for action handlers.
+        if (isset($data['actions']['handlers']) === true) {
             $this->createActions($data['actions']['handlers']);
         }
 
-        // Cronjobs for actions for action handlers
-        if(isset($data['cronjobs']['actions']) === true){
+        // Cronjobs for actions for action handlers.
+        if (isset($data['cronjobs']['actions']) === true) {
             $this->createCronjobs($data['cronjobs']['actions']);
         }
 
-        // Lets see if we have things that we want to create cards for stuff (ince this might create cards for the stuff above this should always be last)
-        if(isset($data['cards']) === true){
+        // Lets see if we have things that we want to create cards for stuff (ince this might create cards for the stuff above this should always be last).
+        if (isset($data['cards']) === true) {
             $this->createCards($data['cards']);
         }
 
@@ -469,15 +470,15 @@ class InstallationService
     /**
      * This functions creates dashboard cars for an array of endpoints, sources, schema's or objects
      *
-     * @param array $handlersThatShouldHaveActions An array of references of handlers for wih actions schould be created
+     * @param array $handlers An array of references of handlers for wih actions schould be created
      * @return array An array of Action objects
      */
-    private function createCards(array $handlersThatShouldHaveActions = []): array{
+    private function createCards(array $handlers = []): array{
         $cards = [];
 
-        // Lets loop trough the stuff
-        foreach ($handlersThatShouldHaveActions as $type => $references){
-            // let deterimin the propper repro to use
+        // Lets loop trough the stuff.
+        foreach ($handlers as $type => $references) {
+            // let deterimin the propper repro to use.
             switch ($type) {
                 case 'endpoints':
                     $repository = $this->entityManager->getRepository('App:Endpoint');
@@ -500,17 +501,17 @@ class InstallationService
                     continue;
             }//end switch
 
-            //Then we can handle some data
-            foreach($references as $reference){
+            //Then we can handle some data.
+            foreach($references as $reference) {
                 $object = $repository->findOneBy(['reference' => $reference]);
 
-                if($object === null){
+                if ($object === null) {
                     $this->logger->error('No object found for ' . $reference);
                     continue;
                 }
 
 
-                $dashboardCard = New DashboardCard($object);
+                $dashboardCard = new DashboardCard($object);
                 $cards[] = $dashboardCard;
                 $this->entityManager->persist($dashboardCard);
                 $this->logger->debug('Dashboard Card created for '.$reference);
@@ -526,21 +527,21 @@ class InstallationService
     /**
      * This function creates endpoints for an array of schema references
      *
-     * @param array $schemasThatShouldHaveEndpoints An array of references of schema's for wich endpoints hould be created
+     * @param array $schemas An array of references of schema's for wich endpoints hould be created
      * @return array An array of endpoints
      */
-    private function createEndpoints(array $schemasThatShouldHaveEndpoints = []): array
+    private function createEndpoints(array $schemas = []): array
     {
         $endpointRepository = $this->entityManager->getRepository('App:Endpoint');
         $endpoints = [];
 
-        foreach ($schemasThatShouldHaveEndpoints as $objectThatShouldHaveEndpoint) {
-            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $objectThatShouldHaveEndpoint['reference']]);
+        foreach ($schemas as $schema) {
+            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema['reference']]);
 
             if ($endpointRepository->findOneBy(['name' => $entity->getName()]) === false) {
-                $endpoint = new Endpoint($entity, $objectThatShouldHaveEndpoint['path'], $objectThatShouldHaveEndpoint['methods']);
+                $endpoint = new Endpoint($entity, $schema['path'], $schema['methods']);
 
-                $this->logger->debug('Endpoint created for '.$objectThatShouldHaveEndpoint['reference']);
+                $this->logger->debug('Endpoint created for '.$schema['reference']);
                 $this->entityManager->persist($endpoint);
                 $endpoints[] = $endpoint;
             }
@@ -554,13 +555,14 @@ class InstallationService
     /**
      * This functions creates actions for an array of handlers
      *
-     * @param array $handlersThatShouldHaveActions An array of references of handlers for wih actions schould be created
+     * @param array $handlers An array of references of handlers for wih actions schould be created
      * @return array An array of Action objects
      */
-    private function createActions(array $handlersThatShouldHaveActions = []): array{
+    private function createActions(array $handlers = []): array
+    {
         $actions = [];
 
-        foreach ($handlersThatShouldHaveActions as $handler) {
+        foreach ($handlers as $handler) {
             $actionHandler = $this->container->get($handler);
 
             if ($this->entityManager->getRepository('App:Action')->findOneBy(['class' => get_class($actionHandler)]) === null) {
@@ -589,14 +591,14 @@ class InstallationService
     /**
      * this function creates cronjobs for an array of action references
      *
-     * @param array $actionsThatShouldHaveCronjobs An array of references of actions for wih actions cronjobs be created
+     * @param array $actions An array of references of actions for wih actions cronjobs be created
      * @return array An array of cronjobs
      */
-    private function createCronjobs(array $actionsThatShouldHaveCronjobs = []): array{
+    private function createCronjobs(array $actions = []): array
+    {
         $cronjobs = [];
 
-        foreach ($actionsThatShouldHaveCronjobs as $reference) {
-
+        foreach ($actions as $reference) {
             $action = $this->entityManager->getRepository('App:Cronjob')->findOneBy(['reference' => $reference]);
 
             if ($action === null) {
@@ -614,5 +616,5 @@ class InstallationService
         $this->logger->info(count($cronjobs).' Cronjobs Created');
 
         return $cronjobs;
-    }// createCronjobs()
+    }//end createCronjobs()
 }//end class
