@@ -11,13 +11,7 @@ The installation service is used to install plugins (or actually symfony bundles
 | Name | Description |
 |------|-------------|
 |[__construct](#installationservice__construct)||
-|[addToObjects](#installationserviceaddtoobjects)|Adds an object to the objects stack if it is vallid.|
-|[handleInstaller](#installationservicehandleinstaller)|Specifcially handles the installation file.|
-|[handleObject](#installationservicehandleobject)|Create an object bases on an type and a schema (the object as an array).|
-|[handleObjectType](#installationservicehandleobjecttype)|Handels schemas of a certain type|
 |[install](#installationserviceinstall)|Installs the files from a bundle.|
-|[readDirectory](#installationservicereaddirectory)|This function read a folder to find other folders or json objects.|
-|[readfile](#installationservicereadfile)|This function read a folder to find other folders or json objects.|
 |[update](#installationserviceupdate)|Updates all commonground bundles on the common gateway installation.|
 
 
@@ -47,116 +41,6 @@ The installation service is used to install plugins (or actually symfony bundles
 <hr />
 
 
-### InstallationService::addToObjects  
-
-**Description**
-
-```php
-public addToObjects (array $schema)
-```
-
-Adds an object to the objects stack if it is vallid. 
-
- 
-
-**Parameters**
-
-* `(array) $schema`
-: The schema  
-
-**Return Values**
-
-`bool|array`
-
-> The file contents, or false if content could not be establisched
-
-
-<hr />
-
-
-### InstallationService::handleInstaller  
-
-**Description**
-
-```php
-public handleInstaller ( $file)
-```
-
-Specifcially handles the installation file. 
-
- 
-
-**Parameters**
-
-* `() $file`
-: The installation file  
-
-**Return Values**
-
-`bool`
-
-
-
-
-<hr />
-
-
-### InstallationService::handleObject  
-
-**Description**
-
-```php
-public handleObject (string $type, array $schema)
-```
-
-Create an object bases on an type and a schema (the object as an array). 
-
-This function breaks complexity rules, but since a switch is the most effective way of doing it a design decicion was made to allow it 
-
-**Parameters**
-
-* `(string) $type`
-: The type of the object  
-* `(array) $schema`
-: The object as an array  
-
-**Return Values**
-
-`bool|object`
-
-
-
-
-<hr />
-
-
-### InstallationService::handleObjectType  
-
-**Description**
-
-```php
-public handleObjectType (array $schemas)
-```
-
-Handels schemas of a certain type 
-
- 
-
-**Parameters**
-
-* `(array) $schemas`
-: The schemas to handle  
-
-**Return Values**
-
-`void`
-
-
-
-
-<hr />
-
-
 ### InstallationService::install  
 
 **Description**
@@ -181,60 +65,6 @@ Based on the default action handler so schould supoprt a config parrameter even 
 `bool`
 
 > The result of the installation
-
-
-<hr />
-
-
-### InstallationService::readDirectory  
-
-**Description**
-
-```php
-public readDirectory (string $location)
-```
-
-This function read a folder to find other folders or json objects. 
-
- 
-
-**Parameters**
-
-* `(string) $location`
-: The location of the folder  
-
-**Return Values**
-
-`bool`
-
-> Whether or not the function was succefully executed
-
-
-<hr />
-
-
-### InstallationService::readfile  
-
-**Description**
-
-```php
-public readfile (\File $file)
-```
-
-This function read a folder to find other folders or json objects. 
-
- 
-
-**Parameters**
-
-* `(\File) $file`
-: The file location  
-
-**Return Values**
-
-`bool|array`
-
-> The file contents, or false if content could not be establisched
 
 
 <hr />
