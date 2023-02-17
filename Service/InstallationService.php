@@ -143,7 +143,7 @@ class InstallationService
             $schemas = $this->object['https://docs.commongateway.nl/schemas/Entity.schema.json'];
             $this->logger->debug('Found '.count($schemas).' objects types for schema https://docs.commongateway.nl/schemas/Entity.schema.json', ['bundle' => $bundle, 'reference' => 'https://docs.commongateway.nl/schemas/Entity.schema.json']);
             $this->handleObjectType($schemas);
-            unset($this->objects[$this->object['https://docs.commongateway.nl/schemas/Organization.schema.json']);
+            unset($this->objects[$this->object['https://docs.commongateway.nl/schemas/Organization.schema.json']]);
         }
 
 
