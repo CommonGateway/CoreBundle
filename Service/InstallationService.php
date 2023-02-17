@@ -16,6 +16,8 @@ use Symfony\Component\Finder\Finder;
 /**
  * The installation service is used to install plugins (or actually symfony bundles) on the gateway.
  *
+ * This class breacks complixity,methods and coupling rules. This could be solved by devidng the class into smaller classes but that would deminisch the readbilly of the code as a whole. All the code in this class is only used in an installation context and it makes more sence to keep it together. Therefore a design decicion was made to keep al this code in one class.
+ *
  * @author Ruben van der Linde
  *
  */
@@ -57,6 +59,8 @@ class InstallationService
     private array $objects = [];
 
     /**
+     * @codeCoverageIgnore We do not need to test constructors
+     *
      * @param ComposerService        $composerService The Composer service
      * @param EntityManagerInterface $entityManager   The entity manager
      * @param Kernel                 $kernel          The kernel
@@ -132,14 +136,14 @@ class InstallationService
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Mapping');
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Data');
 
-        // Then the folder where everything should be
+        // Then the folder where everything should be.
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Installation');
 
         // Handling al the found  files.
         $this->logger->debug('Found '.count($this->objects).' schema types for '.$bundle, ['bundle' => $bundle]);
 
         // There is a certain order to this, meaning that we want to handle certain schema types before other schema types.
-        if (isset($this->object['https://docs.commongateway.nl/schemas/Entity.schema.json']) === true && is_array($this->object['https://docs.commongateway.nl/schemas/Entity.schema.json']) === true ) {
+        if (isset($this->object['https://docs.commongateway.nl/schemas/Entity.schema.json']) === true && is_array($this->object['https://docs.commongateway.nl/schemas/Entity.schema.json']) === true) {
             $schemas = $this->object['https://docs.commongateway.nl/schemas/Entity.schema.json'];
             $this->logger->debug('Found '.count($schemas).' objects types for schema https://docs.commongateway.nl/schemas/Entity.schema.json', ['bundle' => $bundle, 'reference' => 'https://docs.commongateway.nl/schemas/Entity.schema.json']);
             $this->handleObjectType($schemas);
@@ -473,12 +477,13 @@ class InstallationService
      * @param array $handlers An array of references of handlers for wih actions schould be created
      * @return array An array of Action objects
      */
-    private function createCards(array $handlers = []): array{
+    private function createCards(array $handlers = []): array
+    {
         $cards = [];
 
         // Lets loop trough the stuff.
         foreach ($handlers as $type => $references) {
-            // let deterimin the propper repro to use.
+            // Let's deterimin the propper repro to use.
             switch ($type) {
                 case 'endpoints':
                     $repository = $this->entityManager->getRepository('App:Endpoint');
@@ -497,19 +502,18 @@ class InstallationService
                     break;
                 default:
                     // Euhm we cant't do anything so...
-                    $this->logger->error('Unknown type used for the creation of a dashboard card ' . $type);
+                    $this->logger->error('Unknown type used for the creation of a dashboard card '.$type);
                     continue;
             }//end switch
 
-            //Then we can handle some data.
-            foreach($references as $reference) {
+            // Then we can handle some data.
+            foreach ($references as $reference) {
                 $object = $repository->findOneBy(['reference' => $reference]);
 
                 if ($object === null) {
-                    $this->logger->error('No object found for ' . $reference);
+                    $this->logger->error('No object found for '.$reference);
                     continue;
                 }
-
 
                 $dashboardCard = new DashboardCard($object);
                 $cards[] = $dashboardCard;
@@ -517,7 +521,7 @@ class InstallationService
                 $this->logger->debug('Dashboard Card created for '.$reference);
             }
 
-        }
+        }//end foreach
 
         $this->logger->info(count($cards).' Cards Created');
 
@@ -566,12 +570,12 @@ class InstallationService
             $actionHandler = $this->container->get($handler);
 
             if ($this->entityManager->getRepository('App:Action')->findOneBy(['class' => get_class($actionHandler)]) === null) {
-                $this->logger->error('Action found for ' . $handler);
+                $this->logger->error('Action found for '.$handler);
                 continue;
             }
 
             $schema = $actionHandler->getConfiguration();
-            if ($schema === false && empty($schema) == true) {
+            if ($schema === false && empty($schema) === true) {
                 $this->logger->error('Handler '.$handler.'has no configuration');
                 continue;
             }
@@ -589,7 +593,7 @@ class InstallationService
     }//end createActions()
 
     /**
-     * this function creates cronjobs for an array of action references
+     * This function creates cronjobs for an array of action references
      *
      * @param array $actions An array of references of actions for wih actions cronjobs be created
      * @return array An array of cronjobs
@@ -602,7 +606,7 @@ class InstallationService
             $action = $this->entityManager->getRepository('App:Cronjob')->findOneBy(['reference' => $reference]);
 
             if ($action === null) {
-                $this->logger->error('No action found for reference' . $reference);
+                $this->logger->error('No action found for reference'.$reference);
                 continue;
             }
 
