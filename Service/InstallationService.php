@@ -467,7 +467,7 @@ class InstallationService
 
 
     /**
-     * This functions creates actions for an array of handlers
+     * This functions creates dashboard cars for an array of endpoints, sources, schema's or objects
      *
      * @param array $handlersThatShouldHaveActions An array of references of handlers for wih actions schould be created
      * @return array An array of Action objects
@@ -475,68 +475,47 @@ class InstallationService
     private function createCards(array $handlersThatShouldHaveActions = []): array{
         $cards = [];
 
-        // Endpoints
-        if(isset($cards['endpoints'])){
-            foreach ($cards['endpoints'] as $reference){
-                $endpoint = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $reference]);
-                if($endpoint === null){
-                    $this->logger->error('No endpoint found for ' . $reference);
+        // Lets loop trough the stuff
+        foreach ($handlersThatShouldHaveActions as $type => $references){
+            // let deterimin the propper repro to use
+            switch ($type) {
+                case 'endpoints':
+                    $repository = $this->entityManager->getRepository('App:Endpoint');
+                    break;
+                case 'sources':
+                    $repository = $this->entityManager->getRepository('App:Source');
+                    break;
+                case 'schemas':
+                    $repository = $this->entityManager->getRepository('App:Entity');
+                    break;
+                case 'cronjobs':
+                    $repository = $this->entityManager->getRepository('App:Cronjob');
+                    break;
+                case 'objects':
+                    $repository = $this->entityManager->getRepository('App:ObjectEntity');
+                    break;
+                default:
+                    // Euhm we cant't do anything so...
+                    $this->logger->error('Unknown type used for the creation of a dashboard card ' . $type);
                     continue;
-                }
+            }//end switch
 
-                $dashboardCard = New DashboardCard($endpoint);
-                $cards[] = $dashboardCard;
-                $this->entityManager->persist($dashboardCard);
-                $this->logger->debug('Dashboard Card created for '.$reference);
-            }
-        }
+            //Then we can handle some data
+            foreach($references as $reference){
+                $object = $repository->findOneBy(['reference' => $reference]);
 
-        // Sources
-        if(isset($cards['sources'])){
-            foreach ($cards['sources'] as $reference){
-                $source = $this->entityManager->getRepository('App:Source')->findOneBy(['reference' => $reference]);
-                if($source === null){
-                    $this->logger->error('No Soruce found for ' . $source);
-                    continue;
-                }
-
-                $dashboardCard = New DashboardCard($source);
-                $cards[] = $dashboardCard;
-                $this->entityManager->persist($dashboardCard);
-                $this->logger->debug('Dashboard Card created for '.$reference);
-            }
-        }
-
-        // Schemas
-        if(isset($cards['schemas'])){
-            foreach ($cards['schemas'] as $reference){
-                $schema = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference]);
-                if($schema === null){
-                    $this->logger->error('No Schema found for ' . $reference);
-                    continue;
-                }
-
-                $dashboardCard = New DashboardCard($schema);
-                $cards[] = $dashboardCard;
-                $this->entityManager->persist($dashboardCard);
-                $this->logger->debug('Dashboard Card created for '.$reference);
-            }
-        }
-
-        // Objects
-        if(isset($cards['objects'])){
-            foreach ($cards['objects'] as $reference){
-                $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['reference' => $reference]);
                 if($object === null){
-                    $this->logger->error('No Object found for ' . $reference);
+                    $this->logger->error('No object found for ' . $reference);
                     continue;
                 }
+
 
                 $dashboardCard = New DashboardCard($object);
                 $cards[] = $dashboardCard;
                 $this->entityManager->persist($dashboardCard);
                 $this->logger->debug('Dashboard Card created for '.$reference);
             }
+
         }
 
         $this->logger->info(count($cards).' Cards Created');
