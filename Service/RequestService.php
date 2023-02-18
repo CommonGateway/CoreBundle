@@ -282,8 +282,9 @@ class RequestService
 
                 return $this->data['endpoint']->getEntities()->matching($criteria)->first();
             }
+
             // The  endpoint contains no schema's so there is no limit we don't need to do anything.
-        }
+        }//end if
 
         // We only end up here if there is no endpoint or an unlimited endpoint.
         if (isset($id) === true) {
@@ -312,7 +313,7 @@ class RequestService
         $this->configuration = $configuration;
 
         // We only do proxing if the endpoint forces it/
-        if ($data['endpoint'] instanceof Endpoint === false|| !$proxy = $data['endpoint']->getProxy()) {
+        if ($data['endpoint'] instanceof Endpoint === false || $proxy = $data['endpoint']->getProxy() === false) {
             $message = !$data['endpoint'] instanceof Endpoint ?
                 "No Endpoint in data['endpoint']" :
                 "This Endpoint has no Proxy: {$data['endpoint']->getName()}";
@@ -324,10 +325,10 @@ class RequestService
             );
         }
 
-        if ($proxy instanceof Source && !$proxy->getIsEnabled()) {
+        if ($proxy instanceof Source && $proxy->getIsEnabled() === false) {
             return new Response(
                 json_encode(['Message' => "This Source is not enabled: {$proxy->getName()}"]),
-                Response::HTTP_OK, // This should be ok so we can disable Sources without creating error responses?
+                Response::HTTP_OK,
                 ['content-type' => 'application/json']
             );
         }
@@ -356,7 +357,6 @@ class RequestService
         );
 
         // @todo the above might need a try catch
-
         // And don so let's return what we have.
         return $responce;
     }//end proxyHandler()
@@ -368,11 +368,11 @@ class RequestService
      */
     public function getScopes(): ?array
     {
-        if ($user = $this->security->getUser()) {
+        if ($user = $this->security->getUser() === true) {
             return $user->getScopes();
         } else {
-            $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous'=>true]);
-            if ($anonymousSecurityGroup) {
+            $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous' => true]);
+            if ($anonymousSecurityGroup === true) {
                 return $anonymousSecurityGroup->getScopes();
             }
         }
@@ -400,13 +400,6 @@ class RequestService
 
         // haat aan de de _.
         if (isset($this->data['querystring']) === true) {
-            //            $query = explode('&',$this->data['querystring']);
-            //            foreach ($query as $row) {
-            //                $row = explode('=', $row);
-            //                $key = $row[0];
-            //                $value = $row[1];
-            //                $filters[$key] = $value;
-            //            }
             $filters = $this->realRequestQueryAll($this->data['method']);
         }
 
@@ -414,12 +407,12 @@ class RequestService
         $this->id = $this->getId($this->data);
 
         // If we have an ID we can get an entity to work with (except on gets we handle those from cache).
-        if (isset($this->id) === true && empty($this->id) === false && $this->data['method'] != 'GET') {
+        if (isset($this->id) === true && empty($this->id) === false && $this->data['method'] !== 'GET') {
             $this->object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->id]);
         }
 
         // Lets pas the part variables to filters.
-        // todo: this is hacky
+        // todo: this is hacky,
         foreach ($this->data['path'] as $key => $value) {
             if (strpos($key, '{') !== false) {
                 if ($key !== '{id}') {
@@ -439,18 +432,18 @@ class RequestService
         $this->schema = $this->getSchema($this->data);
 
         // Bit os safety cleanup <- dit zou eigenlijk in de hydrator moeten gebeuren.
-        // todo: i don't think this does anything useful? Please add a comment why we do this here at all?
+        // Todo: i don't think this does anything useful? Please add a comment why we do this here at all?
         unset($this->content['id']);
         unset($this->content['_id']);
         unset($this->content['_self']);
         unset($this->content['_schema']);
 
-        // todo: make this a function, like eavService->getRequestExtend()
+        // Todo: make this a function, like eavService->getRequestExtend()
         if (isset($this->data['query']['extend']) === true) {
             $extend = $this->data['query']['extend'];
 
             // Let's deal with a comma seperated list.
-            if (!is_array($extend)) {
+            if (is_array($extend) === false) {
                 $extend = explode(',', $extend);
             }
 
@@ -464,7 +457,7 @@ class RequestService
         }
         $metadataSelf = $extend['_self'] ?? [];
 
-        // todo: controlleren of de gebruiker ingelogd is
+        // Todo: controlleren of de gebruiker ingelogd is
 
         // Make a list of schema's that are allowed for this endpoint.
         $allowedSchemas['id'] = [];
@@ -485,7 +478,7 @@ class RequestService
         }
 
         // All prepped so let's go.
-        // todo: split these into functions?
+        // Todo: split these into functions?
         switch ($this->data['method']) {
             case 'GET':
                 // We have an id (so single object).
@@ -493,13 +486,16 @@ class RequestService
                     $result = $this->cacheService->getObject($this->id);
 
                     // If we do not have an object we throw an 404.
-                    if (!$result) {
-                        return new Response($this->serializer->serialize([
+                    if ($result === false) {
+                        return new Response($this->serializer->serialize(
+                            [
                             'message' => 'Could not find an object with id '.$this->id,
                             'type'    => 'Bad Request',
                             'path'    => implode(', ', $allowedSchemas['name']),
                             'data'    => ['id' => $this->id],
-                        ], 'json'), Response::HTTP_NOT_FOUND);
+                            ]
+                            , 'json'
+                        ), Response::HTTP_NOT_FOUND);
                     }
 
                     // Let's see if the found result is allowed for this endpoint.
@@ -507,8 +503,8 @@ class RequestService
                         return new Response('Object is not supported by this endpoint', '406');
                     }
 
-                    // create log.
-                    // todo if $this->content is array and not string/null, cause someone could do a get item call with a body...
+                    // Create log.
+                    // Todo if $this->content is array and not string/null, cause someone could do a get item call with a body...
                     $responseLog = new Response(is_string($this->content) || is_null($this->content) ? $this->content : null, 200, ['CoreBundle' => 'GetItem']);
                     $session = new Session();
                     $session->set('object', $this->id);
@@ -544,7 +540,8 @@ class RequestService
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
                 if ($this->object->hydrate($this->content, true)) {
                     $this->entityManager->persist($this->object);
-                    $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
+                    $this->cacheService->cacheObject($this->object);
+                    // @todo this is hacky, the above schould alredy do this
                 } else {
                     // Use validation to throw an error.
                 }
@@ -648,8 +645,8 @@ class RequestService
             $event = new ActionEvent($eventType, ['response' => $result, 'entity' => $this->object->getEntity()->getReference() ?? $this->object->getEntity()->getId()->toString()]);
             $this->eventDispatcher->dispatch($event, $event->getType());
 
-            // If we have a response return that
-            if ($event->getData()['response']) {
+            // If we have a response return that.
+            if ($event->getData()['response'] === true) {
                 return new Response(json_encode($event->getData()['response']));
             }
         }
@@ -668,12 +665,13 @@ class RequestService
      *
      * @param object|array $result fetched result.
      * @param ?array       $accept accept header.
+     * @param ?bool $isCollection  Is the request a collection
      *
      * @return array|null The result array.
      */
     public function shouldWeUnsetEmbedded($result = null, ?array $accept, ?bool $isCollection = false)
     {
-        if (            isset($result) === true &&
+        if (isset($result) === true &&
             (isset($accept) === true &&
                 in_array('application/json+ld', $accept) === false &&
                 in_array('application/ld+json', $accept) === false)
@@ -725,7 +723,7 @@ class RequestService
             return;
         }
 
-        // todo: $this->id is sometimes empty, it should never be an empty string, for now just check if it is empty or not.
+        // Todo: $this->id is sometimes empty, it should never be an empty string, for now just check if it is empty or not.
         // Handle a get collection situation.
         if (isset($result['results']) === true && $this->data['method'] === 'GET' && empty($this->id) === true) {
             array_walk($result['results'], function (&$record) {
@@ -744,7 +742,7 @@ class RequestService
         }
         $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['id']]);
 
-        if (!$objectEntity instanceof ObjectEntity) {
+        if ($objectEntity instanceof ObjectEntity === false) {
             return;
         }
         if ($this->data['method'] === 'GET' && empty($this->id) === false) {
@@ -772,10 +770,10 @@ class RequestService
         $method = $this->data['request']->getMethod();
         $content = $this->data['request']->getContent();
 
-        // Lets see if we have an object
-        if (array_key_exists('id', $this->data)) {
+        // Lets see if we have an object.
+        if (array_key_exists('id', $this->data) === true) {
             $this->id = $data['id'];
-            if (!$this->object = $this->cacheService->getObject($data['id'])) {
+            if ($this->object = $this->cacheService->getObject($data['id']) === false) {
                 // Throw not found.
             }
         }
@@ -784,15 +782,18 @@ class RequestService
             case 'GET':
                 break;
             case 'PUT':
-
-                if ($validation = $this->object->validate($content) && $this->object->hydrate($content, true)) {
+                $validation = $this->object->validate($content);
+                if ($validation === true) {
+                    $this->object->hydrate($content, true);
                     $this->entityManager->persist($this->object);
                 } else {
                     // Use validation to throw an error.
                 }
                 break;
             case 'PATCH':
-                if ($this->object->hydrate($content) && $validation = $this->object->validate()) {
+                $this->object->hydrate($content);
+                $validation = $this->object->validate();
+                if ($validation === true) {
                     $this->entityManager->persist($this->object);
                 } else {
                     // Use validation to throw an error.
@@ -824,7 +825,7 @@ class RequestService
         $this->data = $data;
         $this->configuration = $configuration;
 
-        if (!$searchEntityId = $this->configuration['searchEntityId']) {
+        if ($searchEntityId = $this->configuration['searchEntityId'] === false) {
             $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
         } else {
             $searchEntity = $this->entityManager->getRepository('App:Entity')->findBy($searchEntityId);
