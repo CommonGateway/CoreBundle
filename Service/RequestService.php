@@ -151,6 +151,7 @@ class RequestService
             return $vars;
         }
 
+        // We allow the acces to super globals here (as a design decion) becouse this funtions is a wrapper for super globals
         if (isset($_SERVER['QUERY_STRING']) === true) {
             $pairs = explode('&', $_SERVER['QUERY_STRING']);
             foreach ($pairs as $pair) {
@@ -505,7 +506,7 @@ class RequestService
 
                     // Create log.
                     // Todo if $this->content is array and not string/null, cause someone could do a get item call with a body...
-                    $responseLog = new Response(is_string($this->content) || is_null($this->content) ? $this->content : null, 200, ['CoreBundle' => 'GetItem']);
+                    $responseLog = new Response(is_string($this->content) || $this->content === null ? $this->content : null, 200, ['CoreBundle' => 'GetItem']);
                     $session = new Session();
                     $session->set('object', $this->id);
 
