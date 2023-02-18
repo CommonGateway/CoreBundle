@@ -3,846 +3,621 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Action;
-use App\Entity\CollectionEntity;
 use App\Entity\Entity;
-use App\Entity\Mapping;
 use App\Entity\ObjectEntity;
-use App\Entity\Value;
 use App\Kernel;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
+use Monolog\Logger;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
 /**
- * The installation service handled the installation of plugins (bundles) and is based on composer and packagist.
+ * The installation service is used to install plugins (or actually symfony bundles) on the gateway.
  *
- * @Author Wilco Louwerse <wilco@conduction.nl>, Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
+ * This class breacks complixity,methods and coupling rules. This could be solved by devidng the class into smaller classes but that would deminisch the readbilly of the code as a whole. All the code in this class is only used in an installation context and it makes more sence to keep it together. Therefore a design decicion was made to keep al this code in one class.
  *
- * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
- *
- * @category Service
+ * @author Ruben van der Linde
  */
 class InstallationService
 {
     /**
-     * @var ComposerService The composer service.
+     * @var ComposerService
      */
     private ComposerService $composerService;
 
     /**
-     * @var EntityManagerInterface The entity manager.
+     * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
 
     /**
-     * @var SymfonyStyle Symfony style for user feedback in command line.
+     * @var ContainerInterface
      */
-    private SymfonyStyle $symfonyStyle;
+    private ContainerInterface $container;
 
     /**
-     * @var mixed Holds the symfony container interface.
+     * @var Logger
      */
-    private $container;
+    private Logger $logger;
 
     /**
-     * @var LoggerInterface The logger interface.
+     * @var Filesystem
      */
-    private LoggerInterface $logger;
+    private Filesystem $filesystem;
 
     /**
-     * @var CacheService The cache service.
+     * @var SchemaService
      */
-    private CacheService $cacheService;
+    private SchemaService $schemaService;
 
     /**
-     * @var CollectionEntity|null A collectionEntity.
+     * @var array The Objects aquired durring a installation
      */
-    private ?CollectionEntity $collection;
+    private array $objects = [];
 
     /**
-     * @param ComposerService        $composerService The composer service.
-     * @param EntityManagerInterface $entityManager   The entity manager.
-     * @param Kernel                 $kernel          Todo ?
-     * @param CacheService           $cacheService    The cache service.
-     * @param LoggerInterface        $pluginLogger    The logger interface.
+     * @codeCoverageIgnore We do not need to test constructors
+     *
+     * @param ComposerService        $composerService The Composer service
+     * @param EntityManagerInterface $entityManager   The entity manager
+     * @param Kernel                 $kernel          The kernel
+     * @param SchemaService          $schemaService   The schema service
      */
     public function __construct(
         ComposerService $composerService,
         EntityManagerInterface $entityManager,
         Kernel $kernel,
-        CacheService $cacheService,
-        LoggerInterface $pluginLogger
+        SchemaService $schemaService
     ) {
         $this->composerService = $composerService;
         $this->entityManager = $entityManager;
         $this->container = $kernel->getContainer();
         $this->collection = null;
-        $this->logger = $pluginLogger;
-        $this->cacheService = $cacheService;
+        $this->logger = new Logger('installation');
+        $this->schemaService = $schemaService;
+        $this->filesystem = new Filesystem();
     }//end __construct()
-
-    /**
-     * Set symfony style in order to output to the console.
-     *
-     * @param SymfonyStyle $symfonyStyle Symfony style for user feedback in command line.
-     *
-     * @return self This installationService.
-     */
-    public function setStyle(SymfonyStyle $symfonyStyle): self
-    {
-        $this->symfonyStyle = $symfonyStyle;
-
-        return $this;
-    }
 
     /**
      * Updates all commonground bundles on the common gateway installation.
      *
-     * @param array $config
+     * This functions serves as the jump of point for the `commengateway:plugins:update` command
+     *
+     * @param array $config The (optional) configuration
      *
      * @return int
      */
-    public function composerupdate(array $config = []): int
+    public function update(array $config = []): int
     {
-        $plugins = $this->composerService->getAll();
+        // Let's see if we are trying to update a single plugin.
+        if (isset($config['plugin']) === true) {
+            $this->logger->debug('Running plugin installer for a single plugin: '.$config['plugin']);
+            $this->install($config['plugin'], $config);
 
-        if (isset($this->symfonyStyle) === true) {
-            $this->symfonyStyle->writeln([
-                '',
-                '<info>Common Gateway Bundle Updater</info>',
-                '============',
-                '',
-                'Found: <comment> '.count($plugins).' </comment> to check for updates',
-                '',
-            ]);
+            return Command::SUCCESS;
         }
 
-        $this->logger->debug('Running plugin installer');
+        // If we don't want to update a single plugin then we want to install al the plugins.
+        $plugins = $this->composerService->getAll();
+
+        $this->logger->debug('Running plugin installer for all plugins');
 
         foreach ($plugins as $plugin) {
             $this->install($plugin['name'], $config);
         }
 
-        if (isset($this->symfonyStyle) === true) {
-            $this->cacheService->setStyle($this->symfonyStyle);
-            $this->cacheService->warmup();
-        }
-
         return Command::SUCCESS;
-    }
+    }//end update()
 
     /**
-     * Validates the  objects in the EAV setup.
+     * Installs the files from a bundle.
      *
-     * @return void This function doesn't return anything.
+     * Based on the default action handler so schould supoprt a config parrameter even if we do not use it
+     *
+     * @param string $bundle The bundle
+     * @param array  $config Optional config (ignored on this function)
+     *
+     * @return bool The result of the installation
      */
-    public function validateObjects(): int
+    public function install(string $bundle, array $config = []): bool
     {
-        $objects = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
-
-        if (isset($this->symfonyStyle) === true) {
-            $this->symfonyStyle->writeln([
-                'Validating: <comment> '.count($objects).' </comment> objects\'s',
-            ]);
-        }
-        $this->logger->info('Validating:'.count($objects).'objects\'s');
-
-        // Lets go go go !
-        foreach ($objects as $object) {
-            if ($object->get) {
-            }
-        }
-    }
-
-    /**
-     * Validates the  objects in the EAV setup.
-     *
-     * @return void This function doesn't return anything.
-     */
-    public function validateValues(): int
-    {
-        $values = $this->entityManager->getRepository('App:Value')->findAll();
-
-        $this->logger->debug('Validating:'.count($values).'values\'s');
-
-        // Lets go go go !
-        foreach ($values as $value) {
-            if (!$value->getObjectEntity()) {
-                $message = 'Value '.$value->getStringValue().' ('.$value->getId().') that belongs to  '.$value->getAttribute()->getName().' ('.$value->getAttribute()->getId().') is orpahned';
-            }
-        }
-    }
-
-    /**
-     * Validates the schemas in the EAV setup.
-     *
-     * @return void This function doesn't return anything.
-     */
-    public function validateSchemas(): int
-    {
-        $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
-
-        $this->logger->debug('Validating:'.count($schemas).'schema\'s');
-
-        // Lets go go go !
-        foreach ($schemas as $schema) {
-            $statusOk = true;
-            // Gereric check
-            if (!$schema->getReference()) {
-                $this->logger->info('Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a reference');
-            }
-
-            // Gereric check
-            /*
-            if(!$schema->getApplication()){
-                $this->logger->info( 'Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a application');
-            }
-            // Gereric check
-            if(!$schema->getOrganization()){
-                $this->logger->info( 'Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a organization');
-            }
-            */
-
-            // Check atributes
-            foreach ($schema->getAttributes() as $attribute) {
-                // Specific checks for objects
-                if ($attribute->getType() == 'object') {
-
-                    // Check for object link
-                    if (!$attribute->getObject()) {
-                        $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an object';
-                        $this->logger->error($message);
-                        if (isset($this->symfonyStyle) === true) {
-                            $this->symfonyStyle->error($message);
-                        }
-                        $statusOk = false;
-                    } else {
-                        $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is linked to object '.$attribute->getObject()->getName().' ('.$attribute->getObject()->getId();
-                        $this->logger->debug($message);
-                        if (isset($this->symfonyStyle) === true) {
-                            $this->symfonyStyle->note($message);
-                        }
-                    }
-                    // Check for reference link
-                    if (!$attribute->getReference()) {
-
-                        //$message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an reference';
-                        //$this->logger->info($message);
-                        //if ($this->symfonyStyle) { $this->symfonyStyle->info($message);}
-                    }
-                }
-
-                // Specific wierdnes
-                // Check for reference link
-                if ($attribute->getReference() && !$attribute->getType() == 'object') {
-                    $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has attribute '.$attribute->getName().' ('.$attribute->getId().') that has a reference ('.$attribute->getReference().') but isn\'t of the type object';
-                    $this->logger->error($message);
-                    if (isset($this->symfonyStyle) === true) {
-                        $this->symfonyStyle->error($message);
-                    }
-                    $statusOk = false;
-                }
-            }
-
-            if ($statusOk) {
-                $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has been checked and is fine';
-                $this->logger->info($message);
-                if (isset($this->symfonyStyle) === true) {
-                    $this->symfonyStyle->info($message);
-                }
-            } else {
-                $message = 'Schema '.$schema->getName().' ('.$schema->getId().') has been checked and has an error';
-                $this->logger->error($message);
-                if (isset($this->symfonyStyle) === true) {
-                    $this->symfonyStyle->error($message);
-                }
-            }
-        }
-
-        return 1;
-    }
-
-    /**
-     * Performs installation actions on a common Gataway bundle.
-     *
-     * @param string $bundle The bundle name that you want to install
-     * @param array  $config Optional configuration
-     *
-     * @return int
-     */
-    public function install(string $bundle, array $config = []): int
-    {
-        if (isset($this->symfonyStyle) === true) {
-            $this->symfonyStyle->writeln([
-                'Trying to install: <comment> '.$bundle.' </comment>',
-                '',
-            ]);
-        }
-
-        $this->logger->debug('Trying to install: '.$bundle);
-
-        $packages = $this->composerService->getAll();
-
-        $found = array_filter($packages, function ($v, $k) use ($bundle) {
-            return $v['name'] == $bundle;
-        }, ARRAY_FILTER_USE_BOTH); // With the latest PHP third parameter is optional.. Available Values:- ARRAY_FILTER_USE_BOTH OR ARRAY_FILTER_USE_KEY
-
-        $package = reset($found);
-        if ($package) {
-            $this->symfonyStyle->writeln([
-                '<info>Package '.$bundle.' found</info>',
-                '',
-                'Name: '.$package['name'],
-                'Version: '.$package['version'],
-                'Description: '.$package['description'],
-                'Homepage :'.$package['homepage'],
-                'Source: '.$package['source']['url'],
-            ]);
-        } else {
-            $this->symfonyStyle->error($bundle.' not found');
-
-            return Command::FAILURE;
-        }
+        $this->logger->debug('Installing plugin '.$bundle, ['plugin' => $bundle]);
 
         $vendorFolder = 'vendor';
-        $filesystem = new Filesystem();
 
-        // Handling the actions's
-        $this->symfonyStyle->section('Looking for actions\'s');
-        $actionDir = $vendorFolder.'/'.$bundle.'/Action';
-        if ($filesystem->exists($actionDir)) {
-            $this->symfonyStyle->writeln('Action folder found');
-            $actions = new Finder();
-            $actions = $actions->in($actionDir);
-            $this->symfonyStyle->writeln('Files found: '.count($actions));
-            foreach ($actions->files() as $action) {
-                $this->handleAction($action);
-            }
+        // First we want to read all the filles so that we have all the content the we should install.
+        $this->logger->debug('Installing plugin '.$bundle);
 
-            //$progressBar->finish();
-        } else {
-            $this->symfonyStyle->writeln('No action folder found');
+        // Lets check the basic folders for lagacy pruposes.
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/Action');
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/Schema');
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/Mapping');
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/Data');
+
+        // Then the folder where everything should be.
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/Installation');
+
+        // Handling al the found  files.
+        $this->logger->debug('Found '.count($this->objects).' schema types for '.$bundle, ['bundle' => $bundle]);
+
+        // There is a certain order to this, meaning that we want to handle certain schema types before other schema types.
+        if (isset($this->object['https://docs.commongateway.nl/schemas/Entity.schema.json']) === true && is_array($this->object['https://docs.commongateway.nl/schemas/Entity.schema.json']) === true) {
+            $schemas = $this->object['https://docs.commongateway.nl/schemas/Entity.schema.json'];
+            $this->logger->debug('Found '.count($schemas).' objects types for schema https://docs.commongateway.nl/schemas/Entity.schema.json', ['bundle' => $bundle, 'reference' => 'https://docs.commongateway.nl/schemas/Entity.schema.json']);
+            $this->handleObjectType($schemas);
+            unset($this->objects[$this->object['https://docs.commongateway.nl/schemas/Organization.schema.json']]);
         }
 
-        // Handling the mappings
-        $this->symfonyStyle->section('Looking for mappings\'s');
-        $mappingDir = $vendorFolder.'/'.$bundle.'/Mapping';
-        if ($filesystem->exists($mappingDir)) {
-            $this->symfonyStyle->writeln('Mapping folder found');
-            $mappings = new Finder();
-            $mappings = $mappings->in($mappingDir);
-            $this->symfonyStyle->writeln('Files found: '.count($mappings));
-
-            foreach ($mappings->files() as $mapping) {
-                $this->handleMapping($mapping);
-            }
-
-            //$progressBar->finish();
-        } else {
-            $this->symfonyStyle->writeln('No mapping folder found');
+        // Handle all the other objects.
+        foreach ($this->objects as $ref => $schemas) {
+            $this->logger->debug('Found '.count($schemas).' objects types for schema '.$ref, ['bundle' => $bundle, 'reference' => $ref]);
+            $this->handleObjectType($schemas);
+            unset($this->objects[$ref]);
         }
 
-        // Handling the schema's
-        $this->symfonyStyle->section('Looking for schema\'s');
-        $schemaDir = $vendorFolder.'/'.$bundle.'/Schema';
-
-        if ($filesystem->exists($schemaDir)) {
-            $this->symfonyStyle->writeln('Schema folder found');
-            $schemas = new Finder();
-            $schemas = $schemas->in($schemaDir);
-            $this->symfonyStyle->writeln('Files found: '.count($schemas));
-
-            // We want each plugin to also be a collection (if it contains schema's that is)
-            if (count($schemas) > 0) {
-                if (!$this->collection = $this->entityManager->getRepository('App:CollectionEntity')->findOneBy(['plugin' => $package['name']])) {
-                    $this->logger->debug('Created a collection for plugin '.$bundle);
-                    $this->symfonyStyle->writeln(['Created a collection for this plugin', '']);
-                    $this->collection = new CollectionEntity();
-                    $this->collection->setName($package['name']);
-                    $this->collection->setPlugin($package['name']);
-                    isset($package['description']) && $this->collection->setDescription($package['description']);
-                } else {
-                    $this->symfonyStyle->writeln(['Found a collection for this plugin', '']);
-                    $this->logger->debug('Found a collection for plugin '.$bundle);
-                }
-            }
-
-            // Persist collection
-            if (isset($this->collection)) {
-                $this->entityManager->persist($this->collection);
-                $this->entityManager->flush();
-            }
-            foreach ($schemas->files() as $schema) {
-                $this->handleSchema($schema);
-            }
-
-            //$progressBar->finish();
-        } else {
-            $this->symfonyStyle->writeln('No schema folder found');
-            $this->logger->debug('No schema folder found for plugin '.$bundle);
-        }
-
-        // Handling the data
-        $this->symfonyStyle->section('Looking for data');
-        if (array_key_exists('data', $config) && $config['data']) {
-            $dataDir = $vendorFolder.'/'.$bundle.'/Data';
-
-            if ($filesystem->exists($dataDir)) {
-                $this->symfonyStyle->writeln('Data folder found');
-                $datas = new Finder();
-                $datas = $datas->in($dataDir);
-                $this->symfonyStyle->writeln('Files found: '.count($datas));
-
-                foreach ($datas->files() as $data) {
-                    $this->handleData($data);
-                }
-
-                // We need to clear the finder
-            } else {
-                $this->logger->debug('No data folder found for plugin '.$bundle);
-                $this->symfonyStyle->writeln('No data folder found');
-            }
-        } else {
-            $this->symfonyStyle->warning('No test data loaded for bundle, run command with -data to load (test) data');
-        }
-
-        // Handling the installations
-        $this->symfonyStyle->section('Looking for installers');
-        $installationDir = $vendorFolder.'/'.$bundle.'/Installation';
-        if ($filesystem->exists($installationDir)) {
-            $this->symfonyStyle->writeln('Installation folder found');
-            $installers = new Finder();
-            $installers = $installers->in($installationDir);
-            $this->symfonyStyle->writeln('Files found: '.count($installers));
-
-            foreach ($installers->files() as $installer) {
-                $this->handleInstaller($installer);
-            }
-        } else {
-            $this->logger->debug('No Installation folder found for plugin '.$bundle);
-            $this->symfonyStyle->writeln('No Installation folder found');
-        }
-
-        $this->symfonyStyle->success('All Done');
-        $this->logger->debug('All Done installing plugin '.$bundle);
-
-        return Command::SUCCESS;
-    }
-
-    /**
-     * @param string $bundle The bundle that you want to update
-     * @param array  $config Optional configuration
-     *
-     * @return mixed
-     */
-    public function update(string $bundle, array $config = [])
-    {
-        $this->logger->debug('Trying to update: '.$bundle, ['bundle' => $bundle]);
-
-        return Command::SUCCESS;
-    }
-
-    /**
-     * @param string $bundle The bundle that you want to uninstall (delete))
-     * @param array  $config Optional configuration
-     *
-     * @return mixed
-     */
-    public function uninstall(string $bundle, string $data)
-    {
-        $this->logger->debug('Trying to uninstall: '.$bundle, ['bundle' => $bundle]);
-
-        return Command::SUCCESS;
-    }
-
-    /**
-     * @param $file
-     *
-     * @return false|void
-     */
-    public function handleAction($file)
-    {
-        if (!$actionSchema = json_decode($file->getContents(), true)) {
-            $this->symfonyStyle->writeln($file->getFilename().' is not a valid json object');
-
-            return false;
-        }
-
-        if (!$this->validateJsonAction($actionSchema)) {
-            $this->symfonyStyle->writeln($file->getFilename().' is not a valid json-schema object');
-
-            return false;
-        }
-
-        if (!$actionObject = $this->entityManager->getRepository('App:Action')->findOneBy(['reference' => $actionSchema['$id']])) {
-            $this->symfonyStyle->writeln('Action not present, creating action '.$actionSchema['title'].' under reference '.$actionSchema['$id']);
-            $actionObject = new Action();
-        } else {
-            $this->symfonyStyle->writeln('Action already present, looking to update');
-            if (array_key_exists('version', $actionSchema) && version_compare($actionSchema['version'], $actionObject->getVersion()) < 0) {
-                $this->symfonyStyle->writeln('The new action has a version number equal or lower then the already present version');
+        // Find and handle the installation.json file.
+        if ($this->filesystem->exists($vendorFolder.'/'.$bundle.'/Installation/installation.json') !== false) {
+            $finder = new Finder();
+            foreach ($finder->in($vendorFolder.'/'.$bundle.'/Installation/installation.json') as $file) {
+                $this->handleInstaller($file);
             }
         }
 
-        $actionObject->fromSchema($actionSchema);
-
-        $this->entityManager->persist($actionObject);
-
+        // Save the results to the database.
         $this->entityManager->flush();
-        $this->symfonyStyle->writeln('Done with action '.$actionObject->getName());
-    }
+
+        $this->logger->debug('All Done installing plugin '.$bundle, ['bundle' => $bundle]);
+
+        return true;
+    }//end install()
 
     /**
-     * @param $file
+     * This function read a folder to find other folders or json objects.
      *
-     * @return false|void
+     * @param string $location The location of the folder
+     *
+     * @return bool Whether or not the function was succefully executed
      */
-    public function handleMapping($file)
+    private function readDirectory(string $location): bool
     {
-        if (!$mappingSchema = json_decode($file->getContents(), true)) {
-            $this->symfonyStyle->writeln($file->getFilename().' is not a valid json object');
+
+        // Lets see if the folder exisits to start with.
+        if ($this->filesystem->exists($location) === false) {
+            $this->logger->debug('Installation folder not found', ['location' => $location]);
 
             return false;
         }
 
-        if (!$this->validateJsonMapping($mappingSchema)) {
-            $this->symfonyStyle->writeln($file->getFilename().' is not a valid json-mapping object');
+        // Get the folder content.
+        $hits = new Finder();
+        $hits = $hits->in($location);
+
+        // Handle files.
+        $this->logger->debug('Found '.count($hits->files()).'files for installer', ['location' => $location, 'files' => count($hits->files())]);
+
+        if (count($hits->files()) > 32) {
+            $this->logger->warning('Found more then 32 files in directory, try limiting your files to 32 per directory', ['location' => $location, 'files' => count($hits->files())]);
+        }
+
+        foreach ($hits->files() as $file) {
+            $this->readfile($file);
+        }
+
+        return true;
+    }//end readDirectory()
+
+    /**
+     * This function read a folder to find other folders or json objects.
+     *
+     * @param File $file The file location
+     *
+     * @return bool|array The file contents, or false if content could not be establisched
+     */
+    private function readfile(File $file): mixed
+    {
+
+        // Check if it is a valid json object.
+        $mappingSchema = json_decode($file->getContents(), true);
+        if ($mappingSchema === false) {
+            $this->logger->error($file->getFilename().' is not a valid json object');
 
             return false;
         }
 
-        if (!$mappingObject = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $mappingSchema['$id']])) {
-            $this->symfonyStyle->writeln('Maping not present, creating mapping '.$mappingSchema['title'].' under reference '.$mappingSchema['$id']);
-            $mappingObject = new Mapping();
-        } else {
-            $this->symfonyStyle->writeln('Mapping already present, looking to update');
-            if (array_key_exists('version', $mappingSchema) && version_compare($mappingSchema['version'], $mappingObject->getVersion()) < 0) {
-                $this->symfonyStyle->writeln('The new mapping has a version number equal or lower then the already present version');
-            }
-        }
+        // Check if it is a valid schema.
+        $mappingSchema = $this->validateJsonMapping($mappingSchema);
 
-        $mappingObject->fromSchema($mappingSchema);
-
-        $this->entityManager->persist($mappingObject);
-        $this->entityManager->flush();
-        $this->symfonyStyle->writeln('Done with mapping '.$mappingObject->getName());
-    }
-
-    /**
-     * @param $file
-     *
-     * @return false|void
-     */
-    public function handleSchema($file)
-    {
-        if (!$entitySchema = json_decode($file->getContents(), true)) {
-            $this->symfonyStyle->writeln($file->getFilename().' is not a valid json object');
+        if ($this->validateJsonMapping($mappingSchema) === true) {
+            $this->logger->error($file->getFilename().' is not a valid json-mapping object');
 
             return false;
         }
 
-        if (!$this->validateJsonSchema($entitySchema)) {
-            $this->symfonyStyle->writeln($file->getFilename().' is not a valid json-schema object');
-
-            return false;
-        }
-
-        if (!$entityObject = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $entitySchema['$id']])) {
-            $this->symfonyStyle->writeln('Schema not present, creating schema '.$entitySchema['title'].' under reference '.$entitySchema['$id']);
-            $entityObject = new Entity();
-        } else {
-            $this->symfonyStyle->writeln('Schema already present, looking to update');
-            if (array_key_exists('version', $entitySchema) && version_compare($entitySchema['version'], $entityObject->getVersion()) < 0) {
-                $this->symfonyStyle->writeln('The new schema has a version number equal or lower then the already present version');
-            }
-        }
-
-        $entityObject->fromSchema($entitySchema);
-
-        $this->entityManager->persist($entityObject);
-
-        // Add the schema to collection
-        if (isset($this->collection)) {
-            $entityObject->addCollection($this->collection);
-        }
-
-        $this->entityManager->flush();
-        $this->symfonyStyle->writeln('Done with schema '.$entityObject->getName());
-    }
+        // Add the file to the object.
+        return $this->addToObjects($mappingSchema);
+    }//end readfile()
 
     /**
-     * Perform a very basic check to see if a schema file is a valid json-action file.
+     * Adds an object to the objects stack if it is vallid.
      *
-     * @param array $schema
+     * @param array $schema The schema
      *
-     * @return bool
+     * @return bool|array The file contents, or false if content could not be establisched
      */
-    public function validateJsonAction(array $schema): bool
+    private function addToObjects(array $schema): mixed
     {
-        if (            array_key_exists('$id', $schema) &&
-            array_key_exists('$schema', $schema) &&
-            $schema['$schema'] == 'https://json-schema.org/draft/2020-12/action' &&
-            array_key_exists('listens', $schema) &&
-            array_key_exists('class', $schema)
-        ) {
-            return true;
+
+        // It is a schema so lets save it like that.
+        if (array_key_exists('$schema', $schema) === true) {
+            $this->objects[$schema['$schema']] = $schema;
+
+            return $schema;
         }
 
-        return false;
-    }
-
-    /**
-     * Perform a very basic check to see if a schema file is a valid json-mapping file.
-     *
-     * @param array $schema
-     *
-     * @return bool
-     */
-    public function validateJsonMapping(array $schema): bool
-    {
-        if (            array_key_exists('$id', $schema) &&
-            array_key_exists('$schema', $schema) &&
-            $schema['$schema'] == 'https://json-schema.org/draft/2020-12/mapping'
-        ) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Performce a very basic check to see if a schema file is a valid json-schema file.
-     *
-     * @param array $schema
-     *
-     * @return bool
-     */
-    public function validateJsonSchema(array $schema): bool
-    {
-        if (            array_key_exists('$id', $schema) &&
-            array_key_exists('$schema', $schema) &&
-            $schema['$schema'] == 'https://json-schema.org/draft/2020-12/schema' &&
-            array_key_exists('type', $schema) &&
-            $schema['type'] == 'object' &&
-            array_key_exists('properties', $schema)
-        ) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * @param $file
-     *
-     * @return false|void
-     */
-    public function handleData($file)
-    {
-        if (!$data = json_decode($file->getContents(), true)) {
-            $this->symfonyStyle->writeln($file->getFilename().' is not a valid json object');
-
-            return false;
-        }
-
-        foreach ($data as $reference => $objects) {
-            // Lets see if we actuelly have a shema to upload the objects to
-            if (!$entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference])) {
-                $this->symfonyStyle->writeln('No Schema found for reference '.$reference);
+        // If it is not a schema of itself it might be an array of objects.
+        foreach ($schema as $key => $value) {
+            if (is_array($value) === true) {
+                $this->objects[$key] = $value;
                 continue;
             }
 
-            $this->symfonyStyle->writeln([
-                '',
-                '<info> Found data for schema '.$reference.'</info> containing '.count($objects).' object(s)',
-            ]);
-
-            // Then we can handle data
-            foreach ($objects as $object) {
-                // Lets see if we need to update
-
-                // Backwarsd competability
-                if (isset($object['_id'])) {
-                    $object['id'] = $object['_id'];
-                    unset($object['_id']);
-                }
-
-                if (isset($object['id']) && $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $object['id']])) {
-                    $this->symfonyStyle->writeln(['', 'Object '.$object['id'].' already exists, so updating']);
-                } else {
-                    $objectEntity = new ObjectEntity($entity);
-                }
-
-                $this->symfonyStyle->writeln('Writing data to the object');
-
-                $this->saveOnFixedId($objectEntity, $object);
-
-                $this->symfonyStyle->writeln(['Object saved as '.$objectEntity->getId(), '']);
-            }
+            // The use of gettype is discoureged, but we don't use it as a bl here and only for logging text purposes. So a design decicion was made te allow it.
+            $this->logger->error('Expected to find array for schema type '.$key.' but found '.gettype($value).' instead', ['value' => $value, 'schema' => $key]);
         }
-    }
+
+        return true;
+    }//end addToObjects()
 
     /**
-     * @param $file
+     * Handels schemas of a certain type.
      *
-     * @return false
+     * @param array $schemas The schemas to handle
+     *
+     * @return void
      */
-    public function handleInstaller($file)
+    private function handleObjectType(array $schemas): void
     {
-        if (!$data = json_decode($file->getContents(), true)) {
-            $this->symfonyStyle->writeln($file->getFilename().' is not a valid json object');
+        foreach ($schemas as $schema) {
+            $object = $this->handleObject($schema);
+            // Save it to the database.
+            $this->entityManager->persist($object);
+        }
+
+    }//end handleObjectType();
+
+    /**
+     * Create an object bases on an type and a schema (the object as an array).
+     *
+     * This function breaks complexity rules, but since a switch is the most effective way of doing it a design decicion was made to allow it
+     *
+     * @param string $type   The type of the object
+     * @param array  $schema The object as an array
+     *
+     * @return bool|object
+     */
+    private function handleObject(string $type, array $schema): bool
+    {
+        // Only base we need it the assumption that on object isn't valid until we made is so.
+        $object = null;
+
+        // For security reasons we define allowed resources.
+        $allowdCoreObjects
+            = [
+                'https://docs.commongateway.nl/schemas/Action.schema.json',
+                'https://docs.commongateway.nl/schemas/Entity.schema.json',
+                'https://docs.commongateway.nl/schemas/Mapping.schema.json',
+                'https://docs.commongateway.nl/schemas/Organization.schema.json',
+                'https://docs.commongateway.nl/schemas/Application.schema.json',
+                'https://docs.commongateway.nl/schemas/User.schema.json',
+                'https://docs.commongateway.nl/schemas/SecurityGroup.schema.json',
+                'https://docs.commongateway.nl/schemas/Cronjob.schema.json',
+                'https://docs.commongateway.nl/schemas/Endpoint.schema.json',
+            ];
+
+        // Handle core schema's.
+        if (in_array($type, $allowdCoreObjects) === true) {
+            $object = $this->loadCoreSchema($schema, $type);
+        }//end if
+
+        // Handle Other schema's.
+        if (in_array($type, $allowdCoreObjects) === false) {
+            $object = $this->loadSchema($schema, $type);
+        }//end if
+
+        // Lets see if it is a new object.
+        if ($this->entityManager->contains($object) === false) {
+            $this->loger->info(
+                'A new object has been created trough the installation service',
+                [
+                    'class'  => get_class($object),
+                    'object' => $object->toSchema(),
+                ]
+            );
+        }
+
+        return $object;
+    }//end handleObject()
+
+    /**
+     * This function loads a core schema.
+     *
+     * @param array  $schema The schema
+     * @param string $type   The type of the schema
+     *
+     * @return ObjectEntity The loaded object
+     */
+    private function loadCoreSchema(array $schema, string $type): ObjectEntity
+    {
+        // Clearup the entity.
+        $entity = str_replace('https://docs.commongateway.nl/schemas/', '', $type);
+        $entity = str_replace('.schema.json', '', $entity);
+
+        // Load it if we have it.
+        if (array_key_exists('$id', $schema) === true) {
+            $object = $this->entityManager->getRepository('App:'.$entity)->findOneBy(['reference' => $schema['$id']]);
+        }
+
+        // Create it if we don't.
+        if ($object === null) {
+            $object = new $type();
+        }
+
+        // Load the data.
+        if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) <= 0) {
+            $this->loger->debug('The new mapping has a version number equal or lower then the already present version, the object is NOT is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
+        } elseif (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) < 0) {
+            $this->loger->debug('The new mapping has a version number higher then the already present version, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
+            $object->fromSchema($schema);
+        } elseif (array_key_exists('version', $schema) === false) {
+            $this->loger->debug('The new mapping don\'t have a version number, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
+            $object->fromSchema($schema);
+        }
+
+        return $object;
+    }//end loadCoreSchema()
+
+    /**
+     * This function loads an non-core schema.
+     *
+     * @param array  $schema The schema
+     * @param string $type   The type of the schema
+     *
+     * @return ObjectEntity The loaded object
+     */
+    private function loadSchema(array $schema, string $type): ObjectEntity
+    {
+        $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $type]);
+        if ($entity === null) {
+            $this->logger->error('trying to create data for non-exisitng entity', ['reference' => $type]);
 
             return false;
         }
 
-        if (!isset($data['installationService']) || !$installationService = $data['installationService']) {
-            $this->symfonyStyle->writeln($file->getFilename().' Doesn\'t contain an installation service');
+        // If we have an id let try to grab an object.
+        if (array_key_exists('id', $schema) === true) {
+            $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $schema['$id']]);
+        }
+
+        // Create it if we don't.
+        if ($object === null) {
+            $object = new ObjectEntity($entity);
+        }
+
+        // Now it gets a bit specif but for EAV data we allow nested fixed id's so let dive deep.
+        if ($this->entityManager->contains($object) === false && (array_key_exists('id', $schema) === true || array_key_exists('_id', $schema) === true)) {
+            $object = $this->schemaService->hydrate($object, $schema);
+        }
+
+        // EAV objects arn't cast from schema but hydrated from array's.
+        $object->hydrate($schema);
+
+        return $object;
+    }//end loadSchema()
+
+    /**
+     * Specifcially handles the installation file.
+     *
+     * @param $file The installation file
+     *
+     * @return bool
+     */
+    private function handleInstaller($file): bool
+    {
+        $data = json_decode($file->getContents(), true);
+
+        if ($data === false) {
+            $this->logger->error($file->getFilename().' is not a valid json object');
 
             return false;
         }
 
-        if (!$installationService = $this->container->get($installationService)) {
-            $this->symfonyStyle->writeln($file->getFilename().' Could not be loaded from container');
+        // Endpoints for schema's.
+        if (isset($data['endpoints']['schemas']) === true) {
+            $this->createEndpoints($data['endpoints']['schemas']);
+        }
+
+        // Actions for action handlers.
+        if (isset($data['actions']['handlers']) === true) {
+            $this->createActions($data['actions']['handlers']);
+        }
+
+        // Cronjobs for actions for action handlers.
+        if (isset($data['cronjobs']['actions']) === true) {
+            $this->createCronjobs($data['cronjobs']['actions']);
+        }
+
+        // Lets see if we have things that we want to create cards for stuff (ince this might create cards for the stuff above this should always be last).
+        if (isset($data['cards']) === true) {
+            $this->createCards($data['cards']);
+        }
+
+        if (isset($data['installationService']) === false || $installationService = $data['installationService'] === false) {
+            $this->logger->error($file->getFilename().' Doesn\'t contain an installation service');
+
+            return true;
+        }
+
+        if ($installationService = $this->container->get($installationService) === false) {
+            $this->logger->error($file->getFilename().' Could not be loaded from container');
 
             return false;
         }
-
-        $installationService->setStyle($this->symfonyStyle);
 
         return $installationService->install();
-    }
+    }//end handleInstaller()
 
     /**
-     * Handles forced id's on object entities.
+     * This functions creates dashboard cars for an array of endpoints, sources, schema's or objects.
      *
-     * @param ObjectEntity $objectEntity
-     * @param array        $hydrate
+     * @param array $handlers An array of references of handlers for wih actions schould be created
      *
-     * @return ObjectEntity
+     * @return array An array of Action objects
      */
-    private function saveOnFixedId(ObjectEntity $objectEntity, array $hydrate = []): ObjectEntity
+    private function createCards(array $handlers = []): array
     {
-        // This savetey dosn't make sense but we need it
-        if (!$objectEntity->getEntity()) {
-            $this->logger->error('Object can\'t be persisted due to missing schema');
-            $this->symfonyStyle->writeln(['', 'Object can\'t be persisted due to missing schema']);
+        $cards = [];
 
-            return $objectEntity;
-        }
+        // Lets loop trough the stuff.
+        foreach ($handlers as $type => $references) {
+            // Let's deterimin the propper repro to use.
+            switch ($type) {
+                case 'endpoints':
+                    $repository = $this->entityManager->getRepository('App:Endpoint');
+                    break;
+                case 'sources':
+                    $repository = $this->entityManager->getRepository('App:Source');
+                    break;
+                case 'schemas':
+                    $repository = $this->entityManager->getRepository('App:Entity');
+                    break;
+                case 'cronjobs':
+                    $repository = $this->entityManager->getRepository('App:Cronjob');
+                    break;
+                case 'objects':
+                    $repository = $this->entityManager->getRepository('App:ObjectEntity');
+                    break;
+                default:
+                    // Euhm we cant't do anything so...
+                    $this->logger->error('Unknown type used for the creation of a dashboard card '.$type);
+                    break;
+            }//end switch
 
-        // Save the values
-        //$values = $objectEntity->getObjectValues()->toArray();
-        //$objectEntity->clearAllValues();
+            // Then we can handle some data.
+            foreach ($references as $reference) {
+                $object = $repository->findOneBy(['reference' => $reference]);
 
-        // We have an object entity with a fixed id that isn't in the database, so we need to act
-        if (isset($hydrate['id']) && !$this->entityManager->contains($objectEntity)) {
-            $this->symfonyStyle->writeln(['Creating new object ('.$objectEntity->getEntity()->getName().') on a fixed id ('.$hydrate['id'].')']);
-
-            // save the id
-            $id = $hydrate['id'];
-            // Create the entity
-            $this->entityManager->persist($objectEntity);
-            $this->entityManager->flush();
-            $this->entityManager->refresh($objectEntity);
-            // Reset the id
-            $objectEntity->setId($id);
-            $this->entityManager->persist($objectEntity);
-            $this->entityManager->flush();
-            $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
-
-            $this->symfonyStyle->writeln(['Defintive object id ('.$objectEntity->getId().')']);
-        } else {
-            $this->symfonyStyle->writeln(['Creating new object ('.$objectEntity->getEntity()->getName().') on a generated id']);
-        }
-
-        // We already dit this so let's skip it
-        unset($hydrate['_id']);
-
-        foreach ($hydrate as $key => $value) {
-            // Try to get a value object
-            $valueObject = $objectEntity->getValueObject($key);
-
-            // If we find the Value object we set the value
-            if ($valueObject instanceof Value) {
-                // Value is an array so let's create an object
-                if ($valueObject->getAttribute()->getType() == 'object') {
-
-                    // I hate arrays
-                    if ($valueObject->getAttribute()->getMultiple()) {
-                        $this->symfonyStyle->info('an array for objects
-                        ');
-                        if (is_array($value)) {
-                            foreach ($value as $subvalue) {
-                                // Savety
-                                if (!$valueObject->getAttribute()->getObject()) {
-                                    continue;
-                                }
-                                // is array
-
-                                if (is_array($subvalue)) {
-                                    $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
-                                    $newObject = $this->saveOnFixedId($newObject, $subvalue);
-                                    $valueObject->addObject($newObject);
-                                }
-                                // Is not an array
-                                else {
-                                    $idValue = $subvalue;
-                                    $subvalue = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
-                                    // Savety
-                                    if (!$subvalue) {
-                                        $this->symfonyStyle->error('Could not find an object for id '.$idValue);
-                                    } else {
-                                        $valueObject->addObject($subvalue);
-                                    }
-                                }
-                            }
-                        } else {
-                            $this->symfonyStyle->error($valueObject->getAttribute()->getName().' Is a multiple so should be filled with an array, but provided value was '.$value.'(type: '.gettype($value).')');
-                        }
-                        continue;
-                    }
-                    // End of array hate, we are friends again
-
-                    // is array
-                    if (is_array($value)) {
-                        // Savety
-                        if (!$valueObject->getAttribute()->getObject()) {
-                            $this->symfonyStyle->error('Could not find an object for atribute  '.$valueObject->getAttribute()->getname().' ('.$valueObject->getAttribute()->getId().')');
-                            continue;
-                        }
-                        $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
-                        $value = $this->saveOnFixedId($newObject, $value);
-                        $valueObject->setValue($value);
-                    }
-                    // Is not an array
-                    else {
-                        $idValue = $value;
-                        $value = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
-                        // Savety
-                        if (!$value) {
-                            $this->symfonyStyle->error('Could not find an object for id '.$idValue);
-                        } else {
-                            $valueObject->setValue($value);
-                        }
-                    }
-                } else {
-                    $valueObject->setValue($value);
+                if ($object === null) {
+                    $this->logger->error('No object found for '.$reference);
+                    continue;
                 }
 
-                // Do the normaul stuf
-                $objectEntity->addObjectValue($valueObject);
+                $dashboardCard = new DashboardCard($object);
+                $cards[] = $dashboardCard;
+                $this->entityManager->persist($dashboardCard);
+                $this->logger->debug('Dashboard Card created for '.$reference);
+            }
+
+        }//end foreach
+
+        $this->logger->info(count($cards).' Cards Created');
+
+        return $cards;
+    }//end createCards()
+
+    /**
+     * This function creates endpoints for an array of schema references.
+     *
+     * @param array $schemas An array of references of schema's for wich endpoints hould be created
+     *
+     * @return array An array of endpoints
+     */
+    private function createEndpoints(array $schemas = []): array
+    {
+        $endpointRepository = $this->entityManager->getRepository('App:Endpoint');
+        $endpoints = [];
+
+        foreach ($schemas as $schema) {
+            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema['reference']]);
+
+            if ($endpointRepository->findOneBy(['name' => $entity->getName()]) === false) {
+                $endpoint = new Endpoint($entity, $schema['path'], $schema['methods']);
+
+                $this->logger->debug('Endpoint created for '.$schema['reference']);
+                $this->entityManager->persist($endpoint);
+                $endpoints[] = $endpoint;
             }
         }
 
-        // Lets force the default values
-        $objectEntity->hydrate([]);
+        $this->logger->info(count($endpoints).' Endpoints Created');
 
-        $this->entityManager->persist($objectEntity);
-        $this->entityManager->flush();
+        return $endpoints;
+    }//end createEndpoints()
 
-        return $objectEntity;
-    }
-}
+    /**
+     * This functions creates actions for an array of handlers.
+     *
+     * @param array $handlers An array of references of handlers for wih actions schould be created
+     *
+     * @return array An array of Action objects
+     */
+    private function createActions(array $handlers = []): array
+    {
+        $actions = [];
+
+        foreach ($handlers as $handler) {
+            $actionHandler = $this->container->get($handler);
+
+            if ($this->entityManager->getRepository('App:Action')->findOneBy(['class' => get_class($actionHandler)]) === null) {
+                $this->logger->error('Action found for '.$handler);
+                continue;
+            }
+
+            $schema = $actionHandler->getConfiguration();
+            if ($schema === false && empty($schema) === true) {
+                $this->logger->error('Handler '.$handler.'has no configuration');
+                continue;
+            }
+
+            $action = new Action($actionHandler);
+            $this->entityManager->persist($action);
+            $actions[] = $action;
+            $this->logger->debug('Action created for '.$handler);
+        }
+
+        $this->logger->info(count($actions).' Actions Created');
+
+        return $actions;
+    }//end createActions()
+
+    /**
+     * This function creates cronjobs for an array of action references.
+     *
+     * @param array $actions An array of references of actions for wih actions cronjobs be created
+     *
+     * @return array An array of cronjobs
+     */
+    private function createCronjobs(array $actions = []): array
+    {
+        $cronjobs = [];
+
+        foreach ($actions as $reference) {
+            $action = $this->entityManager->getRepository('App:Cronjob')->findOneBy(['reference' => $reference]);
+
+            if ($action === null) {
+                $this->logger->error('No action found for reference'.$reference);
+                continue;
+            }
+
+            $cronjob = new Cronjob($action);
+            $this->entityManager->persist($cronjob);
+            $cronjobs[] = $cronjob;
+            $this->logger->debug('Cronjob created for action '.$reference);
+        }
+
+        $this->logger->info(count($cronjobs).' Cronjobs Created');
+
+        return $cronjobs;
+    }//end createCronjobs()
+}//end class
