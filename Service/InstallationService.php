@@ -518,6 +518,7 @@ class InstallationService
                 $this->entityManager->persist($dashboardCard);
                 $this->logger->debug('Dashboard Card created for '.$reference);
             }
+
         }//end foreach
 
         $this->logger->info(count($cards).' Cards Created');
