@@ -87,6 +87,7 @@ class AuthenticationService
      */
     public function convertRSAtoJWK(Source $source): JWK
     {
+        // We use bese encode since it is an jwt design
         if ($source->getPrivateKey()) {
             $rsa = base64_decode($source->getPrivateKey());
         } else {
@@ -131,6 +132,7 @@ class AuthenticationService
      */
     public function getJWK(string $algorithm, Source $source): JWK
     {
+        // We controlle the source secret so trust the addslashes function as a design decicoin.
         if ($algorithm == 'HS256') {
             return new JWK([
                 'kty' => 'oct',

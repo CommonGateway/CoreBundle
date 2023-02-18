@@ -164,7 +164,7 @@ class CallService
             $config = array_merge_recursive($config, $source->getConfiguration());
         }
 
-        // Set authenticion if needed
+        // Set authenticion if needed, as a design decion we trust the use of parse_url here (since we control the source)
         $parsedUrl = parse_url($source->getLocation());
 
         $config = array_merge_recursive($this->getAuthentication($source), $config);
