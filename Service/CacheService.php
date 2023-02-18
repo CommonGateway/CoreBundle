@@ -226,7 +226,8 @@ class CacheService
             ['_id' => $id],
             $array,
             ['upsert' => true]
-        ) === true) {
+        ) === true
+        ) {
             $this->logger->debug('Updated object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache');
         } else {
             $this->logger->debug('Wrote object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache');
@@ -358,8 +359,14 @@ class CacheService
         $this->setPagination($limit, $start, $completeFilter);
 
         // Order.
-        $order = isset($completeFilter['_order']) ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
-        !empty($order) && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
+        $order = [];
+        if(isset($completeFilter['_order']) === true){
+            $order = str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']);
+        }
+        if(empty($order) === false){
+            $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
+        }
+
 
         // Find / Search.
         $results = $collection->find($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order])->toArray();
@@ -385,6 +392,7 @@ class CacheService
             if (isset($filter[$oldParameter]) === false || isset($filter['_'.$oldParameter]) === true) {
                 continue;
             }
+
             // But if we end up here we need to come into action.
             $filter['_'.$oldParameter] = $filter[$oldParameter];
             unset($filter[$oldParameter]);
@@ -407,13 +415,13 @@ class CacheService
             // Todo: deal with filters starting with _ like: _dateCreated.
         }
 
-        // Handle filters that expect $value to be an array
+        // Handle filters that expect $value to be an array.
         if ($this->handleFilterArray($key, $value) === true) {
             return;
         }
 
         // Todo: this works, we should go to php 8.0 later.
-        if (str_contains($value, '%')) {
+        if (str_contains($value, '%') === true) {
             $regex = str_replace('%', '', $value);
             $regex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $regex);
             $value = ['$regex' => $regex];
@@ -454,16 +462,16 @@ class CacheService
     {
         // Lets check for the methods like in.
         if (is_array($value) === true) {
-            // int_compare
-            if (array_key_exists('int_compare', $value) && is_array($value['int_compare'])) {
+            // Do int_compare.
+            if (array_key_exists('int_compare', $value) === true  && is_array($value['int_compare'])) {
                 $value = array_map('intval', $value['int_compare']);
             } else if (array_key_exists('int_compare', $value)) {
                 $value = (int) $value['int_compare'];
 
                 return true;
             }
-            // bool_compare
-            if (array_key_exists('bool_compare', $value) && is_array($value['bool_compare'])) {
+            // Do bool_compare.
+            if (array_key_exists('bool_compare', $value) === true && is_array($value['bool_compare'])) {
                 $value = array_map('boolval', $value['bool_compare']);
             } else if (array_key_exists('bool_compare', $value)) {
                 $value = (bool) $value['bool_compare'];
@@ -523,7 +531,7 @@ class CacheService
             if (array_key_exists('<=', $value) === true && is_array($value['<=']) === true) {
                 //$value = array_map('like', $value['like']); @todo
             } else if (array_key_exists('<=', $value) === true) {
-                $value = ['$lte '=> (int) $value['<=']];
+                $value = ['$lte ' => (int) $value['<=']];
 
                 return true;
             }
@@ -564,7 +572,7 @@ class CacheService
             $value = ['$in' => $value];
 
             return true;
-        }
+        }//end if
 
         return false;
     }
@@ -666,14 +674,14 @@ class CacheService
         if (is_string($search) === true) {
             $filter['$text']
                 = [
-                    '$search'       => $search,
-                    '$caseSensitive'=> false,
+                    '$search'        => $search,
+                    '$caseSensitive' => false,
                 ];
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value.
         else if (is_array($search) === true) {
             $searchRegex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $search[array_key_first($search)]);
-            if (empty($searchRegex)) {
+            if (empty($searchRegex) === true) {
                 return;
             }
             $searchRegex = ['$regex' => $searchRegex, '$options' => 'i'];
@@ -698,16 +706,16 @@ class CacheService
     {
         $limit = 30;
         if (isset($filters['_limit']) === true) {
-            $limit = intval($filters['_limit']);
+            $limit = (int) $filters['_limit'];
         }
 
         $start = 0;
         if (isset($filters['_start']) === true) {
-            $start = intval($filters['_start']);
+            $start = (int) $filters['_start'];
         } else if (isset($filters['_offset']) === true) {
-            $start = intval($filters['_offset']);
+            $start = (int) $filters['_offset'];
         } else if (isset($filters['_page']) === true) {
-            $start = (intval($filters['_page']) - 1) * $limit;
+            $start = ((int) $filters['_page'] - 1) * $limit;
         }
 
         return $filters;
@@ -743,7 +751,7 @@ class CacheService
             'total'   => $total,
             'offset'  => $offset,
             'page'    => floor($offset / $limit) + 1,
-            'pages'   => $pages == 0 ? 1 : $pages,
+            'pages'   => $pages === 0 ? 1 : $pages,
         ];
     }
 
@@ -777,7 +785,7 @@ class CacheService
         if ($collection->findOneAndReplace(
             ['id' => $endpoint->getId()->toString()],
             $endpointArray,
-            ['upsert'=>true]
+            ['upsert' => true]
         ) === true
         ) {
             $this->logger->debug('Updated endpoint '.$endpoint->getId()->toString().' to cache');
@@ -798,7 +806,7 @@ class CacheService
     public function removeEndpoint(Endpoint $endpoint): void
     {
         // Backwards compatibility.
-        if (!isset($this->client)) {
+        if (isset($this->client) === false) {
             return;
         }
 
@@ -854,12 +862,12 @@ class CacheService
 
         $collection = $this->client->endpoints->json;
 
-        if (isset($filter['path'])) {
+        if (isset($filter['path']) === true) {
             $path = $filter['path'];
             $filter['$where'] = "\"$path\".match(this.pathRegex)";
             unset($filter['path']);
         }
-        if (isset($filter['method'])) {
+        if (isset($filter['method']) === true) {
             $method = $filter['method'];
             $filter['$or'] = [['methods' => ['$in' => [$method]]], ['method' => $method]];
             unset($filter['method']);
@@ -869,8 +877,8 @@ class CacheService
 
         if (count($endpoints) > 1) {
             throw new NonUniqueResultException();
-        } else if (count($endpoints) == 1) {
-            //@TODO: We actually want to use the denormalizer, but that breaks on not setting ids
+        } else if (count($endpoints) === 1) {
+            // @TODO: We actually want to use the denormalizer, but that breaks on not setting ids
             return $this->entityManager->find('App\Entity\Endpoint', $endpoints[0]['id']);
         } else {
             return null;
@@ -892,25 +900,12 @@ class CacheService
         }
         $collection = $this->client->schemas->json;
 
-        // Remap the array
+        // Remap the array.
         $array = $entity->toSchema(null);
         $array['reference'] = $array['$id'];
         $array['schema'] = $array['$schema'];
         unset($array['$id']);
         unset($array['$schema']);
-
-        /*
-        var_dump($array);
-
-
-        if ($collection->findOneAndReplace(
-            ['_id'=>$entity->getID()],
-            $entity->toSchema(null),
-            ['upsert'=>true]
-        )) {
-        } else {
-        }
-        */
 
         return $entity;
     }
