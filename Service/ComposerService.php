@@ -182,13 +182,16 @@ class ComposerService
      */
     public function getLockFile(): array
     {
-        if (!$plugins = @file_get_contents('../composer.lock') === false) {
-            if (!$plugins = @file_get_contents('composer.lock') === false) {
-                return [];
-            }
-        }
 
-        $plugins = json_decode($plugins, true);
+        // Get the composer content.
+        $plugins = ['packages' =>[]];
+        $hits = new Finder();
+        $hits = $hits->in('../')->name(['composer.lock'])->depth(1);
+
+        // lets hook al the composer lock contents together (if we have multiple)
+        foreach ($hits as $file){
+            $plugins =  array_merge(json_decode($file->getContents(), true));
+        }
 
         return $plugins['packages'];
     }//end getLockFile()
