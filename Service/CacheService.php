@@ -133,7 +133,7 @@ class CacheService
 
         foreach ($schemas as $schema) {
             // Todo: Set to session.
-            $this->cacheShema($schema);
+            $this->setToCache($schema);
             // Todo: remove from session.
         }
 
@@ -143,7 +143,7 @@ class CacheService
 
         foreach ($endpoints as $endpoint) {
             // Todo: Set to session.
-            $this->cacheEndpoint($endpoint);
+            $this->setToCache($endpoint);
             // Todo: remove from session.
         }
 
@@ -217,7 +217,6 @@ class CacheService
 
         // Lets not cash the entire schema.
         $array = $objectEntity->toArray(['embedded' => true]);
-
         $id = $objectEntity->getId()->toString();
 
         $array['id'] = $id;
@@ -234,28 +233,6 @@ class CacheService
         }
 
         return $objectEntity;
-    }
-
-    /**
-     * Removes an object from the cache.
-     *
-     * @param ObjectEntity $object The ObjectEntity to remove.
-     *
-     * @return void This function doesn't return anything.
-     */
-    public function removeObject(ObjectEntity $object): void
-    {
-        // Backwards compatibility.
-        if (isset($this->client) === false) {
-            return;
-        }
-
-        $id = $object->getId()->toString();
-        $collection = $this->client->objects->json;
-
-        $collection->findOneAndDelete(['_id' => $id]);
-
-        $this->logger->info('Removed object from cache', ['object' => $id]);
     }
 
     /**
@@ -374,6 +351,258 @@ class CacheService
 
         // Make sure to add the pagination properties in response.
         return $this->handleResultPagination($completeFilter, $results, $total);
+    }
+
+    /**
+     * Get endpoints from cache.
+     *
+     * @param array $filter The applied filter.
+     *
+     * @return Endpoint|null Todo this should probably be array or something?
+     */
+    public function getEndpoints(array $filter): ?Endpoint
+    {
+        // Backwards compatibility.
+        if (isset($this->client) === false) {
+            return null;
+        }
+
+        $collection = $this->client->endpoints->json;
+
+        if (isset($filter['path']) === true) {
+            $path = $filter['path'];
+            $filter['$where'] = "\"$path\".match(this.pathRegex)";
+            unset($filter['path']);
+        }
+        if (isset($filter['method']) === true) {
+            $method = $filter['method'];
+            $filter['$or'] = [['methods' => ['$in' => [$method]]], ['method' => $method]];
+            unset($filter['method']);
+        }
+
+        $endpoints = $collection->find($filter)->toArray();
+
+        if (count($endpoints) > 1) {
+            throw new NonUniqueResultException();
+        } else if (count($endpoints) === 1) {
+            // @TODO: We actually want to use the denormalizer, but that breaks on not setting ids
+            return $this->entityManager->find('App\Entity\Endpoint', $endpoints[0]['id']);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Sends an object to the cache
+     *
+     * @param object $object The object to cache
+     * @return bool|array False is the object could not be cached true if the object could be caches
+     */
+    public function setToCache(object $object): mixed
+    {
+        $collection = $this->getCollection($object);
+
+        // Check if the collection is found.
+        if($collection === false){
+            return false;
+        }
+
+        // Turn is to an array.
+        $object = $object->toArray(['embedded' => true]);
+
+        // Stuff it in the cache.
+        if ($collection->findOneAndReplace(
+                ['id' => $object['id']],
+                $object,
+                ['upsert' => true]
+            ) === true
+        ) {
+            $this->logger->debug('Updated object '.$object['id'].' to cache');
+        } else {
+            $this->logger->debug('Wrote object '.$object['id'].' to cache');
+        }
+
+        return $collection->findOne(['id' => $object['id']]);
+    }
+
+
+    /**
+     * Retrieves a single object from the cache
+     *
+     * @param string $id The id of the object to get
+     * @param string $type The type of the object to get, defaults to App:ObjectEntity
+     * @return bool|array False if the object could no be retrieved or an array if the object could be retrieved
+     */
+    public function getItemFromCache(string $id, string $type = 'App:ObjectEntity'): mixed
+    {
+        $collection = $this->getCollection($type);
+
+        // Check if the collection is found.
+        if($collection === false){
+            return false;
+        }
+
+        $object = $collection->findOne(['id' => $id]);
+        if (empty($object) === false) {
+            $this->logger->debug('Retrieved object from cache', ['object' => $id]);
+            return $object;
+        }
+
+        $object = $this->entityManager->getRepository($type)->findOneBy(["id"=>$id]);
+        if (is_null($object) === false) {
+            return $this->setToCache($object);
+        }
+
+        $this->logger->error('Object does not seem to exist', ['id' => $id,'type'=>$type]);
+
+        return false;
+    }
+
+    /**
+     * Retrieves a collection of objects from the
+     *
+     * @param string|null $search   a string to search for within the given context.
+     * @param array       $filter   an array of dot notation filters for which to search with.
+     * @param array       $entities schemas to limit te search to.
+     * @param string $type The type of the object, defautls to 'App:ObjectEntity'
+     *
+     * @throws Exception A basic Exception.
+     *
+     * @return array|null The objects found.
+     */
+    public function getCollectionFromCache(
+        string $search = null,
+        array $filter = [],
+        array $entities = [],
+        string $type = 'App:ObjectEntity'
+    ): mixed
+    {
+        $collection = $this->getCollection($type);
+
+        // Check if the collection is found.
+        if($collection === false){
+            return false;
+        }
+
+        // Backwards compatibility.
+        $this->queryBackwardsCompatibility($filter);
+
+        // Make sure we also have all filters stored in $completeFilter before unsetting.
+        $completeFilter = $filter;
+        unset(
+            $filter['_start'], $filter['_offset'], $filter['_limit'], $filter['_page'],
+            $filter['_extend'], $filter['_search'], $filter['_order'], $filter['_fields']);
+
+        // 'normal' Filters (not starting with _ )
+        foreach ($filter as $key => &$value) {
+            $this->handleFilter($key, $value);
+        }
+
+        // Search for the correct entity / entities.
+        // todo: make this if into a function?
+        if (empty($entities) === false) {
+            foreach ($entities as $entity) {
+                // todo: disable this for now, put back later!
+//                $orderError = $this->handleOrderCheck($entity, $completeFilter['_order'] ?? null);
+//                $filterError = $this->handleFilterCheck($entity, $filter ?? null);
+//                if (!empty($orderError) || !empty($filterError)) {
+//                    !empty($orderError) && $errorData['order'] = $orderError;
+//                    !empty($filterError) && $errorData['filter'] = $filterError;
+//                    return [
+//                        'message' => 'There are some errors in your query parameters',
+//                        'type'    => 'error',
+//                        'path'    => $entity->getName(),
+//                        'data'    => $errorData,
+//                    ];
+//                }
+
+                //$filter['_self.schema.ref']='https://larping.nl/character.schema.json';
+                $filter['_self.schema.id']['$in'][] = $entity;
+            }
+        }
+
+        // Lets see if we need a search.
+        $this->handleSearch($filter, $completeFilter, $search);
+
+        // Limit & Start for pagination.
+        $this->setPagination($limit, $start, $completeFilter);
+
+        // Order.
+        $order = [];
+        if(isset($completeFilter['_order']) === true){
+            $order = str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']);
+        }
+        if(empty($order) === false){
+            $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
+        }
+
+
+        // Find / Search.
+        $results = $collection->find($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order])->toArray();
+        $total = $collection->count($filter);
+
+        // Make sure to add the pagination properties in response.
+        return $this->handleResultPagination($completeFilter, $results, $total);
+
+    }
+
+    /**
+     * Deletes a single object from the cache
+     *
+     * @param string|object $target The target defined by the id as string or object to remove
+     * @param string $type The type of the object, defautls to 'App:ObjectEntity'
+     * @return bool Wheter or not the target was deleted
+     */
+    public function removeFromCache($target, string $type = 'App:ObjectEntity'): bool
+    {
+
+        // What if the target is not a string.
+        if(is_object($target) == true){
+            $target = $target->getId()->toString();
+            $type = get_class($target);
+        }
+
+        $collection = $this->getCollection($type);
+
+        // Check if the collection is found.
+        if($collection === false){
+            return false;
+        }
+
+        $collection->findOneAndDelete(['id' => $target]);
+
+        return true;
+    }
+
+    /**
+     * Get the appropriate collection for an object
+     *
+     * @param string|object $object The object or string reprecentation thereof
+     * @return Collection|bool The appropriate collection if found or false if otherwise
+     */
+    private function getCollection($object): mixed
+    {
+        // Backwards compatibility.
+        if (isset($this->client) === false) {
+            return false;
+        }
+
+        // What if the object is not a string.
+        if(is_object($object) == true){
+            $object = get_class($object);
+        }
+
+        switch($object){
+            case "App:Entity":
+                return $this->client->schemas->json;
+            case "App:ObjectEntity":
+                return $this->client->objects->json;
+            case "App:Endpoint":
+                return $this->client->endpoints->json;
+            default:
+                $this->logger->error('No cache collection found for '.$object);
+                return false;
+        }
     }
 
     /**
@@ -578,79 +807,6 @@ class CacheService
     }
 
     /**
-     * Will check if we are allowed to order with the given $order query param.
-     * Uses ObjectEntityRepository->getOrderParameters() to check if we are allowed to order, see eavService->handleSearch() $orderCheck.
-     *
-     * @param Entity           $entity The entity we are going to check for allowed attributes to order on.
-     * @param mixed|array|null $order  The order query param, should be an array or null. (but could be a string).
-     *
-     * @return string|null Returns null if given order query param is correct/allowed or when it is not present. Else an error message.
-     */
-    private function handleOrderCheck(Entity $entity, $order): ?string
-    {
-        if (empty($order) === true) {
-            return null;
-        }
-
-        $orderCheck = $this->entityManager->getRepository('App:ObjectEntity')->getOrderParameters($entity, '', 1, true);
-
-        if (is_array($order) === false) {
-            $orderCheckStr = implode(', ', $orderCheck);
-            $message = 'Please give an attribute to order on. Like this: ?_order[attributeName]=desc/asc. Supported order query parameters: '.$orderCheckStr;
-        }
-
-        if (is_array($order) === true && count($order) > 1) {
-            $message = 'Only one order query param at the time is allowed.';
-        }
-
-        if (is_array($order) === true && in_array(strtoupper(array_values($order)[0]), ['DESC', 'ASC']) === false) {
-            $message = 'Please use desc or asc as value for your order query param, not: '.array_values($order)[0];
-        }
-
-        if (is_array($order) === true && in_array(array_keys($order)[0], $orderCheck) === false) {
-            $orderCheckStr = implode(', ', $orderCheck);
-            $message = 'Unsupported order query parameter ('.array_keys($order)[0].'). Supported order query parameters: '.$orderCheckStr;
-        }
-
-        if (isset($message) === true) {
-            return $message;
-        }
-
-        return null;
-    }
-
-    /**
-     * Will check if we are allowed to filter on the given $filters in the query params.
-     * Uses ObjectEntityRepository->getFilterParameters() to check if we are allowed to filter, see eavService->handleSearch() $filterCheck.
-     *
-     * @param Entity     $entity  The entity we are going to check for allowed attributes to filter on.
-     * @param array|null $filters The filters from query params.
-     *
-     * @return string|null Returns null if all filters are allowed or if none are present. Else an error message.
-     */
-    private function handleFilterCheck(Entity $entity, ?array $filters): ?string
-    {
-        if (empty($filters) === true) {
-            return null;
-        }
-
-        $filterCheck = $this->entityManager->getRepository('App:ObjectEntity')->getFilterParameters($entity, '', 1, true);
-
-        foreach ($filters as $param => $value) {
-            if (in_array($param, $filterCheck) === false) {
-                $unsupportedParams = !isset($unsupportedParams) ? $param : "$unsupportedParams, $param";
-            }
-        }
-        if (isset($unsupportedParams) === true) {
-            $filterCheckStr = implode(', ', $filterCheck);
-
-            return 'Unsupported queryParameters ('.$unsupportedParams.'). Supported queryParameters: '.$filterCheckStr;
-        }
-
-        return null;
-    }
-
-    /**
      * Adds search filter to the query on MongoDB. Will use given $search string to search on entire object, unless
      * the _search query is present in $completeFilter query params, then we use that instead.
      * _search query param supports filtering on specific properties with ?_search[property1,property2]=value.
@@ -674,9 +830,9 @@ class CacheService
         if (is_string($search) === true) {
             $filter['$text']
                 = [
-                    '$search'        => $search,
-                    '$caseSensitive' => false,
-                ];
+                '$search'        => $search,
+                '$caseSensitive' => false,
+            ];
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value.
         else if (is_array($search) === true) {
@@ -753,196 +909,5 @@ class CacheService
             'page'    => floor($offset / $limit) + 1,
             'pages'   => $pages === 0 ? 1 : $pages,
         ];
-    }
-
-    /**
-     * Put a single endpoint into the cache.
-     *
-     * @param Endpoint $endpoint The endpoint to cache.
-     *
-     * @return Endpoint The cached endpoint.
-     */
-    public function cacheEndpoint(Endpoint $endpoint): Endpoint
-    {
-        // Backwards compatibility.
-        if (isset($this->client) === false) {
-            return $endpoint;
-        }
-
-        $this->logger->debug('Start caching endpoint '.$endpoint->getId()->toString().' with name: '.$endpoint->getName());
-
-        $updatedEndpoint = $this->entityManager->getRepository('App:Endpoint')->find($endpoint->getId());
-        if ($updatedEndpoint instanceof Endpoint === true) {
-            $endpoint = $updatedEndpoint;
-        } else {
-            $this->logger->debug('Could not find an Endpoint with id: '.$endpoint->getId()->toString());
-        }
-
-        $collection = $this->client->endpoints->json;
-
-        $endpointArray = $this->serializer->normalize($endpoint);
-
-        if ($collection->findOneAndReplace(
-            ['id' => $endpoint->getId()->toString()],
-            $endpointArray,
-            ['upsert' => true]
-        ) === true
-        ) {
-            $this->logger->debug('Updated endpoint '.$endpoint->getId()->toString().' to cache');
-        } else {
-            $this->logger->debug('Wrote object '.$endpoint->getId()->toString().' to cache');
-        }
-
-        return $endpoint;
-    }
-
-    /**
-     * Removes an endpoint from the cache.
-     *
-     * @param Endpoint $endpoint The endpoint to remove.
-     *
-     * @return void This function doesn't return anything.
-     */
-    public function removeEndpoint(Endpoint $endpoint): void
-    {
-        // Backwards compatibility.
-        if (isset($this->client) === false) {
-            return;
-        }
-
-        $collection = $this->client->endpoints->json;
-
-        $collection->findOneAndDelete(['id' => $endpoint->getId()->toString()]);
-    }
-
-    /**
-     * Get a single endpoint from the cache.
-     *
-     * @param string $id The uuid of the endpoint.
-     *
-     * @return array|null The Endpoint as an array, empty array or null.
-     */
-    public function getEndpoint(string $id): ?array
-    {
-        // Backwards compatibility.
-        if (!isset($this->client)) {
-            return [];
-        }
-
-        $collection = $this->client->endpoints->json;
-
-        $object = $collection->findOne(['id' => $id]);
-        if (empty($object) === false) {
-            return $object;
-        }
-
-        $object = $this->entityManager->getRepository('App:Endpoint')->find($id);
-        if ($object instanceof Endpoint === true) {
-            return $this->serializer->normalize($object);
-        }
-
-        $this->logger->error('Endpoint does not seem to exist', ['endpoint' => $id]);
-
-        return null;
-    }
-
-    /**
-     * Get endpoints from cache.
-     *
-     * @param array $filter The applied filter.
-     *
-     * @return Endpoint|null Todo this should probably be array or something?
-     */
-    public function getEndpoints(array $filter): ?Endpoint
-    {
-        // Backwards compatibility.
-        if (isset($this->client) === false) {
-            return null;
-        }
-
-        $collection = $this->client->endpoints->json;
-
-        if (isset($filter['path']) === true) {
-            $path = $filter['path'];
-            $filter['$where'] = "\"$path\".match(this.pathRegex)";
-            unset($filter['path']);
-        }
-        if (isset($filter['method']) === true) {
-            $method = $filter['method'];
-            $filter['$or'] = [['methods' => ['$in' => [$method]]], ['method' => $method]];
-            unset($filter['method']);
-        }
-
-        $endpoints = $collection->find($filter)->toArray();
-
-        if (count($endpoints) > 1) {
-            throw new NonUniqueResultException();
-        } else if (count($endpoints) === 1) {
-            // @TODO: We actually want to use the denormalizer, but that breaks on not setting ids
-            return $this->entityManager->find('App\Entity\Endpoint', $endpoints[0]['id']);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Put a single schema into the cache.
-     *
-     * @param Entity $entity The Entity to cache.
-     *
-     * @return Entity The cached Entity.
-     */
-    public function cacheShema(Entity $entity): Entity
-    {
-        // Backwards compatibility.
-        if (isset($this->client) === false) {
-            return $entity;
-        }
-        $collection = $this->client->schemas->json;
-
-        // Remap the array.
-        $array = $entity->toSchema(null);
-        $array['reference'] = $array['$id'];
-        $array['schema'] = $array['$schema'];
-        unset($array['$id']);
-        unset($array['$schema']);
-
-        return $entity;
-    }
-
-    /**
-     * Removes a Schema from the cache.
-     *
-     * @param Entity $entity The entity to remove from cache.
-     *
-     * @return void This function doesn't return anything.
-     */
-    public function removeSchema(Entity $entity): void
-    {
-        // Backwards compatibility.
-        if (isset($this->client) === false) {
-            return;
-        }
-
-        $collection = $this->client->schemas->json;
-    }
-
-    /**
-     * Get a single schema from the cache.
-     *
-     * @param string $id The uuid of the schema
-     *
-     * @return array|null An Entity as array or null.
-     */
-    public function getSchema(string $id): ?array
-    {
-        // Backwards compatibility.
-        if (isset($this->client) === false) {
-            return null;
-        }
-
-        $collection = $this->client->schemas->json;
-
-        return null;
     }
 }

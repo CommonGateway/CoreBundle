@@ -90,19 +90,12 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
     {
         $object = $args->getObject();
         // if this subscriber only applies to certain entity types.
-        if ($object instanceof ObjectEntity === true) {
-            $this->cacheService->cacheObject($object);
-
-            return;
-        }
-        if ($object instanceof Entity === true) {
-            $this->cacheService->cacheShema($object);
-
-            return;
-        }
-        if ($object instanceof Endpoint === true) {
-            $this->cacheService->cacheEndpoint($object);
-
+        if (
+            $object instanceof Entity === true ||
+            $object instanceof ObjectEntity === true ||
+            $object instanceof Endpoint === true
+        ) {
+            $this->cacheService->setToCache($object);
             return;
         }
     }//end  postPersist()
@@ -147,18 +140,12 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         $object = $args->getObject();
 
         // if this subscriber only applies to certain entity types.
-        if ($object instanceof ObjectEntity === true) {
-            $this->cacheService->removeObject($object);
-
-            return;
-        }
-        if ($object instanceof Entity === true) {
-            $this->cacheService->removeSchema($object);
-
-            return;
-        }
-        if ($object instanceof Endpoint === true) {
-            $this->cacheService->removeEndpoint($object);
+        if (
+            $object instanceof Entity === true ||
+            $object instanceof ObjectEntity === true ||
+            $object instanceof Endpoint === true
+        ) {
+            $this->cacheService->removeFromCache($object);
 
             return;
         }
