@@ -122,7 +122,7 @@ class CacheService
             'pp:Endpoint',
         ];
 
-        // Stuffing the current data into the cache
+        // Stuffing the current data into the cache.
         foreach ($entitiesToCache as $type) {
             // Stuffing the current data into the cache.
             $objects = $this->entityManager->getRepository($type)->findAll();
@@ -300,10 +300,10 @@ class CacheService
         }
 
         // Search for the correct entity / entities.
-        // todo: make this if into a function?
+        // Todo: make this if into a function?
         if (empty($entities) === false) {
             foreach ($entities as $entity) {
-                // todo: disable this for now, put back later!
+                // Todo: disable this for now, put back later!
 //                $orderError = $this->handleOrderCheck($entity, $completeFilter['_order'] ?? null);
 //                $filterError = $this->handleFilterCheck($entity, $filter ?? null);
 //                if (!empty($orderError) || !empty($filterError)) {
@@ -506,9 +506,9 @@ class CacheService
             }
 
             // Do bool_compare.
-            if (array_key_exists('bool_compare', $value) === true && is_array($value['bool_compare'])) {
+            if (array_key_exists('bool_compare', $value) === true && is_array($value['bool_compare']) === true) {
                 $value = array_map('boolval', $value['bool_compare']);
-            } elseif (array_key_exists('bool_compare', $value)) {
+            } elseif (array_key_exists('bool_compare', $value) === true) {
                 $value = (bool) $value['bool_compare'];
 
                 return true;
@@ -533,7 +533,7 @@ class CacheService
 
             // Like (like).
             if (array_key_exists('like', $value) === true && is_array($value['like']) === true) {
-                //$value = array_map('like', $value['like']); @todo
+                // Todo: $value = array_map('like', $value['like']);.
             } elseif (array_key_exists('like', $value) === true) {
                 $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value['like']);
                 $value = ['$regex' => ".*$value.*", '$options' => 'im'];
@@ -649,9 +649,8 @@ class CacheService
                     '$search'        => $search,
                     '$caseSensitive' => false,
                 ];
-        }
-        // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value.
-        elseif (is_array($search) === true) {
+            // For _search query with specific properties in the [method] like this: ?_search[property1,property2]=value.
+        } elseif (is_array($search) === true) {
             $searchRegex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $search[array_key_first($search)]);
             if (empty($searchRegex) === true) {
                 return;

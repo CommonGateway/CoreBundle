@@ -196,19 +196,21 @@ class CallService
 
         $responseClone = clone $response;
 
-        $this->logger->info('Made external call', [
-            'source'             => $source->getId()->toString(),
-            'endpoint'           => $source->getLocation().$endpoint,
-            'method'             => $method,
-            'config'             => $config,
-            'requestBody'        => ($config['body'] ?? null),
-            'requestHeaders'     => ($config['headers'] ?? null),
-            'responseBody'       => ($config['body'] ?? null),
-            'responseHeaders'    => $responseClone->getHeaders(),
-            'responseStatus'     => $responseClone->getStatus(),
-            'responseStatusCode' => $responseClone->getStatusCode(),
-            'responseTime'       => ($stopTimer - $startTimer),
-        ]);
+        $this->logger->info('Made external call',
+            [
+                'source'             => $source->getId()->toString(),
+                'endpoint'           => $source->getLocation().$endpoint,
+                'method'             => $method,
+                'config'             => $config,
+                'requestBody'        => ($config['body'] ?? null),
+                'requestHeaders'     => ($config['headers'] ?? null),
+                'responseBody'       => ($config['body'] ?? null),
+                'responseHeaders'    => $responseClone->getHeaders(),
+                'responseStatus'     => $responseClone->getStatus(),
+                'responseStatusCode' => $responseClone->getStatusCode(),
+                'responseTime'       => ($stopTimer - $startTimer),
+            ]
+        );
 
         $createCertificates && $this->removeFiles($config);
 
@@ -229,7 +231,7 @@ class CallService
         // Switch voor object.
         $contentType = $response->getHeader('content-type')[0];
 
-        if (!$contentType) {
+        if ($contentType === false) {
             $contentType = $source->getAccept();
         }
 
@@ -253,7 +255,7 @@ class CallService
     ): array {
         // Resultaat omzetten. als geen content-type header dan content-type header is accept header.
         $responseBody = $response->getBody()->getContents();
-        if (!$responseBody) {
+        if ($responseBody === false) {
             return [];
         }
 
@@ -273,7 +275,7 @@ class CallService
                 $result = json_decode($responseBody, true);
         }
 
-        if (isset($result)) {
+        if (isset($result) === true) {
             return $result;
         }
 
@@ -326,23 +328,25 @@ class CallService
                 $decodedResponse = $this->decodeResponse($source, $response);
                 if ($decodedResponse === [] ||
                     isset($decodedResponse['results']) && $decodedResponse['results'] === [] ||
-                    isset($decodedResponse['items']) && $decodedResponse['items'] == [] ||
+                    isset($decodedResponse['items']) && $decodedResponse['items'] === [] ||
                     isset($decodedResponse['page']) && $decodedResponse['page'] !== ($pageCount - 1) ||
-                    $decodedResponse == $previousResult
+                    $decodedResponse === $previousResult
                 ) {
                     break;
                 }
                 $previousResult = $decodedResponse;
             } catch (Exception $exception) {
                 $errorCount++;
-            }
-            if (isset($decodedResponse['results'])) {
+            } // end try
+
+            if (isset($decodedResponse['results']) === true) {
                 $results = array_merge($decodedResponse['results'], $results);
-            } elseif (isset($decodedResponse['items'])) {
+            } elseif (isset($decodedResponse['items']) === true) {
                 $results = array_merge($decodedResponse['items'], $results);
-            } elseif (isset($decodedResponse[0])) {
+            } elseif (isset($decodedResponse[0]) === true) {
                 $results = array_merge($decodedResponse, $results);
             }
+
         }
 
         return $results;

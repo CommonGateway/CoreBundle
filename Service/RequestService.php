@@ -506,7 +506,7 @@ class RequestService
                     $session->set('object', $this->id);
 
                 // Todo: This log is needed so we know an user has 'read' this object
-                    // $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) ? json_encode($this->content) : $this->content);
+                    // $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) ? json_encode($this->content) : $this->content);.
                 } else {
                     // $this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
                     $result = $this->cacheService->getCollectionFromCache(null, $filters, $allowedSchemas['id']);
@@ -533,7 +533,7 @@ class RequestService
                 $this->object = new ObjectEntity($this->schema);
                 $this->object->setOwner($this->security->getUser()->getUserIdentifier());
 
-                // If ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
+                // If ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {.
                 if ($this->object->hydrate($this->content, true) === true) {
                     $this->entityManager->persist($this->object);
                 } else {
@@ -566,6 +566,7 @@ class RequestService
                     if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
                         $this->objectEntityService->setUnread($this->object);
                     }
+                    
                     $this->entityManager->persist($this->object);
                     $this->entityManager->flush();
                 } else {
