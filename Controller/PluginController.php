@@ -39,7 +39,7 @@ class PluginController extends AbstractController
         $plugins = $this->composerService->getAll(['--installed'])['installed'];
 
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
-    }
+    }//end installedAction()
 
     /**
      * @Route("/audit", methods={"GET"})

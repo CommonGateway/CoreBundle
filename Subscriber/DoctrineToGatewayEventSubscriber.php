@@ -254,7 +254,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     {
         $object = $args->getObject();
 
-        // if this subscriber only applies to certain entity types.
+        // If this subscriber only applies to certain entity types.
         if ($object instanceof ObjectEntity === false) {
             return;
         }

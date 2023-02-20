@@ -140,10 +140,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         $object = $args->getObject();
 
         // If this subscriber only applies to certain entity types.
-        if ($object instanceof Entity === true ||
-            $object instanceof ObjectEntity === true ||
-            $object instanceof Endpoint === true
-        ) {
+        if ($object instanceof Entity === true || $object instanceof ObjectEntity === true || $object instanceof Endpoint === true ) {
             $this->cacheService->removeFromCache($object);
 
             return;
