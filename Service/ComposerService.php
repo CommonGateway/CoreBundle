@@ -66,9 +66,6 @@ class ComposerService
 
         // Lets check for valid calls.
         switch ($call) {
-            case 'init':
-                $optionsList = [];
-                break;
             case 'install':
                 $optionsList = [];
                  break;
@@ -81,14 +78,6 @@ class ComposerService
             case 'remove':
                 $optionsList = [];
                 break;
-            case 'bump':
-                $optionsList = [];
-                 break;
-            case 'check-platform-reqs':
-                $optionsList = [];
-                break;
-            case 'remove':
-                $optionsList = [];
                break;
             case 'search':
                 $optionsList = ['--format', '--type', '--only-vendor', '--only-name'];
@@ -96,36 +85,6 @@ class ComposerService
             case 'show':
                 $optionsList = ['--all', '--installed', '--locked', '--platform ', '--available', '--self', '--name-only', '--path', '--tree', '--latest', '--outdated', '--latest', '--ignore', '--no-dev', '--major-only', '--minor-only', '--patch-only', '--direct', '--strict', '--ignore-platform-reqs', '--ignore-platform-req', '--format'];
                 break;
-            case 'home':
-                $optionsList = [];
-               break;
-            case 'suggests':
-                $optionsList = [];
-                 break;
-            case 'fund':
-                $optionsList = [];
-                 break;
-            case 'depends ':
-                $optionsList = [];
-                break;
-            case 'prohibits ':
-                $optionsList = [];
-                 break;
-            case 'validate ':
-                $optionsList = [];
-                 break;
-            case 'status ':
-                $optionsList = [];
-                break;
-            case 'config ':
-                $optionsList = [];
-                break;
-            case 'diagnose ':
-                $optionsList = [];
-                break;
-            case 'archive ':
-                $optionsList = [];
-                   break;
             case 'audit ':
                 $optionsList = ['--format'];
                 break;
@@ -158,11 +117,10 @@ class ComposerService
         $process->run();
 
         // Executes after the command finishes.
+        $content = $process->getOutput();
         if ($process->isSuccessful() === false) {
             $content = $process->getErrorOutput();
             $this->logger->error($content);
-        } else {
-            $content = $process->getOutput();
         }
 
         // Turn in into simpethin workable.
@@ -184,11 +142,11 @@ class ComposerService
     {
 
         // Get the composer content.
-        $plugins = ['packages' =>[]];
+        $plugins = ['packages' => []];
         $hits = new Finder();
         $hits = $hits->in('../')->name(['composer.lock'])->depth(1);
 
-        // lets hook al the composer lock contents together (if we have multiple)
+        // Lets hook al the composer lock contents together (if we have multiple).
         foreach ($hits as $file) {
             $plugins = array_merge(json_decode($file->getContents(), true));
         }
@@ -324,9 +282,7 @@ class ComposerService
         }
 
         $client = new Client();
-        $response = $client->request('GET', 'https://packagist.org/search.json', [
-            'query' => $query,
-        ]);
+        $response = $client->request('GET', 'https://packagist.org/search.json', ['query' => $query]);
 
         $plugins = json_decode($response->getBody()->getContents(), true)['results'];
 
