@@ -83,15 +83,15 @@ class CallService
     public function getCertificate(array $config): array
     {
         $configs = [];
-        if (isset($config['cert'])) {
+        if (isset($config['cert']) === true) {
             $configs['cert'] = $this->fileService->writeFile('certificate', $config['cert']);
         }
 
-        if (isset($config['ssl_key'])) {
+        if (isset($config['ssl_key'])=== true) {
             $configs['ssl_key'] = $this->fileService->writeFile('privateKey', $config['ssl_key']);
         }
 
-        if (isset($config['verify']) && is_string($config['verify'])) {
+        if (isset($config['verify']) === true && is_string($config['verify']) === true) {
             $configs['verify'] = $this->fileService->writeFile('verify', $config['ssl_key']);
         }
 
@@ -128,8 +128,8 @@ class CallService
     private function removeEmptyHeaders(array $headers): ?array
     {
         foreach ($headers as $key => $header) {
-            if (is_array($header) && count($header) < 2) {
-                if (!empty($header[0])) {
+            if (is_array($header) === true && count($header) < 2) {
+                if (empty($header[0]) === false) {
                     $headers[$key] = $header[0];
                 } else {
                     unset($headers[$key]);
@@ -160,10 +160,10 @@ class CallService
         bool $asynchronous = false,
         bool $createCertificates = true
     ): Response {
-        if (!$source->getIsEnabled()) {
+        if ($source->getIsEnabled() === false) {
             throw new HttpException('409', "This source is not enabled: {$source->getName()}");
         }
-        if ($source->getConfiguration()) {
+        if ($source->getConfiguration() === true) {
             $config = array_merge_recursive($config, $source->getConfiguration());
         }
 
@@ -180,7 +180,7 @@ class CallService
         $startTimer = microtime(true);
         // Lets make the call.
         try {
-            if (!$asynchronous) {
+            if ($asynchronous === false) {
                 $response = $this->client->request($method, $url, $config);
             } else {
                 $response = $this->client->requestAsync($method, $url, $config);

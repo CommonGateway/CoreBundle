@@ -639,6 +639,7 @@ class CacheService
         if (isset($completeFilter['_search']) === true && empty($completeFilter['_search']) === false) {
             $search = $completeFilter['_search'];
         }
+
         if (empty($search) === true) {
             return;
         }
@@ -656,6 +657,7 @@ class CacheService
             if (empty($searchRegex) === true) {
                 return;
             }
+
             $searchRegex = ['$regex' => $searchRegex, '$options' => 'i'];
             $properties = explode(',', array_key_first($search));
             foreach ($properties as $property) {
@@ -709,16 +711,16 @@ class CacheService
         $limit = 30;
         $page = 1;
 
-        // Pulling the other values form the filter
-        if (isset($filter['_start']) && is_numeric($filter['_start'])) {
+        // Pulling the other values form the filter.
+        if (isset($filter['_start']) === true && is_numeric($filter['_start']) === true ) {
             $start = (int) $filter['_start'];
         }
 
-        if (isset($filter['_limit']) && is_numeric($filter['_limit'])) {
+        if (isset($filter['_limit']) === true  && is_numeric($filter['_limit']) === true ) {
             $limit = (int) $filter['_limit'];
         }
 
-        if (isset($filter['_page']) && is_numeric($filter['_page'])) {
+        if (isset($filter['_page']) === true  && is_numeric($filter['_page']) === true ) {
             $page = (int) $filter['_page'];
         }
 
