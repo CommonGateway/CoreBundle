@@ -25,7 +25,7 @@ class DataClearCommand extends Command
     /**
      * @var ParameterBagInterface The environmental values.
      */
-    private ParameterBagInterface $parameterBagInterface;
+    private ParameterBagInterface $paramaters;
 
     /**
      * @param EntityManagerInterface $entityManagerInterface The entity manager.
@@ -33,10 +33,10 @@ class DataClearCommand extends Command
      */
     public function __construct(
         EntityManagerInterface $entityManagerInterface,
-        ParameterBagInterface $parameterBagInterface
+        ParameterBagInterface $paramaters
     ) {
         $this->entityManager = $entityManagerInterface;
-        $this->parameterBagInterface = $parameterBagInterface;
+        $this->paramaters = $paramaters;
 
         parent::__construct();
     }//end __construct()
@@ -59,19 +59,21 @@ class DataClearCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $env = $this->parameterBagInterface->get('app_env');
+        $env = $this->paramaters->get('app_env');
         $style = new SymfonyStyle($input, $output);
 
-        $style->writeln([
+        $style->writeln(
+            [
             '',
             '<info>Common Gateway Data Remover</info>',
             '============',
             '',
             'Trying to remove all data from environment: <comment> '.$env.' </comment>',
             '',
-        ]);
+            ]
+        );
 
-        if ($env != 'dev') {
+        if ($env !== 'dev') {
             $style->error('Could not remove the data bescouse the environment is not in dev mode');
 
             return Command::FAILURE;
@@ -88,7 +90,6 @@ class DataClearCommand extends Command
         $progressBar->start();
 
         foreach ($objects as $object) {
-
             // Advances the progress bar 1 unit.
             $progressBar->advance();
 
