@@ -124,22 +124,20 @@ class CacheService
 
         // Stuffing the current data into the cache
         foreach ($entitiesToCache as $type) {
-            // Stuffing the current data into the cache
+            // Stuffing the current data into the cache.
             $objects = $this->entityManager->getRepository($type)->findAll();
-            $this->logger->debut('Found '.count($objects).' objects\'s of type '.$type, ['type'=>$type]);
+            $this->logger->debut('Found '.count($objects).' objects\'s of type '.$type, ['type' => $type]);
 
             foreach ($objects as $object) {
-                // Todo: Set to session.
                 $this->setToCache($object);
-                // Todo: remove from session.
             }
 
-            // Create the index
+            // Create the index.
             $collection = $this->getCollection($type);
             $collection->createIndex(['$**' => 'text']);
-            $this->logger->debut('Created an index for '.$type, ['type'=>$type]);
+            $this->logger->debut('Created an index for '.$type, ['type' => $type]);
 
-            // Remove unwanted data
+            // Remove unwanted data.
             $objects = $collection->find()->toArray();
 
             foreach ($objects as $object) {
@@ -160,7 +158,7 @@ class CacheService
      *
      * @param array $filter The applied filter.
      *
-     * @return Endpoint|null Todo this should probably be array or something?
+     * @return Endpoint|null
      */
     public function getEndpoints(array $filter): ?Endpoint
     {
@@ -188,11 +186,11 @@ class CacheService
         if (count($endpoints) > 1) {
             throw new NonUniqueResultException();
         } elseif (count($endpoints) === 1) {
-            // @TODO: We actually want to use the denormalizer, but that breaks on not setting ids
             return $this->entityManager->find('App\Entity\Endpoint', $endpoints[0]['id']);
-        } else {
-            return null;
         }
+
+        return null;
+
     }
 
     /**
@@ -253,12 +251,12 @@ class CacheService
             return $object;
         }
 
-        $object = $this->entityManager->getRepository($type)->findOneBy(['id'=>$id]);
+        $object = $this->entityManager->getRepository($type)->findOneBy(['id' => $id]);
         if ($object === null) {
             return $this->setToCache($object);
         }
 
-        $this->logger->error('Object does not seem to exist', ['id' => $id, 'type'=>$type]);
+        $this->logger->error('Object does not seem to exist', ['id' => $id, 'type' => $type]);
 
         return false;
     }
@@ -500,13 +498,14 @@ class CacheService
         // Lets check for the methods like in.
         if (is_array($value) === true) {
             // Do int_compare.
-            if (array_key_exists('int_compare', $value) === true && is_array($value['int_compare'])) {
+            if (array_key_exists('int_compare', $value) === true && is_array($value['int_compare']) === true) {
                 $value = array_map('intval', $value['int_compare']);
-            } elseif (array_key_exists('int_compare', $value)) {
+            } elseif (array_key_exists('int_compare', $value) === true) {
                 $value = (int) $value['int_compare'];
 
                 return true;
             }
+
             // Do bool_compare.
             if (array_key_exists('bool_compare', $value) === true && is_array($value['bool_compare'])) {
                 $value = array_map('boolval', $value['bool_compare']);
@@ -515,6 +514,7 @@ class CacheService
 
                 return true;
             }
+
             // After, before, strictly_after,strictly_before (after, before, strictly_after,strictly_before).
             if (empty(array_intersect_key($value, array_flip(['after', 'before', 'strictly_after', 'strictly_before']))) === false) {
                 // Compare datetime.
@@ -531,6 +531,7 @@ class CacheService
 
                 return true;
             }
+
             // Like (like).
             if (array_key_exists('like', $value) === true && is_array($value['like']) === true) {
                 //$value = array_map('like', $value['like']); @todo
@@ -540,6 +541,7 @@ class CacheService
 
                 return true;
             }
+
             // Regex (regex).
             if (array_key_exists('regex', $value) === true && is_array($value['regex']) === true) {
                 //$value = array_map('like', $value['like']); @todo
@@ -548,6 +550,7 @@ class CacheService
 
                 return true;
             }
+
             // Greater then or equel (>=).
             if (array_key_exists('>=', $value) === true && is_array($value['>=']) === true) {
                 //$value = array_map('like', $value['like']); @todo
@@ -556,6 +559,7 @@ class CacheService
 
                 return true;
             }
+
             // Greather then (>).
             if (array_key_exists('>', $value) === true && is_array($value['>']) === true) {
                 //$value = array_map('like', $value['like']); @todo
@@ -564,6 +568,7 @@ class CacheService
 
                 return true;
             }
+
             // Smaller than or equal  (<=).
             if (array_key_exists('<=', $value) === true && is_array($value['<=']) === true) {
                 //$value = array_map('like', $value['like']); @todo
@@ -572,6 +577,7 @@ class CacheService
 
                 return true;
             }
+
             // Smaller then (<).
             if (array_key_exists('<', $value) === true && is_array($value['<']) === true) {
                 //$value = array_map('like', $value['like']); @todo
@@ -580,6 +586,7 @@ class CacheService
 
                 return true;
             }
+
             // Exact (exact).
             if (array_key_exists('exact', $value) === true && is_array($value['exact']) === true) {
                 //$value = array_map('like', $value['like']); @todo
@@ -588,14 +595,16 @@ class CacheService
 
                 return true;
             }
+
             // Case insensitive (case_insensitive).
             if (array_key_exists('case_insensitive', $value) === true && is_array($value['case_insensitive']) === true) {
-                //$value = array_map('like', $value['like']); @todo
+                // $value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('case_insensitive', $value) === true) {
                 $value = ['$regex' => $value['case_insensitive'], '$options' => 'i'];
 
                 return true;
             }
+
             // Case sensitive (case_sensitive).
             if (array_key_exists('case_sensitive', $value) === true && is_array($value['case_sensitive']) === true) {
                 //$value = array_map('like', $value['like']); @todo
@@ -696,9 +705,23 @@ class CacheService
      */
     private function handleResultPagination(array $filter, array $results, int $total = 0): array
     {
-        $start = isset($filter['_start']) && is_numeric($filter['_start']) ? (int) $filter['_start'] : 0;
-        $limit = isset($filter['_limit']) && is_numeric($filter['_limit']) ? (int) $filter['_limit'] : 30;
-        $page = isset($filter['_page']) && is_numeric($filter['_page']) ? (int) $filter['_page'] : 1;
+        // Default values.
+        $start = 0;
+        $limit = 30;
+        $page = 1;
+
+        // Pulling the other values form the filter
+        if(isset($filter['_start']) && is_numeric($filter['_start'])){
+            $start = (int) $filter['_start'];
+        }
+
+        if(isset($filter['_limit']) && is_numeric($filter['_limit'])){
+            $limit =(int) $filter['_limit'];
+        }
+
+        if(isset($filter['_page']) && is_numeric($filter['_page'])){
+            $page = (int) $filter['_page'];
+        }
 
         // Lets build the page & pagination.
         if ($start > 1) {
