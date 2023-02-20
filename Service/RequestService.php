@@ -722,8 +722,9 @@ class RequestService
         // Todo: $this->id is sometimes empty, it should never be an empty string, for now just check if it is empty or not.
         // Handle a get collection situation.
         if (isset($result['results']) === true && $this->data['method'] === 'GET' && empty($this->id) === true) {
-            array_walk($result['results'], function (&$record)
-            {
+            array_walk(
+                $result['results'],
+                function (&$record) {
                 $record = iterator_to_array($record);
             }
             );

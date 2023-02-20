@@ -288,6 +288,7 @@ class CallService
             return $result;
         } catch (Exception $exception) {
             $this->logger->error('Could not decode body, content type could not be determined');
+
             throw new Exception('Could not decode body, content type could not be determined');
         }
     }
