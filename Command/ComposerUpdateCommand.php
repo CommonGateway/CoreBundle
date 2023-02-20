@@ -35,7 +35,6 @@ class ComposerUpdateCommand extends Command
      */
     protected function configure(): void
     {
-        // Todo: these options are never used? Use them or remove them?
         $this
             ->addOption('bundle', 'b', InputOption::VALUE_OPTIONAL, 'The bundle that you want to install')
             ->addOption('data', 'd', InputOption::VALUE_OPTIONAL, 'Load (example) data set(s) from the bundle', false)

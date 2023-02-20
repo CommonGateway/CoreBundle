@@ -1,7 +1,4 @@
 <?php
-
-// Conduction/CommonGroundBundle/CommonGroundBundle.php
-
 /*
  * This file is part of the Conduction Common Ground Bundle
  *
@@ -17,4 +14,4 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class CoreBundle extends Bundle
 {
-}
+}//end class

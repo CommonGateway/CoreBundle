@@ -225,7 +225,6 @@ class EndpointService
     private function getParametersFromRequest(?array $parameters = []): array
     {
         // Lets make sure that we always have a path.
-
         $parameters['pathRaw'] = $this->request->getPathInfo();
         $parameters['path'] = explode('/', str_replace('/api/', '', $parameters['pathRaw']));
         $parameters['querystring'] = $this->request->getQueryString();

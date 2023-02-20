@@ -11,7 +11,7 @@ use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 
 /**
- * Todo.
+ * This subscribers hooks objects together if they refer to each other
  *
  * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
  *
@@ -73,12 +73,13 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
             && empty($object->getObject()) === true // It isn't currently connected to a schema.
         ) {
             $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $object->getSchema()]);
-            if ($entity) {
+            if ($entity !== null) {
                 $object->setObject($entity);
             }
 
             return;
         }
+
         if ($object instanceof Entity === true // Is it an entity.
             && empty($object->getReference()) === false // Does it have a reference.
         ) {
@@ -109,4 +110,4 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
         // We do the same stuff as during pre persist so we can just call that.
         $this->prePersist($args);
     }//end preUpdate()
-}
+}//end class

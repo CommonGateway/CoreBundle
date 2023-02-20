@@ -18,4 +18,4 @@ interface InstallerInterface
      * @return mixed An uninstall function.
      */
     public function uninstall();
-}
+}//end interface

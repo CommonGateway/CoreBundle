@@ -23,4 +23,4 @@ interface ActionHandlerInterface
      * @return mixed Any valid result
      */
     public function run(array $data, array $configuration);
-}
+}//end interface

@@ -50,5 +50,5 @@ class CacheCleanupCommand extends Command
         $this->cacheService->setStyle(new SymfonyStyle($input, $output));
 
         return $this->cacheService->cleanup();
-    }// execute()
+    }//end execute()
 }

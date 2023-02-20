@@ -106,7 +106,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     {
         $object = $args->getObject();
 
-        // if this subscriber only applies to certain entity types.
+        // If this subscriber only applies to certain entity types.
         if ($object instanceof ObjectEntity === false) {
             return;
         }
@@ -305,8 +305,6 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     /**
      * Log and throw an event before we flush the entity manager.
      *
-     * @param LifecycleEventArgs $args LifecycleEventArgs
-     *
      * @return void This function doesn't return anything.
      */
     public function preFlush(): void
@@ -326,8 +324,6 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     /**
      * Log and throw an event after we flush the entity manager.
      *
-     * @param LifecycleEventArgs $args LifecycleEventArgs
-     *
      * @return void This function doesn't return anything.
      */
     public function postFlush(): void
@@ -343,4 +339,4 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         $event = new ActionEvent('commongateway.object.post.flush', []);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.post.flush');
     }//end postFlush()
-}
+}//end class

@@ -13,7 +13,7 @@ use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
- * Todo.
+ * This subscriber makes sure that objects in the cache are kept up to date and properly removed
  *
  * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
  *
@@ -65,7 +65,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
             Events::preRemove,
             Events::postUpdate,
         ];
-    }
+    }//end getSubscribedEvents()
 
     /**
      * Updates the cache after an object is changed in the database.
@@ -89,9 +89,8 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
     public function postPersist(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
-        // if this subscriber only applies to certain entity types.
-        if (
-            $object instanceof Entity === true ||
+        // If this subscriber only applies to certain entity types.
+        if ($object instanceof Entity === true ||
             $object instanceof ObjectEntity === true ||
             $object instanceof Endpoint === true
         ) {
@@ -99,7 +98,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
 
             return;
         }
-    }//end  postPersist()
+    }//end postPersist()
 
     /**
      * Updates the cache before an object is changed in the database.
@@ -151,4 +150,4 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
             return;
         }
     }//end preRemove()
-}
+}//end class
