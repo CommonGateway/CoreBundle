@@ -86,9 +86,11 @@ class CallService
         if (isset($config['cert'])) {
             $configs['cert'] = $this->fileService->writeFile('certificate', $config['cert']);
         }
+
         if (isset($config['ssl_key'])) {
             $configs['ssl_key'] = $this->fileService->writeFile('privateKey', $config['ssl_key']);
         }
+        
         if (isset($config['verify']) && is_string($config['verify'])) {
             $configs['verify'] = $this->fileService->writeFile('verify', $config['ssl_key']);
         }

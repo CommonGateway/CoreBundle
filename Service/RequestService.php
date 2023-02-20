@@ -598,6 +598,7 @@ class RequestService
                     if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
                         $this->objectEntityService->setUnread($this->object);
                     }
+
                     $this->entityManager->persist($this->object);
                     $this->entityManager->flush();
                 } else {

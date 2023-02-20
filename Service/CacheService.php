@@ -526,6 +526,7 @@ class CacheService
                     $compareDate = new DateTime($value[$before]);
                     $compareKey = $before === 'strictly_before' ? '$lt' : '$lte';
                 }
+
                 $value = ["$compareKey" => "{$compareDate->format('c')}"];
 
                 return true;
