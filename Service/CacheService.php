@@ -303,21 +303,7 @@ class CacheService
         // Todo: make this if into a function?
         if (empty($entities) === false) {
             foreach ($entities as $entity) {
-                // Todo: disable this for now, put back later!
-//                $orderError = $this->handleOrderCheck($entity, $completeFilter['_order'] ?? null);
-//                $filterError = $this->handleFilterCheck($entity, $filter ?? null);
-//                if (!empty($orderError) || !empty($filterError)) {
-//                    !empty($orderError) && $errorData['order'] = $orderError;
-//                    !empty($filterError) && $errorData['filter'] = $filterError;
-//                    return [
-//                        'message' => 'There are some errors in your query parameters',
-//                        'type'    => 'error',
-//                        'path'    => $entity->getName(),
-//                        'data'    => $errorData,
-//                    ];
-//                }
-
-                //$filter['_self.schema.ref']='https://larping.nl/character.schema.json';
+                // Todo $filter['_self.schema.ref']='https://larping.nl/character.schema.json';.
                 $filter['_self.schema.id']['$in'][] = $entity;
             }
         }
@@ -544,7 +530,7 @@ class CacheService
 
             // Regex (regex).
             if (array_key_exists('regex', $value) === true && is_array($value['regex']) === true) {
-                //$value = array_map('like', $value['like']); @todo
+                // Todo $value = array_map('like', $value['like']);.
             } elseif (array_key_exists('regex', $value) === true) {
                 $value = ['$regex' => $value['regex']];
 
@@ -553,7 +539,7 @@ class CacheService
 
             // Greater then or equel (>=).
             if (array_key_exists('>=', $value) === true && is_array($value['>=']) === true) {
-                //$value = array_map('like', $value['like']); @todo
+                // Todo $value = array_map('like', $value['like']);.
             } elseif (array_key_exists('>=', $value) === true) {
                 $value = ['$gte' => (int) $value['>=']];
 
@@ -562,7 +548,7 @@ class CacheService
 
             // Greather then (>).
             if (array_key_exists('>', $value) === true && is_array($value['>']) === true) {
-                //$value = array_map('like', $value['like']); @todo
+                // ToDo $value = array_map('like', $value['like']);.
             } elseif (array_key_exists('>', $value) === true) {
                 $value = ['$gt' => (int) $value['>']];
 
@@ -571,7 +557,7 @@ class CacheService
 
             // Smaller than or equal  (<=).
             if (array_key_exists('<=', $value) === true && is_array($value['<=']) === true) {
-                //$value = array_map('like', $value['like']); @todo
+                // Todo  $value = array_map('like', $value['like']);.
             } elseif (array_key_exists('<=', $value) === true) {
                 $value = ['$lte ' => (int) $value['<=']];
 
@@ -580,7 +566,7 @@ class CacheService
 
             // Smaller then (<).
             if (array_key_exists('<', $value) === true && is_array($value['<']) === true) {
-                //$value = array_map('like', $value['like']); @todo
+                // Todo $value = array_map('like', $value['like']);.
             } elseif (array_key_exists('<', $value) === true) {
                 $value = ['$lt' => (int) $value['<']];
 
@@ -589,7 +575,7 @@ class CacheService
 
             // Exact (exact).
             if (array_key_exists('exact', $value) === true && is_array($value['exact']) === true) {
-                //$value = array_map('like', $value['like']); @todo
+                // Todo $value = array_map('like', $value['like']);.
             } elseif (array_key_exists('exact', $value) === true) {
                 $value = $value;
 
@@ -598,7 +584,7 @@ class CacheService
 
             // Case insensitive (case_insensitive).
             if (array_key_exists('case_insensitive', $value) === true && is_array($value['case_insensitive']) === true) {
-                // $value = array_map('like', $value['like']); @todo
+                // Todo  $value = array_map('like', $value['like']);.
             } elseif (array_key_exists('case_insensitive', $value) === true) {
                 $value = ['$regex' => $value['case_insensitive'], '$options' => 'i'];
 
@@ -607,7 +593,7 @@ class CacheService
 
             // Case sensitive (case_sensitive).
             if (array_key_exists('case_sensitive', $value) === true && is_array($value['case_sensitive']) === true) {
-                //$value = array_map('like', $value['like']); @todo
+                // Todo $value = array_map('like', $value['like']);.
             } elseif (array_key_exists('case_sensitive', $value) === true) {
                 $value = ['$regex' => $value['case_sensitive']];
 
