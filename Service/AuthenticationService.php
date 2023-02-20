@@ -138,10 +138,12 @@ class AuthenticationService
     {
         // We controlle the source secret so trust the addslashes function as a design decicoin.
         if ($algorithm === 'HS256') {
-            return new JWK([
-                'kty' => 'oct',
-                'k'   => base64_encode(addslashes($source->getSecret())),
-            ]);
+            return new JWK(
+                [
+                    'kty' => 'oct',
+                    'k'   => base64_encode(addslashes($source->getSecret())),
+                ]
+            );
         } else {
             return $this->convertRSAtoJWK($source);
         }
@@ -274,15 +276,15 @@ class AuthenticationService
      */
     public function removeFiles(array $config): void
     {
-        if (isset($config['cert'])) {
+        if (isset($config['cert']) === true) {
             $this->fileService->removeFile($config['cert']);
         }
 
-        if (isset($config['ssl_key'])) {
+        if (isset($config['ssl_key']) === true) {
             $this->fileService->removeFile($config['ssl_key']);
         }
 
-        if (isset($config['verify']) && is_string($config['verify'])) {
+        if (isset($config['verify']) === true && is_string($config['verify']) === true) {
             $this->fileService->removeFile($config['verify']);
         }
     }//end removeFiles()
@@ -296,10 +298,12 @@ class AuthenticationService
      */
     public function getTokenFromUrl(Source $source): string
     {
-        $guzzleConfig = array_merge($source->getConfiguration(), [
-            'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
-            'auth'    => [$source->getUsername(), $source->getPassword()],
-        ]);
+        $guzzleConfig = array_merge($source->getConfiguration(),
+            [
+                'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
+                'auth'    => [$source->getUsername(), $source->getPassword()],
+            ]
+        );
         $guzzleConfig = array_merge($guzzleConfig, $this->getCertificate($guzzleConfig));
 
         $client = new Client($guzzleConfig);
@@ -341,8 +345,8 @@ class AuthenticationService
         $time = time();
 
         $hmac = $websiteKey.$requestOptions['method'].$uri.$time.$nonce.$post;
-        $s = hash_hmac('sha256', $hmac, $source->getSecret(), true);
-        $hmac = base64_encode($s);
+        $secret = hash_hmac('sha256', $hmac, $source->getSecret(), true);
+        $hmac = base64_encode($secret);
 
         return 'hmac '.$websiteKey.':'.$hmac.':'.$nonce.':'.$time;
     }//end getHmacToken()
@@ -459,7 +463,7 @@ class AuthenticationService
             $this->fileService->removeFile($publicKeyFile);
 
             return $jwk;
-        } elseif ($this->checkHS256($token)) {
+        } elseif ($this->checkHS256($token) === true) {
             return JWKFactory::createFromSecret($publicKey, ['alg' => 'HS256', 'use' => 'sig']);
         }
     }//end checkHeadersAndGetJWK()
