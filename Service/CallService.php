@@ -70,6 +70,7 @@ class CallService
         $this->client = new Client([]);
         $this->entityManager = $entityManager;
         $this->fileService = $fileService;
+        $this->logger = $callLogger;
     }//end __construct()
 
     /**
