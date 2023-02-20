@@ -110,9 +110,11 @@ class CallService
         if (isset($config['cert'])) {
             $this->fileService->removeFile($config['cert']);
         }
+
         if (isset($config['ssl_key'])) {
             $this->fileService->removeFile($config['ssl_key']);
         }
+        
         if (isset($config['verify']) && is_string($config['verify'])) {
             $this->fileService->removeFile($config['verify']);
         }
