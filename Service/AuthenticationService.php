@@ -319,7 +319,7 @@ class AuthenticationService
      */
     public function getHmacToken(array $requestOptions, Source $source): string
     {
-        // todo: what if we don't have a body, method or url in $requestOptions?
+        // Todo: what if we don't have a body, method or url in $requestOptions?
         switch ($requestOptions['method']) {
             case 'POST':
                 $md5 = md5($requestOptions['body'], true);
@@ -327,7 +327,7 @@ class AuthenticationService
                 break;
             case 'GET':
             default:
-                // todo: what about a get call?
+                // Todo: what about a get call?
                 $get = 'not a UTF-8 string';
                 $post = base64_encode($get);
                 break;

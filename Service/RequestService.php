@@ -151,7 +151,7 @@ class RequestService
             return $vars;
         }
 
-        // We allow the acces to super globals here (as a design decion) becouse this funtions is a wrapper for super globals
+        // We allow the acces to super globals here (as a design decion) becouse this funtions is a wrapper for super globals.
         if (isset($_SERVER['QUERY_STRING']) === true) {
             $pairs = explode('&', $_SERVER['QUERY_STRING']);
             foreach ($pairs as $pair) {
@@ -313,7 +313,7 @@ class RequestService
         $this->data = $data;
         $this->configuration = $configuration;
 
-        // We only do proxing if the endpoint forces it/
+        // We only do proxing if the endpoint forces it.
         if ($data['endpoint'] instanceof Endpoint === false || $proxy = $data['endpoint']->getProxy() === false) {
             $message = !$data['endpoint'] instanceof Endpoint ?
                 "No Endpoint in data['endpoint']" :
@@ -399,7 +399,7 @@ class RequestService
 
         $filters = [];
 
-        // haat aan de de _.
+        // Haat aan de de _.
         if (isset($this->data['querystring']) === true) {
             $filters = $this->realRequestQueryAll($this->data['method']);
         }
@@ -413,7 +413,7 @@ class RequestService
         }
 
         // Lets pas the part variables to filters.
-        // todo: this is hacky,
+        // Todo: this is hacky.
         foreach ($this->data['path'] as $key => $value) {
             if (strpos($key, '{') !== false) {
                 if ($key !== '{id}') {
@@ -455,9 +455,9 @@ class RequestService
             $extend = $dot->all();
         }
 
+        // Todo: controlleren of de gebruiker ingelogd is.
         $metadataSelf = $extend['_self'] ?? [];
 
-        // Todo: controlleren of de gebruiker ingelogd is.
 
         // Make a list of schema's that are allowed for this endpoint.
         $allowedSchemas['id'] = [];
@@ -714,7 +714,7 @@ class RequestService
      */
     private function handleMetadataSelf(&$result, array $metadataSelf)
     {
-        // Todo: Adding type array before &$result will break this function ^^^
+        // Todo: Adding type array before &$result will break this function ^^^.
         if (empty($metadataSelf) === true) {
             return;
         }

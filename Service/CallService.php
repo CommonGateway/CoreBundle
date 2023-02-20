@@ -165,7 +165,7 @@ class CallService
             $config = array_merge_recursive($config, $source->getConfiguration());
         }
 
-        // Set authenticion if needed, as a design decion we trust the use of parse_url here (since we control the source)
+        // Set authenticion if needed, as a design decion we trust the use of parse_url here (since we control the source).
         $parsedUrl = parse_url($source->getLocation());
 
         $config = array_merge_recursive($this->getAuthentication($source), $config);
@@ -176,7 +176,7 @@ class CallService
         $url = $source->getLocation().$endpoint;
 
         $startTimer = microtime(true);
-        // Lets make the call
+        // Lets make the call.
         try {
             if (!$asynchronous) {
                 $response = $this->client->request($method, $url, $config);
@@ -185,8 +185,7 @@ class CallService
             }
         } catch (ServerException|ClientException|RequestException|Exception $e) {
             $this->logger->error($e->getMessage());
-            // Todo: log something more? like response time, status code and response headers/body ?
-            // Todo: because we wont reach the info log below...
+            // Todo: log something more? like response time, status code and response headers/body ? because we wont reach the info log below...
 
             throw $e;
         } catch (GuzzleException $e) {
@@ -228,7 +227,7 @@ class CallService
     private function getContentType(Response $response, Source $source): string
     {
 
-        // switch voor obejct
+        // Switch voor object.
         $contentType = $response->getHeader('content-type')[0];
 
         if (!$contentType) {
@@ -253,9 +252,7 @@ class CallService
         Response $response,
         ?string $contentType = 'application/json'
     ): array {
-        // resultaat omzetten
-
-        // als geen content-type header dan content-type header is accept header
+        // Resultaat omzetten. als geen content-type header dan content-type header is accept header.
         $responseBody = $response->getBody()->getContents();
         if (!$responseBody) {
             return [];
