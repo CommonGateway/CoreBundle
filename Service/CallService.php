@@ -325,7 +325,7 @@ class CallService
                 $pageCount++;
                 $response = $this->call($source, $endpoint, 'GET', $config);
                 $decodedResponse = $this->decodeResponse($source, $response);
-                if (                    $decodedResponse === [] ||
+                if ($decodedResponse === [] ||
                     isset($decodedResponse['results']) && $decodedResponse['results'] === [] ||
                     isset($decodedResponse['items']) && $decodedResponse['items'] == [] ||
                     isset($decodedResponse['page']) && $decodedResponse['page'] !== $pageCount - 1 ||
@@ -339,9 +339,9 @@ class CallService
             }
             if (isset($decodedResponse['results'])) {
                 $results = array_merge($decodedResponse['results'], $results);
-            } else if (isset($decodedResponse['items'])) {
+            } elseif (isset($decodedResponse['items'])) {
                 $results = array_merge($decodedResponse['items'], $results);
-            } else if (isset($decodedResponse[0])) {
+            } elseif (isset($decodedResponse[0])) {
                 $results = array_merge($decodedResponse, $results);
             }
         }

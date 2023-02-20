@@ -3,9 +3,7 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use GuzzleHttp\Client;
-use function PHPUnit\Framework\throwException;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
 /**
@@ -34,7 +32,7 @@ class ComposerService
     }//end __construct()
 
     /**
-     *  Checks array values agains an enum
+     *  Checks array values agains an enum.
      *
      * @param array $array An array.
      * @param array $enum  An enum.
@@ -93,7 +91,7 @@ class ComposerService
                 $optionsList = [];
                break;
             case 'search':
-                $optionsList = ['--format','--type','--only-vendor','--only-name'];
+                $optionsList = ['--format', '--type', '--only-vendor', '--only-name'];
                  break;
             case 'show':
                 $optionsList = ['--all', '--installed', '--locked', '--platform ', '--available', '--self', '--name-only', '--path', '--tree', '--latest', '--outdated', '--latest', '--ignore', '--no-dev', '--major-only', '--minor-only', '--patch-only', '--direct', '--strict', '--ignore-platform-reqs', '--ignore-platform-req', '--format'];
@@ -293,7 +291,7 @@ class ComposerService
                     if (version_compare($plugin['version'], $version) < 0) {
                         if (!$plugin['update']) {
                             $plugin['update'] = $version;
-                        } else if (version_compare($plugin['update'], $version) < 0) {
+                        } elseif (version_compare($plugin['update'], $version) < 0) {
                             $plugin['update'] = $version;
                         }
                     }

@@ -448,7 +448,7 @@ class AuthenticationService
             $this->fileService->removeFile($publicKeyFile);
 
             return $jwk;
-        } else if ($this->checkHS256($token)) {
+        } elseif ($this->checkHS256($token)) {
             return JWKFactory::createFromSecret($publicKey, ['alg' => 'HS256', 'use' => 'sig']);
         }
     }//end checkHeadersAndGetJWK()

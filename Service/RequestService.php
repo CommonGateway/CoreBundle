@@ -214,20 +214,20 @@ class RequestService
         // Try to grap an id.
         if (isset($this->data['path']['{id}']) === true) {
             return $this->data['path']['{id}'];
-        } else if (isset($this->data['path']['[id]']) === true) {
+        } elseif (isset($this->data['path']['[id]']) === true) {
             return $this->data['path']['[id]'];
-        } else if (isset($this->data['query']['id']) === true) {
+        } elseif (isset($this->data['query']['id']) === true) {
             return $this->data['query']['id'];
-        } else if (isset($this->data['path']['id']) === true) {
+        } elseif (isset($this->data['path']['id']) === true) {
             return$this->data['path']['id'];
-        } else if (isset($this->data['path']['{uuid}']) === true) {
+        } elseif (isset($this->data['path']['{uuid}']) === true) {
             return $this->data['path']['{uuid}'];
-        } else if (isset($this->data['query']['uuid']) === true) {
+        } elseif (isset($this->data['query']['uuid']) === true) {
             return$this->data['query']['uuid'];
-        } else if (isset($this->content['id']) === true) {
+        } elseif (isset($this->content['id']) === true) {
             // The id might also be passed trough the object itself.
             return $this->content['id'];
-        } else if (isset($this->content['uuid']) === true) {
+        } elseif (isset($this->content['uuid']) === true) {
             return $this->content['uuid'];
         }
 
@@ -490,12 +490,12 @@ class RequestService
                     if ($result === false) {
                         return new Response($this->serializer->serialize(
                             [
-                            'message' => 'Could not find an object with id '.$this->id,
-                            'type'    => 'Bad Request',
-                            'path'    => implode(', ', $allowedSchemas['name']),
-                            'data'    => ['id' => $this->id],
-                            ]
-                            , 'json'
+                                'message' => 'Could not find an object with id '.$this->id,
+                                'type'    => 'Bad Request',
+                                'path'    => implode(', ', $allowedSchemas['name']),
+                                'data'    => ['id' => $this->id],
+                            ],
+                            'json'
                         ), Response::HTTP_NOT_FOUND);
                     }
 
@@ -662,9 +662,9 @@ class RequestService
     /**
      * If embedded should be shown or not.
      *
-     * @param object|array $result fetched result.
-     * @param ?array       $accept accept header.
-     * @param ?bool $isCollection  Is the request a collection
+     * @param object|array $result       fetched result.
+     * @param ?array       $accept       accept header.
+     * @param ?bool        $isCollection Is the request a collection
      *
      * @return array|null The result array.
      */
@@ -859,7 +859,6 @@ class RequestService
         if ($data instanceof ObjectEntity) {
             $data = $data->toArray();
         } else {
-
         }
 
         return new Response(
