@@ -439,6 +439,7 @@ class AuthenticationService
             $headerChecker->check($token, 0);
         } catch (InvalidHeaderException $exception) {
             $this->logger->error($exception);
+
             throw $exception;
         }//end try
 

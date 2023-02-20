@@ -54,9 +54,9 @@ class ComposerService
     /**
      * Make a call to composer.
      *
-     * @param string      $call    The call that you want to make to composer shoul be one of show, init, install
-     * @param array       $options Any options
-     * @param string      $package The packadge to make the call for
+     * @param string $call    The call that you want to make to composer shoul be one of show, init, install
+     * @param array  $options Any options
+     * @param string $package The packadge to make the call for
      *
      * @return array|string The packadge details or result text
      */
@@ -189,8 +189,8 @@ class ComposerService
         $hits = $hits->in('../')->name(['composer.lock'])->depth(1);
 
         // lets hook al the composer lock contents together (if we have multiple)
-        foreach ($hits as $file){
-            $plugins =  array_merge(json_decode($file->getContents(), true));
+        foreach ($hits as $file) {
+            $plugins = array_merge(json_decode($file->getContents(), true));
         }
 
         return $plugins['packages'];
