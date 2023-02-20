@@ -286,7 +286,7 @@ class ComposerService
                 $plugin = array_merge($installedPlugin, $plugin);
                 $plugin['update'] = false;
 
-                // Lets see if we have newer versions than currently installer.
+                // Lets see if we have newer versions than currently installer (we don;t need versiond details but we want to force the key into $version).
                 foreach ($plugin['versions']  as $version => $versionDetails) {
                     if (version_compare($plugin['version'], $version) < 0) {
                         if (!$plugin['update']) {

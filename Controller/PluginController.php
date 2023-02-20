@@ -28,7 +28,7 @@ class PluginController extends AbstractController
     /**
      * @Route("/installed", methods={"GET"})
      */
-    public function installedAction(Request $request)
+    public function installedAction()
     {
         $status = 200;
         $plugins = $this->composerService->getAll(['--installed'])['installed'];

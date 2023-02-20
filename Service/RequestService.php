@@ -418,7 +418,6 @@ class RequestService
             if (strpos($key, '{') !== false) {
                 if ($key !== '{id}') {
                     $keyExplodedFilter = explode('{', $key);
-                    $keyFilter = explode('}', $keyExplodedFilter[1]);
                     $filters['_search'] = $value;
                 }
             }
@@ -504,9 +503,6 @@ class RequestService
                         return new Response('Object is not supported by this endpoint', '406');
                     }
 
-                    // Create log.
-                    // Todo if $this->content is array and not string/null, cause someone could do a get item call with a body...
-                    $responseLog = new Response(is_string($this->content) || $this->content === null ? $this->content : null, 200, ['CoreBundle' => 'GetItem']);
                     $session = new Session();
                     $session->set('object', $this->id);
 
@@ -824,12 +820,8 @@ class RequestService
         $this->data = $data;
         $this->configuration = $configuration;
 
-        if ($searchEntityId = $this->configuration['searchEntityId'] === false) {
-            $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
-        } else {
-            $searchEntity = $this->entityManager->getRepository('App:Entity')->findBy($searchEntityId);
-            $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
-        }
+        $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
+
         $response = [];
         foreach ($objectEntities as $objectEntity) {
             $response[] = [
