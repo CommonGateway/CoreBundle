@@ -561,7 +561,7 @@ class RequestService
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
-                //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
+                // If ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
                 if ($this->object->hydrate($this->content, true) === true) {
                     // This should be an unsafe hydration.
                     if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {

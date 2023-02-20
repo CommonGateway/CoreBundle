@@ -186,7 +186,6 @@ class CallService
         } catch (ServerException|ClientException|RequestException|Exception $e) {
             $this->logger->error($e->getMessage());
             // Todo: log something more? like response time, status code and response headers/body ? because we wont reach the info log below...
-
             throw $e;
         } catch (GuzzleException $e) {
             $this->logger->error($e->getMessage());
