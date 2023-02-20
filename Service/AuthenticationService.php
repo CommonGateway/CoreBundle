@@ -91,7 +91,7 @@ class AuthenticationService
     public function convertRSAtoJWK(Source $source): JWK
     {
         // We use bese encode since it is an jwt design.
-        if ($source->getPrivateKey() !=== null) {
+        if ($source->getPrivateKey() !== null) {
             $rsa = base64_decode($source->getPrivateKey());
         } else {
             $rsa = base64_decode($this->parameterBag->get('jwt.privateKey'));
@@ -359,7 +359,7 @@ class AuthenticationService
             case 'jwt-HS256':
             case 'jwt-RS512':
             case 'jwt':
-                $requestOptions['headers']['Authorization'] = 'Bearer '.$this->getJwtToken($source);
+                $requestOptions['headers']['Authorization'] = 'Bearer ' . $this->getJwtToken($source);
                 break;
             case 'username-password':
                 $requestOptions['auth'] = [$source->getUsername(), $source->getPassword()];
@@ -389,7 +389,7 @@ class AuthenticationService
         }//end switch
 
         return $requestOptions;
-    //end getAuthentication()
+    }//end getAuthentication()
 
     /**
      * Decides if the provided JWT token is signed with the RS512 Algorithm.

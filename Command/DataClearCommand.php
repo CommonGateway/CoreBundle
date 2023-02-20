@@ -28,14 +28,14 @@ class DataClearCommand extends Command
     private ParameterBagInterface $paramaters;
 
     /**
-     * @param EntityManagerInterface $entityManagerInterface The entity manager.
-     * @param ParameterBagInterface  $parameterBagInterface  The environmental values.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param ParameterBagInterface  $paramaters  The environmental values.
      */
     public function __construct(
-        EntityManagerInterface $entityManagerInterface,
+        EntityManagerInterface $entityManager,
         ParameterBagInterface $paramaters
     ) {
-        $this->entityManager = $entityManagerInterface;
+        $this->entityManager = $entityManager;
         $this->paramaters = $paramaters;
 
         parent::__construct();

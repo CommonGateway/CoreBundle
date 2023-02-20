@@ -68,7 +68,7 @@ class MappingService
 
         // Ccreate dot array based on https://github.com/adbario/php-dot-notation.
         $dotArray = new Dot();
-        // Determine pass trough and fill the array if it is set
+        // Determine pass trough and fill the array if it is set.
         if ($mappingObject->getPassTrough() === true) {
             $dotArray = new Dot($input);
         }

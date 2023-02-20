@@ -8,7 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Todo.
+ * The EAV service handles most of our Entity and attribute logic
  *
  * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
  *
@@ -58,11 +58,12 @@ class EavService
     public function checkEntityForAttribute(Entity $entity): Entity
     {
         // Make sure we have a reference.
-        if (!$entity->getReference()) {
+        if ($entity->getReference() === null) {
             return $entity;
         }
+
         // Find the atribbutes.
-        $attributes = $this->entityManager->getRepository('App:Attribute')->findBy(['reference'=>$entity->getReference(), 'object'=>null]);
+        $attributes = $this->entityManager->getRepository('App:Attribute')->findBy(['reference'=>$entity->getReference(), 'object' => null]);
 
         // Add them to the entity.
         foreach ($attributes as $attribute) {
@@ -93,4 +94,4 @@ class EavService
 
         return $attribute;
     }//end checkAttributeforEntity()
-}
+}//end class

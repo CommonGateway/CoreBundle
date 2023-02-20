@@ -133,7 +133,7 @@ class OasService
                 unset($operations[$method]['requestBody']);
             }
 
-            // TODO: Collection endpoints
+            // TODO: Collection endpoints.
         }//end foreach
 
         return $operations;
