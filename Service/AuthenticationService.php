@@ -221,7 +221,6 @@ class AuthenticationService
         $jwsBuilder = new JWSBuilder($algorithmManager);
 
         $jwk = $this->getJWK($algorithm, $source);
-        $clientId = $this->getApplicationId($source);
         $payload = $this->getJwtPayload($source);
 
         $jws = $jwsBuilder
@@ -439,6 +438,7 @@ class AuthenticationService
         try {
             $headerChecker->check($token, 0);
         } catch (InvalidHeaderException $exception) {
+            $this->logger->error($exception);
             throw $exception;
         }//end try
 

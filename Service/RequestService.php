@@ -417,7 +417,6 @@ class RequestService
         foreach ($this->data['path'] as $key => $value) {
             if (strpos($key, '{') !== false) {
                 if ($key !== '{id}') {
-                    $keyExplodedFilter = explode('{', $key);
                     $filters['_search'] = $value;
                 }
             }
