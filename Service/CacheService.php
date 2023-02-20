@@ -501,7 +501,8 @@ class CacheService
 
     /**
      * Handles a single filter used on a get collection api call. Specifically an filter where the value is an array.
-     * Todo: make code in this function abstract or split it into multiple functions.
+     *
+     * This code breaks complexity guidelines, we have made a descign deciion to accept that for now on the bases of readabliity
      *
      * @param string       $key   The key.
      * @param string|array $value The value.
