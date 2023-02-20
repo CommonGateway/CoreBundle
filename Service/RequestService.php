@@ -315,7 +315,7 @@ class RequestService
 
         // We only do proxing if the endpoint forces it.
         if ($data['endpoint'] instanceof Endpoint === false || $proxy = $data['endpoint']->getProxy() === false) {
-            $message = !$data['endpoint'] instanceof Endpoint ?
+            $message = $data['endpoint'] instanceof Endpoint === false ?
                 "No Endpoint in data['endpoint']" :
                 "This Endpoint has no Proxy: {$data['endpoint']->getName()}";
 
@@ -563,7 +563,7 @@ class RequestService
                 // If ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {.
                 if ($this->object->hydrate($this->content, true) === true) {
                     // This should be an unsafe hydration.
-                    if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
+                    if (array_key_exists('@dateRead', $this->content) === true && $this->content['@dateRead'] === false) {
                         $this->objectEntityService->setUnread($this->object);
                     }
                     

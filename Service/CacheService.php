@@ -504,11 +504,11 @@ class CacheService
             if (empty(array_intersect_key($value, array_flip(['after', 'before', 'strictly_after', 'strictly_before']))) === false) {
                 // Compare datetime.
                 if (empty(array_intersect_key($value, array_flip(['after', 'strictly_after']))) === false) {
-                    $after = array_key_exists('strictly_after', $value) ? 'strictly_after' : 'after';
+                    $after = array_key_exists('strictly_after', $value) === true ? 'strictly_after' : 'after';
                     $compareDate = new DateTime($value[$after]);
                     $compareKey = $after === 'strictly_after' ? '$gt' : '$gte';
                 } else {
-                    $before = array_key_exists('strictly_before', $value) ? 'strictly_before' : 'before';
+                    $before = array_key_exists('strictly_before', $value) === true ? 'strictly_before' : 'before';
                     $compareDate = new DateTime($value[$before]);
                     $compareKey = $before === 'strictly_before' ? '$lt' : '$lte';
                 }
