@@ -66,11 +66,11 @@ class MappingService
         // Log to the session that we are doing a mapping.
         $this->session->set('mapping', $mappingObject->getId()->toString());
 
-        // Determine pass trough and create dot array based on https://github.com/adbario/php-dot-notation.
+        // Ccreate dot array based on https://github.com/adbario/php-dot-notation.
+        $dotArray = new Dot();
+        // Determine pass trough and fill the array if it is set
         if ($mappingObject->getPassTrough() === true) {
             $dotArray = new Dot($input);
-        } else {
-            $dotArray = new Dot();
         }
 
         $dotInput = new Dot($input);
@@ -103,7 +103,7 @@ class MappingService
         $output = $dotArray->all();
 
         // Log the result.
-        $this->logger->info('Mapped array based on mapping object', ['mapping'=>$mappingObject->toSchema(), 'input'=>$input, 'output'=>$output]);
+        $this->logger->info('Mapped array based on mapping object', ['mapping' => $mappingObject->toSchema(), 'input' => $input, 'output' => $output]);
 
         $this->session->remove('mapping');
 
@@ -112,6 +112,8 @@ class MappingService
 
     /**
      * Cast values to a specific type.
+     *
+     * This function breaks complexity rules, but since a switch is more effective a design desicion was made to allow it
      *
      * @param Mapping $mappingObject The mapping object used to map.
      * @param Dot     $dotArray      The current status of the mappings as a dot array.
@@ -122,8 +124,8 @@ class MappingService
     {
         // Loop trough the configured castings.
         foreach ($mappingObject->getCast() as $key => $cast) {
-            if (!$dotArray->has($key)) {
-                $this->logger->error("Trying to cast an property that doesn't exist during mapping", ['mapping'=>$mappingObject->toSchema(), 'property'=>$key, 'cast'=>$cast]);
+            if ($dotArray->has($key) === false) {
+                $this->logger->error("Trying to cast an property that doesn't exist during mapping", ['mapping' => $mappingObject->toSchema(), 'property' => $key, 'cast' => $cast]);
                 continue;
             }
 
@@ -148,12 +150,11 @@ class MappingService
                         $dotArray->delete($key);
                     }
                     break;
-                // Todo: Add more casts
                 case 'jsonToArray':
                     $value = str_replace(['&quot;', '&amp;quot;'], '"', $value);
                     $value = json_decode($value, true);
                 default:
-                    $this->logger->error('Trying to cast to an unsupported cast type', ['mapping' => $mappingObject->toSchema(), 'property' =>$key, 'cast' => $cast]);
+                    $this->logger->error('Trying to cast to an unsupported cast type', ['mapping' => $mappingObject->toSchema(), 'property' => $key, 'cast' => $cast]);
                     break;
             }//end switch
 
@@ -161,7 +162,7 @@ class MappingService
             if ($dotArray->has($key) === true) {
                 $dotArray->set($key, $value);
             }
-        }
+        }//end foreach
 
         return $dotArray;
     }//end cast()
