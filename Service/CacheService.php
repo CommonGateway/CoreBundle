@@ -706,7 +706,12 @@ class CacheService
         } else {
             $offset = ($page - 1) * $limit;
         }
+
         $pages = ceil($total / $limit);
+
+        if($pages === 0){
+            $pages = 1;
+        }
 
         return [
             'results' => $results,
@@ -714,8 +719,8 @@ class CacheService
             'limit'   => $limit,
             'total'   => $total,
             'offset'  => $offset,
-            'page'    => floor($offset / $limit) + 1,
-            'pages'   => $pages === 0 ? 1 : $pages,
+            'page'    => (floor($offset / $limit) + 1),
+            'pages'   => $pages
         ];
     }
 }
