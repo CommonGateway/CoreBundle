@@ -194,7 +194,7 @@ class RequestService
             $name = str_replace($key, '', $name);
             $key = trim($key, '[]');
             if (empty($key) === false) {
-                $vars[$nameKey] = $vars[$nameKey] ?? [];
+                $vars[$nameKey] = ($vars[$nameKey] ?? []);
                 $this->recursiveRequestQueryKey($vars[$nameKey], $name, $key, $value);
             } else {
                 $vars[$nameKey][] = $value;
@@ -456,7 +456,7 @@ class RequestService
         }
 
         // Todo: controlleren of de gebruiker ingelogd is.
-        $metadataSelf = $extend['_self'] ?? [];
+        $metadataSelf = ($extend['_self'] ?? []);
 
 
         // Make a list of schema's that are allowed for this endpoint.
@@ -638,7 +638,7 @@ class RequestService
         $this->entityManager->flush();
 
         if (isset($eventType) === true && isset($result) === true) {
-            $event = new ActionEvent($eventType, ['response' => $result, 'entity' => $this->object->getEntity()->getReference() ?? $this->object->getEntity()->getId()->toString()]);
+            $event = new ActionEvent($eventType, ['response' => $result, 'entity' => ($this->object->getEntity()->getReference() ?? $this->object->getEntity()->getId()->toString())]);
             $this->eventDispatcher->dispatch($event, $event->getType());
 
             // If we have a response return that.

@@ -688,7 +688,7 @@ class CacheService
         } elseif (isset($filters['_offset']) === true) {
             $start = (int) $filters['_offset'];
         } elseif (isset($filters['_page']) === true) {
-            $start = ((int) $filters['_page'] - 1) * $limit;
+            $start = (((int) $filters['_page'] - 1) * $limit);
         }
 
         return $filters;
@@ -725,9 +725,9 @@ class CacheService
 
         // Lets build the page & pagination.
         if ($start > 1) {
-            $offset = $start - 1;
+            $offset = ($start - 1);
         } else {
-            $offset = ($page - 1) * $limit;
+            $offset = (($page - 1) * $limit);
         }
 
         $pages = ceil($total / $limit);

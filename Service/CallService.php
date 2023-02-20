@@ -202,13 +202,13 @@ class CallService
             'endpoint'           => $source->getLocation().$endpoint,
             'method'             => $method,
             'config'             => $config,
-            'requestBody'        => $config['body'] ?? null,
-            'requestHeaders'     => $config['headers'] ?? null,
-            'responseBody'       => $config['body'] ?? null,
+            'requestBody'        => ($config['body'] ?? null),
+            'requestHeaders'     => ($config['headers'] ?? null),
+            'responseBody'       => ($config['body'] ?? null),
             'responseHeaders'    => $responseClone->getHeaders(),
             'responseStatus'     => $responseClone->getStatus(),
             'responseStatusCode' => $responseClone->getStatusCode(),
-            'responseTime'       => $stopTimer - $startTimer,
+            'responseTime'       => ($stopTimer - $startTimer),
         ]);
 
         $createCertificates && $this->removeFiles($config);
@@ -258,9 +258,9 @@ class CallService
             return [];
         }
 
-        $xmlEncoder = new XmlEncoder(['xml_root_node_name' => $this->configuration['apiSource']['location']['xmlRootNodeName'] ?? 'response']);
+        $xmlEncoder = new XmlEncoder(['xml_root_node_name' => ($this->configuration['apiSource']['location']['xmlRootNodeName'] ?? 'response')]);
         $yamlEncoder = new YamlEncoder();
-        $contentType = $this->getContentType($response, $source) ?? $contentType;
+        $contentType = ($this->getContentType($response, $source) ?? $contentType);
         switch ($contentType) {
             case 'text/yaml':
             case 'text/x-yaml':
@@ -328,7 +328,7 @@ class CallService
                 if ($decodedResponse === [] ||
                     isset($decodedResponse['results']) && $decodedResponse['results'] === [] ||
                     isset($decodedResponse['items']) && $decodedResponse['items'] == [] ||
-                    isset($decodedResponse['page']) && $decodedResponse['page'] !== $pageCount - 1 ||
+                    isset($decodedResponse['page']) && $decodedResponse['page'] !== ($pageCount - 1) ||
                     $decodedResponse == $previousResult
                 ) {
                     break;
