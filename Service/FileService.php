@@ -53,5 +53,5 @@ class FileService
     public function removeFile($filename): void
     {
         unlink($filename);
-    }//end removeFile
-}
+    }//end removeFile()
+}//end class

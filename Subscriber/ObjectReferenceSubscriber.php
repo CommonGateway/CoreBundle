@@ -88,6 +88,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
                 if ($attribute instanceof Attribute === false) {
                     continue;
                 }
+
                 $attribute->setObject($object);
                 if (empty($attribute->getInversedByPropertyName()) === false && empty($attribute->getInversedBy()) === true) {
                     $attribute->setInversedBy($object->getAttributeByName($attribute->getInversedByPropertyName()));

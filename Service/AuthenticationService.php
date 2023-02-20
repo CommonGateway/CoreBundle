@@ -52,6 +52,9 @@ class AuthenticationService
      */
     private LoggerInterface $logger;
 
+    /**
+     * @param ParameterBagInterface $parameterBag The parameters
+     */
     public function __construct(ParameterBagInterface $parameterBag)
     {
         $this->parameterBag = $parameterBag;
@@ -81,18 +84,19 @@ class AuthenticationService
      *
      * @TODO: This can be merged with the function above by getting the key from the source earlier
      *
-     * @param Source $source
+     * @param Source $source The source
      *
      * @return JWK The resulting Json Web Key
      */
     public function convertRSAtoJWK(Source $source): JWK
     {
-        // We use bese encode since it is an jwt design
-        if ($source->getPrivateKey()) {
+        // We use bese encode since it is an jwt design.
+        if ($source->getPrivateKey() !=== null) {
             $rsa = base64_decode($source->getPrivateKey());
         } else {
             $rsa = base64_decode($this->parameterBag->get('jwt.privateKey'));
         }//end if
+
         $filename = $this->fileService->writeFile('privateKey', $rsa);
         $jwk = JWKFactory::createFromKeyFile(
             $filename,
@@ -115,7 +119,7 @@ class AuthenticationService
      */
     public function getAlgorithm(Source $source): string
     {
-        if ($source->getAuth() == 'jwt-HS256' || $source->getAuth() == 'jwt') {
+        if ($source->getAuth() === 'jwt-HS256' || $source->getAuth() === 'jwt') {
             return 'HS256';
         } else {
             return 'RS512';
@@ -125,15 +129,15 @@ class AuthenticationService
     /**
      * Gets a JWK for a source based on the algorithm of the source.
      *
-     * @param string $algorithm
-     * @param Source $source
+     * @param string $algorithm The algorithm
+     * @param Source $source The source
      *
      * @return JWK The resulting Json Web Key
      */
     public function getJWK(string $algorithm, Source $source): JWK
     {
         // We controlle the source secret so trust the addslashes function as a design decicoin.
-        if ($algorithm == 'HS256') {
+        if ($algorithm === 'HS256') {
             return new JWK([
                 'kty' => 'oct',
                 'k'   => base64_encode(addslashes($source->getSecret())),
@@ -152,7 +156,7 @@ class AuthenticationService
      */
     public function getApplicationId(Source $source): string
     {
-        if ($source->getJwtId()) {
+        if ($source->getJwtId() !== null) {
             return $source->getJwtId();
         } else {
             return $source->getId();
@@ -171,13 +175,15 @@ class AuthenticationService
         $now = new DateTime('now');
         $clientId = $this->getApplicationId($source);
 
-        return json_encode([
+        return json_encode(
+            [
             'iss'                 => $clientId,
             'iat'                 => $now->getTimestamp(),
             'client_id'           => $clientId,
             'user_id'             => $this->parameterBag->get('app_name'),
             'user_representation' => $this->parameterBag->get('app_name'),
-        ]);
+            ]
+        );
     }//end getJwtPayload()
 
     /**
@@ -244,13 +250,15 @@ class AuthenticationService
     public function getCertificate(array $config): array
     {
         $configs = [];
-        if (isset($config['cert'])) {
+        if (isset($config['cert']) === true) {
             $configs['cert'] = $this->fileService->writeFile('certificate', $config['cert']);
         }
-        if (isset($config['ssl_key'])) {
+
+        if (isset($config['ssl_key']) === true) {
             $configs['ssl_key'] = $this->fileService->writeFile('privateKey', $config['ssl_key']);
         }
-        if (isset($config['verify']) && is_string($config['verify'])) {
+
+        if (isset($config['verify'])  === true && is_string($config['verify'])  === true) {
             $configs['verify'] = $this->fileService->writeFile('verify', $config['ssl_key']);
         }
 
@@ -280,7 +288,7 @@ class AuthenticationService
     /**
      * Todo.
      *
-     * @param Source $source
+     * @param Source $source The Sorce
      *
      * @return string
      */
@@ -299,13 +307,13 @@ class AuthenticationService
         $this->removeFiles($guzzleConfig);
 
         return $body['access_token'];
-    }
+    }//end getTokenFromUrl()
 
     /**
      * Todo.
      *
-     * @param array  $requestOptions
-     * @param Source $source
+     * @param array  $requestOptions Any request options
+     * @param Source $source The source
      *
      * @return string
      */
@@ -335,12 +343,12 @@ class AuthenticationService
         $hmac = base64_encode($s);
 
         return 'hmac '.$websiteKey.':'.$hmac.':'.$nonce.':'.$time;
-    }
+    }//end getHmacToken()
 
     /**
      * Todo.
      *
-     * @param Source $source
+     * @param Source $source The source
      *
      * @return array
      */
@@ -381,7 +389,7 @@ class AuthenticationService
         }
 
         return $requestOptions;
-    }
+    //end getAuthentication()
 
     /**
      * Decides if the provided JWT token is signed with the RS512 Algorithm.
@@ -443,7 +451,7 @@ class AuthenticationService
             throw $exception;
         }//end try
 
-        if ($this->checkRS512($token)) {
+        if ($this->checkRS512($token) === true) {
             $publicKeyFile = $this->fileService->writeFile('publickey', $publicKey);
             $jwk = JWKFactory::createFromKeyFile($publicKeyFile, null, []);
             $this->fileService->removeFile($publicKeyFile);
@@ -473,7 +481,7 @@ class AuthenticationService
         $jws = $serializerManager->unserialize($token);
         $jwk = $this->checkHeadersAndGetJWK($jws, $publicKey);
 
-        if ($jwsVerifier->verifyWithKey($jws, $jwk, 0)) {
+        if ($jwsVerifier->verifyWithKey($jws, $jwk, 0) === true) {
             return json_decode($jws->getPayload(), true);
         } else {
             throw new AuthenticationException('Unauthorized: The provided Authorization header is invalid', 401);
