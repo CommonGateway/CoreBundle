@@ -371,7 +371,7 @@ class AuthenticationService
                 $requestOptions['headers']['Authorization'] = $this->getHmacToken($requestOptions, $source);
                 break;
             case 'apikey':
-                if ($source->getAuthorizationHeader()) {
+                if ($source->getAuthorizationHeader() !== null) {
                     switch ($source->getAuthorizationPassthroughMethod()) {
                         case 'query':
                             $requestOptions['query'][$source->getAuthorizationHeader()] = $source->getApiKey();
@@ -386,7 +386,7 @@ class AuthenticationService
                 break;
             default:
                 break;
-        }
+        }//end switch
 
         return $requestOptions;
     //end getAuthentication()
