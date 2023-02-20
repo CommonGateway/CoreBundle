@@ -12,7 +12,6 @@ use Exception;
 use MongoDB\Client;
 use MongoDB\Collection;
 use Psr\Log\LoggerInterface;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -120,7 +119,7 @@ class CacheService
         $entitiesToCache = [
             'App:ObjectEntity',
             'App:Entity',
-            'pp:Endpoint'
+            'pp:Endpoint',
         ];
 
         // Stuffing the current data into the cache
@@ -188,7 +187,7 @@ class CacheService
 
         if (count($endpoints) > 1) {
             throw new NonUniqueResultException();
-        } else if (count($endpoints) === 1) {
+        } elseif (count($endpoints) === 1) {
             // @TODO: We actually want to use the denormalizer, but that breaks on not setting ids
             return $this->entityManager->find('App\Entity\Endpoint', $endpoints[0]['id']);
         } else {
@@ -197,9 +196,10 @@ class CacheService
     }
 
     /**
-     * Sends an object to the cache
+     * Sends an object to the cache.
      *
      * @param object $object The object to cache
+     *
      * @return bool|array False is the object could not be cached true if the object could be caches
      */
     public function setToCache(object $object): mixed
@@ -216,10 +216,10 @@ class CacheService
 
         // Stuff it in the cache.
         if ($collection->findOneAndReplace(
-                ['id' => $object['id']],
-                $object,
-                ['upsert' => true]
-            ) === true
+            ['id' => $object['id']],
+            $object,
+            ['upsert' => true]
+        ) === true
         ) {
             $this->logger->debug('Updated object '.$object['id'].' to cache');
         } else {
@@ -229,12 +229,12 @@ class CacheService
         return $collection->findOne(['id' => $object['id']]);
     }
 
-
     /**
-     * Retrieves a single object from the cache
+     * Retrieves a single object from the cache.
      *
-     * @param string $id The id of the object to get
+     * @param string $id   The id of the object to get
      * @param string $type The type of the object to get, defaults to App:ObjectEntity
+     *
      * @return bool|array False if the object could no be retrieved or an array if the object could be retrieved
      */
     public function getItemFromCache(string $id, string $type = 'App:ObjectEntity'): mixed
@@ -242,33 +242,34 @@ class CacheService
         $collection = $this->getCollection($type);
 
         // Check if the collection is found.
-        if($collection === false) {
+        if ($collection === false) {
             return false;
         }
 
         $object = $collection->findOne(['id' => $id]);
         if (empty($object) === false) {
             $this->logger->debug('Retrieved object from cache', ['object' => $id]);
+
             return $object;
         }
 
-        $object = $this->entityManager->getRepository($type)->findOneBy(["id"=>$id]);
+        $object = $this->entityManager->getRepository($type)->findOneBy(['id'=>$id]);
         if ($object === null) {
             return $this->setToCache($object);
         }
 
-        $this->logger->error('Object does not seem to exist', ['id' => $id,'type'=>$type]);
+        $this->logger->error('Object does not seem to exist', ['id' => $id, 'type'=>$type]);
 
         return false;
     }
 
     /**
-     * Retrieves a collection of objects from the
+     * Retrieves a collection of objects from the.
      *
      * @param string|null $search   a string to search for within the given context.
      * @param array       $filter   an array of dot notation filters for which to search with.
      * @param array       $entities schemas to limit te search to.
-     * @param string $type The type of the object, defautls to 'App:ObjectEntity'
+     * @param string      $type     The type of the object, defautls to 'App:ObjectEntity'
      *
      * @throws Exception A basic Exception.
      *
@@ -279,8 +280,7 @@ class CacheService
         array $filter = [],
         array $entities = [],
         string $type = 'App:ObjectEntity'
-    ): mixed
-    {
+    ): mixed {
         $collection = $this->getCollection($type);
 
         // Check if the collection is found.
@@ -341,21 +341,20 @@ class CacheService
             $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
         }
 
-
         // Find / Search.
         $results = $collection->find($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order])->toArray();
         $total = $collection->count($filter);
 
         // Make sure to add the pagination properties in response.
         return $this->handleResultPagination($completeFilter, $results, $total);
-
     }
 
     /**
-     * Deletes a single object from the cache
+     * Deletes a single object from the cache.
      *
      * @param string|object $target The target defined by the id as string or object to remove
-     * @param string $type The type of the object, defautls to 'App:ObjectEntity'
+     * @param string        $type   The type of the object, defautls to 'App:ObjectEntity'
+     *
      * @return bool Wheter or not the target was deleted
      */
     public function removeFromCache($target, string $type = 'App:ObjectEntity'): bool
@@ -381,9 +380,10 @@ class CacheService
     }
 
     /**
-     * Get the appropriate collection for an object
+     * Get the appropriate collection for an object.
      *
      * @param string|object $object The object or string reprecentation thereof
+     *
      * @return Collection|bool The appropriate collection if found or false if otherwise
      */
     private function getCollection($object): mixed
@@ -399,14 +399,15 @@ class CacheService
         }
 
         switch ($object) {
-            case "App:Entity":
+            case 'App:Entity':
                 return $this->client->schemas->json;
-            case "App:ObjectEntity":
+            case 'App:ObjectEntity':
                 return $this->client->objects->json;
-            case "App:Endpoint":
+            case 'App:Endpoint':
                 return $this->client->endpoints->json;
             default:
                 $this->logger->error('No cache collection found for '.$object);
+
                 return false;
         }
     }
@@ -499,9 +500,9 @@ class CacheService
         // Lets check for the methods like in.
         if (is_array($value) === true) {
             // Do int_compare.
-            if (array_key_exists('int_compare', $value) === true  && is_array($value['int_compare'])) {
+            if (array_key_exists('int_compare', $value) === true && is_array($value['int_compare'])) {
                 $value = array_map('intval', $value['int_compare']);
-            } else if (array_key_exists('int_compare', $value)) {
+            } elseif (array_key_exists('int_compare', $value)) {
                 $value = (int) $value['int_compare'];
 
                 return true;
@@ -509,7 +510,7 @@ class CacheService
             // Do bool_compare.
             if (array_key_exists('bool_compare', $value) === true && is_array($value['bool_compare'])) {
                 $value = array_map('boolval', $value['bool_compare']);
-            } else if (array_key_exists('bool_compare', $value)) {
+            } elseif (array_key_exists('bool_compare', $value)) {
                 $value = (bool) $value['bool_compare'];
 
                 return true;
@@ -533,7 +534,7 @@ class CacheService
             // Like (like).
             if (array_key_exists('like', $value) === true && is_array($value['like']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } else if (array_key_exists('like', $value) === true) {
+            } elseif (array_key_exists('like', $value) === true) {
                 $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value['like']);
                 $value = ['$regex' => ".*$value.*", '$options' => 'im'];
 
@@ -542,7 +543,7 @@ class CacheService
             // Regex (regex).
             if (array_key_exists('regex', $value) === true && is_array($value['regex']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } else if (array_key_exists('regex', $value) === true) {
+            } elseif (array_key_exists('regex', $value) === true) {
                 $value = ['$regex' => $value['regex']];
 
                 return true;
@@ -550,7 +551,7 @@ class CacheService
             // Greater then or equel (>=).
             if (array_key_exists('>=', $value) === true && is_array($value['>=']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } else if (array_key_exists('>=', $value) === true) {
+            } elseif (array_key_exists('>=', $value) === true) {
                 $value = ['$gte' => (int) $value['>=']];
 
                 return true;
@@ -558,7 +559,7 @@ class CacheService
             // Greather then (>).
             if (array_key_exists('>', $value) === true && is_array($value['>']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } else if (array_key_exists('>', $value) === true) {
+            } elseif (array_key_exists('>', $value) === true) {
                 $value = ['$gt' => (int) $value['>']];
 
                 return true;
@@ -566,7 +567,7 @@ class CacheService
             // Smaller than or equal  (<=).
             if (array_key_exists('<=', $value) === true && is_array($value['<=']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } else if (array_key_exists('<=', $value) === true) {
+            } elseif (array_key_exists('<=', $value) === true) {
                 $value = ['$lte ' => (int) $value['<=']];
 
                 return true;
@@ -574,7 +575,7 @@ class CacheService
             // Smaller then (<).
             if (array_key_exists('<', $value) === true && is_array($value['<']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } else if (array_key_exists('<', $value) === true) {
+            } elseif (array_key_exists('<', $value) === true) {
                 $value = ['$lt' => (int) $value['<']];
 
                 return true;
@@ -582,7 +583,7 @@ class CacheService
             // Exact (exact).
             if (array_key_exists('exact', $value) === true && is_array($value['exact']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } else if (array_key_exists('exact', $value) === true) {
+            } elseif (array_key_exists('exact', $value) === true) {
                 $value = $value;
 
                 return true;
@@ -590,7 +591,7 @@ class CacheService
             // Case insensitive (case_insensitive).
             if (array_key_exists('case_insensitive', $value) === true && is_array($value['case_insensitive']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } else if (array_key_exists('case_insensitive', $value) === true) {
+            } elseif (array_key_exists('case_insensitive', $value) === true) {
                 $value = ['$regex' => $value['case_insensitive'], '$options' => 'i'];
 
                 return true;
@@ -598,7 +599,7 @@ class CacheService
             // Case sensitive (case_sensitive).
             if (array_key_exists('case_sensitive', $value) === true && is_array($value['case_sensitive']) === true) {
                 //$value = array_map('like', $value['like']); @todo
-            } else if (array_key_exists('case_sensitive', $value) === true) {
+            } elseif (array_key_exists('case_sensitive', $value) === true) {
                 $value = ['$regex' => $value['case_sensitive']];
 
                 return true;
@@ -637,12 +638,12 @@ class CacheService
         if (is_string($search) === true) {
             $filter['$text']
                 = [
-                '$search'        => $search,
-                '$caseSensitive' => false,
-            ];
+                    '$search'        => $search,
+                    '$caseSensitive' => false,
+                ];
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value.
-        else if (is_array($search) === true) {
+        elseif (is_array($search) === true) {
             $searchRegex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $search[array_key_first($search)]);
             if (empty($searchRegex) === true) {
                 return;
@@ -675,9 +676,9 @@ class CacheService
         $start = 0;
         if (isset($filters['_start']) === true) {
             $start = (int) $filters['_start'];
-        } else if (isset($filters['_offset']) === true) {
+        } elseif (isset($filters['_offset']) === true) {
             $start = (int) $filters['_offset'];
-        } else if (isset($filters['_page']) === true) {
+        } elseif (isset($filters['_page']) === true) {
             $start = ((int) $filters['_page'] - 1) * $limit;
         }
 

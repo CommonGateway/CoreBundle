@@ -96,6 +96,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
             $object instanceof Endpoint === true
         ) {
             $this->cacheService->setToCache($object);
+
             return;
         }
     }//end  postPersist()

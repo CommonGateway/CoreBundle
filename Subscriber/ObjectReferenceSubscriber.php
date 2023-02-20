@@ -68,7 +68,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
         $object = $args->getObject();
 
         // Let see if we need to hook an attribute to an entity.
-        if (            $object instanceof Attribute === true // It's an attribute.
+        if ($object instanceof Attribute === true // It's an attribute.
             && empty($object->getSchema()) === false // It has a reference.
             && empty($object->getObject()) === true // It isn't currently connected to a schema.
         ) {
@@ -79,7 +79,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
 
             return;
         }
-        if (            $object instanceof Entity === true // Is it an entity.
+        if ($object instanceof Entity === true // Is it an entity.
             && empty($object->getReference()) === false // Does it have a reference.
         ) {
             $attributes = $this->entityManager->getRepository('App:Attribute')->findBy(['schema' => $object->getReference()]);
