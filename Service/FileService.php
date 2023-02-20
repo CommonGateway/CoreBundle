@@ -30,7 +30,7 @@ class FileService
     }//end __construct()
 
     /**
-     * Todo.
+     * Write the file to the server
      *
      * @param string $baseFileName The name of the file to write.
      * @param string $contents     The content to write into het file.

@@ -290,7 +290,7 @@ class AuthenticationService
     }//end removeFiles()
 
     /**
-     * Todo.
+     * get toekn fromurl
      *
      * @param Source $source The Sorce
      *
@@ -316,7 +316,7 @@ class AuthenticationService
     }//end getTokenFromUrl()
 
     /**
-     * Todo.
+     * get hmac token
      *
      * @param array  $requestOptions Any request options
      * @param Source $source         The source
@@ -352,7 +352,7 @@ class AuthenticationService
     }//end getHmacToken()
 
     /**
-     * Todo.
+     * Get authentication
      *
      * @param Source $source The source
      *
