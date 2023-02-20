@@ -124,7 +124,7 @@ class CacheService
         ];
 
         // Stuffing the current data into the cache
-        foreach($entitiesToCache as $type){
+        foreach ($entitiesToCache as $type) {
             // Stuffing the current data into the cache
             $objects = $this->entityManager->getRepository($type)->findAll();
             $this->logger->debut('Found '.count($objects).' objects\'s of type '.$type, ['type'=>$type]);
@@ -149,31 +149,11 @@ class CacheService
                     $collection->removeFromCache($object['id'], $type);
                 }
             }
-        }
+        }//end if
 
         $this->logger->info('Finished cache warmup');
 
         return Command::SUCCESS;
-    }
-
-    /**
-     * Loop through a collection and remove any vallues that no longer exists.
-     *
-     * @param Collection $collection The collection to use.
-     * @param string     $type       The (symfony) entity entity type.
-     *
-     * @return void This function doesn't return anything.
-     */
-    private function removeDataFromCache(Collection $collection, string $type): void
-    {
-        $endpoints = $collection->find()->toArray();
-        foreach ($endpoints as $endpoint) {
-            $symfonyObject = $this->entityManager->find($type, $endpoint['id']);
-            if (empty($symfonyObject) === true) {
-                $this->logger->info("removing {$endpoint['id']} from cache", ['type' => $type, 'id' => $endpoint['id']]);
-                $collection->findOneAndDelete(['id' => $endpoint['id']]);
-            }
-        }
     }
 
     /**
@@ -197,6 +177,7 @@ class CacheService
             $filter['$where'] = "\"$path\".match(this.pathRegex)";
             unset($filter['path']);
         }
+
         if (isset($filter['method']) === true) {
             $method = $filter['method'];
             $filter['$or'] = [['methods' => ['$in' => [$method]]], ['method' => $method]];
@@ -226,7 +207,7 @@ class CacheService
         $collection = $this->getCollection($object);
 
         // Check if the collection is found.
-        if($collection === false){
+        if ($collection === false) {
             return false;
         }
 
@@ -261,7 +242,7 @@ class CacheService
         $collection = $this->getCollection($type);
 
         // Check if the collection is found.
-        if($collection === false){
+        if($collection === false) {
             return false;
         }
 
@@ -272,7 +253,7 @@ class CacheService
         }
 
         $object = $this->entityManager->getRepository($type)->findOneBy(["id"=>$id]);
-        if (is_null($object) === false) {
+        if ($object === null) {
             return $this->setToCache($object);
         }
 
@@ -303,7 +284,7 @@ class CacheService
         $collection = $this->getCollection($type);
 
         // Check if the collection is found.
-        if($collection === false){
+        if ($collection === false) {
             return false;
         }
 
@@ -352,10 +333,11 @@ class CacheService
 
         // Order.
         $order = [];
-        if(isset($completeFilter['_order']) === true){
+        if (isset($completeFilter['_order']) === true) {
             $order = str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']);
         }
-        if(empty($order) === false){
+
+        if (empty($order) === false) {
             $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
         }
 
@@ -380,7 +362,7 @@ class CacheService
     {
 
         // What if the target is not a string.
-        if(is_object($target) == true){
+        if (is_object($target) == true) {
             $target = $target->getId()->toString();
             $type = get_class($target);
         }
@@ -388,7 +370,7 @@ class CacheService
         $collection = $this->getCollection($type);
 
         // Check if the collection is found.
-        if($collection === false){
+        if ($collection === false) {
             return false;
         }
 
@@ -412,11 +394,11 @@ class CacheService
         }
 
         // What if the object is not a string.
-        if(is_object($object) == true){
+        if (is_object($object) == true) {
             $object = get_class($object);
         }
 
-        switch($object){
+        switch ($object) {
             case "App:Entity":
                 return $this->client->schemas->json;
             case "App:ObjectEntity":
