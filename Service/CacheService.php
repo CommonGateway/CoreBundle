@@ -362,7 +362,7 @@ class CacheService
     {
 
         // What if the target is not a string.
-        if (is_object($target) == true) {
+        if (is_object($target) === true) {
             $target = $target->getId()->toString();
             $type = get_class($target);
         }
@@ -394,7 +394,7 @@ class CacheService
         }
 
         // What if the object is not a string.
-        if (is_object($object) == true) {
+        if (is_object($object) === true) {
             $object = get_class($object);
         }
 
