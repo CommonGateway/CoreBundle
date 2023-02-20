@@ -437,7 +437,7 @@ class RequestService
         unset($this->content['_self']);
         unset($this->content['_schema']);
 
-        // Todo: make this a function, like eavService->getRequestExtend()
+        // Todo: make this a function, like eavService->getRequestExtend().
         if (isset($this->data['query']['extend']) === true) {
             $extend = $this->data['query']['extend'];
 
@@ -454,9 +454,10 @@ class RequestService
 
             $extend = $dot->all();
         }
+
         $metadataSelf = $extend['_self'] ?? [];
 
-        // Todo: controlleren of de gebruiker ingelogd is
+        // Todo: controlleren of de gebruiker ingelogd is.
 
         // Make a list of schema's that are allowed for this endpoint.
         $allowedSchemas['id'] = [];
@@ -471,7 +472,7 @@ class RequestService
         // Security.
         $scopes = $this->getScopes();
         foreach ($allowedSchemas['id'] as $schema) {
-            if (!isset($scopes[$schema][$this->data['method']]) === true) {
+            if (isset($scopes[$schema][$this->data['method']]) === false) {
                 // THROW SECURITY ERROR AND EXIT.
             }
         }
@@ -505,12 +506,12 @@ class RequestService
                     $session = new Session();
                     $session->set('object', $this->id);
 
-                // todo: This log is needed so we know an user has 'read' this object
+                // Todo: This log is needed so we know an user has 'read' this object
                     // $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) ? json_encode($this->content) : $this->content);
                 } else {
-                    //$this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
+                    // $this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
                     $result = $this->cacheService->getCollectionFromCache(null, $filters, $allowedSchemas['id']);
-                }
+                }//end if
                 break;
             case 'POST':
                 $eventType = 'commongateway.object.create';
@@ -533,8 +534,8 @@ class RequestService
                 $this->object = new ObjectEntity($this->schema);
                 $this->object->setOwner($this->security->getUser()->getUserIdentifier());
 
-                //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
-                if ($this->object->hydrate($this->content, true)) {
+                // If ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
+                if ($this->object->hydrate($this->content, true) === true) {
                     $this->entityManager->persist($this->object);
                 } else {
                     // Use validation to throw an error.
@@ -561,7 +562,8 @@ class RequestService
                 }
 
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
-                if ($this->object->hydrate($this->content, true)) { // This should be an unsafe hydration.
+                if ($this->object->hydrate($this->content, true) === true) {
+                    // This should be an unsafe hydration.
                     if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
                         $this->objectEntityService->setUnread($this->object);
                     }
@@ -591,8 +593,8 @@ class RequestService
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
-                //if ($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
-                if ($this->object->hydrate($this->content)) {
+                // If ($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
+                if ($this->object->hydrate($this->content) === true) {
                     if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
                         $this->objectEntityService->setUnread($this->object);
                     }
@@ -712,7 +714,7 @@ class RequestService
      */
     private function handleMetadataSelf(&$result, array $metadataSelf)
     {
-        // todo: Adding type array before &$result will break this function ^^^
+        // Todo: Adding type array before &$result will break this function ^^^
         if (empty($metadataSelf) === true) {
             return;
         }
@@ -720,9 +722,11 @@ class RequestService
         // Todo: $this->id is sometimes empty, it should never be an empty string, for now just check if it is empty or not.
         // Handle a get collection situation.
         if (isset($result['results']) === true && $this->data['method'] === 'GET' && empty($this->id) === true) {
-            array_walk($result['results'], function (&$record) {
+            array_walk($result['results'], function (&$record)
+            {
                 $record = iterator_to_array($record);
-            });
+            }
+            );
             // Do handleMetadataSelf() for each object, recursively.
             foreach ($result['results'] as &$collectionItem) {
                 $this->handleMetadataSelf($collectionItem, $metadataSelf);
@@ -734,11 +738,13 @@ class RequestService
         if (empty($result['id']) === true || Uuid::isValid($result['id']) === false) {
             return;
         }
+
         $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['id']]);
 
         if ($objectEntity instanceof ObjectEntity === false) {
             return;
         }
+
         if ($this->data['method'] === 'GET' && empty($this->id) === false) {
             $metadataSelf['dateRead'] = 'getItem';
         }
