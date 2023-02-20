@@ -13,7 +13,7 @@ use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
- * This subscriber makes sure that objects in the cache are kept up to date and properly removed
+ * This subscriber makes sure that objects in the cache are kept up to date and properly removed.
  *
  * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
  *
