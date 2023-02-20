@@ -53,11 +53,11 @@ class UpgradeCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        $style = new SymfonyStyle($input, $output);
         $bundle = $input->getArgument('bundle');
         $data = $input->getArgument('data');
         $schema = $input->getOption('--no-schema');
 
-        return $this->installationService->upgrade($io, $bundle, $data, $schema);
+        return $this->installationService->upgrade($style, $bundle, $data, $schema);
     }
 }

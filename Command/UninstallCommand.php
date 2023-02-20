@@ -53,12 +53,12 @@ class UninstallCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        $style = new SymfonyStyle($input, $output);
         $bundle = $input->getArgument('bundle');
         $data = $input->getArgument('data');
         $schema = $input->getOption('--no-schema');
 
-        return $this->installationService->uninstall($io, $bundle, $data, $schema);
+        return $this->installationService->uninstall($style, $bundle, $data, $schema);
 
         return Command::SUCCESS;
     }
