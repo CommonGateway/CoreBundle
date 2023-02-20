@@ -145,5 +145,6 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
 
             return;
         }
+        
     }//end preRemove()
 }//end class

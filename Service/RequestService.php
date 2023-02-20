@@ -750,6 +750,7 @@ class RequestService
         if ($this->data['method'] === 'GET' && empty($this->id) === false) {
             $metadataSelf['dateRead'] = 'getItem';
         }
+
         $this->responseService->xCommongatewayMetadata = $metadataSelf;
         $resultMetadataSelf = (array) $result['_self'];
         $this->responseService->addToMetadata($resultMetadataSelf, 'dateRead', $objectEntity);
