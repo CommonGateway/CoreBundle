@@ -165,6 +165,7 @@ class CallService
         if ($source->getIsEnabled() === false) {
             throw new HttpException('409', "This source is not enabled: {$source->getName()}");
         }
+
         if ($source->getConfiguration() === true) {
             $config = array_merge_recursive($config, $source->getConfiguration());
         }
@@ -350,7 +351,6 @@ class CallService
             } elseif (isset($decodedResponse[0]) === true) {
                 $results = array_merge($decodedResponse, $results);
             }//end try
-
         }
 
         return $results;
