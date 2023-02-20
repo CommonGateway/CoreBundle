@@ -484,7 +484,7 @@ class RequestService
             case 'GET':
                 // We have an id (so single object).
                 if (isset($this->id) === true && empty($this->id) === false) {
-                    $result = $this->cacheService->getObject($this->id);
+                    $result = $this->cacheService->getItemFromCache($this->id);
 
                     // If we do not have an object we throw an 404.
                     if ($result === false) {
@@ -514,7 +514,7 @@ class RequestService
                     // $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) ? json_encode($this->content) : $this->content);
                 } else {
                     //$this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
-                    $result = $this->cacheService->searchObjects(null, $filters, $allowedSchemas['id']);
+                    $result = $this->cacheService->getCollectionFromCache(null, $filters, $allowedSchemas['id']);
                 }
                 break;
             case 'POST':
@@ -541,13 +541,11 @@ class RequestService
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
                 if ($this->object->hydrate($this->content, true)) {
                     $this->entityManager->persist($this->object);
-                    $this->cacheService->cacheObject($this->object);
-                    // @todo this is hacky, the above schould alredy do this
                 } else {
                     // Use validation to throw an error.
                 }
 
-                $result = $this->cacheService->getObject($this->object->getId());
+                $result = $this->cacheService->getItemFromCache($this->object->getId());
                 break;
             case 'PUT':
                 $eventType = 'commongateway.object.update';
@@ -578,7 +576,7 @@ class RequestService
                     // Use validation to throw an error.
                 }
 
-                $result = $this->cacheService->getObject($this->object->getId());
+                $result = $this->cacheService->getItemFromCache($this->object->getId());
                 break;
             case 'PATCH':
                 $eventType = 'commongateway.object.update';
@@ -609,7 +607,7 @@ class RequestService
                     // Use validation to throw an error.
                 }
 
-                $result = $this->cacheService->getObject($this->object->getId());
+                $result = $this->cacheService->getItemFromCache($this->object->getId());
                 break;
             case 'DELETE':
 
@@ -774,7 +772,7 @@ class RequestService
         // Lets see if we have an object.
         if (array_key_exists('id', $this->data) === true) {
             $this->id = $data['id'];
-            if ($this->object = $this->cacheService->getObject($data['id']) === false) {
+            if ($this->object = $this->cacheService->getItemFromCache($data['id']) === false) {
                 // Throw not found.
             }
         }

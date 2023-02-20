@@ -117,46 +117,39 @@ class CacheService
             return Command::FAILURE;
         }
 
-        // Objects.
-        $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
-        $this->logger->debut('Found '.count($objectEntities).' objects\'s');
+        $entitiesToCache = [
+            'App:ObjectEntity',
+            'App:Entity',
+            'pp:Endpoint'
+        ];
 
-        foreach ($objectEntities as $objectEntity) {
-            // Todo: Set to session.
-            $this->cacheObject($objectEntity);
-            // Todo: remove from session.
+        // Stuffing the current data into the cache
+        foreach($entitiesToCache as $type){
+            // Stuffing the current data into the cache
+            $objects = $this->entityManager->getRepository($type)->findAll();
+            $this->logger->debut('Found '.count($objects).' objects\'s of type '.$type, ['type'=>$type]);
+
+            foreach ($objects as $object) {
+                // Todo: Set to session.
+                $this->setToCache($object);
+                // Todo: remove from session.
+            }
+
+            // Create the index
+            $collection = $this->getCollection($type);
+            $collection->createIndex(['$**' => 'text']);
+            $this->logger->debut('Created an index for '.$type, ['type'=>$type]);
+
+            // Remove unwanted data
+            $objects = $collection->find()->toArray();
+
+            foreach ($objects as $object) {
+                $symfonyObject = $this->entityManager->find($type, $object['id']);
+                if (empty($symfonyObject) === true) {
+                    $collection->removeFromCache($object['id'], $type);
+                }
+            }
         }
-
-        // Schemas.
-        $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
-        $this->logger->debut('Found '.count($schemas).' schema\'s');
-
-        foreach ($schemas as $schema) {
-            // Todo: Set to session.
-            $this->setToCache($schema);
-            // Todo: remove from session.
-        }
-
-        // Endpoints.
-        $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
-        $this->logger->debut('Found '.count($endpoints).' endpoints\'s');
-
-        foreach ($endpoints as $endpoint) {
-            // Todo: Set to session.
-            $this->setToCache($endpoint);
-            // Todo: remove from session.
-        }
-
-        // Created indexes.
-        $this->client->objects->json->createIndex(['$**' => 'text']);
-        $this->client->schemas->json->createIndex(['$**' => 'text']);
-        $this->client->endpoints->json->createIndex(['$**' => 'text']);
-
-        $this->logger->debug('Removing deleted endpoints');
-        $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
-
-        $this->logger->debug('Removing deleted objects');
-        $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
 
         $this->logger->info('Finished cache warmup');
 
@@ -181,176 +174,6 @@ class CacheService
                 $collection->findOneAndDelete(['id' => $endpoint['id']]);
             }
         }
-    }
-
-    /**
-     * Put a single object into the cache.
-     *
-     * @param ObjectEntity $objectEntity The ObjectEntity to cache.
-     *
-     * @return ObjectEntity The cached ObjectEntity.
-     */
-    public function cacheObject(ObjectEntity $objectEntity): ObjectEntity
-    {
-        // For when we can't generate a schema for an ObjectEntity (for example setting an id on ObjectEntity created with testData).
-        if (empty($objectEntity->getEntity()) === true) {
-            return $objectEntity;
-        }
-
-        // Backwards compatibility.
-        if (isset($this->client) === false) {
-            return $objectEntity;
-        }
-
-        $this->logger->debug('Start caching object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName());
-
-        // Todo: temp fix to make sure we have the latest version of this ObjectEntity before we cache it.
-        $updatedObjectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $objectEntity->getId()->toString()]);
-
-        if ($updatedObjectEntity instanceof ObjectEntity) {
-            $objectEntity = $updatedObjectEntity;
-        } else {
-            $this->logger->error('Could not find an ObjectEntity with id: '.$objectEntity->getId()->toString());
-        }
-
-        $collection = $this->client->objects->json;
-
-        // Lets not cash the entire schema.
-        $array = $objectEntity->toArray(['embedded' => true]);
-        $id = $objectEntity->getId()->toString();
-
-        $array['id'] = $id;
-
-        if ($collection->findOneAndReplace(
-            ['_id' => $id],
-            $array,
-            ['upsert' => true]
-        ) === true
-        ) {
-            $this->logger->debug('Updated object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache');
-        } else {
-            $this->logger->debug('Wrote object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache');
-        }
-
-        return $objectEntity;
-    }
-
-    /**
-     * Get a single object from the cache.
-     *
-     * @param string $id The id of the object.
-     *
-     * @return mixed The ObjectEntity as an array or false.
-     */
-    public function getObject(string $id)
-    {
-        // Backwards compatibility.
-        if (isset($this->client) === false) {
-            return false;
-        }
-
-        $collection = $this->client->objects->json;
-
-        // Check if object is in the cache ????
-        $object = $collection->findOne(['_id' => $id]);
-        if (empty($object) === false) {
-            $this->logger->debug('Retrieved object from cache', ['object' => $id]);
-
-            return $object;
-        }
-
-        // Fall back to the entity manager.
-        $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
-        if ($object instanceof ObjectEntity === true) {
-            $this->logger->debug('Could not retrieve object from cache', ['object' => $id]);
-
-            return $this->cacheObject($object)->toArray(['embedded' => true]);
-        }
-
-        $this->logger->error('Object does not seem to exist', ['object' => $id]);
-
-        return false;
-    }
-
-    /**
-     * Searches the cache for objects containing the search string.
-     *
-     * @param string|null $search   a string to search for within the given context.
-     * @param array       $filter   an array of dot notation filters for which to search with.
-     * @param array       $entities schemas to limit te search to.
-     *
-     * @throws Exception A basic Exception.
-     *
-     * @return array|null The objects found.
-     */
-    public function searchObjects(string $search = null, array $filter = [], array $entities = []): ?array
-    {
-        // Backwards compatibility.
-        if (isset($this->client) === false) {
-            return [];
-        }
-
-        $collection = $this->client->objects->json;
-
-        // Backwards compatibility.
-        $this->queryBackwardsCompatibility($filter);
-
-        // Make sure we also have all filters stored in $completeFilter before unsetting.
-        $completeFilter = $filter;
-        unset(
-            $filter['_start'], $filter['_offset'], $filter['_limit'], $filter['_page'],
-            $filter['_extend'], $filter['_search'], $filter['_order'], $filter['_fields']);
-
-        // 'normal' Filters (not starting with _ )
-        foreach ($filter as $key => &$value) {
-            $this->handleFilter($key, $value);
-        }
-
-        // Search for the correct entity / entities.
-        // todo: make this if into a function?
-        if (empty($entities) === false) {
-            foreach ($entities as $entity) {
-                // todo: disable this for now, put back later!
-//                $orderError = $this->handleOrderCheck($entity, $completeFilter['_order'] ?? null);
-//                $filterError = $this->handleFilterCheck($entity, $filter ?? null);
-//                if (!empty($orderError) || !empty($filterError)) {
-//                    !empty($orderError) && $errorData['order'] = $orderError;
-//                    !empty($filterError) && $errorData['filter'] = $filterError;
-//                    return [
-//                        'message' => 'There are some errors in your query parameters',
-//                        'type'    => 'error',
-//                        'path'    => $entity->getName(),
-//                        'data'    => $errorData,
-//                    ];
-//                }
-
-                //$filter['_self.schema.ref']='https://larping.nl/character.schema.json';
-                $filter['_self.schema.id']['$in'][] = $entity;
-            }
-        }
-
-        // Lets see if we need a search.
-        $this->handleSearch($filter, $completeFilter, $search);
-
-        // Limit & Start for pagination.
-        $this->setPagination($limit, $start, $completeFilter);
-
-        // Order.
-        $order = [];
-        if(isset($completeFilter['_order']) === true){
-            $order = str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']);
-        }
-        if(empty($order) === false){
-            $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
-        }
-
-
-        // Find / Search.
-        $results = $collection->find($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order])->toArray();
-        $total = $collection->count($filter);
-
-        // Make sure to add the pagination properties in response.
-        return $this->handleResultPagination($completeFilter, $results, $total);
     }
 
     /**
@@ -569,6 +392,7 @@ class CacheService
             return false;
         }
 
+        $this->logger->info("removing {$target} from cache", ['type' => $type, 'id' => $target]);
         $collection->findOneAndDelete(['id' => $target]);
 
         return true;
