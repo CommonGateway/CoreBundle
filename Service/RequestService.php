@@ -634,7 +634,7 @@ class RequestService
                 break;
 
                 return new Response('Unkown method'.$this->data['method'], '404');
-        }
+        }//end if
 
         $this->entityManager->flush();
 

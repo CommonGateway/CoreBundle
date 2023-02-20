@@ -90,7 +90,7 @@ class CallService
         if (isset($config['ssl_key'])) {
             $configs['ssl_key'] = $this->fileService->writeFile('privateKey', $config['ssl_key']);
         }
-        
+
         if (isset($config['verify']) && is_string($config['verify'])) {
             $configs['verify'] = $this->fileService->writeFile('verify', $config['ssl_key']);
         }
@@ -339,7 +339,7 @@ class CallService
                 $previousResult = $decodedResponse;
             } catch (Exception $exception) {
                 $errorCount++;
-            } // end try
+            }//end try
 
             if (isset($decodedResponse['results']) === true) {
                 $results = array_merge($decodedResponse['results'], $results);
@@ -347,7 +347,7 @@ class CallService
                 $results = array_merge($decodedResponse['items'], $results);
             } elseif (isset($decodedResponse[0]) === true) {
                 $results = array_merge($decodedResponse, $results);
-            }
+            }//end try
 
         }
 
