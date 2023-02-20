@@ -55,12 +55,12 @@ class ComposerService
      * Make a call to composer.
      *
      * @param string      $call    The call that you want to make to composer shoul be one of show, init, install
-     * @param string|null $package The packadge to make the call for
      * @param array       $options Any options
+     * @param string      $package The packadge to make the call for
      *
      * @return array|string The packadge details or result text
      */
-    private function composerCall(string $call, array $options = [], ?string $package = '')
+    private function composerCall(string $call, array $options = [], string $package = '')
     {
         $optionsList = [];
 
@@ -182,8 +182,8 @@ class ComposerService
      */
     public function getLockFile(): array
     {
-        if (!$plugins = @file_get_contents('../composer.lock')) {
-            if (!$plugins = @file_get_contents('composer.lock')) {
+        if (!$plugins = @file_get_contents('../composer.lock') === false) {
+            if (!$plugins = @file_get_contents('composer.lock') === false) {
                 return [];
             }
         }
@@ -205,8 +205,7 @@ class ComposerService
         $results = $this->getLockFile();
         $plugins = [];
         foreach ($results as $result) {
-
-            // Remove non gateway plugins from the result
+            // Remove non gateway plugins from the result.
             if (isset($result['keywords']) === false || in_array('common-gateway-plugin', $result['keywords']) === false) {
                 continue;
             }
@@ -225,7 +224,7 @@ class ComposerService
      * @param string $package A package.
      * @param array  $options Any options.
      *
-     * @return array Todo
+     * @return array The packadges
      */
     public function require(string $package, array $options = []): array
     {
@@ -289,13 +288,14 @@ class ComposerService
                 // Lets see if we have newer versions than currently installer (we don;t need versiond details but we want to force the key into $version).
                 foreach ($plugin['versions']  as $version => $versionDetails) {
                     if (version_compare($plugin['version'], $version) < 0) {
-                        if (!$plugin['update']) {
+                        if ($plugin['update'] === false) {
                             $plugin['update'] = $version;
                         } elseif (version_compare($plugin['update'], $version) < 0) {
                             $plugin['update'] = $version;
                         }
                     }
                 }
+
                 break;
             }
         }
@@ -315,8 +315,8 @@ class ComposerService
     public function search(string $search = null): array
     {
         $url = 'https://packagist.org/search.json';
-        $query = ['tags'=>'common-gateway-plugin'];
-        if ($search) {
+        $query = ['tags' => 'common-gateway-plugin'];
+        if ($search === true) {
             $query['q'] = $search;
         }
 
@@ -327,7 +327,7 @@ class ComposerService
 
         $plugins = json_decode($response->getBody()->getContents(), true)['results'];
 
-        // Lets pull the online detail datail
+        // Lets pull the online detail datail.
         foreach ($plugins as $key => $plugin) {
             $plugins[$key] = array_merge($plugin, $this->getSingle($plugin['name']));
         }
