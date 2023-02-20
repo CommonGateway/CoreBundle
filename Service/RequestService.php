@@ -458,7 +458,6 @@ class RequestService
         // Todo: controlleren of de gebruiker ingelogd is.
         $metadataSelf = ($extend['_self'] ?? []);
 
-
         // Make a list of schema's that are allowed for this endpoint.
         $allowedSchemas['id'] = [];
         $allowedSchemas['name'] = [];
@@ -725,8 +724,8 @@ class RequestService
             array_walk(
                 $result['results'],
                 function (&$record) {
-                $record = iterator_to_array($record);
-            }
+                    $record = iterator_to_array($record);
+                }
             );
             // Do handleMetadataSelf() for each object, recursively.
             foreach ($result['results'] as &$collectionItem) {

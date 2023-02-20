@@ -8,7 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * The EAV service handles most of our Entity and attribute logic
+ * The EAV service handles most of our Entity and attribute logic.
  *
  * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
  *

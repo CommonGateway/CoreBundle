@@ -30,6 +30,7 @@ class PluginController extends AbstractController
 
     /**
      * @Route("/installed", methods={"GET"})
+     *
      * @return Response
      */
     public function installedAction(): Response
@@ -42,6 +43,7 @@ class PluginController extends AbstractController
 
     /**
      * @Route("/audit", methods={"GET"})
+     *
      * @return Response
      */
     public function auditAction(): Response
@@ -56,6 +58,7 @@ class PluginController extends AbstractController
      * @Route("/available", methods={"GET"})
      *
      * @param Request $request The request
+     *
      * @return Response
      */
     public function availableAction(Request $request): Response
@@ -73,6 +76,7 @@ class PluginController extends AbstractController
      * @Route("/view", methods={"GET"})
      *
      * @param Request $request The request
+     *
      * @return Response
      */
     public function viewAction(Request $request): Response
@@ -90,6 +94,7 @@ class PluginController extends AbstractController
      * @Route("/installl", methods={"POST"})
      *
      * @param Request $request The request
+     *
      * @return Response
      */
     public function installlAction(Request $request): Response
@@ -109,6 +114,7 @@ class PluginController extends AbstractController
      * @Route("/upgrade", methods={"POST"})
      *
      * @param Request $request The request
+     *
      * @return Response
      */
     public function upgradeAction(Request $request): Response
@@ -128,6 +134,7 @@ class PluginController extends AbstractController
      * @Route("/remove", methods={"POST"})
      *
      * @param Request $request The request
+     *
      * @return Response
      */
     public function removeAction(Request $request): Response

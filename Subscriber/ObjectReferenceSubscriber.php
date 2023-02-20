@@ -11,7 +11,7 @@ use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 
 /**
- * This subscribers hooks objects together if they refer to each other
+ * This subscribers hooks objects together if they refer to each other.
  *
  * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
  *

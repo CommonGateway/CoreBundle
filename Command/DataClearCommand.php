@@ -29,7 +29,7 @@ class DataClearCommand extends Command
 
     /**
      * @param EntityManagerInterface $entityManager The entity manager.
-     * @param ParameterBagInterface  $paramaters  The environmental values.
+     * @param ParameterBagInterface  $paramaters    The environmental values.
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -64,12 +64,12 @@ class DataClearCommand extends Command
 
         $style->writeln(
             [
-            '',
-            '<info>Common Gateway Data Remover</info>',
-            '============',
-            '',
-            'Trying to remove all data from environment: <comment> '.$env.' </comment>',
-            '',
+                '',
+                '<info>Common Gateway Data Remover</info>',
+                '============',
+                '',
+                'Trying to remove all data from environment: <comment> '.$env.' </comment>',
+                '',
             ]
         );
 

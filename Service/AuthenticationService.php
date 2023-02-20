@@ -130,7 +130,7 @@ class AuthenticationService
      * Gets a JWK for a source based on the algorithm of the source.
      *
      * @param string $algorithm The algorithm
-     * @param Source $source The source
+     * @param Source $source    The source
      *
      * @return JWK The resulting Json Web Key
      */
@@ -177,11 +177,11 @@ class AuthenticationService
 
         return json_encode(
             [
-            'iss'                 => $clientId,
-            'iat'                 => $now->getTimestamp(),
-            'client_id'           => $clientId,
-            'user_id'             => $this->parameterBag->get('app_name'),
-            'user_representation' => $this->parameterBag->get('app_name'),
+                'iss'                 => $clientId,
+                'iat'                 => $now->getTimestamp(),
+                'client_id'           => $clientId,
+                'user_id'             => $this->parameterBag->get('app_name'),
+                'user_representation' => $this->parameterBag->get('app_name'),
             ]
         );
     }//end getJwtPayload()
@@ -258,7 +258,7 @@ class AuthenticationService
             $configs['ssl_key'] = $this->fileService->writeFile('privateKey', $config['ssl_key']);
         }
 
-        if (isset($config['verify'])  === true && is_string($config['verify'])  === true) {
+        if (isset($config['verify']) === true && is_string($config['verify']) === true) {
             $configs['verify'] = $this->fileService->writeFile('verify', $config['ssl_key']);
         }
 
@@ -313,7 +313,7 @@ class AuthenticationService
      * Todo.
      *
      * @param array  $requestOptions Any request options
-     * @param Source $source The source
+     * @param Source $source         The source
      *
      * @return string
      */
@@ -359,7 +359,7 @@ class AuthenticationService
             case 'jwt-HS256':
             case 'jwt-RS512':
             case 'jwt':
-                $requestOptions['headers']['Authorization'] = 'Bearer ' . $this->getJwtToken($source);
+                $requestOptions['headers']['Authorization'] = 'Bearer '.$this->getJwtToken($source);
                 break;
             case 'username-password':
                 $requestOptions['auth'] = [$source->getUsername(), $source->getPassword()];

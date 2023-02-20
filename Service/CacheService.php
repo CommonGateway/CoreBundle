@@ -190,7 +190,6 @@ class CacheService
         }
 
         return null;
-
     }
 
     /**
@@ -711,15 +710,15 @@ class CacheService
         $page = 1;
 
         // Pulling the other values form the filter
-        if(isset($filter['_start']) && is_numeric($filter['_start'])){
+        if (isset($filter['_start']) && is_numeric($filter['_start'])) {
             $start = (int) $filter['_start'];
         }
 
-        if(isset($filter['_limit']) && is_numeric($filter['_limit'])){
-            $limit =(int) $filter['_limit'];
+        if (isset($filter['_limit']) && is_numeric($filter['_limit'])) {
+            $limit = (int) $filter['_limit'];
         }
 
-        if(isset($filter['_page']) && is_numeric($filter['_page'])){
+        if (isset($filter['_page']) && is_numeric($filter['_page'])) {
             $page = (int) $filter['_page'];
         }
 
@@ -732,7 +731,7 @@ class CacheService
 
         $pages = ceil($total / $limit);
 
-        if($pages === 0){
+        if ($pages === 0) {
             $pages = 1;
         }
 
@@ -743,7 +742,7 @@ class CacheService
             'total'   => $total,
             'offset'  => $offset,
             'page'    => (floor($offset / $limit) + 1),
-            'pages'   => $pages
+            'pages'   => $pages,
         ];
     }
 }
