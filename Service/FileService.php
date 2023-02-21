@@ -35,12 +35,13 @@ class FileService
      * @param string $baseFileName The name of the file to write.
      * @param string $contents     The content to write into het file.
      *
-     * @return string Todo
+     * @return string The file contents
      */
     public function writeFile(string $baseFileName, string $contents): string
     {
+        $filesystem=new Filesystem();
         $stamp = microtime().getmypid();
-        file_put_contents("/srv/api/var/$baseFileName-$stamp", $contents);
+        $filesystem->dumpFile("/srv/api/var/$baseFileName-$stamp", $contents);
 
         return "/srv/api/var/$baseFileName-$stamp";
     }//end writeFile()
@@ -52,6 +53,7 @@ class FileService
      */
     public function removeFile($filename): void
     {
-        unlink($filename);
+        $filesystem=new Filesystem();
+        $filesystem->remove($filename);
     }//end removeFile()
 }//end class
