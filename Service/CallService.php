@@ -159,6 +159,11 @@ class CallService
         $log->setRequestHeaders($config['headers'] ?? null);
 
         $url = $source->getLocation().$endpoint;
+        foreach ($source->getHeaders() as $header) {
+            if (isset($header['key']) && isset($header['value'])) {
+                $config['headers'][$header['key']] = $header['value'];
+            }
+        }
 
         $startTimer = microtime(true);
         // Lets make the call
