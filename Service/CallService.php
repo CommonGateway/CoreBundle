@@ -68,7 +68,7 @@ class CallService
         if (isset($config['verify']) === true && is_string($config['verify']) === true) {
             $configs['verify'] = $this->fileService->writeFile('verify', $config['ssl_key']);
         }
-        
+
         return $configs;
     }
 
