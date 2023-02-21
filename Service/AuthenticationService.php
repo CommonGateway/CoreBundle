@@ -73,7 +73,7 @@ class AuthenticationService
         $filesystem = new Filesystem();
         $filename = '/srv/api/var/privatekey'.microtime().getmypid();
         $filesystem->dumpFile($filename, $key);
-        $jwk = JWKFactory::createFromKeyFile($filename, null, ['use' => 'sig']);
+        $jwk = JWKFactory->createFromKeyFile($filename, null, ['use' => 'sig']);
         $filesystem->remove([$filename]);
 
         return $jwk;
@@ -98,7 +98,7 @@ class AuthenticationService
         }//end if
 
         $filename = $this->fileService->writeFile('privateKey', $rsa);
-        $jwk = JWKFactory::createFromKeyFile(
+        $jwk = JWKFactory->createFromKeyFile(
             $filename,
             null,
             [
@@ -459,12 +459,12 @@ class AuthenticationService
 
         if ($this->checkRS512($token) === true) {
             $publicKeyFile = $this->fileService->writeFile('publickey', $publicKey);
-            $jwk = JWKFactory::createFromKeyFile($publicKeyFile, null, []);
+            $jwk = JWKFactory->createFromKeyFile($publicKeyFile, null, []);
             $this->fileService->removeFile($publicKeyFile);
 
             return $jwk;
         } elseif ($this->checkHS256($token) === true) {
-            return JWKFactory::createFromSecret($publicKey, ['alg' => 'HS256', 'use' => 'sig']);
+            return JWKFactory->createFromSecret($publicKey, ['alg' => 'HS256', 'use' => 'sig']);
         }
     }//end checkHeadersAndGetJWK()
 
