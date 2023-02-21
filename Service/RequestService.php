@@ -737,7 +737,7 @@ class RequestService
             return;
         }
 
-        if (empty($result['id']) === true || Uuid::isValid($result['id']) === false) {
+        if (empty($result['id']) === true || Uuid->isValid($result['id']) === false) {
             return;
         }
 
