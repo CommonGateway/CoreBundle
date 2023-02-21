@@ -20,7 +20,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * Service to call external sources.
  *
- * This service provides a guzzle wrapper to work with sources in the common gateway.
+ * This service provides a guzzle wrapper to work with sources in the common gateway. Since it servers to serval objects a higher complexity and cpuling is permitted then normal by design decsion
  *
  * @Author Wilco Louwerse, <wilco@conduction.nl>, Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
  *

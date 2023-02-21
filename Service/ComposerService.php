@@ -54,6 +54,8 @@ class ComposerService
     /**
      * Make a call to composer.
      *
+     * This function breaks complexitry rules, since a switch is howver the most most effectie and perfomant way of doing it a design desicion was made to alllow it
+     *
      * @param string $call    The call that you want to make to composer shoul be one of show, init, install
      * @param array  $options Any options
      * @param string $package The packadge to make the call for

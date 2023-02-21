@@ -59,6 +59,8 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     /**
      * Checks whether we should check attributes and entities for connections before we insert an object into the database.
      *
+     * This function very slightly breaks complexity, since it it to be removed and refactord we will allow it for now but place a @todo.
+     *
      * @param LifecycleEventArgs $args LifecycleEventArgs.
      *
      * @return void This function doesn't return anything.
