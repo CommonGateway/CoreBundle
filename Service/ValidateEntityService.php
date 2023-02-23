@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * @author Ruben van der Linde (ruben@conduction.nl)
  */
-class ValidationService
+class ValidateEntityService
 {
     /**
      * @var EntityManagerInterface
@@ -148,11 +148,11 @@ class ValidationService
             );
         }
 
-        // Lets add the rules
+        // Let's add the rules
         foreach($attribute->getValidations() as $validation => $validationValue){
             $rule =  $this->getAttributeRule($attribute, $validation, $validationValue);
 
-            // Lets see if it is a valid rule
+            // Let's see if it is a valid rule
             if($rule == false){
                 continue;
             }
