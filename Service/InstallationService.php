@@ -8,7 +8,7 @@ use App\Entity\ObjectEntity;
 use App\Entity\Endpoint;
 use App\Kernel;
 use Doctrine\ORM\EntityManagerInterface;
-use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -39,9 +39,9 @@ class InstallationService
     private ContainerInterface $container;
 
     /**
-     * @var Logger
+     * @var LoggerInterface
      */
-    private Logger $logger;
+    private LoggerInterface $logger;
 
     /**
      * @var Filesystem
@@ -70,13 +70,14 @@ class InstallationService
         ComposerService $composerService,
         EntityManagerInterface $entityManager,
         Kernel $kernel,
-        SchemaService $schemaService
+        SchemaService $schemaService,
+        LoggerInterface $installationLogger
     ) {
         $this->composerService = $composerService;
         $this->entityManager = $entityManager;
         $this->container = $kernel->getContainer();
         $this->collection = null;
-        $this->logger = new Logger('installation');
+        $this->logger = $installationLogger;
         $this->schemaService = $schemaService;
         $this->filesystem = new Filesystem();
     }//end __construct()
