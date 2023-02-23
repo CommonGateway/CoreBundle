@@ -63,8 +63,9 @@ class EavService
         if (!$attribute->getReference() || $attribute->getObject()) {
             return $attribute;
         }
-
-        if ($entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference'=>$attribute->getReference()])) {
+        
+        $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference'=>$attribute->getReference()])
+        if ($entity instanceof Entity === true) {
             $attribute->setObject($entity);
         }
 

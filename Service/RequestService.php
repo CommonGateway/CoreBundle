@@ -420,7 +420,7 @@ class RequestService
                     $result = $this->cacheService->getObject($this->id);
 
                     // If we do not have an object we throw an 404
-                    if (!$result) {
+                    if ($result === null) {
                         return new Response($this->serializer->serialize([
                             'message' => 'Could not find an object with id '.$this->id,
                             'type'    => 'Bad Request',
@@ -451,17 +451,17 @@ class RequestService
                 $eventType = 'commongateway.object.create';
 
                 // We have an id on a post so die
-                if (isset($this->id) && $this->id) {
-                    return new Response('You can not POST to an (exsisting) id, consider using PUT or PATCH instead', '400');
+                if (isset($this->id) === true && empty($this->id) === false) {
+                    return new Response('You can not POST to an (existing) id, consider using PUT or PATCH instead', '400');
                 }
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
-                if (!isset($this->schema) || !$this->schema) {
+                if ($this->schema instanceof Entity === false) {
                     return new Response('No schema could be established for your request', '400');
                 }
 
-                // Lets see if the found result is allowd for this endpoint
-                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
+                // Lets see if the found result is allowed for this endpoint
+                if (isset($this->data['endpoint']) === true && in_array($this->schema->getId(), $allowedSchemas['id']) === false) {
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
@@ -487,7 +487,7 @@ class RequestService
                 }
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
-                if (!isset($this->schema) || !$this->schema) {
+                if ($this->schema instanceof Entity === false) {
                     return new Response('No schema could be established for your request', '400');
                 }
 
@@ -518,7 +518,7 @@ class RequestService
                 }
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
-                if (!isset($this->schema) || !$this->schema) {
+                if ($this->schema instanceof Entity === false) {
                     return new Response('No schema could be established for your request', '400');
                 }
 
@@ -548,7 +548,7 @@ class RequestService
                 }
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
-                if (!isset($this->schema) || !$this->schema) {
+                if ($this->schema instanceof Entity === false) {
                     return new Response('No schema could be established for your request', '400');
                 }
 
@@ -562,7 +562,6 @@ class RequestService
                 $this->entityManager->flush();
 
                 return new Response('Succesfully deleted object', '202');
-                break;
             default:
                 break;
 
@@ -571,7 +570,7 @@ class RequestService
 
         $this->entityManager->flush();
 
-        if (isset($eventType) && isset($result)) {
+        if (isset($eventType) === true && isset($result) === true) {
             $event = new ActionEvent($eventType, ['response' => $result, 'entity' => $this->object->getEntity()->getReference() ?? $this->object->getEntity()->getId()->toString()]);
             $this->eventDispatcher->dispatch($event, $event->getType());
 
@@ -697,9 +696,12 @@ class RequestService
         // Lets see if we have an object
         if (array_key_exists('id', $this->data)) {
             $this->id = $data['id'];
-            if (!$this->object = $this->cacheService->getObject($data['id'])) {
+            $object = $this->cacheService->getObject($data['id']);
+            if ($object === null) {
                 // Throw not found
+                return [];
             }
+            $this->object = $object;
         }
 
         switch ($method) {

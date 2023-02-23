@@ -5,6 +5,7 @@ namespace CommonGateway\CoreBundle\Service;
 use App\Entity\Action;
 use App\Entity\Entity;
 use App\Entity\ObjectEntity;
+use App\Entity\Endpoint;
 use App\Kernel;
 use Doctrine\ORM\EntityManagerInterface;
 use Monolog\Logger;
@@ -213,38 +214,39 @@ class InstallationService
      *
      * @param File $file The file location
      *
-     * @return bool|array The file contents, or false if content could not be establisched
+     * @return bool|array The file contents, or false if content could not be established
      */
     private function readfile(File $file): mixed
     {
 
         // Check if it is a valid json object.
         $mappingSchema = json_decode($file->getContents(), true);
-        if ($mappingSchema === false) {
+        if (empty($mappingSchema) === true) {
             $this->logger->error($file->getFilename().' is not a valid json object');
 
             return false;
         }
 
-        // Check if it is a valid schema.
-        $mappingSchema = $this->validateJsonMapping($mappingSchema);
-
-        if ($this->validateJsonMapping($mappingSchema) === true) {
-            $this->logger->error($file->getFilename().' is not a valid json-mapping object');
-
-            return false;
-        }
+        // Todo: validateJsonMapping does not exist
+//        // Check if it is a valid schema.
+//        $mappingSchema = $this->validateJsonMapping($mappingSchema);
+//
+//        if ($this->validateJsonMapping($mappingSchema) === true) {
+//            $this->logger->error($file->getFilename().' is not a valid json-mapping object');
+//
+//            return false;
+//        }
 
         // Add the file to the object.
         return $this->addToObjects($mappingSchema);
     }//end readfile()
 
     /**
-     * Adds an object to the objects stack if it is vallid.
+     * Adds an object to the objects stack if it is valid.
      *
      * @param array $schema The schema
      *
-     * @return bool|array The file contents, or false if content could not be establisched
+     * @return bool|array The file contents, or false if content could not be established
      */
     private function addToObjects(array $schema): mixed
     {
@@ -328,7 +330,7 @@ class InstallationService
 
         // Lets see if it is a new object.
         if ($this->entityManager->contains($object) === false) {
-            $this->loger->info(
+            $this->logger->info(
                 'A new object has been created trough the installation service',
                 [
                     'class'  => get_class($object),
@@ -360,18 +362,18 @@ class InstallationService
         }
 
         // Create it if we don't.
-        if ($object === null) {
+        if (isset($object) === false || $object instanceof ObjectEntity === false) {
             $object = new $type();
         }
 
         // Load the data.
         if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) <= 0) {
-            $this->loger->debug('The new mapping has a version number equal or lower then the already present version, the object is NOT is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
+            $this->logger->debug('The new mapping has a version number equal or lower then the already present version, the object is NOT is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
         } elseif (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) < 0) {
-            $this->loger->debug('The new mapping has a version number higher then the already present version, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
+            $this->logger->debug('The new mapping has a version number higher then the already present version, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
         } elseif (array_key_exists('version', $schema) === false) {
-            $this->loger->debug('The new mapping don\'t have a version number, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
+            $this->logger->debug('The new mapping don\'t have a version number, the object is data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
         }
 
@@ -384,15 +386,15 @@ class InstallationService
      * @param array  $schema The schema
      * @param string $type   The type of the schema
      *
-     * @return ObjectEntity The loaded object
+     * @return ObjectEntity|null The loaded object or null on error.
      */
-    private function loadSchema(array $schema, string $type): ObjectEntity
+    private function loadSchema(array $schema, string $type): ?ObjectEntity
     {
         $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $type]);
         if ($entity === null) {
-            $this->logger->error('trying to create data for non-exisitng entity', ['reference' => $type]);
+            $this->logger->error('trying to create data for non-existing entity', ['reference' => $type]);
 
-            return false;
+            return null;
         }
 
         // If we have an id let try to grab an object.
@@ -401,7 +403,7 @@ class InstallationService
         }
 
         // Create it if we don't.
-        if ($object === null) {
+        if (isset($object) === false || $object instanceof ObjectEntity === false) {
             $object = new ObjectEntity($entity);
         }
 
@@ -501,7 +503,7 @@ class InstallationService
                 default:
                     // Euhm we cant't do anything so...
                     $this->logger->error('Unknown type used for the creation of a dashboard card '.$type);
-                    break;
+                    continue 2;
             }//end switch
 
             // Then we can handle some data.
@@ -540,14 +542,22 @@ class InstallationService
 
         foreach ($schemas as $schema) {
             $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema['reference']]);
-
-            if ($endpointRepository->findOneBy(['name' => $entity->getName()]) === false) {
-                $endpoint = new Endpoint($entity, $schema['path'], $schema['methods']);
-
-                $this->logger->debug('Endpoint created for '.$schema['reference']);
-                $this->entityManager->persist($endpoint);
-                $endpoints[] = $endpoint;
+            if ($entity instanceof Entity === false) {
+                $this->logger->error('No entity found for reference '.$schema['reference']);
+                continue;
             }
+
+            $endpoint = $endpointRepository->findOneBy(['name' => $entity->getName()]);
+            if ($endpoint instanceof Endpoint === true) {
+                $this->logger->debug('Endpoint found for '.$schema['reference']);
+                continue;
+            }
+            
+            $endpoint = new Endpoint($entity, $schema['path'], $schema['methods']);
+    
+            $this->logger->debug('Endpoint created for '.$schema['reference']);
+            $this->entityManager->persist($endpoint);
+            $endpoints[] = $endpoint;
         }
 
         $this->logger->info(count($endpoints).' Endpoints Created');
@@ -569,8 +579,9 @@ class InstallationService
         foreach ($handlers as $handler) {
             $actionHandler = $this->container->get($handler);
 
-            if ($this->entityManager->getRepository('App:Action')->findOneBy(['class' => get_class($actionHandler)]) === null) {
-                $this->logger->error('Action found for '.$handler);
+            $action = $this->entityManager->getRepository('App:Action')->findOneBy(['class' => get_class($actionHandler)]);
+            if ($action instanceof Action === true) {
+                $this->logger->debug('Action found for '.$handler.' with class '.get_class($actionHandler));
                 continue;
             }
 
@@ -583,7 +594,7 @@ class InstallationService
             $action = new Action($actionHandler);
             $this->entityManager->persist($action);
             $actions[] = $action;
-            $this->logger->debug('Action created for '.$handler);
+            $this->logger->debug('Action created for '.$handler.' with class '.get_class($actionHandler));
         }
 
         $this->logger->info(count($actions).' Actions Created');
@@ -603,10 +614,10 @@ class InstallationService
         $cronjobs = [];
 
         foreach ($actions as $reference) {
-            $action = $this->entityManager->getRepository('App:Cronjob')->findOneBy(['reference' => $reference]);
+            $action = $this->entityManager->getRepository('App:Action')->findOneBy(['reference' => $reference]);
 
-            if ($action === null) {
-                $this->logger->error('No action found for reference'.$reference);
+            if ($action instanceof Action === false) {
+                $this->logger->error('No action found for reference '.$reference);
                 continue;
             }
 

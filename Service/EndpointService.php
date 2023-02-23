@@ -208,7 +208,7 @@ class EndpointService
         $path = substr($path, 5);
         $endpoint = $this->entityManager->getRepository('App:Endpoint')->findByMethodRegex($this->request->getMethod(), $path);
 
-        if ($endpoint !== null) {
+        if ($endpoint instanceof Endpoint === true) {
             return $endpoint;
         }//end if
 
