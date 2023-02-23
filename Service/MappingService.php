@@ -46,6 +46,32 @@ class MappingService
     }
 
     /**
+     * Replaces strings in array keys, helpful for characters like . in array keys.
+     *
+     * @param array  $array       The array to encode the array keys for.
+     * @param string $toReplace   The character to encode.
+     * @param string $replacement The encoded character.
+     *
+     * @return array The array with encoded array keys
+     */
+    private function encodeArrayKeys(array $array, string $toReplace, string $replacement): array
+    {
+        $result = [];
+        foreach ($array as $key => $value) {
+            $newKey = str_replace($toReplace, $replacement, $key);
+
+            if (\is_array($value) === true && $value !== []) {
+                $result[$newKey] = $this->encodeArrayKeys($value, $toReplace, $replacement);
+                continue;
+            }
+
+            $result[$newKey] = $value;
+        }
+
+        return $result;
+    }//end encodeArrayKeys()
+
+    /**
      * Maps (transforms) an array (input) to a different array (output).
      *
      * @param Mapping $mappingObject The mapping object that forms the recipe for the mapping
@@ -55,6 +81,8 @@ class MappingService
      */
     public function mapping(Mapping $mappingObject, array $input): array
     {
+        $input = $this->encodeArrayKeys($input, '.', '&#46;');
+
         isset($this->io) ?? $this->io->debug('Mapping array based on mapping object '.$mappingObject->getName().' (id:'.$mappingObject->getId()->toString().' / ref:'.$mappingObject->getReference().') v:'.$mappingObject->getversion());
 
         // Determine pass trough

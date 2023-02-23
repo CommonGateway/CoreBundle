@@ -71,6 +71,7 @@ class OasService
         // Get all the endpoints.
         $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
 
+        $oas['components']['schemas'] = [];
         // Add the endpoints to the OAS.
         foreach ($endpoints as $endpoint) {
             // Add the path to the paths.
@@ -99,7 +100,7 @@ class OasService
             // We dont do a request body on GET, DELETE and UPDATE requests.
             if (in_array($method, ['DELETE', 'UPDATE']) === true) {
                 $operations[$method] = [
-                    'summary'     => $endpoint->getTitle(),
+                    'summary'     => $endpoint->getName(),
                     'description' => $endpoint->getDescription(),
                 ];
                 continue;
@@ -107,22 +108,22 @@ class OasService
 
             // In all other cases we want include a schema.
             $operations[$method] = [
-                'summary'     => $endpoint->getTitle(),
+                'summary'     => $endpoint->getName(),
                 'description' => $endpoint->getDescription(),
                 'requestBody' => [
                     'description' => $endpoint->getDescription(),
                     //'required' =>// Todo: figure out what we want to do here
                     'content' => [
-                        'application/json' => '#/components/schemas/'.$endpoint->getEntites()->first()->getName(),
-                        'application/xml'  => '#/components/schemas/'.$endpoint->getEntites()->first()->getName(),
+                        'application/json' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
+                        'application/xml'  => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
                     ],
                 ],
                 'responses' => [
                     '200' => [
                         'description' => $endpoint->getDescription(),
                         'content'     => [
-                            'application/json' => '#/components/schemas/'.$endpoint->getEntites()->first()->getName(),
-                            'application/xml'  => '#/components/schemas/'.$endpoint->getEntites()->first()->getName(),
+                            'application/json' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
+                            'application/xml'  => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
                         ],
                     ],
                 ],
@@ -150,7 +151,7 @@ class OasService
     {
         $schemas = [];
 
-        foreach ($endpoint->getEntities as $entity) {
+        foreach ($endpoint->getEntities() as $entity) {
             $schemas[$entity->getName()] = $entity->getSchema();
         }
 
