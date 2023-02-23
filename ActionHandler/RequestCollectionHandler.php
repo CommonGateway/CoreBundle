@@ -13,6 +13,18 @@ class RequestCollectionHandler implements ActionHandlerInterface
         $this->requestService = $requestService;
     }
 
+    public function getConditions()
+    {
+        return ['==' => [1, 1]];
+    }
+
+    public function getListens()
+    {
+        return [
+            'none',
+        ];
+    }
+
     /**
      *  This function returns the required configuration as a [json-schema](https://json-schema.org/) array.
      *

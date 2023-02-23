@@ -4,6 +4,10 @@ namespace CommonGateway\CoreBundle\ActionHandler;
 
 interface ActionHandlerInterface
 {
+    public function getConditions();
+
+    public function getListens();
+
     public function getConfiguration();
 
     public function run(array $data, array $configuration);
