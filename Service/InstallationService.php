@@ -148,11 +148,11 @@ class InstallationService
         $this->logger->debug('Found '.count($this->objects).' schema types for '.$bundle, ['bundle' => $bundle]);
 
         // There is a certain order to this, meaning that we want to handle certain schema types before other schema types.
-        if (isset($this->object['https://json-schema.org/draft/2020-12/schema']) === true && is_array($this->object['https://json-schema.org/draft/2020-12/schema']) === true) {
-            $schemas = $this->object['https://json-schema.org/draft/2020-12/schema'];
+        if (isset($this->objects['https://json-schema.org/draft/2020-12/schema']) === true && is_array($this->objects['https://json-schema.org/draft/2020-12/schema']) === true) {
+            $schemas = $this->objects['https://json-schema.org/draft/2020-12/schema'];
             $this->logger->debug('Found '.count($schemas).' objects types for schema https://json-schema.org/draft/2020-12/schema', ['bundle' => $bundle, 'reference' => 'https://json-schema.org/draft/2020-12/schema']);
-            $this->handleObjectType('https://json-schema.org/draft/2020-12/schema', $schemas);
-            unset($this->objects[$this->object['https://docs.commongateway.nl/schemas/Organization.schema.json']]);
+            $this->handleObjectType('https://docs.commongateway.nl/schemas/Entity.schema.json', $schemas);
+            unset($this->objects['https://json-schema.org/draft/2020-12/schema']);
         }
 
         // Handle all the other objects.
@@ -269,7 +269,7 @@ class InstallationService
                 continue;
             }
 
-            // The use of gettype is discouraged, but we don't use it as a bl here and only for logging text purposes. So a design decicion was made te allow it.
+            // The use of gettype is discouraged, but we don't use it as a bl here and only for logging text purposes. So a design decision was made te allow it.
             $this->logger->error('Expected to find array for schema type '.$key.' but found '.gettype($value).' instead', ['value' => $value, 'schema' => $key]);
         }
 
@@ -313,7 +313,7 @@ class InstallationService
         $allowedCoreObjects
             = [
                 'https://docs.commongateway.nl/schemas/Action.schema.json',
-//                'https://docs.commongateway.nl/schemas/Entity.schema.json',
+                'https://docs.commongateway.nl/schemas/Entity.schema.json',
                 'https://json-schema.org/draft/2020-12/schema',
                 'https://docs.commongateway.nl/schemas/Mapping.schema.json',
                 'https://docs.commongateway.nl/schemas/Organization.schema.json',
@@ -354,11 +354,11 @@ class InstallationService
      * @param array  $schema The schema
      * @param string $type   The type of the schema
      *
-     * @return ObjectEntity The loaded object
+     * @return mixed The loaded object
      */
-    private function loadCoreSchema(array $schema, string $type): ObjectEntity
+    private function loadCoreSchema(array $schema, string $type)
     {
-        // Clearup the entity.
+        // Cleanup the entity.
         $entity = str_replace('https://docs.commongateway.nl/schemas/', '', $type);
         $entity = str_replace('.schema.json', '', $entity);
 
@@ -368,8 +368,8 @@ class InstallationService
         }
 
         // Create it if we don't.
-        if (isset($object) === false || $object instanceof ObjectEntity === false) {
-            $object = new $type();
+        if (isset($object) === false || $object instanceof $entity === false) {
+            $object = new $entity();
         }
 
         // Load the data.
@@ -548,7 +548,7 @@ class InstallationService
 
         foreach ($schemas as $schema) {
             $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema['reference']]);
-            if ($entity instanceof Entity === false) {
+            if ($entity === null) {
                 $this->logger->error('No entity found for reference '.$schema['reference']);
                 continue;
             }
