@@ -13,6 +13,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * The installation service is used to install plugins (or actually symfony bundles) on the gateway.
@@ -132,30 +133,32 @@ class InstallationService
         // First we want to read all the filles so that we have all the content the we should install.
         $this->logger->debug('Installing plugin '.$bundle);
 
-        // Lets check the basic folders for lagacy pruposes.
+        // Let's check the basic folders for legacy purposes.
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Action');
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Schema');
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Mapping');
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Data');
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/Source');
 
-        // Then the folder where everything should be.
-        $this->readDirectory($vendorFolder.'/'.$bundle.'/Installation');
+        // Todo: let's not add /Installation/installation.json to the $this->objects array
+//        // Then the folder where everything should be.
+//        $this->readDirectory($vendorFolder.'/'.$bundle.'/Installation');
 
         // Handling al the found  files.
         $this->logger->debug('Found '.count($this->objects).' schema types for '.$bundle, ['bundle' => $bundle]);
 
         // There is a certain order to this, meaning that we want to handle certain schema types before other schema types.
-        if (isset($this->object['https://docs.commongateway.nl/schemas/Entity.schema.json']) === true && is_array($this->object['https://docs.commongateway.nl/schemas/Entity.schema.json']) === true) {
-            $schemas = $this->object['https://docs.commongateway.nl/schemas/Entity.schema.json'];
-            $this->logger->debug('Found '.count($schemas).' objects types for schema https://docs.commongateway.nl/schemas/Entity.schema.json', ['bundle' => $bundle, 'reference' => 'https://docs.commongateway.nl/schemas/Entity.schema.json']);
-            $this->handleObjectType($schemas);
+        if (isset($this->object['https://json-schema.org/draft/2020-12/schema']) === true && is_array($this->object['https://json-schema.org/draft/2020-12/schema']) === true) {
+            $schemas = $this->object['https://json-schema.org/draft/2020-12/schema'];
+            $this->logger->debug('Found '.count($schemas).' objects types for schema https://json-schema.org/draft/2020-12/schema', ['bundle' => $bundle, 'reference' => 'https://json-schema.org/draft/2020-12/schema']);
+            $this->handleObjectType('https://json-schema.org/draft/2020-12/schema', $schemas);
             unset($this->objects[$this->object['https://docs.commongateway.nl/schemas/Organization.schema.json']]);
         }
 
         // Handle all the other objects.
         foreach ($this->objects as $ref => $schemas) {
             $this->logger->debug('Found '.count($schemas).' objects types for schema '.$ref, ['bundle' => $bundle, 'reference' => $ref]);
-            $this->handleObjectType($schemas);
+            $this->handleObjectType($ref, $schemas);
             unset($this->objects[$ref]);
         }
 
@@ -197,7 +200,7 @@ class InstallationService
         $hits = $hits->in($location);
 
         // Handle files.
-        $this->logger->debug('Found '.count($hits->files()).'files for installer', ['location' => $location, 'files' => count($hits->files())]);
+        $this->logger->debug('Found '.count($hits->files()).' files for installer', ['location' => $location, 'files' => count($hits->files())]);
 
         if (count($hits->files()) > 32) {
             $this->logger->warning('Found more then 32 files in directory, try limiting your files to 32 per directory', ['location' => $location, 'files' => count($hits->files())]);
@@ -213,11 +216,11 @@ class InstallationService
     /**
      * This function read a folder to find other folders or json objects.
      *
-     * @param File $file The file location
+     * @param SplFileInfo $file The file location
      *
      * @return bool|array The file contents, or false if content could not be established
      */
-    private function readfile(File $file): mixed
+    private function readfile(SplFileInfo $file)
     {
 
         // Check if it is a valid json object.
@@ -249,12 +252,12 @@ class InstallationService
      *
      * @return bool|array The file contents, or false if content could not be established
      */
-    private function addToObjects(array $schema): mixed
+    private function addToObjects(array $schema)
     {
 
         // It is a schema so lets save it like that.
         if (array_key_exists('$schema', $schema) === true) {
-            $this->objects[$schema['$schema']] = $schema;
+            $this->objects[$schema['$schema']][] = $schema;
 
             return $schema;
         }
@@ -262,28 +265,29 @@ class InstallationService
         // If it is not a schema of itself it might be an array of objects.
         foreach ($schema as $key => $value) {
             if (is_array($value) === true) {
-                $this->objects[$key] = $value;
+                $this->objects[$key][] = $value;
                 continue;
             }
 
-            // The use of gettype is discoureged, but we don't use it as a bl here and only for logging text purposes. So a design decicion was made te allow it.
+            // The use of gettype is discouraged, but we don't use it as a bl here and only for logging text purposes. So a design decicion was made te allow it.
             $this->logger->error('Expected to find array for schema type '.$key.' but found '.gettype($value).' instead', ['value' => $value, 'schema' => $key]);
         }
 
         return true;
     }//end addToObjects()
-
+    
     /**
-     * Handels schemas of a certain type.
+     * Handles schemas of a certain type.
      *
+     * @param string $type The type of the object
      * @param array $schemas The schemas to handle
      *
      * @return void
      */
-    private function handleObjectType(array $schemas): void
+    private function handleObjectType(string $type, array $schemas): void
     {
         foreach ($schemas as $schema) {
-            $object = $this->handleObject($schema);
+            $object = $this->handleObject($type, $schema);
             // Save it to the database.
             $this->entityManager->persist($object);
         }
@@ -291,9 +295,9 @@ class InstallationService
     }//end handleObjectType();
 
     /**
-     * Create an object bases on an type and a schema (the object as an array).
+     * Create an object bases on a type and a schema (the object as an array).
      *
-     * This function breaks complexity rules, but since a switch is the most effective way of doing it a design decicion was made to allow it
+     * This function breaks complexity rules, but since a switch is the most effective way of doing it a design decision was made to allow it
      *
      * @param string $type   The type of the object
      * @param array  $schema The object as an array
@@ -306,26 +310,27 @@ class InstallationService
         $object = null;
 
         // For security reasons we define allowed resources.
-        $allowdCoreObjects
+        $allowedCoreObjects
             = [
                 'https://docs.commongateway.nl/schemas/Action.schema.json',
-                'https://docs.commongateway.nl/schemas/Entity.schema.json',
+//                'https://docs.commongateway.nl/schemas/Entity.schema.json',
+                'https://json-schema.org/draft/2020-12/schema',
                 'https://docs.commongateway.nl/schemas/Mapping.schema.json',
                 'https://docs.commongateway.nl/schemas/Organization.schema.json',
                 'https://docs.commongateway.nl/schemas/Application.schema.json',
                 'https://docs.commongateway.nl/schemas/User.schema.json',
                 'https://docs.commongateway.nl/schemas/SecurityGroup.schema.json',
                 'https://docs.commongateway.nl/schemas/Cronjob.schema.json',
-                'https://docs.commongateway.nl/schemas/Endpoint.schema.json',
+                'https://docs.commongateway.nl/schemas/Endpoint.schema.json'
             ];
 
         // Handle core schema's.
-        if (in_array($type, $allowdCoreObjects) === true) {
+        if (in_array($type, $allowedCoreObjects) === true) {
             $object = $this->loadCoreSchema($schema, $type);
         }//end if
 
         // Handle Other schema's.
-        if (in_array($type, $allowdCoreObjects) === false) {
+        if (in_array($type, $allowedCoreObjects) === false) {
             $object = $this->loadSchema($schema, $type);
         }//end if
 
