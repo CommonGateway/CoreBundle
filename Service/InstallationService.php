@@ -3,9 +3,18 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Action;
-use App\Entity\Entity;
-use App\Entity\ObjectEntity;
+use App\Entity\Application;
+use App\Entity\CollectionEntity;
+use App\Entity\Cronjob;
+use App\Entity\DashboardCard;
 use App\Entity\Endpoint;
+use App\Entity\Entity;
+use App\Entity\Gateway as Source;
+use App\Entity\Mapping;
+use App\Entity\ObjectEntity;
+use App\Entity\Organization;
+use App\Entity\SecurityGroup;
+//use App\Entity\User;
 use App\Kernel;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -135,10 +144,18 @@ class InstallationService
 
         // Let's check the basic folders for legacy purposes.
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Action');
-        $this->readDirectory($vendorFolder.'/'.$bundle.'/Schema');
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/Application');
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/Collection'); // CollectionEntity
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/Cronjob');
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/DashboardCard');
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/Endpoint');
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/Schema'); // Entity
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/Source'); // Gateway
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Mapping');
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/Organization');
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/SecurityGroup');
+//        $this->readDirectory($vendorFolder.'/'.$bundle.'/User');
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Data');
-        $this->readDirectory($vendorFolder.'/'.$bundle.'/Source');
 
         // Todo: let's not add /Installation/installation.json to the $this->objects array
 //        // Then the folder where everything should be.
@@ -288,6 +305,10 @@ class InstallationService
     {
         foreach ($schemas as $schema) {
             $object = $this->handleObject($type, $schema);
+            if ($object === null) {
+                continue;
+            }
+            
             // Save it to the database.
             $this->entityManager->persist($object);
         }
@@ -302,9 +323,9 @@ class InstallationService
      * @param string $type   The type of the object
      * @param array  $schema The object as an array
      *
-     * @return bool|object
+     * @return object|null
      */
-    private function handleObject(string $type, array $schema): bool
+    private function handleObject(string $type, array $schema): ?object
     {
         // Only base we need it the assumption that on object isn't valid until we made is so.
         $object = null;
@@ -313,15 +334,17 @@ class InstallationService
         $allowedCoreObjects
             = [
                 'https://docs.commongateway.nl/schemas/Action.schema.json',
+                'https://docs.commongateway.nl/schemas/Application.schema.json',
+                'https://docs.commongateway.nl/schemas/CollectionEntity.schema.json',
+                'https://docs.commongateway.nl/schemas/Cronjob.schema.json',
+                'https://docs.commongateway.nl/schemas/DashboardCard.schema.json',
+                'https://docs.commongateway.nl/schemas/Endpoint.schema.json',
                 'https://docs.commongateway.nl/schemas/Entity.schema.json',
-                'https://json-schema.org/draft/2020-12/schema',
+                'https://docs.commongateway.nl/schemas/Gateway.schema.json',
                 'https://docs.commongateway.nl/schemas/Mapping.schema.json',
                 'https://docs.commongateway.nl/schemas/Organization.schema.json',
-                'https://docs.commongateway.nl/schemas/Application.schema.json',
-                'https://docs.commongateway.nl/schemas/User.schema.json',
                 'https://docs.commongateway.nl/schemas/SecurityGroup.schema.json',
-                'https://docs.commongateway.nl/schemas/Cronjob.schema.json',
-                'https://docs.commongateway.nl/schemas/Endpoint.schema.json'
+//                'https://docs.commongateway.nl/schemas/User.schema.json',
             ];
 
         // Handle core schema's.
@@ -356,20 +379,59 @@ class InstallationService
      *
      * @return mixed The loaded object
      */
-    private function loadCoreSchema(array $schema, string $type)
+    private function loadCoreSchema(array $schema, string $type): ?object
     {
         // Cleanup the entity.
         $entity = str_replace('https://docs.commongateway.nl/schemas/', '', $type);
         $entity = str_replace('.schema.json', '', $entity);
-
+    
         // Load it if we have it.
         if (array_key_exists('$id', $schema) === true) {
             $object = $this->entityManager->getRepository('App:'.$entity)->findOneBy(['reference' => $schema['$id']]);
         }
-
+    
         // Create it if we don't.
         if (isset($object) === false || $object === null) {
-            $object = new $entity();
+            switch ($entity) {
+                case 'Action':
+                    $object = new Action();
+                    break;
+                case 'Application':
+                    $object = new Application();
+                    break;
+                case 'CollectionEntity':
+                    $object = new CollectionEntity();
+                    break;
+                case 'Cronjob':
+                    $object = new Cronjob();
+                    break;
+                case 'DashboardCard':
+                    $object = new DashboardCard();
+                    break;
+                case 'Endpoint':
+                    $object = new Endpoint();
+                    break;
+                case 'Entity':
+                    $object = new Entity();
+                    break;
+                case 'Gateway':
+                    $object = new Source();
+                    break;
+                case 'Mapping':
+                    $object = new Mapping();
+                    break;
+                case 'Organization':
+                    $object = new Organization();
+                    break;
+                case 'SecurityGroup':
+                    $object = new SecurityGroup();
+                    break;
+//                case 'User':
+//                    $object = new User();
+//                    break;
+                default:
+                    return null;
+            }
         }
 
         // Load the data.
@@ -489,7 +551,7 @@ class InstallationService
 
         // Lets loop trough the stuff.
         foreach ($handlers as $type => $references) {
-            // Let's deterimin the propper repro to use.
+            // Let's determine the proper repo to use.
             switch ($type) {
                 case 'endpoints':
                     $repository = $this->entityManager->getRepository('App:Endpoint');
