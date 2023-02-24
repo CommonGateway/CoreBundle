@@ -242,7 +242,7 @@ class RequestService
         $this->configuration = $configuration;
 
         //if we already have a proxy, we can skip these checks
-        if($proxy instanceof Gateway === false) {
+        if ($proxy instanceof Gateway === false) {
             // We only do proxing if the endpoint forces it and we do not have a proxy
             if (!$data['endpoint'] instanceof Endpoint || !$proxy = $data['endpoint']->getProxy()) {
                 $message = !$data['endpoint'] instanceof Endpoint ?
