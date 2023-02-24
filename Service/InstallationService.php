@@ -381,56 +381,25 @@ class InstallationService
      */
     private function loadCoreSchema(array $schema, string $type): ?object
     {
-        // Cleanup the entity.
-        $entity = str_replace('https://docs.commongateway.nl/schemas/', '', $type);
-        $entity = str_replace('.schema.json', '', $entity);
+        // Cleanup the type / core schema reference.
+        $matchesCount = preg_match('/https:\/\/docs\.commongateway\.nl\/schemas\/([#A-Za-z]+)\.schema\.json/', $type, $matches);
+        if ($matchesCount === 0) {
+            $this->logger->error('Can\'t find schema type in this core schema type: '.$type);
+            return null;
+        }
+        $type = $matches[1];
     
         // Load it if we have it.
         if (array_key_exists('$id', $schema) === true) {
-            $object = $this->entityManager->getRepository('App:'.$entity)->findOneBy(['reference' => $schema['$id']]);
+            $object = $this->entityManager->getRepository('App:'.$type)->findOneBy(['reference' => $schema['$id']]);
         }
     
         // Create it if we don't.
         if (isset($object) === false || $object === null) {
-            switch ($entity) {
-                case 'Action':
-                    $object = new Action();
-                    break;
-                case 'Application':
-                    $object = new Application();
-                    break;
-                case 'CollectionEntity':
-                    $object = new CollectionEntity();
-                    break;
-                case 'Cronjob':
-                    $object = new Cronjob();
-                    break;
-                case 'DashboardCard':
-                    $object = new DashboardCard();
-                    break;
-                case 'Endpoint':
-                    $object = new Endpoint();
-                    break;
-                case 'Entity':
-                    $object = new Entity();
-                    break;
-                case 'Gateway':
-                    $object = new Source();
-                    break;
-                case 'Mapping':
-                    $object = new Mapping();
-                    break;
-                case 'Organization':
-                    $object = new Organization();
-                    break;
-                case 'SecurityGroup':
-                    $object = new SecurityGroup();
-                    break;
-//                case 'User':
-//                    $object = new User();
-//                    break;
-                default:
-                    return null;
+            $object = $this->createNewObjectType($type);
+            if ($object === null) {
+                $this->logger->error('Unsupported type for creating a new core object from a schema');
+                return null;
             }
         }
 
@@ -447,6 +416,44 @@ class InstallationService
 
         return $object;
     }//end loadCoreSchema()
+    
+    /**
+     * Creates a new object of the given type.
+     *
+     * @param string $type The type to create an object of.
+     * @return object|null The new Object or null if the type is not supported.
+     */
+    private function createNewObjectType(string $type): ?object
+    {
+        switch ($type) {
+            case 'Action':
+                return new Action();
+            case 'Application':
+                return new Application();
+            case 'CollectionEntity':
+                return new CollectionEntity();
+            case 'Cronjob':
+                return new Cronjob();
+            case 'DashboardCard':
+                return new DashboardCard();
+            case 'Endpoint':
+                return new Endpoint();
+            case 'Entity':
+                return new Entity();
+            case 'Gateway':
+                return new Source();
+            case 'Mapping':
+                return new Mapping();
+            case 'Organization':
+                return new Organization();
+            case 'SecurityGroup':
+                return new SecurityGroup();
+//            case 'User':
+//                return new User();
+            default:
+                return null;
+        }
+    }//end createNewObjectType()
 
     /**
      * This function loads an non-core schema.
