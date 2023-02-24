@@ -23,6 +23,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
+use Exception;
 
 /**
  * The installation service is used to install plugins (or actually symfony bundles) on the gateway.
@@ -139,37 +140,31 @@ class InstallationService
 
         $vendorFolder = 'vendor';
 
-        // First we want to read all the filles so that we have all the content the we should install.
+        // First we want to read all the files so that we have all the content we should install.
         $this->logger->debug('Installing plugin '.$bundle);
 
-        // Let's check the basic folders for legacy purposes.
+        // Let's check the basic folders for legacy purposes. todo: remove these at some point
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Action');
-        $this->readDirectory($vendorFolder.'/'.$bundle.'/Application');
-        $this->readDirectory($vendorFolder.'/'.$bundle.'/Collection'); // CollectionEntity
-        $this->readDirectory($vendorFolder.'/'.$bundle.'/Cronjob');
-        $this->readDirectory($vendorFolder.'/'.$bundle.'/DashboardCard');
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Endpoint');
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Schema'); // Entity
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Source'); // Gateway
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Mapping');
-        $this->readDirectory($vendorFolder.'/'.$bundle.'/Organization');
-        $this->readDirectory($vendorFolder.'/'.$bundle.'/SecurityGroup');
-//        $this->readDirectory($vendorFolder.'/'.$bundle.'/User');
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Data');
+        // todo: function that translates old core schema references to the new ones.
+        // todo: $this->objects['new'] = $this->objects['old'] & unset($this->objects['old'])
 
-        // Todo: let's not add /Installation/installation.json to the $this->objects array
-//        // Then the folder where everything should be.
-//        $this->readDirectory($vendorFolder.'/'.$bundle.'/Installation');
-
+        // Then the folder where everything should be.
+        $this->readDirectory($vendorFolder.'/'.$bundle.'/Installation');
+        
         // Handling al the found  files.
         $this->logger->debug('Found '.count($this->objects).' schema types for '.$bundle, ['bundle' => $bundle]);
 
         // There is a certain order to this, meaning that we want to handle certain schema types before other schema types.
-        if (isset($this->objects['https://json-schema.org/draft/2020-12/schema']) === true && is_array($this->objects['https://json-schema.org/draft/2020-12/schema']) === true) {
-            $schemas = $this->objects['https://json-schema.org/draft/2020-12/schema'];
-            $this->logger->debug('Found '.count($schemas).' objects types for schema https://json-schema.org/draft/2020-12/schema', ['bundle' => $bundle, 'reference' => 'https://json-schema.org/draft/2020-12/schema']);
+        if (isset($this->objects['https://docs.commongateway.nl/schemas/Entity.schema.json']) === true && is_array($this->objects['https://docs.commongateway.nl/schemas/Entity.schema.json']) === true) {
+            $schemas = $this->objects['https://docs.commongateway.nl/schemas/Entity.schema.json'];
+            $this->logger->debug('Found '.count($schemas).' objects types for schema https://docs.commongateway.nl/schemas/Entity.schema.json', ['bundle' => $bundle, 'reference' => 'https://docs.commongateway.nl/schemas/Entity.schema.json']);
             $this->handleObjectType('https://docs.commongateway.nl/schemas/Entity.schema.json', $schemas);
-            unset($this->objects['https://json-schema.org/draft/2020-12/schema']);
+            unset($this->objects['https://docs.commongateway.nl/schemas/Entity.schema.json']);
         }
 
         // Handle all the other objects.
@@ -182,8 +177,15 @@ class InstallationService
         // Find and handle the installation.json file.
         if ($this->filesystem->exists($vendorFolder.'/'.$bundle.'/Installation/installation.json') !== false) {
             $finder = new Finder();
-            foreach ($finder->in($vendorFolder.'/'.$bundle.'/Installation/installation.json') as $file) {
-                $this->handleInstaller($file);
+            $files = $finder->in($vendorFolder.'/'.$bundle.'/Installation')->files()->name('installation.json');
+            if (count($files) === 1) {
+                $this->logger->debug('Found an installation.json file', ['bundle' => $bundle]);
+                foreach ($files as $file) {
+                    $this->handleInstaller($file);
+                }
+            } else {
+                $this->logger->debug('Found '.count($files).' installation.json files', ['location' => $vendorFolder.'/'.$bundle.'/Installation']);
+                $data = [];
             }
         }
 
@@ -200,12 +202,12 @@ class InstallationService
      *
      * @param string $location The location of the folder
      *
-     * @return bool Whether or not the function was succefully executed
+     * @return bool Whether the function was successfully executed
      */
     private function readDirectory(string $location): bool
     {
 
-        // Lets see if the folder exisits to start with.
+        // Let's see if the folder exists to start with.
         if ($this->filesystem->exists($location) === false) {
             $this->logger->debug('Installation folder not found', ['location' => $location]);
 
@@ -224,6 +226,9 @@ class InstallationService
         }
 
         foreach ($hits->files() as $file) {
+            if ($file->getFilename() === 'installation.json') {
+                continue;
+            }
             $this->readfile($file);
         }
 
@@ -331,21 +336,20 @@ class InstallationService
         $object = null;
 
         // For security reasons we define allowed resources.
-        $allowedCoreObjects
-            = [
-                'https://docs.commongateway.nl/schemas/Action.schema.json',
-                'https://docs.commongateway.nl/schemas/Application.schema.json',
-                'https://docs.commongateway.nl/schemas/CollectionEntity.schema.json',
-                'https://docs.commongateway.nl/schemas/Cronjob.schema.json',
-                'https://docs.commongateway.nl/schemas/DashboardCard.schema.json',
-                'https://docs.commongateway.nl/schemas/Endpoint.schema.json',
-                'https://docs.commongateway.nl/schemas/Entity.schema.json',
-                'https://docs.commongateway.nl/schemas/Gateway.schema.json',
-                'https://docs.commongateway.nl/schemas/Mapping.schema.json',
-                'https://docs.commongateway.nl/schemas/Organization.schema.json',
-                'https://docs.commongateway.nl/schemas/SecurityGroup.schema.json',
+        $allowedCoreObjects = [
+            'https://docs.commongateway.nl/schemas/Action.schema.json',
+            'https://docs.commongateway.nl/schemas/Application.schema.json',
+            'https://docs.commongateway.nl/schemas/CollectionEntity.schema.json',
+            'https://docs.commongateway.nl/schemas/Cronjob.schema.json',
+            'https://docs.commongateway.nl/schemas/DashboardCard.schema.json',
+            'https://docs.commongateway.nl/schemas/Endpoint.schema.json',
+            'https://docs.commongateway.nl/schemas/Entity.schema.json',
+            'https://docs.commongateway.nl/schemas/Gateway.schema.json',
+            'https://docs.commongateway.nl/schemas/Mapping.schema.json',
+            'https://docs.commongateway.nl/schemas/Organization.schema.json',
+            'https://docs.commongateway.nl/schemas/SecurityGroup.schema.json',
 //                'https://docs.commongateway.nl/schemas/User.schema.json',
-            ];
+        ];
 
         // Handle core schema's.
         if (in_array($type, $allowedCoreObjects) === true) {
@@ -357,6 +361,11 @@ class InstallationService
             $object = $this->loadSchema($schema, $type);
         }//end if
 
+        // Make sure not to continue on errors.
+        if ($object === null) {
+            return null;
+        }
+        
         // Lets see if it is a new object.
         if ($this->entityManager->contains($object) === false) {
             $this->logger->info(
@@ -384,7 +393,7 @@ class InstallationService
         // Cleanup the type / core schema reference.
         $matchesCount = preg_match('/https:\/\/docs\.commongateway\.nl\/schemas\/([#A-Za-z]+)\.schema\.json/', $type, $matches);
         if ($matchesCount === 0) {
-            $this->logger->error('Can\'t find schema type in this core schema type: '.$type);
+            $this->logger->error('Can\'t find schema type in this core schema reference: '.$type);
             return null;
         }
         $type = $matches[1];
@@ -496,15 +505,15 @@ class InstallationService
     /**
      * Specifcially handles the installation file.
      *
-     * @param $file The installation file
+     * @param SplFileInfo $file The installation file.
      *
      * @return bool
      */
-    private function handleInstaller($file): bool
+    private function handleInstaller(SplFileInfo $file): bool
     {
         $data = json_decode($file->getContents(), true);
 
-        if ($data === false) {
+        if (empty($data) === true) {
             $this->logger->error($file->getFilename().' is not a valid json object');
 
             return false;
@@ -530,15 +539,21 @@ class InstallationService
             $this->createCards($data['cards']);
         }
 
-        if (isset($data['installationService']) === false || $installationService = $data['installationService'] === false) {
+        if (isset($data['installationService']) === false || empty($data['installationService']) === true) {
             $this->logger->error($file->getFilename().' Doesn\'t contain an installation service');
 
-            return true;
+            return false;
         }
 
-        if ($installationService = $this->container->get($installationService) === false) {
-            $this->logger->error($file->getFilename().' Could not be loaded from container');
-
+        $installationService = $data['installationService'];
+        try {
+            $installationService = $this->container->get($installationService);
+        } catch (Exception $exception) {
+            $error = $file->getFilename().' Could not be loaded from container: '.$exception->getMessage();
+        }
+        if (empty($installationService) === true || isset($error) === true) {
+            $this->logger->error($error ?? "{$file->getFilename()} Could not be loaded from container");
+            
             return false;
         }
 
