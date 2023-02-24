@@ -18,6 +18,7 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 |[getScopes](#requestservicegetscopes)|Get a scopes array for the current user (or of the anonymus if no user s logged in).|
 |[itemRequestHandler](#requestserviceitemrequesthandler)||
 |[proxyHandler](#requestserviceproxyhandler)||
+|[proxyRequestHandler](#requestserviceproxyrequesthandler)|Determines the proxy source from configuration, then use proxy handler to proxy the request.|
 |[realRequestQueryAll](#requestservicerealrequestqueryall)|A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.|
 |[requestHandler](#requestservicerequesthandler)|Handles incomming requests and is responsible for generating a responce.|
 |[searchRequestHandler](#requestservicesearchrequesthandler)|This function searches all the objectEntities and formats the data.|
@@ -224,6 +225,35 @@ Get a scopes array for the current user (or of the anonymus if no user s logged 
 **Return Values**
 
 `void`
+
+
+<hr />
+
+
+### RequestService::proxyRequestHandler  
+
+**Description**
+
+```php
+public proxyRequestHandler (array $parameters, array $configuration)
+```
+
+Determines the proxy source from configuration, then use proxy handler to proxy the request. 
+
+ 
+
+**Parameters**
+
+* `(array) $parameters`
+: The parameters of the request.  
+* `(array) $configuration`
+: The configuration of the action.  
+
+**Return Values**
+
+`array`
+
+> The result of the proxy.
 
 
 <hr />
