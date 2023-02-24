@@ -614,21 +614,42 @@ class InstallationService
         foreach ($handlers as $type => $references) {
             // Let's determine the proper repo to use.
             switch ($type) {
-                case 'endpoints':
-                    $repository = $this->entityManager->getRepository('App:Endpoint');
+                case 'actions':
+                    $repository = $this->entityManager->getRepository('App:Action');
                     break;
-                case 'sources':
-                    $repository = $this->entityManager->getRepository('App:Source');
+                case 'applications':
+                    $repository = $this->entityManager->getRepository('App:Application');
                     break;
-                case 'schemas':
-                    $repository = $this->entityManager->getRepository('App:Entity');
+                case 'collections':
+                    $repository = $this->entityManager->getRepository('App:CollectionEntity');
                     break;
                 case 'cronjobs':
                     $repository = $this->entityManager->getRepository('App:Cronjob');
                     break;
+                case 'endpoints':
+                    $repository = $this->entityManager->getRepository('App:Endpoint');
+                    break;
+                case 'schemas':
+                    $repository = $this->entityManager->getRepository('App:Entity');
+                    break;
+                case 'sources':
+                    $repository = $this->entityManager->getRepository('App:Gateway');
+                    break;
+                case 'mappings':
+                    $repository = $this->entityManager->getRepository('App:Mapping');
+                    break;
                 case 'objects':
                     $repository = $this->entityManager->getRepository('App:ObjectEntity');
                     break;
+                case 'organizations':
+                    $repository = $this->entityManager->getRepository('App:Organization');
+                    break;
+//                case 'securityGroups':
+//                    $repository = $this->entityManager->getRepository('App:SecurityGroup');
+//                    break;
+//                case 'users':
+//                    $repository = $this->entityManager->getRepository('App:User');
+//                    break;
                 default:
                     // Euhm we cant't do anything so...
                     $this->logger->error('Unknown type used for the creation of a dashboard card '.$type);
