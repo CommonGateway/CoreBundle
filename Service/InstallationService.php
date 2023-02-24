@@ -145,13 +145,12 @@ class InstallationService
 
         // Let's check the basic folders for legacy purposes. todo: remove these at some point
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Action');
-        $this->readDirectory($vendorFolder.'/'.$bundle.'/Endpoint');
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Schema'); // Entity
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Source'); // Gateway
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Mapping');
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Data');
-        // todo: function that translates old core schema references to the new ones.
-        // todo: $this->objects['new'] = $this->objects['old'] & unset($this->objects['old'])
+        // A function that translates old core schema references to the new ones. Only here for backwards compatibility.
+        $this->translateCoreReferences();
 
         // Then the folder where everything should be.
         $this->readDirectory($vendorFolder.'/'.$bundle.'/Installation');
@@ -185,7 +184,6 @@ class InstallationService
                 }
             } else {
                 $this->logger->debug('Found '.count($files).' installation.json files', ['location' => $vendorFolder.'/'.$bundle.'/Installation']);
-                $data = [];
             }
         }
 
@@ -196,6 +194,39 @@ class InstallationService
 
         return true;
     }//end install()
+    
+    /**
+     * For backwards compatibility, support old core schema reference and translate them to the new ones.
+     * Todo: remove this function when we no longer need it
+     *
+     * @return void
+     */
+    private function translateCoreReferences()
+    {
+        foreach ($this->objects as $translateFrom => $value) {
+            switch ($translateFrom) {
+                case 'https://json-schema.org/draft/2020-12/action':
+                    $translateTo = 'https://docs.commongateway.nl/schemas/Action.schema.json';
+                    break;
+                case 'https://json-schema.org/draft/2020-12/schema':
+                    $translateTo = 'https://docs.commongateway.nl/schemas/Entity.schema.json';
+                    break;
+                case 'https://json-schema.org/draft/2020-12/source':
+                    $translateTo = 'https://docs.commongateway.nl/schemas/Gateway.schema.json';
+                    break;
+                case 'https://json-schema.org/draft/2020-12/mapping':
+                    $translateTo = 'https://docs.commongateway.nl/schemas/Mapping.schema.json';
+                    break;
+                default:
+                    continue 2;
+            }
+            if (isset($this->objects[$translateTo]) === false) {
+                $this->objects[$translateTo] = [];
+            }
+            $this->objects[$translateTo] = array_merge($this->objects[$translateTo], $this->objects[$translateFrom]);
+            unset($this->objects[$translateFrom]);
+        }
+    }//end translateCoreReferences()
 
     /**
      * This function read a folder to find other folders or json objects.
@@ -391,12 +422,13 @@ class InstallationService
     private function loadCoreSchema(array $schema, string $type): ?object
     {
         // Cleanup the type / core schema reference.
-        $matchesCount = preg_match('/^https:\/\/docs\.commongateway\.nl\/schemas\/([#A-Za-z]+)\.schema\.json(|\?.+=.+)$/', $type, $matches);
+        $matchesCount = preg_match('/^https:\/\/docs\.commongateway\.nl\/schemas\/([#A-Za-z]+)\.schema\.json(|\?((|,)[^,=]+=[^,=]+)+)$/', $type, $matches);
         if ($matchesCount === 0) {
             $this->logger->error('Can\'t find schema type in this core schema reference: '.$type);
             return null;
         }
         $type = $matches[1];
+        $query = explode(',', ltrim($matches[2], '?'));
     
         // Load it if we have it.
         if (array_key_exists('$id', $schema) === true) {
