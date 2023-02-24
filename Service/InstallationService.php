@@ -590,7 +590,8 @@ class InstallationService
         }
 
         try {
-            return $installationService->install();
+            $install = $installationService->install();
+            return is_bool($install) ? $install : empty($install) === false;
         } catch (\Throwable $throwable) {
             $this->logger->critical("Failed to install installationService {$data['installationService']}: {$throwable->getMessage()}");
         
