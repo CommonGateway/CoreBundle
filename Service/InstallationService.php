@@ -564,8 +564,6 @@ class InstallationService
         
             return false;
         }
-    
-        return true;
     }//end handleInstaller()
 
     /**
