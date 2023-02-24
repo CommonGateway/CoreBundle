@@ -550,10 +550,10 @@ class InstallationService
 
             return false;
         }
-
-        // Endpoints for schema's.
-        if (isset($data['endpoints']['schemas']) === true) {
-            $this->createEndpoints($data['endpoints']['schemas']);
+    
+        // Endpoints for schema's and/or sources.
+        if (isset($data['endpoints']) === true) {
+            $this->createEndpoints($data['endpoints']);
         }
 
         // Actions for action handlers.
@@ -566,7 +566,7 @@ class InstallationService
             $this->createCronjobs($data['cronjobs']['actions']);
         }
 
-        // Lets see if we have things that we want to create cards for stuff (ince this might create cards for the stuff above this should always be last).
+        // Lets see if we have things that we want to create cards for stuff (Since this might create cards for the stuff above this should always be last).
         if (isset($data['cards']) === true) {
             $this->createCards($data['cards']);
         }
@@ -598,20 +598,20 @@ class InstallationService
             return false;
         }
     }//end handleInstaller()
-
+    
     /**
      * This functions creates dashboard cars for an array of endpoints, sources, schema's or objects.
      *
-     * @param array $handlers An array of references of handlers for wih actions schould be created
+     * @param array $cardsData An array of data used for creating dashboardCards.
      *
-     * @return array An array of Action objects
+     * @return array An array of dashboardCard objects
      */
-    private function createCards(array $handlers = []): array
+    private function createCards(array $cardsData = []): array
     {
         $cards = [];
 
-        // Lets loop trough the stuff.
-        foreach ($handlers as $type => $references) {
+        // Let's loop through the cardsData.
+        foreach ($cardsData as $type => $references) {
             // Let's determine the proper repo to use.
             switch ($type) {
                 case 'actions':
@@ -651,8 +651,8 @@ class InstallationService
 //                    $repository = $this->entityManager->getRepository('App:User');
 //                    break;
                 default:
-                    // Euhm we cant't do anything so...
-                    $this->logger->error('Unknown type used for the creation of a dashboard card '.$type);
+                    // We can't do anything so...
+                    $this->logger->error('Unknown type used for the creation of a dashboard card: '.$type);
                     continue 2;
             }//end switch
 
@@ -661,7 +661,14 @@ class InstallationService
                 $object = $repository->findOneBy(['reference' => $reference]);
 
                 if ($object === null) {
-                    $this->logger->error('No object found for '.$reference);
+                    $this->logger->error('No object found for '.$reference.' while trying to create a DashboardCard.');
+                    continue;
+                }
+                
+                // Check if this dashboardCard already exists.
+                $dashboardCard = $this->entityManager->getRepository('App:DashboardCard')->findOneBy(['entity' => get_class($object), 'entityId' => $object->getId()]);
+                if ($dashboardCard !== null) {
+                    $this->logger->debug('DashboardCard found for ' . get_class($object) . ' with id: ' . $object->getId());
                     continue;
                 }
 
@@ -679,36 +686,56 @@ class InstallationService
     }//end createCards()
 
     /**
-     * This function creates endpoints for an array of schema references.
+     * This function creates endpoints for an array of schema references or source references.
      *
-     * @param array $schemas An array of references of schema's for wich endpoints hould be created
+     * @param array $endpointsData An array of data used for creating endpoints.
      *
      * @return array An array of endpoints
      */
-    private function createEndpoints(array $schemas = []): array
+    private function createEndpoints(array $endpointsData = []): array
     {
-        $endpointRepository = $this->entityManager->getRepository('App:Endpoint');
         $endpoints = [];
-
-        foreach ($schemas as $schema) {
-            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema['reference']]);
-            if ($entity === null) {
-                $this->logger->error('No entity found for reference '.$schema['reference']);
-                continue;
-            }
-
-            $endpoint = $endpointRepository->findOneBy(['name' => $entity->getName()]);
-            if ($endpoint !== null) {
-                $this->logger->debug('Endpoint found for '.$schema['reference']);
-                continue;
-            }
+        
+        // Let's loop through the endpointsData.
+        foreach ($endpointsData as $type => $endpointTypeData) {
+            // Let's determine the proper repo to use.
+            switch ($type) {
+                case 'schemas':
+                    $repository = $this->entityManager->getRepository('App:Entity');
+                    break;
+                case 'sources':
+                    $repository = $this->entityManager->getRepository('App:Gateway');
+                    break;
+                default:
+                    // We can't do anything so...
+                    $this->logger->error('Unknown type used for endpoint creation: '.$type);
+                    continue 2;
+            }//end switch
+        
+            // Then we can handle some data.
+            foreach ($endpointTypeData as $endpointData) {
+                $object = $repository->findOneBy(['reference' => $endpointData['reference']]);
             
-            $endpoint = new Endpoint($entity, $schema['path'], $schema['methods']);
+                if ($object === null) {
+                    $this->logger->error('No object found for '.$endpointData['reference'].' while trying to create an Endpoint.');
+                    continue;
+                }
     
-            $this->logger->debug('Endpoint created for '.$schema['reference']);
-            $this->entityManager->persist($endpoint);
-            $endpoints[] = $endpoint;
-        }
+                $criteria = $type === 'sources' ? ['proxy' => $object] : ['entity' => $object];
+                $endpoint = $this->entityManager->getRepository('App:Endpoint')->findOneBy(array_merge($criteria, ['name' => $object->getName()]));
+                if ($endpoint !== null) {
+                    $this->logger->debug('Endpoint found for '.$endpointData['reference']);
+                    continue;
+                }
+    
+                // todo ? maybe create a second constructor?
+                $endpoint = $type === 'sources' ? new Endpoint(null, $object, $endpointData) : new Endpoint($object, null, $endpointData);
+                $endpoints[] = $endpoint;
+                $this->entityManager->persist($endpoint);
+                $this->logger->debug('Endpoint created for '.$endpointData['reference']);
+            }
+        
+        }//end foreach
 
         $this->logger->info(count($endpoints).' Endpoints Created');
 
