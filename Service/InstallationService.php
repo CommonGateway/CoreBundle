@@ -391,7 +391,7 @@ class InstallationService
     private function loadCoreSchema(array $schema, string $type): ?object
     {
         // Cleanup the type / core schema reference.
-        $matchesCount = preg_match('/https:\/\/docs\.commongateway\.nl\/schemas\/([#A-Za-z]+)\.schema\.json/', $type, $matches);
+        $matchesCount = preg_match('/^https:\/\/docs\.commongateway\.nl\/schemas\/([#A-Za-z]+)\.schema\.json(|\?.+=.+)$/', $type, $matches);
         if ($matchesCount === 0) {
             $this->logger->error('Can\'t find schema type in this core schema reference: '.$type);
             return null;
