@@ -460,6 +460,7 @@ class AuthenticationService
             'iss'          => $this->parameterBag->get('app_url'),
             'ias'          => $time->getTimestamp(),
             'exp'          => $expiry->getTimestamp(),
+            'person'       => $user->getPerson(),
         ];
 
         return $payload;
