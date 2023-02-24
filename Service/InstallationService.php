@@ -549,7 +549,7 @@ class InstallationService
         try {
             $installationService = $this->container->get($installationService);
         } catch (Exception $exception) {
-            $error = $file->getFilename().' Could not be loaded from container: '.$exception->getMessage();
+            $error = "{$file->getFilename()} Could not be loaded from container: {$exception->getMessage()}";
         }
         if (empty($installationService) === true || isset($error) === true) {
             $this->logger->error($error ?? "{$file->getFilename()} Could not be loaded from container");
@@ -557,7 +557,15 @@ class InstallationService
             return false;
         }
 
-        return $installationService->install();
+        try {
+            return $installationService->install();
+        } catch (\Throwable $throwable) {
+            $this->logger->critical("Failed to install installationService {$data['installationService']}: {$throwable->getMessage()}");
+        
+            return false;
+        }
+    
+        return true;
     }//end handleInstaller()
 
     /**
