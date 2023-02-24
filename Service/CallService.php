@@ -66,7 +66,7 @@ class CallService
             $contents = is_array($config['ssl_key']) ? $config['ssl_key'][0] : $config['ssl_key'];
             $configs['ssl_key'] = $this->fileService->writeFile('privateKey', $contents);
         }
-        if (isset($config['verify']) === true && is_string($config['verify']) === true) {
+        if (isset($config['verify']) === true && empty($config['verify']) === false && is_string($config['verify']) === true) {
             $configs['verify'] = $this->fileService->writeFile('verify', $config['ssl_key']);
         }
 
@@ -90,7 +90,7 @@ class CallService
             $filename = is_array($config['ssl_key']) ? $config['ssl_key'][0] : $config['ssl_key'];
             $this->fileService->removeFile($filename);
         }
-        if (isset($config['verify']) === true && is_string($config['verify']) === true) {
+        if (isset($config['verify']) === true && empty($config['verify']) === false && is_string($config['verify']) === true) {
             $this->fileService->removeFile($config['verify']);
         }
     }
