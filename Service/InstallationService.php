@@ -368,7 +368,7 @@ class InstallationService
         }
 
         // Create it if we don't.
-        if (isset($object) === false || $object instanceof $entity === false) {
+        if (isset($object) === false || $object === null) {
             $object = new $entity();
         }
 
@@ -409,7 +409,7 @@ class InstallationService
         }
 
         // Create it if we don't.
-        if (isset($object) === false || $object instanceof ObjectEntity === false) {
+        if (isset($object) === false || $object === null) {
             $object = new ObjectEntity($entity);
         }
 
@@ -554,7 +554,7 @@ class InstallationService
             }
 
             $endpoint = $endpointRepository->findOneBy(['name' => $entity->getName()]);
-            if ($endpoint instanceof Endpoint === true) {
+            if ($endpoint !== null) {
                 $this->logger->debug('Endpoint found for '.$schema['reference']);
                 continue;
             }
@@ -586,7 +586,7 @@ class InstallationService
             $actionHandler = $this->container->get($handler);
 
             $action = $this->entityManager->getRepository('App:Action')->findOneBy(['class' => get_class($actionHandler)]);
-            if ($action instanceof Action === true) {
+            if ($action !== null) {
                 $this->logger->debug('Action found for '.$handler.' with class '.get_class($actionHandler));
                 continue;
             }
@@ -622,7 +622,7 @@ class InstallationService
         foreach ($actions as $reference) {
             $action = $this->entityManager->getRepository('App:Action')->findOneBy(['reference' => $reference]);
 
-            if ($action instanceof Action === false) {
+            if ($action === null) {
                 $this->logger->error('No action found for reference '.$reference);
                 continue;
             }

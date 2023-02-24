@@ -53,7 +53,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
             && !$object->getObject() // It isn't currently connected to a schema
         ) {
             $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $object->getSchema()]);
-            if ($entity instanceof Entity === true) {
+            if ($entity !== null) {
                 $object->setObject($entity);
             }
 

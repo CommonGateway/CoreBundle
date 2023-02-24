@@ -216,7 +216,7 @@ class CacheService
 
         // todo: temp fix to make sure we have the latest version of this ObjectEntity before we cache it.
         $updatedObjectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $objectEntity->getId()->toString()]);
-        if ($updatedObjectEntity instanceof ObjectEntity === true) {
+        if ($updatedObjectEntity !== null) {
             $objectEntity = $updatedObjectEntity;
         } elseif (isset($this->io)) {
             $this->io->writeln('Could not find an ObjectEntity with id: '.$objectEntity->getId()->toString());
@@ -756,7 +756,7 @@ class CacheService
             $this->io->writeln('Start caching endpoint '.$endpoint->getId()->toString().' with name: '.$endpoint->getName());
         }
         $updatedEndpoint = $this->entityManager->getRepository('App:Endpoint')->find($endpoint->getId());
-        if ($updatedEndpoint instanceof Endpoint === true) {
+        if ($updatedEndpoint !== null) {
             $endpoint = $updatedEndpoint;
         } elseif (isset($this->io)) {
             $this->io->writeln('Could not find an Endpoint with id: '.$endpoint->getId()->toString());
