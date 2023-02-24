@@ -403,7 +403,7 @@ class InstallationService
                 'A new object has been created trough the installation service',
                 [
                     'class'  => get_class($object),
-                    'object' => $object->toSchema(),
+//                    'object' => $object->toSchema(), // TODO: this results in problems if we do getter on not persisted objects
                 ]
             );
         }
