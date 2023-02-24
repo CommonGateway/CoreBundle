@@ -2,7 +2,8 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
-//use App\Entity\CallLog;
+// use App\Entity\CallLog;
+use Adbar\Dot;
 use App\Entity\Gateway as Source;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
@@ -65,7 +66,7 @@ class CallService
             $contents = is_array($config['ssl_key']) ? $config['ssl_key'][0] : $config['ssl_key'];
             $configs['ssl_key'] = $this->fileService->writeFile('privateKey', $contents);
         }
-        if (isset($config['verify']) === true && is_string($config['verify']) === true) {
+        if (isset($config['verify']) === true && empty($config['verify']) === false && is_string($config['verify']) === true) {
             $configs['verify'] = $this->fileService->writeFile('verify', $config['ssl_key']);
         }
 
@@ -89,7 +90,7 @@ class CallService
             $filename = is_array($config['ssl_key']) ? $config['ssl_key'][0] : $config['ssl_key'];
             $this->fileService->removeFile($filename);
         }
-        if (isset($config['verify']) === true && is_string($config['verify']) === true) {
+        if (isset($config['verify']) === true && empty($config['verify']) === false && is_string($config['verify']) === true) {
             $this->fileService->removeFile($config['verify']);
         }
     }
@@ -160,6 +161,11 @@ class CallService
 //        $log->setRequestHeaders($config['headers'] ?? null);
 
         $url = $source->getLocation().$endpoint;
+        foreach ($source->getHeaders() as $header) {
+            if (isset($header['key']) && isset($header['value'])) {
+                $config['headers'][$header['key']] = $header['value'];
+            }
+        }
 
         $startTimer = microtime(true);
         // Lets make the call
@@ -298,13 +304,14 @@ class CallService
      *
      * @TODO: This is based on some assumptions
      *
-     * @param Source $source   The source to call
-     * @param string $endpoint The endpoint on the source to call
-     * @param array  $config   The additional configuration to call the source
+     * @param Source $source           The source to call
+     * @param string $endpoint         The endpoint on the source to call
+     * @param array  $config           The additional configuration to call the source
+     * @param ?string $objectsLocation The additional configuration to call the source
      *
      * @return array The array of results
      */
-    public function getAllResults(Source $source, string $endpoint = '', array $config = []): array
+    public function getAllResults(Source $source, string $endpoint = '', array $config = [], ?string $objectsLocation = null): array
     {
         $errorCount = 0;
         $pageCount = 1;
@@ -330,12 +337,19 @@ class CallService
             } catch (\Exception $exception) {
                 $errorCount++;
             }
-            if (isset($decodedResponse['results'])) {
-                $results = array_merge($decodedResponse['results'], $results);
-            } elseif (isset($decodedResponse['items'])) {
-                $results = array_merge($decodedResponse['items'], $results);
-            } elseif (isset($decodedResponse[0])) {
-                $results = array_merge($decodedResponse, $results);
+
+            // Get objects through dot notation
+            if ($objectsLocation) {
+                $dot = new Dot($decodedResponse);
+                $results = array_merge($dot->get($objectsLocation), $results);
+            } else { // else do some assumptions
+                if (isset($decodedResponse['results'])) {
+                    $results = array_merge($decodedResponse['results'], $results);
+                } elseif (isset($decodedResponse['items'])) {
+                    $results = array_merge($decodedResponse['items'], $results);
+                } elseif (isset($decodedResponse[0])) {
+                    $results = array_merge($decodedResponse, $results);
+                }
             }
         }
 
