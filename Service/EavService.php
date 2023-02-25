@@ -70,4 +70,32 @@ class EavService
 
         return $attribute;
     }
+
+    /**
+     * Removes all object entities from the database (should obviusly not be used in production)
+     *
+     * @param Entity|null $entity An optionall entity to remove all the objects from
+     * @return bool True is succesfull or false otherwise
+     */
+    public function deleteAllObjects(?Entity $entity):bool
+    {
+        // Get al the objects for a specifi entity
+        if(isset($entity) === true){
+            $objects = $this->entityManager->getRepository('App:ObjecyEntity')->findBy(['entity'=>$entity]);
+        }
+
+        // Or just get all the objects
+        if(isset($entity) === false){
+            $objects = $this->entityManager->getRepository('App:ObjecyEntity')->findAll();
+        }
+
+        // Annnnnnd lets delete them
+        foreach ($objects as $object){
+            $this->entityManager->remove($object);
+        }
+
+        $this->entityManager->flush();
+
+        return true;
+    }
 }
