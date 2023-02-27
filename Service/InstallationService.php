@@ -165,6 +165,9 @@ class InstallationService
             $this->handleObjectType('https://docs.commongateway.nl/schemas/Entity.schema.json', $schemas);
             unset($this->objects['https://docs.commongateway.nl/schemas/Entity.schema.json']);
         }
+    
+        // Save the entities to the database.
+        $this->entityManager->flush();
 
         // Handle all the other objects.
         foreach ($this->objects as $ref => $schemas) {
@@ -403,7 +406,8 @@ class InstallationService
                 'A new object has been created trough the installation service',
                 [
                     'class'  => get_class($object),
-                    'id'     => $object->getId()->toString(),
+                    // If you get a "::$id must not be accessed before initialization" error here, remove type UuidInterface from the class^ $id declaration. Something to do with read_secure I think.
+                    'id'     => $object->getId(),
                     'object' => method_exists(get_class($object), 'toSchema') === true ? $object->toSchema() : 'toSchema function does not exists.',
                 ]
             );
@@ -440,7 +444,7 @@ class InstallationService
         if (isset($object) === false || $object === null) {
             $object = $this->createNewObjectType($type);
             if ($object === null) {
-                $this->logger->error('Unsupported type for creating a new core object from a schema');
+                $this->logger->error('Unsupported type for creating a new core object from a schema', ['type' => $type]);
                 return null;
             }
         }
