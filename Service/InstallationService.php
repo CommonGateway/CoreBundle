@@ -974,19 +974,21 @@ class InstallationService
      */
     public function overrideConfig(array $defaultConfig, array $overrides): array
     {
-        foreach($overrides as $key => $override) {
-            if(is_array($override) && $this->isAssociative($override)) {
+        foreach ($overrides as $key => $override) {
+            if (is_array($override) && $this->isAssociative($override)) {
                 $defaultConfig[$key] = $this->overrideConfig(isset($defaultConfig[$key]) ? $defaultConfig[$key] : [], $override);
-            } elseif($key == 'entity') {
+            } elseif ($key == 'entity') {
                 $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $override]);
                 if(!$entity) {
                     $this->logger->error("No entity found with reference {$override}");
+                    continue;
                 }
                 $defaultConfig[$key] = $entity->getId()->toString();
-            } elseif($key == 'source') {
+            } elseif ($key == 'source') {
                 $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $override]);
                 if(!$source) {
                     $this->logger->error("No source found with reference {$override}");
+                    continue;
                 }
                 $defaultConfig[$key] = $source->getId()->toString();
             } else {
