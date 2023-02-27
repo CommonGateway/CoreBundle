@@ -81,12 +81,12 @@ class EavService
     {
         // Get al the objects for a specifi entity
         if(isset($entity) === true){
-            $objects = $this->entityManager->getRepository('App:ObjectEntity')->findBy(['entity'=>$entity]);
+            $objects = $this->entityManager->getRepository('App:ObjectEntity')->findBy(['entity' => $entity]);
         }
 
         // Or just get all the objects
         if(isset($entity) === false){
-            //$objects = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
+            // $objects = $this->entityManager->getRepository('App:ObjectEntity')->findAll();.
         }
 
         // Annnnnnd lets delete them
