@@ -129,9 +129,10 @@ class InstallationService
      * Based on the default action handler so schould supoprt a config parrameter even if we do not use it
      *
      * @param string $bundle The bundle
-     * @param array  $config Optional config (ignored on this function)
+     * @param array $config Optional config (ignored on this function) //todo: remove this parameter?
      *
      * @return bool The result of the installation
+     * @throws Exception
      */
     public function install(string $bundle, array $config = []): bool
     {
@@ -566,11 +567,12 @@ class InstallationService
     }//end loadSchema()
 
     /**
-     * Specifcially handles the installation file.
+     * Specifically handles the installation file.
      *
      * @param SplFileInfo $file The installation file.
      *
      * @return bool
+     * @throws Exception
      */
     private function handleInstaller(SplFileInfo $file): bool
     {
@@ -595,6 +597,10 @@ class InstallationService
         // Actions for action handlers.
         if (isset($data['actions']['handlers']) === true) {
             $this->createActions($data['actions']['handlers']);
+        }
+        // Fix references in configuration of these actions.
+        if (isset($data['actions']['fixConfigRef']) === true) {
+            $this->fixConfigRef($data['actions']['fixConfigRef']);
         }
 
         // Cronjobs for actions for action handlers.
@@ -643,7 +649,7 @@ class InstallationService
      *
      * @return void
      */
-    private function updateSchemasCollection(array $collectionsData = []): array
+    private function updateSchemasCollection(array $collectionsData = [])
     {
         $collections = 0;
         
@@ -830,39 +836,173 @@ class InstallationService
     /**
      * This functions creates actions for an array of handlers.
      *
-     * @param array $handlers An array of references of handlers for wih actions schould be created
+     * @param array $handlersData An array of references of handlers for wih actions schould be created
      *
      * @return array An array of Action objects
      */
-    private function createActions(array $handlers = []): array
+    private function createActions(array $handlersData = []): array
     {
         $actions = [];
 
-        foreach ($handlers as $handler) {
-            $actionHandler = $this->container->get($handler);
+        foreach ($handlersData as $handlerData) {
+            $actionHandler = $this->container->get($handlerData['actionHandler']);
 
             $action = $this->entityManager->getRepository('App:Action')->findOneBy(['class' => get_class($actionHandler)]);
             if ($action !== null) {
-                $this->logger->debug('Action found for '.$handler.' with class '.get_class($actionHandler));
+                $this->logger->debug('Action found for '.$handlerData['actionHandler'].' with class '.get_class($actionHandler));
                 continue;
             }
 
             $schema = $actionHandler->getConfiguration();
-            if ($schema === false && empty($schema) === true) {
-                $this->logger->error('Handler '.$handler.'has no configuration');
+            if (empty($schema) === true) {
+                $this->logger->error('Handler '.$handlerData['actionHandler'].' has no configuration');
                 continue;
             }
-
+            
             $action = new Action($actionHandler);
+            array_key_exists('name', $handlerData) ? $action->setName($handlerData['name']) : '';
+            array_key_exists('reference', $handlerData) ? $action->setReference($handlerData['reference']) : '';
+            $action->setListens($handlerData['listens'] ?? []);
+            $action->setConditions($handlerData['conditions'] ?? ['==' => [1, 1]]);
+    
+            $defaultConfig = $this->addActionConfiguration($actionHandler); // todo: maybe use: Action->getDefaultConfigFromSchema() instead?
+            isset($handler['config']) && $defaultConfig = $this->overrideConfig($defaultConfig, $handlerData['configuration'] ?? []);
+            $action->setConfiguration($defaultConfig);
+            
             $this->entityManager->persist($action);
             $actions[] = $action;
-            $this->logger->debug('Action created for '.$handler.' with class '.get_class($actionHandler));
+            $this->logger->debug('Action created for '.$handlerData['actionHandler'].' with class '.get_class($actionHandler));
         }
 
         $this->logger->info(count($actions).' Actions Created');
 
         return $actions;
     }//end createActions()
+    
+    /**
+     * This functions replaces references in the action->configuration array with corresponding ids of the entity/source.
+     * @TODO: clean this up, cleaner code, maybe less functions over all, etc.
+     *
+     * @param array $actionRefs An array of references of Actions we are going to check.
+     *
+     * @return void An array of Action objects
+     */
+    private function fixConfigRef(array $actionRefs = []): void
+    {
+        $actions = 0;
+        
+        foreach ($actionRefs as $reference) {
+            $action = $this->entityManager->getRepository('App:Action')->findOneBy(['reference' => $reference]);
+            if ($action === null) {
+                $this->logger->error('No action found with reference: '.$reference);
+                continue;
+            }
+    
+            $actionHandler = $this->container->get($action->getClass());
+            $schema = $actionHandler->getConfiguration();
+            if (empty($schema) === true) {
+                $this->logger->error('Handler '.$action->getClass().' has no configuration');
+                continue;
+            }
+            
+            $defaultConfig = $this->addActionConfiguration($actionHandler); // todo: maybe use: Action->getDefaultConfigFromSchema() instead?
+            isset($handler['config']) && $defaultConfig = $this->overrideConfig($defaultConfig, $action->getConfiguration() ?? []);
+    
+            $action->setConfiguration($defaultConfig);
+            $this->entityManager->persist($action);
+    
+            $actions++;
+        }
+        
+        $this->logger->info($actions.' Actions configuration updated.');
+    
+    }//end fixConfigRef()
+    
+    /**
+     * This function creates default configuration for the action.
+     *
+     * @param mixed $actionHandler The actionHandler for witch the default configuration is set.
+     * @return array
+     */
+    public function addActionConfiguration($actionHandler): array
+    {
+        $defaultConfig = [];
+        foreach ($actionHandler->getConfiguration()['properties'] as $key => $value) {
+            
+            switch ($value['type']) {
+                case 'string':
+                case 'array':
+                    if (isset($value['example'])) {
+                        $defaultConfig[$key] = $value['example'];
+                    }
+                    break;
+                case 'object':
+                    break;
+                case 'uuid':
+                    if (isset($value['$ref'])) {
+                        try {
+                            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $value['$ref']]);
+                        } catch (Exception $exception) {
+                            $this->logger->error("No entity found with reference {$value['$ref']}");
+                        }
+                        $defaultConfig[$key] = $entity->getId()->toString();
+                    }
+                    break;
+                default:
+                    // throw error
+            }
+        }
+        return $defaultConfig;
+    }//end addActionConfiguration()
+    
+    /**
+     * Overrides the default configuration of an Action. Will also set entity and source to id if a reference is given.
+     * @TODO: clean this up, cleaner code, maybe less functions over all, etc.
+     *
+     * @param array $defaultConfig
+     * @param array $overrides
+     * @return array
+     */
+    public function overrideConfig(array $defaultConfig, array $overrides): array
+    {
+        foreach($overrides as $key => $override) {
+            if(is_array($override) && $this->isAssociative($override)) {
+                $defaultConfig[$key] = $this->overrideConfig(isset($defaultConfig[$key]) ? $defaultConfig[$key] : [], $override);
+            } elseif($key == 'entity') {
+                $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $override]);
+                if(!$entity) {
+                    $this->logger->error("No entity found with reference {$override}");
+                }
+                $defaultConfig[$key] = $entity->getId()->toString();
+            } elseif($key == 'source') {
+                $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $override]);
+                if(!$source) {
+                    $this->logger->error("No source found with reference {$override}");
+                }
+                $defaultConfig[$key] = $source->getId()->toString();
+            } else {
+                $defaultConfig[$key] = $override;
+            }
+        }
+        return $defaultConfig;
+    }//end overrideConfig()
+    
+    /**
+     * Decides if an array is associative.
+     * @TODO: clean this up, cleaner code, maybe less functions over all, etc.
+     *
+     * @param array $array The array to check.
+     *
+     * @return bool True if the array is associative.
+     */
+    private function isAssociative(array $array): bool
+    {
+        if ([] === $array) {
+            return false;
+        }
+        
+        return array_keys($array) !== range(0, count($array) - 1);
+    }//end isAssociative()
 
     /**
      * This function creates cronjobs for an array of action references.
