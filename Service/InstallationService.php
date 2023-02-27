@@ -257,9 +257,13 @@ class InstallationService
 
         // Handle files.
         $this->logger->debug('Found '.count($hits->files()).' files for installer', ['location' => $location, 'files' => count($hits->files())]);
-
-        if (count($hits->files()) > 32) {
-            $this->logger->warning('Found more then 32 files in directory, try limiting your files to 32 per directory', ['location' => $location, 'files' => count($hits->files())]);
+    
+        if (count($hits->files()) > 34) {
+            $this->logger->critical('Found more than 34 files in directory, try limiting your files to 32 per directory. Or you won\'t be able to load in these schema\'s locally on a windows machine.', ['location' => $location, 'files' => count($hits->files())]);
+        } elseif (count($hits->files()) > 32) {
+            $this->logger->error('Found more than 32 files in directory, try limiting your files to 32 per directory. Or you won\'t be able to load in these schema\'s locally on a windows machine.', ['location' => $location, 'files' => count($hits->files())]);
+        } elseif (count($hits->files()) > 25) {
+            $this->logger->warning('Found more than 25 files in directory, try limiting your files to 32 per directory. Or you won\'t be able to load in these schema\'s locally on a windows machine.', ['location' => $location, 'files' => count($hits->files())]);
         }
 
         foreach ($hits->files() as $file) {
@@ -607,7 +611,7 @@ class InstallationService
             $install = $installationService->install();
             return is_bool($install) ? $install : empty($install) === false;
         } catch (\Throwable $throwable) {
-            $this->logger->critical("Failed to install installationService {$data['installationService']}: {$throwable->getMessage()}");
+            $this->logger->critical("Failed to install installationService {$data['installationService']}: {$throwable->getMessage()}", ['file' => $throwable->getFile(), 'line' => $throwable->getLine()]);
         
             return false;
         }
