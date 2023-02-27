@@ -397,13 +397,14 @@ class InstallationService
             return null;
         }
         
-        // Lets see if it is a new object.
+        // Let's see if it is a new object.
         if ($this->entityManager->contains($object) === false) {
             $this->logger->info(
                 'A new object has been created trough the installation service',
                 [
                     'class'  => get_class($object),
-                    'object' => method_exists(get_class($object), 'toSchema') ? $object->toSchema() : 'toSchema function does not exists.',
+                    'id'     => $object->getId()->toString(),
+                    'object' => method_exists(get_class($object), 'toSchema') === true ? $object->toSchema() : 'toSchema function does not exists.',
                 ]
             );
         }
@@ -442,6 +443,12 @@ class InstallationService
                 $this->logger->error('Unsupported type for creating a new core object from a schema');
                 return null;
             }
+        }
+    
+        // Make sure we have a fromSchema function for this type of object.
+        if (method_exists(get_class($object), 'fromSchema') === false) {
+            $this->logger->critical('fromSchema function does not exists for this core schema type: '.get_class($object));
+            return null;
         }
     
         // Load the data. Todo: these version compare checks don't look right...
