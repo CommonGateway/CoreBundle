@@ -13,7 +13,9 @@ This class breacks complixity,methods and coupling rules. This could be solved b
 | Name | Description |
 |------|-------------|
 |[__construct](#installationservice__construct)||
+|[addActionConfiguration](#installationserviceaddactionconfiguration)|This function creates default configuration for the action.|
 |[install](#installationserviceinstall)|Installs the files from a bundle.|
+|[overrideConfig](#installationserviceoverrideconfig)|Overrides the default configuration of an Action. Will also set entity and source to id if a reference is given.|
 |[update](#installationserviceupdate)|Updates all commonground bundles on the common gateway installation.|
 
 
@@ -43,6 +45,33 @@ This class breacks complixity,methods and coupling rules. This could be solved b
 <hr />
 
 
+### InstallationService::addActionConfiguration  
+
+**Description**
+
+```php
+public addActionConfiguration (mixed $actionHandler)
+```
+
+This function creates default configuration for the action. 
+
+ 
+
+**Parameters**
+
+* `(mixed) $actionHandler`
+: The actionHandler for witch the default configuration is set.  
+
+**Return Values**
+
+`array`
+
+
+
+
+<hr />
+
+
 ### InstallationService::install  
 
 **Description**
@@ -60,13 +89,46 @@ Based on the default action handler so schould supoprt a config parrameter even 
 * `(string) $bundle`
 : The bundle  
 * `(array) $config`
-: Optional config (ignored on this function)  
+: Optional config (ignored on this function) //todo: remove this parameter?  
 
 **Return Values**
 
 `bool`
 
 > The result of the installation
+
+
+**Throws Exceptions**
+
+
+`\Exception`
+
+
+<hr />
+
+
+### InstallationService::overrideConfig  
+
+**Description**
+
+```php
+public overrideConfig (array $defaultConfig, array $overrides)
+```
+
+Overrides the default configuration of an Action. Will also set entity and source to id if a reference is given. 
+
+ 
+
+**Parameters**
+
+* `(array) $defaultConfig`
+* `(array) $overrides`
+
+**Return Values**
+
+`array`
+
+
 
 
 <hr />
