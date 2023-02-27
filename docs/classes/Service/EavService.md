@@ -13,6 +13,7 @@
 |[__construct](#eavservice__construct)||
 |[checkAttributeforEntity](#eavservicecheckattributeforentity)|Checks an atribute to see if a schema for its reference has becomme available.|
 |[checkEntityforAttribute](#eavservicecheckentityforattribute)|Checks an entity to see if there are anny atributtes waiting for it.|
+|[deleteAllObjects](#eavservicedeleteallobjects)|Removes all object entities from the database (should obviusly not be used in production)|
 
 
 
@@ -88,6 +89,33 @@ Checks an entity to see if there are anny atributtes waiting for it.
 `\Entity`
 
 
+
+
+<hr />
+
+
+### EavService::deleteAllObjects  
+
+**Description**
+
+```php
+public deleteAllObjects (\Entity|null $entity)
+```
+
+Removes all object entities from the database (should obviusly not be used in production) 
+
+ 
+
+**Parameters**
+
+* `(\Entity|null) $entity`
+: An optionall entity to remove all the objects from  
+
+**Return Values**
+
+`bool`
+
+> True is succesfull or false otherwise
 
 
 <hr />

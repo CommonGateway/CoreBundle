@@ -72,12 +72,13 @@ class EavService
     }
 
     /**
-     * Removes all object entities from the database (should obviusly not be used in production)
+     * Removes all object entities from the database (should obviusly not be used in production).
      *
      * @param Entity|null $entity An optionall entity to remove all the objects from
+     *
      * @return bool True is succesfull or false otherwise
      */
-    public function deleteAllObjects(Entity $entity):bool
+    public function deleteAllObjects(Entity $entity): bool
     {
         // Get al the objects for a specifi entity
         if(isset($entity) === true){
@@ -90,7 +91,7 @@ class EavService
         }
 
         // Annnnnnd lets delete them
-        foreach ($objects as $object){
+        foreach ($objects as $object) {
             $this->entityManager->remove($object);
         }
 
