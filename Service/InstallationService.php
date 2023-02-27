@@ -176,6 +176,9 @@ class InstallationService
             unset($this->objects[$ref]);
         }
 
+        // Save the all other objects to the database.
+        $this->entityManager->flush();
+    
         // Find and handle the installation.json file.
         if ($this->filesystem->exists($vendorFolder.'/'.$bundle.'/Installation/installation.json') !== false) {
             $finder = new Finder();
@@ -190,7 +193,7 @@ class InstallationService
             }
         }
 
-        // Save the results to the database.
+        // Save the objects created during handling installation.json to the database.
         $this->entityManager->flush();
 
         $this->logger->debug('All Done installing plugin '.$bundle, ['bundle' => $bundle]);
@@ -728,7 +731,7 @@ class InstallationService
                 $object = $repository->findOneBy(['reference' => $endpointData['reference']]);
             
                 if ($object === null) {
-                    $this->logger->error('No object found for '.$endpointData['reference'].' while trying to create an Endpoint.');
+                    $this->logger->error('No object found for '.$endpointData['reference'].' while trying to create an Endpoint.', ['type' => $type]);
                     continue;
                 }
     
