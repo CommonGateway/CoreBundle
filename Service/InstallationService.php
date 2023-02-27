@@ -569,6 +569,11 @@ class InstallationService
             return false;
         }
     
+        // Collection prefixes for schema's.
+        if (isset($data['collections']) === true) {
+            $this->updateSchemasCollection($data['collections']);
+        }
+        
         // Endpoints for schema's and/or sources.
         if (isset($data['endpoints']) === true) {
             $this->createEndpoints($data['endpoints']);
@@ -616,6 +621,55 @@ class InstallationService
             return false;
         }
     }//end handleInstaller()
+    
+    /**
+     * This functions connects schema's with a reference containing the collection schemaPrefix to the given collection.
+     * This way endpoints will be created with the correct prefix.
+     *
+     * @param array $collectionsData An array of references of collections + a schemaPrefix.
+     *
+     * @return void
+     */
+    private function updateSchemasCollection(array $collectionsData = []): array
+    {
+        $collections = 0;
+        
+        foreach ($collectionsData as $collectionData) {
+            $collection = $this->entityManager->getRepository('App:Collection')->findOneBy(['reference' => $collectionData['reference']]);
+            if ($collection === null) {
+                $this->logger->error('No collection found with this reference: ' . $collectionData['reference']);
+                continue;
+            }
+            
+            if (isset($collectionData['schemaPrefix']) === false || empty($collectionData['schemaPrefix']) === true) {
+                $this->logger->error('No valid schemaPrefix given while trying to add collection to schema\'s', ['reference' => $collectionData['reference']]);
+                continue;
+            }
+            $this->addSchemasToCollection($collection, $collectionData['schemaPrefix']);
+    
+            $collections++;
+            
+            $this->logger->debug("Updated schemas with a reference starting with {$collectionData['schemaPrefix']} for Collection {$collectionData['reference']}");
+        }
+        
+        $this->logger->info("Updated schemas for $collections Collections");
+    }//end updateSchemasCollection()
+    
+    /**
+     * Adds a collection to all schemas that have a reference starting with $schemaPrefix.
+     *
+     * @param CollectionEntity $collection The collection to add.
+     * @param string $schemaPrefix The prefix to find schemas for.
+     *
+     * @return void
+     */
+    private function addSchemasToCollection(CollectionEntity $collection, string $schemaPrefix)
+    {
+        $entities = $this->entityManager->getRepository('App:Entity')->findByReferencePrefix($schemaPrefix);
+        foreach($entities as $entity) {
+            $entity->addCollection($collection);
+        }
+    }//end addSchemasToCollection()
     
     /**
      * This functions creates dashboard cars for an array of endpoints, sources, schema's or objects.
