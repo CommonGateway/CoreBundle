@@ -234,7 +234,9 @@ class InstallationService
     }//end translateCoreReferences()
 
     /**
-     * This function read a folder to find other folders or json objects.
+     * This function reads a folder to find other folders or json objects.
+     *
+     * @TODO: Split this function into 2, one function for reading files and one function for checking if a folder doesn't contain to many files.
      *
      * @param string $location The location of the folder
      *
@@ -242,7 +244,6 @@ class InstallationService
      */
     private function readDirectory(string $location): bool
     {
-
         // Let's see if the folder exists to start with.
         if ($this->filesystem->exists($location) === false) {
             $this->logger->debug('Installation folder not found', ['location' => $location]);
@@ -254,9 +255,21 @@ class InstallationService
         $hits = new Finder();
         $hits = $hits->in($location);
 
-        // Handle files.
-        $this->logger->debug('Found '.count($hits->files()).' files for installer', ['location' => $location, 'files' => count($hits->files())]);
-    
+        // Make sure we only check directories and files on this ($location) level deep, use recursion for lower levels.
+        $hits->depth('== 0');
+        
+        // Handle directories and files.
+        $this->logger->debug('Found '.count($hits->directories()).' directories and '.count($hits->files()).' files.', ['location' => $location, 'files' => count($hits->directories()), 'files' => count($hits->files())]);
+        
+        // Check if we have any directories/folders at this $location.
+        if (count($hits->directories()) > 0) {
+            foreach ($hits->directories() as $directory) {
+                // Let's check out 1 level deeper.
+                $this->readDirectory($directory->getPathname());
+            }
+        }
+        
+        // Make sure to warn users if they have to many files in a folder.
         if (count($hits->files()) > 34) {
             $this->logger->critical('Found more than 34 files in directory, try limiting your files to 32 per directory. Or you won\'t be able to load in these schema\'s locally on a windows machine.', ['location' => $location, 'files' => count($hits->files())]);
         } elseif (count($hits->files()) > 32) {
@@ -265,6 +278,7 @@ class InstallationService
             $this->logger->warning('Found more than 25 files in directory, try limiting your files to 32 per directory. Or you won\'t be able to load in these schema\'s locally on a windows machine.', ['location' => $location, 'files' => count($hits->files())]);
         }
 
+        // Read all files in this folder.
         foreach ($hits->files() as $file) {
             if ($file->getFilename() === 'installation.json') {
                 continue;
