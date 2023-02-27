@@ -870,7 +870,7 @@ class InstallationService
             $action->setConditions($handlerData['conditions'] ?? ['==' => [1, 1]]);
     
             $defaultConfig = $this->addActionConfiguration($actionHandler); // todo: maybe use: Action->getDefaultConfigFromSchema() instead?
-            isset($handler['config']) && $defaultConfig = $this->overrideConfig($defaultConfig, $handlerData['configuration'] ?? []);
+            isset($handlerData['configuration']) && $defaultConfig = $this->overrideConfig($defaultConfig, $handlerData['configuration'] ?? []);
             $action->setConfiguration($defaultConfig);
             
             $this->entityManager->persist($action);
@@ -915,7 +915,7 @@ class InstallationService
             }
             
             $defaultConfig = $this->addActionConfiguration($actionHandler); // todo: maybe use: Action->getDefaultConfigFromSchema() instead?
-            isset($handler['config']) && $defaultConfig = $this->overrideConfig($defaultConfig, $action->getConfiguration() ?? []);
+            empty($action->getConfiguration()) === false && $defaultConfig = $this->overrideConfig($defaultConfig, $action->getConfiguration() ?? []);
     
             $action->setConfiguration($defaultConfig);
             $this->entityManager->persist($action);
