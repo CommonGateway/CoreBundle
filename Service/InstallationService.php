@@ -87,7 +87,6 @@ class InstallationService
         $this->composerService = $composerService;
         $this->entityManager = $entityManager;
         $this->container = $kernel->getContainer();
-        $this->collection = null;
         $this->logger = $installationLogger;
         $this->schemaService = $schemaService;
         $this->filesystem = new Filesystem();
@@ -635,7 +634,7 @@ class InstallationService
         $collections = 0;
         
         foreach ($collectionsData as $collectionData) {
-            $collection = $this->entityManager->getRepository('App:Collection')->findOneBy(['reference' => $collectionData['reference']]);
+            $collection = $this->entityManager->getRepository('App:CollectionEntity')->findOneBy(['reference' => $collectionData['reference']]);
             if ($collection === null) {
                 $this->logger->error('No collection found with this reference: ' . $collectionData['reference']);
                 continue;
