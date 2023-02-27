@@ -93,9 +93,8 @@ class EavService
         // Annnnnnd lets delete them
         foreach ($objects as $object) {
             $this->entityManager->remove($object);
+            $this->entityManager->flush();
         }
-
-        $this->entityManager->flush();
 
         return true;
     }
