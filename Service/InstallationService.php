@@ -902,6 +902,11 @@ class InstallationService
                 continue;
             }
     
+            if ($action->getClass() === null) {
+                $this->logger->error('No actionHandler (/class) found for Action: '.$reference);
+                continue;
+            }
+            
             $actionHandler = $this->container->get($action->getClass());
             $schema = $actionHandler->getConfiguration();
             if (empty($schema) === true) {
