@@ -740,7 +740,7 @@ class InstallationService
                 }
     
                 $criteria = $type === 'sources' ? ['proxy' => $object] : ['entity' => $object];
-                $endpoint = $this->entityManager->getRepository('App:Endpoint')->findOneBy(array_merge($criteria, ['name' => $object->getName()]));
+                $endpoint = $this->entityManager->getRepository('App:Endpoint')->findOneBy($criteria);
                 if ($endpoint !== null) {
                     $this->logger->debug('Endpoint found for '.$endpointData['reference']);
                     continue;
