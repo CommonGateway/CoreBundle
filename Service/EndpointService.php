@@ -5,6 +5,7 @@ namespace CommonGateway\CoreBundle\Service;
 use App\Entity\Endpoint;
 use App\Event\ActionEvent;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\Request;
@@ -196,11 +197,12 @@ class EndpointService
                 return json_decode($this->request->getContent(), true);
         }//end switch
     }//end decodeBody()
-
+    
     /**
      * Gets the endpoint based on the request.
      *
      * @return Endpoint The found endpoint
+     * @throws Exception
      */
     public function getEndpoint(): Endpoint
     {
@@ -208,11 +210,11 @@ class EndpointService
         $path = substr($path, 5);
         $endpoint = $this->entityManager->getRepository('App:Endpoint')->findByMethodRegex($this->request->getMethod(), $path);
 
-        if ($endpoint instanceof Endpoint === true) {
+        if ($endpoint !== null) {
             return $endpoint;
         }//end if
 
-        throw new \Exception('No proper endpoint could be detirmend');
+        throw new Exception('No proper endpoint could be detirmend');
     }//end getEndpoint()
 
     /**
@@ -232,7 +234,7 @@ class EndpointService
 
         try {
             $parameters['body'] = $this->request->toArray();
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             // In a lot of condtions (basically any illigal post) this will return an error. But we want an empty array instead.
         }
 

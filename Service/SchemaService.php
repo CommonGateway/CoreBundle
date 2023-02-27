@@ -8,6 +8,15 @@ use App\Entity\Value;
 use Doctrine\ORM\EntityManagerInterface;
 use Monolog\Logger;
 
+/**
+ * The schema service is used to validate schema's.
+ *
+ * @Author Ruben van der Linde <ruben@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Service
+ */
 class SchemaService
 {
     /**

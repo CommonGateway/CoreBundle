@@ -28,9 +28,13 @@ use Exception;
 /**
  * The installation service is used to install plugins (or actually symfony bundles) on the gateway.
  *
- * This class breacks complixity,methods and coupling rules. This could be solved by devidng the class into smaller classes but that would deminisch the readbilly of the code as a whole. All the code in this class is only used in an installation context and it makes more sence to keep it together. Therefore a design decicion was made to keep al this code in one class.
+ * This class breaks complexity, methods and coupling rules. This could be solved by deviding the class into smaller classes but that would deminisch the readability of the code as a whole. All the code in this class is only used in an installation context, and it makes more sense to keep it together. Therefore, a design decision was made to keep al this code in one class.
  *
- * @author Ruben van der Linde
+ * @Author Ruben van der Linde <ruben@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Service
  */
 class InstallationService
 {
