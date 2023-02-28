@@ -557,7 +557,7 @@ class InstallationService
             $this->logger->debug('The new mapping has a version number higher then the already present version, the object data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
         } elseif (array_key_exists('version', $schema) === false || $object->getVersion() === null) {
-            $this->logger->debug('The new mapping doesn\'t have a version number, the object data is created', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
+            $this->logger->debug('The new mapping doesn\'t have a version number, the object data is created', ['schemaVersion' => $schema['version'] ?? null, 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
         }
 
