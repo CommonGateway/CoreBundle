@@ -82,14 +82,14 @@ public install (string $bundle, array $config)
 
 Installs the files from a bundle. 
 
-Based on the default action handler so schould supoprt a config parrameter even if we do not use it 
+ 
 
 **Parameters**
 
 * `(string) $bundle`
 : The bundle  
 * `(array) $config`
-: Optional config (ignored on this function) //todo: remove this parameter?  
+: Optional config  
 
 **Return Values**
 
