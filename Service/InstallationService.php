@@ -942,7 +942,7 @@ class InstallationService
                         try {
                             $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $value['$ref']]);
                         } catch (Exception $exception) {
-                            $this->logger->error("No entity found with reference {$value['$ref']}");
+                            $this->logger->error("No entity found with reference {$value['$ref']} (addActionConfiguration() for installation.json)");
                         }
                         $defaultConfig[$key] = $entity->getId()->toString();
                     }
@@ -973,14 +973,14 @@ class InstallationService
             } elseif ($key == 'entity') {
                 $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $override]);
                 if (!$entity) {
-                    $this->logger->error("No entity found with reference {$override}");
+                    $this->logger->error("No entity found with reference {$override} (overrideConfig() for installation.json)");
                     continue;
                 }
                 $defaultConfig[$key] = $entity->getId()->toString();
             } elseif ($key == 'source') {
                 $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $override]);
                 if (!$source) {
-                    $this->logger->error("No source found with reference {$override}");
+                    $this->logger->error("No source found with reference {$override} (overrideConfig() for installation.json)");
                     continue;
                 }
                 $defaultConfig[$key] = $source->getId()->toString();
