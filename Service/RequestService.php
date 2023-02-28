@@ -236,7 +236,7 @@ class RequestService
      *
      * @return Response The data as returned bij the origanal source
      */
-    public function proxyHandler(array $data, array $configuration, ?Gateway $proxy=null): Response
+    public function proxyHandler(array $data, array $configuration, ?Gateway $proxy = null): Response
     {
         $this->data = $data;
         $this->configuration = $configuration;
