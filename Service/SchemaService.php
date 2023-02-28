@@ -259,7 +259,7 @@ class SchemaService
                                     $subvalue = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
                                     // Savety.
                                     if ($subvalue === null) {
-                                        $this->logger->error('Could not find an object for id '.$idValue);
+                                        $this->logger->error('Could not find an object for id '.$idValue.' (SchemaService->hydrate)');
                                     } else {
                                         $valueObject->addObject($subvalue);
                                     }
@@ -289,7 +289,7 @@ class SchemaService
                         $value = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
                         // Savety.
                         if ($value === null) {
-                            $this->logger->error('Could not find an object for id '.$idValue);
+                            $this->logger->error('Could not find an object for id '.$idValue.' (SchemaService->hydrate)');
                         } else {
                             $valueObject->setValue($value);
                         }
