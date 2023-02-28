@@ -197,12 +197,13 @@ class EndpointService
                 return json_decode($this->request->getContent(), true);
         }//end switch
     }//end decodeBody()
-    
+
     /**
      * Gets the endpoint based on the request.
      *
-     * @return Endpoint The found endpoint
      * @throws Exception
+     *
+     * @return Endpoint The found endpoint
      */
     public function getEndpoint(): Endpoint
     {
