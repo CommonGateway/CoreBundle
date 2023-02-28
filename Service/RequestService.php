@@ -236,37 +236,40 @@ class RequestService
      *
      * @return Response The data as returned bij the origanal source
      */
-    public function proxyHandler(array $data, array $configuration): Response
+    public function proxyHandler(array $data, array $configuration, ?Gateway $proxy = null): Response
     {
         $this->data = $data;
         $this->configuration = $configuration;
 
-        // We only do proxing if the endpoint forces it
-        if (!$data['endpoint'] instanceof Endpoint || !$proxy = $data['endpoint']->getProxy()) {
-            $message = !$data['endpoint'] instanceof Endpoint ?
-                "No Endpoint in data['endpoint']" :
-                "This Endpoint has no Proxy: {$data['endpoint']->getName()}";
+        // If we already have a proxy, we can skip these checks.
+        if ($proxy instanceof Gateway === false) {
+            // We only do proxing if the endpoint forces it and we do not have a proxy.
+            if (!$data['endpoint'] instanceof Endpoint || !$proxy = $data['endpoint']->getProxy()) {
+                $message = !$data['endpoint'] instanceof Endpoint ?
+                    "No Endpoint in data['endpoint']" :
+                    "This Endpoint has no Proxy: {$data['endpoint']->getName()}";
 
-            return new Response(
-                json_encode(['Message' => $message]),
-                Response::HTTP_NOT_FOUND,
-                ['content-type' => 'application/json']
-            );
-        }
+                return new Response(
+                    json_encode(['Message' => $message]),
+                    Response::HTTP_NOT_FOUND,
+                    ['content-type' => 'application/json']
+                );
+            }
 
-        if ($proxy instanceof Source && !$proxy->getIsEnabled()) {
-            return new Response(
-                json_encode(['Message' => "This Source is not enabled: {$proxy->getName()}"]),
-                Response::HTTP_OK, // This should be ok so we can disable Sources without creating error responses?
-                ['content-type' => 'application/json']
-            );
-        }
+            if ($proxy instanceof Source && !$proxy->getIsEnabled()) {
+                return new Response(
+                    json_encode(['Message' => "This Source is not enabled: {$proxy->getName()}"]),
+                    Response::HTTP_OK, // This should be ok so we can disable Sources without creating error responses?
+                    ['content-type' => 'application/json']
+                );
+            }
+        }//end if
 
-        // Get clean query paramters without all the symfony shizzle
+        // Get clean query paramters without all the symfony shizzle.
         $query = $this->realRequestQueryAll($this->data['method']);
         $this->data['path'] = '/'.$data['path']['{route}'];
 
-        // Make a guzzle call to the source bassed on the incomming call
+        // Make a guzzle call to the source bassed on the incomming call.
         $result = $this->callService->call(
             $proxy,
             $this->data['path'],
@@ -278,7 +281,7 @@ class RequestService
             ]
         );
 
-        // Let create a responce from the guzle call
+        // Let create a responce from the guzle call.
         $responce = new Response(
             $result->getBody()->getContents(),
             $result->getStatusCode(),
@@ -287,9 +290,9 @@ class RequestService
 
         // @todo the above might need a try catch
 
-        // And don so lets return what we have
+        // And don so lets return what we have.
         return $responce;
-    }
+    }//end proxyHandler()
 
     /**
      * Get a scopes array for the current user (or of the anonymus if no user s logged in).
@@ -769,6 +772,23 @@ class RequestService
 
         return $this->data;
     }
+
+    /**
+     * Determines the proxy source from configuration, then use proxy handler to proxy the request.
+     *
+     * @param array $parameters    The parameters of the request.
+     * @param array $configuration The configuration of the action.
+     *
+     * @return array The result of the proxy.
+     */
+    public function proxyRequestHandler(array $parameters, array $configuration): array
+    {
+        $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $configuration['source']]);
+
+        $data['response'] = $this->proxyHandler($parameters, $configuration, $source);
+
+        return $data;
+    }//end proxyRequestHandler()
 
     /**
      * Creating the responce object.
