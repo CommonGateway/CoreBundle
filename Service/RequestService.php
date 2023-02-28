@@ -236,14 +236,14 @@ class RequestService
      *
      * @return Response The data as returned bij the origanal source
      */
-    public function proxyHandler(array $data, array $configuration, ?Gateway $proxy = null): Response
+    public function proxyHandler(array $data, array $configuration, ?Gateway $proxy=null): Response
     {
         $this->data = $data;
         $this->configuration = $configuration;
 
         // If we already have a proxy, we can skip these checks.
         if ($proxy instanceof Gateway === false) {
-            // We only do proxing if the endpoint forces it and we do not have a proxy
+            // We only do proxing if the endpoint forces it and we do not have a proxy.
             if (!$data['endpoint'] instanceof Endpoint || !$proxy = $data['endpoint']->getProxy()) {
                 $message = !$data['endpoint'] instanceof Endpoint ?
                     "No Endpoint in data['endpoint']" :
