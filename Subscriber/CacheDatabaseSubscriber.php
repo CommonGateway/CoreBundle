@@ -74,20 +74,6 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         }
     }
 
-    public function preUpdate(LifecycleEventArgs $args): void
-    {
-        $this->prePersist($args);
-    }
-
-    public function prePersist(LifecycleEventArgs $args): void
-    {
-        $object = $args->getObject();
-
-        if ($object instanceof ObjectEntity) {
-            $this->updateParents($object);
-        }
-    }
-
     /**
      * Remove objects from the cache afther they are removed from the database.
      *

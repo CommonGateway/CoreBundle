@@ -175,10 +175,14 @@ class InstallationService
 
         // Handle all the other objects.
         foreach ($this->objects as $ref => $schemas) {
-            $this->logger->debug('Found '.count($schemas).' objects types for schema '.$ref, ['bundle' => $bundle, 'reference' => $ref]);
-            $this->handleObjectType($ref, $schemas);
+            // Only do handleObjectType if we want to load in testdata and user has used argument data
+            if (isset($config['data']) === true) {
+                $this->logger->debug('Found '.count($schemas).' objects types for schema '.$ref, ['bundle' => $bundle, 'reference' => $ref]);
+                $this->handleObjectType($ref, $schemas);
+            }
             unset($this->objects[$ref]);
         }
+        // todo: load in data.json file and repeat this^ foreach without the if statement to handle default/required testdata.
 
         // Save the all other objects to the database.
         $this->entityManager->flush();
@@ -346,7 +350,9 @@ class InstallationService
         // If it is not a schema of itself it might be an array of objects.
         foreach ($schema as $key => $value) {
             if (is_array($value) === true) {
-                $this->objects[$key][] = $value;
+                foreach ($value as $object) {
+                    $this->objects[$key][] = $object;
+                }
                 continue;
             }
 
