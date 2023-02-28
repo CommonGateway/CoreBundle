@@ -87,15 +87,15 @@ Installs the files from a bundle.
 **Parameters**
 
 * `(string) $bundle`
-: The bundle  
+: The bundle.  
 * `(array) $config`
-: Optional config  
+: Optional config.  
 
 **Return Values**
 
 `bool`
 
-> The result of the installation
+> The result of the installation.
 
 
 **Throws Exceptions**
