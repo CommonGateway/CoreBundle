@@ -158,5 +158,11 @@ This functions serves as the jump of point for the `commengateway:plugins:update
 
 
 
+**Throws Exceptions**
+
+
+`\Exception`
+
+
 <hr />
 
