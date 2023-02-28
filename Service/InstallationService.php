@@ -152,8 +152,6 @@ class InstallationService
     /**
      * Installs the files from a bundle.
      *
-     * @todo: clean up this function, split it into multiple smaller pieces.
-     *
      * Based on the default action handler so schould supoprt a config parrameter even if we do not use it
      *
      * @param string $bundle The bundle.
@@ -234,7 +232,7 @@ class InstallationService
 
         // Find and handle the installation.json file, if it exists.
         $this->handleInstallationJson($bundle);
-    }
+    }//end handlePluginFiles()
 
     /**
      * Handles default / required test data from the data.json file if we are not loading in ALL testdata.
@@ -259,7 +257,7 @@ class InstallationService
                 unset($this->objects[$ref]);
             }
         }
-    }
+    }//end handleDataJson()
 
     /**
      * @param string $bundle The bundle.
@@ -287,7 +285,7 @@ class InstallationService
             // Save the objects created during handling installation.json to the database.
             $this->entityManager->flush();
         }
-    }
+    }//end handleInstallationJson()
 
     /**
      * For backwards compatibility, support old core schema reference and translate them to the new ones.
@@ -646,6 +644,8 @@ class InstallationService
 
     /**
      * Specifically handles the installation file.
+     *
+     * @todo: clean up this function, split it into multiple smaller pieces.
      *
      * @param SplFileInfo $file The installation file.
      *
@@ -1042,6 +1042,8 @@ class InstallationService
 
     /**
      * This functions creates dashboard cars for an array of endpoints, sources, schema's or objects.
+     *
+     * @todo: clean up this function, split it into multiple smaller pieces.
      *
      * @param array $cardsData An array of data used for creating dashboardCards.
      *
