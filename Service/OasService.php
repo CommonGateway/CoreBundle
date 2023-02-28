@@ -36,13 +36,13 @@ class OasService
         $oas = [
             'openapi' => '3.0.0',
             'info'    => [
-                'title'      => '',
-                'description'=> '',
-                'version'    => '0.1.9',
+                'title'      => 'Common Gateway',
+                'description'=> 'The Common Gateway is a further Dutch development of the European API Platform. API Platform is a project of Les Tilleus and, in itself, an extension of the Symfony framework. API Platform is a tool for delivering APIs based on standardized documentation and is used for various French and German government projects. Including Digital state, a precursor to Xroute, GOV.UK and Common Ground. The project is now part of joinup.eu (the European equivalent of Common Ground).',
+                'version'    => '1.0.3',
             ],
             'servers' => [
-                'url'         => 'http://api.example.com/v1',
-                'description' => '',
+                'url'         => 'https://localhost',
+                'description' => 'The kubernetes server',
             ],
             'paths'      => [],
             'components' => [],
