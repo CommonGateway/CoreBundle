@@ -67,12 +67,12 @@ class InstallationService
      * @var SchemaService
      */
     private SchemaService $schemaService;
-    
+
     /**
      * @var string The location of the vendor folder.
      */
     private string $vendorFolder = 'vendor';
-    
+
     /**
      * @var array The Objects acquired during an installation
      */
@@ -157,10 +157,11 @@ class InstallationService
      * Based on the default action handler so schould supoprt a config parrameter even if we do not use it
      *
      * @param string $bundle The bundle.
-     * @param array $config Optional config.
+     * @param array  $config Optional config.
+     *
+     * @throws Exception
      *
      * @return bool The result of the installation.
-     * @throws Exception
      */
     public function install(string $bundle, array $config = []): bool
     {
@@ -180,7 +181,7 @@ class InstallationService
 
         // Then the folder where everything should be.
         $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Installation');
-        
+
         // Handling all the found files.
         $this->handlePluginFiles($bundle, $config);
 
@@ -188,20 +189,21 @@ class InstallationService
 
         return true;
     }//end install()
-    
+
     /**
      * Will handle all files found in the plugin, creating new objects using the $this->objects array.
      *
      * @param string $bundle The bundle.
-     * @param array $config Optional config.
+     * @param array  $config Optional config.
+     *
+     * @throws Exception
      *
      * @return void
-     * @throws Exception
      */
     private function handlePluginFiles(string $bundle, array $config)
     {
         $this->logger->debug('Found '.count($this->objects).' schema types for '.$bundle, ['bundle' => $bundle]);
-    
+
         // There is a certain order to this, meaning that we want to handle certain schema types before other schema types.
         if (isset($this->objects['https://docs.commongateway.nl/schemas/Entity.schema.json']) === true && is_array($this->objects['https://docs.commongateway.nl/schemas/Entity.schema.json']) === true) {
             $schemas = $this->objects['https://docs.commongateway.nl/schemas/Entity.schema.json'];
@@ -212,7 +214,7 @@ class InstallationService
 
         // Save the entities to the database.
         $this->entityManager->flush();
-    
+
         // Handle all the other objects.
         foreach ($this->objects as $ref => $schemas) {
             // Only do handleObjectType if we want to load in ALL testdata, when user has used the argument data.
@@ -223,22 +225,22 @@ class InstallationService
             }
             unset($this->objects[$ref]);
         }
-    
+
         // Find and handle the data.json file, if it exists.
         $this->handleDataJson($bundle, $config);
-    
+
         // Save the all other objects to the database.
         $this->entityManager->flush();
-    
+
         // Find and handle the installation.json file, if it exists.
         $this->handleInstallationJson($bundle);
     }
-    
+
     /**
      * Handles default / required test data from the data.json file if we are not loading in ALL testdata.
      *
      * @param string $bundle The bundle.
-     * @param array $config Optional config.
+     * @param array  $config Optional config.
      *
      * @return void
      */
@@ -258,14 +260,13 @@ class InstallationService
             }
         }
     }
-    
+
     /**
-     *
-     *
      * @param string $bundle The bundle.
      *
-     * @return void
      * @throws Exception
+     *
+     * @return void
      */
     private function handleInstallationJson(string $bundle)
     {
@@ -282,12 +283,12 @@ class InstallationService
             } else {
                 $this->logger->error('Found '.count($files).' installation.json files', ['location' => $this->vendorFolder.'/'.$bundle.'/Installation']);
             }
-            
+
             // Save the objects created during handling installation.json to the database.
             $this->entityManager->flush();
         }
     }
-    
+
     /**
      * For backwards compatibility, support old core schema reference and translate them to the new ones.
      * Todo: remove this function when we no longer need it.
@@ -796,34 +797,33 @@ class InstallationService
                     $this->logger->error('Unknown type used for endpoint creation: '.$type);
                     continue 2;
             }//end switch
-            
+
             // Then we can handle some data.
             foreach ($endpointTypeData as $endpointData) {
                 $object = $repository->findOneBy(['reference' => $endpointData['reference']]);
-                
+
                 if ($object === null) {
                     $this->logger->error('No object found for '.$endpointData['reference'].' while trying to create an Endpoint.', ['type' => $type]);
                     continue;
                 }
-                
+
                 $criteria = $type === 'sources' ? ['proxy' => $object] : ['entity' => $object];
                 $endpoint = $this->entityManager->getRepository('App:Endpoint')->findOneBy($criteria);
                 if ($endpoint !== null) {
                     $this->logger->debug('Endpoint found for '.$endpointData['reference']);
                     continue;
                 }
-                
+
                 // todo ? maybe create a second constructor?
                 $endpoint = $type === 'sources' ? new Endpoint(null, $object, $endpointData) : new Endpoint($object, null, $endpointData);
                 $endpoints[] = $endpoint;
                 $this->entityManager->persist($endpoint);
                 $this->logger->debug('Endpoint created for '.$endpointData['reference']);
             }
-            
         }//end foreach
-        
+
         $this->logger->info(count($endpoints).' Endpoints Created');
-        
+
         return $endpoints;
     }//end createEndpoints()
 
@@ -1039,7 +1039,7 @@ class InstallationService
 
         return $cronjobs;
     }//end createCronjobs()
-    
+
     /**
      * This functions creates dashboard cars for an array of endpoints, sources, schema's or objects.
      *
@@ -1050,7 +1050,7 @@ class InstallationService
     private function createCards(array $cardsData = []): array
     {
         $cards = [];
-        
+
         // Let's loop through the cardsData.
         foreach ($cardsData as $type => $references) {
             // Let's determine the proper repo to use.
@@ -1096,33 +1096,32 @@ class InstallationService
                     $this->logger->error('Unknown type used for the creation of a dashboard card: '.$type);
                     continue 2;
             }//end switch
-            
+
             // Then we can handle some data.
             foreach ($references as $reference) {
                 $object = $repository->findOneBy(['reference' => $reference]);
-                
+
                 if ($object === null) {
                     $this->logger->error('No object found for '.$reference.' while trying to create a DashboardCard.');
                     continue;
                 }
-                
+
                 // Check if this dashboardCard already exists.
                 $dashboardCard = $this->entityManager->getRepository('App:DashboardCard')->findOneBy(['entity' => get_class($object), 'entityId' => $object->getId()]);
                 if ($dashboardCard !== null) {
-                    $this->logger->debug('DashboardCard found for ' . get_class($object) . ' with id: ' . $object->getId());
+                    $this->logger->debug('DashboardCard found for '.get_class($object).' with id: '.$object->getId());
                     continue;
                 }
-                
+
                 $dashboardCard = new DashboardCard($object);
                 $cards[] = $dashboardCard;
                 $this->entityManager->persist($dashboardCard);
                 $this->logger->debug('Dashboard Card created for '.$reference);
             }
-            
         }//end foreach
-        
+
         $this->logger->info(count($cards).' Cards Created');
-        
+
         return $cards;
     }//end createCards()
 }//end class
