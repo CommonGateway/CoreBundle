@@ -16,12 +16,20 @@ class OasService
     private EntityManagerInterface $entityManager;
 
     /**
+     * @var ParameterBagInterface
+     */
+    private ParameterBagInterface $parameters;
+
+    /**
      * @param EntityManagerInterface $entityManager The Entity Manager
      */
     public function __construct(
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        ParameterBagInterface $parameters
     ) {
         $this->entityManager = $entityManager;
+        $this->parameters =  $parameters;
+;
     }//end __construct()
 
     /**
@@ -41,7 +49,7 @@ class OasService
                 'version'    => '1.0.3',
             ],
             'servers' => [
-                'url'         => 'https://localhost',
+                'url'         => $this->parameterBag->get('app_env','https://localhost'),
                 'description' => 'The kubernetes server',
             ],
             'paths'      => [],
