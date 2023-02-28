@@ -11,7 +11,7 @@ use Monolog\Logger;
 /**
  * The schema service is used to validate schema's.
  *
- * @Author Ruben van der Linde <ruben@conduction.nl>
+ * @Author Ruben van der Linde <ruben@conduction.nl>, Robert Zondervan <robert@conduction.nl>
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
@@ -251,14 +251,14 @@ class SchemaService
                                 // Is array.
                                 if (is_array($subvalue) === true) {
                                     $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
-                                    $newObject = $this->saveOnFixedId($newObject, $subvalue);
+                                    $newObject = $this->hydrate($newObject, $subvalue);
                                     $valueObject->addObject($newObject);
                                 } else { // Is not an array.
                                     $idValue = $subvalue;
                                     $subvalue = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
                                     // Savety.
                                     if ($subvalue === null) {
-                                        $this->io->error('Could not find an object for id '.$idValue);
+                                        $this->logger->error('Could not find an object for id '.$idValue);
                                     } else {
                                         $valueObject->addObject($subvalue);
                                     }
@@ -281,7 +281,7 @@ class SchemaService
                         }
 
                         $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
-                        $value = $this->saveOnFixedId($newObject, $value);
+                        $value = $this->hydrate($newObject, $value);
                         $valueObject->setValue($value);
                     } else { // Is not an array.
                         $idValue = $value;
