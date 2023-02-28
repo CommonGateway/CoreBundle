@@ -6,7 +6,7 @@ use App\Entity\Entity;
 use App\Entity\ObjectEntity;
 use App\Entity\Value;
 use Doctrine\ORM\EntityManagerInterface;
-use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 
 /**
  * The schema service is used to validate schema's.
@@ -25,18 +25,19 @@ class SchemaService
     private EntityManagerInterface $entityManager;
 
     /**
-     * @var Logger
+     * @var LoggerInterface
      */
-    private Logger $logger;
+    private LoggerInterface $logger;
 
     /**
      * @param EntityManagerInterface $entityManager The entity manager
      */
     public function __construct(
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        LoggerInterface $schemaServiceLogger
     ) {
         $this->entityManager = $entityManager;
-        $this->logger = new Logger('installation');
+        $this->logger = $schemaServiceLogger;
     }//end __construct()
 
     /**

@@ -119,6 +119,7 @@ class InstallationService
      * @param array $config The (optional) configuration
      *
      * @return int
+     * @throws Exception
      */
     public function update(array $config = []): int
     {
@@ -581,6 +582,7 @@ class InstallationService
             $object = new ObjectEntity($entity);
         }
 
+        // TODO: testdata objects seem to have twice as much subobjects as they should have. Duplicates... (example: kiss->klanten->telefoonnummers)
         // Now it gets a bit specif but for EAV data we allow nested fixed id's so let dive deep.
         if ($this->entityManager->contains($object) === false && (array_key_exists('id', $schema) === true || array_key_exists('_id', $schema) === true)) {
             $object = $this->schemaService->hydrate($object, $schema);
