@@ -72,6 +72,21 @@ class InstallationService
      * @var array The Objects aquired durring a installation
      */
     private array $objects = [];
+    
+    private const ALLOWED_CORE_SCHEMAS = [
+        'https://docs.commongateway.nl/schemas/Action.schema.json',
+        'https://docs.commongateway.nl/schemas/Application.schema.json',
+        'https://docs.commongateway.nl/schemas/CollectionEntity.schema.json',
+        'https://docs.commongateway.nl/schemas/Cronjob.schema.json',
+        'https://docs.commongateway.nl/schemas/DashboardCard.schema.json',
+        'https://docs.commongateway.nl/schemas/Endpoint.schema.json',
+        'https://docs.commongateway.nl/schemas/Entity.schema.json',
+        'https://docs.commongateway.nl/schemas/Gateway.schema.json',
+        'https://docs.commongateway.nl/schemas/Mapping.schema.json',
+        'https://docs.commongateway.nl/schemas/Organization.schema.json',
+        'https://docs.commongateway.nl/schemas/SecurityGroup.schema.json',
+//        'https://docs.commongateway.nl/schemas/User.schema.json',
+    ];
 
     /**
      * @codeCoverageIgnore We do not need to test constructors
@@ -129,11 +144,12 @@ class InstallationService
 
     /**
      * Installs the files from a bundle.
+     * @todo: clean up this function, split it into multiple smaller pieces.
      *
      * Based on the default action handler so schould supoprt a config parrameter even if we do not use it
      *
      * @param string $bundle The bundle
-     * @param array $config Optional config (ignored on this function) //todo: remove this parameter?
+     * @param array $config Optional config
      *
      * @return bool The result of the installation
      * @throws Exception
@@ -175,14 +191,28 @@ class InstallationService
 
         // Handle all the other objects.
         foreach ($this->objects as $ref => $schemas) {
-            // Only do handleObjectType if we want to load in testdata and user has used argument data
-            if (isset($config['data']) === true) {
+            // Only do handleObjectType if we want to load in ALL testdata, when user has used the argument data.
+            // Or if it is a core schema, of course.
+            if ((isset($config['data']) === true && $config['data'] !== false) || in_array($ref, $this::ALLOWED_CORE_SCHEMAS)) {
                 $this->logger->debug('Found '.count($schemas).' objects types for schema '.$ref, ['bundle' => $bundle, 'reference' => $ref]);
                 $this->handleObjectType($ref, $schemas);
             }
             unset($this->objects[$ref]);
         }
-        // todo: load in data.json file and repeat this^ foreach without the if statement to handle default/required testdata.
+
+        // Handle default / required testdata in data.json file if we are not loading in ALL testdata.
+        if (isset($config['data']) === false || $config['data'] === false) {
+            $finder = new Finder();
+            $files = $finder->in($vendorFolder.'/'.$bundle.'/Installation')->files()->name('data.json');
+            $this->logger->debug('Found '.count($files).' data.json file(s)', ['bundle' => $bundle]);
+            foreach ($files as $file) {
+                $this->readfile($file);
+            }
+            foreach ($this->objects as $ref => $schemas) {
+                $this->handleObjectType($ref, $schemas);
+                unset($this->objects[$ref]);
+            }
+        }
 
         // Save the all other objects to the database.
         $this->entityManager->flush();
@@ -190,6 +220,8 @@ class InstallationService
         // Find and handle the installation.json file.
         if ($this->filesystem->exists($vendorFolder.'/'.$bundle.'/Installation/installation.json') !== false) {
             $finder = new Finder();
+            // todo: maybe only allow installation.json file in root of Installation folder?
+//            $finder->depth('== 0');
             $files = $finder->in($vendorFolder.'/'.$bundle.'/Installation')->files()->name('installation.json');
             if (count($files) === 1) {
                 $this->logger->debug('Found an installation.json file', ['bundle' => $bundle]);
@@ -197,7 +229,7 @@ class InstallationService
                     $this->handleInstaller($file);
                 }
             } else {
-                $this->logger->debug('Found '.count($files).' installation.json files', ['location' => $vendorFolder.'/'.$bundle.'/Installation']);
+                $this->logger->error('Found '.count($files).' installation.json files', ['location' => $vendorFolder.'/'.$bundle.'/Installation']);
             }
         }
 
@@ -400,29 +432,13 @@ class InstallationService
         // Only base we need it the assumption that on object isn't valid until we made is so.
         $object = null;
 
-        // For security reasons we define allowed resources.
-        $allowedCoreObjects = [
-            'https://docs.commongateway.nl/schemas/Action.schema.json',
-            'https://docs.commongateway.nl/schemas/Application.schema.json',
-            'https://docs.commongateway.nl/schemas/CollectionEntity.schema.json',
-            'https://docs.commongateway.nl/schemas/Cronjob.schema.json',
-            'https://docs.commongateway.nl/schemas/DashboardCard.schema.json',
-            'https://docs.commongateway.nl/schemas/Endpoint.schema.json',
-            'https://docs.commongateway.nl/schemas/Entity.schema.json',
-            'https://docs.commongateway.nl/schemas/Gateway.schema.json',
-            'https://docs.commongateway.nl/schemas/Mapping.schema.json',
-            'https://docs.commongateway.nl/schemas/Organization.schema.json',
-            'https://docs.commongateway.nl/schemas/SecurityGroup.schema.json',
-//                'https://docs.commongateway.nl/schemas/User.schema.json',
-        ];
-
         // Handle core schema's.
-        if (in_array($type, $allowedCoreObjects) === true) {
+        if (in_array($type, $this::ALLOWED_CORE_SCHEMAS) === true) {
             $object = $this->loadCoreSchema($schema, $type);
         }//end if
 
         // Handle Other schema's.
-        if (in_array($type, $allowedCoreObjects) === false) {
+        if (in_array($type, $this::ALLOWED_CORE_SCHEMAS) === false) {
             $object = $this->loadSchema($schema, $type);
         }//end if
 
