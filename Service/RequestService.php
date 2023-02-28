@@ -267,7 +267,7 @@ class RequestService
 
         // Get clean query paramters without all the symfony shizzle.
         $query = $this->realRequestQueryAll($this->data['method']);
-        if(isset($data['path']['{route}']) === true) {
+        if (isset($data['path']['{route}']) === true) {
             $this->data['path'] = '/'.$data['path']['{route}'];
         } else {
             $this->data['path'] = '/';
