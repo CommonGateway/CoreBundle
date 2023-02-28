@@ -82,7 +82,7 @@ public install (string $bundle, array $config)
 
 Installs the files from a bundle. 
 
- 
+Based on the default action handler so schould supoprt a config parrameter even if we do not use it 
 
 **Parameters**
 
