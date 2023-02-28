@@ -49,7 +49,7 @@ class OasService
                 'version'    => '1.0.3',
             ],
             'servers' => [
-                'url'         => $this->parameterBag->get('app_env','https://localhost'),
+                'url'         => $this->parameterBag->get('app_url','https://localhost'),
                 'description' => 'The kubernetes server',
             ],
             'paths'      => [],
