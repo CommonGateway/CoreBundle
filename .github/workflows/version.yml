@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - master
-      - main
 
 jobs:
   release-managment:
@@ -22,7 +21,8 @@ jobs:
         id: version
         uses: codacy/git-version@2.7.1
         with:
-          release-branch: main
+          release-branch: master
+          dev-branch: development
 
       - name: Use the version
         run: |
