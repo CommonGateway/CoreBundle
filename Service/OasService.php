@@ -152,7 +152,7 @@ class OasService
         $schemas = [];
 
         foreach ($endpoint->getEntities() as $entity) {
-            $schemas[$entity->getName()] = $entity->getSchema();
+            $schemas[$entity->getName()] = $entity->toSchema();
         }
 
         return $schemas;
