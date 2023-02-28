@@ -267,7 +267,11 @@ class RequestService
 
         // Get clean query paramters without all the symfony shizzle.
         $query = $this->realRequestQueryAll($this->data['method']);
-        $this->data['path'] = '/'.$data['path']['{route}'];
+        if(isset($data['path']['{route}'])) {
+            $this->data['path'] = '/'.$data['path']['{route}'];
+        } else {
+            $this->data['path'] = '/';
+        }
 
         // Make a guzzle call to the source bassed on the incomming call.
         $result = $this->callService->call(
