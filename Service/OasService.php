@@ -4,6 +4,7 @@ namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Endpoint;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 /**
  * This service handles the creation of OAS documentation for a given application.
@@ -49,7 +50,7 @@ class OasService
                 'version'    => '1.0.3',
             ],
             'servers' => [
-                'url'         => $this->parameterBag->get('app_url','https://localhost'),
+                'url'         => $this->parameters->get('app_url','https://localhost'),
                 'description' => 'The kubernetes server',
             ],
             'paths'      => [],
@@ -160,7 +161,7 @@ class OasService
         $schemas = [];
 
         foreach ($endpoint->getEntities() as $entity) {
-            $schemas[$entity->getName()] = $entity->toSchema();
+            $schemas[$entity->getName()] = $entity->toSchema(null);
         }
 
         return $schemas;
