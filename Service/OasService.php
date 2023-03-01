@@ -29,7 +29,7 @@ class OasService
         ParameterBagInterface $parameters
     ) {
         $this->entityManager = $entityManager;
-        $this->parameters =  $parameters;
+        $this->parameters = $parameters;
 ;
     }//end __construct()
 
@@ -50,7 +50,7 @@ class OasService
                 'version'    => '1.0.3',
             ],
             'servers' => [
-                'url'         => $this->parameters->get('app_url','https://localhost'),
+                'url'         => $this->parameters->get('app_url', 'https://localhost'),
                 'description' => 'The kubernetes server',
             ],
             'paths'      => [],
