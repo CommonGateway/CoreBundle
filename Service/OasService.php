@@ -30,7 +30,6 @@ class OasService
     ) {
         $this->entityManager = $entityManager;
         $this->parameters = $parameters;
-;
     }//end __construct()
 
     /**
