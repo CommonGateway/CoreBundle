@@ -49,8 +49,10 @@ class OasService
                 'version'    => '1.0.3',
             ],
             'servers' => [
+                [
                 'url'         => $this->parameters->get('app_url', 'https://localhost'),
                 'description' => 'The kubernetes server',
+                ]
             ],
             'paths'      => [],
             'components' => [],
@@ -83,7 +85,7 @@ class OasService
         // Add the endpoints to the OAS.
         foreach ($endpoints as $endpoint) {
             // Add the path to the paths.
-            $oas['paths'][implode('/', $endpoint->getPath())] = $this->getEndpointOperations($endpoint);
+            $oas['paths']['/'.implode('/', $endpoint->getPath())] = $this->getEndpointOperations($endpoint);
 
             // Add the schemas.
             $oas['components']['schemas'] = array_merge($oas['components']['schemas'], $this->getEndpointSchemas($endpoint));
