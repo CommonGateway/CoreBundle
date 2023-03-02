@@ -90,6 +90,10 @@ class EndpointService
         $parameters['accept'] = $accept;
         $parameters['body'] = $this->decodeBody();
 
+        if (json_decode($request->get('payload'), true)) {
+            $parameters['payload'] = json_decode($request->get('payload'), true);
+        }
+
         // If we have an proxy we will handle just that.
         if ($endpoint->getProxy() === true) {
             return $this->requestService->proxyHandler($parameters, []);
