@@ -26,9 +26,8 @@ class OasService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        ParameterBagInterface  $parameters
-    )
-    {
+        ParameterBagInterface $parameters
+    ) {
         $this->entityManager = $entityManager;
         $this->parameters = $parameters;
     }//end __construct()
@@ -44,21 +43,21 @@ class OasService
         // Setup the basic oas array.
         $oas = [
             'openapi' => '3.0.0',
-            'info' => [
-                'title' => 'Common Gateway',
+            'info'    => [
+                'title'       => 'Common Gateway',
                 'description' => 'The Common Gateway is a further Dutch development of the European API Platform. API Platform is a project of Les Tilleus and, in itself, an extension of the Symfony framework. API Platform is a tool for delivering APIs based on standardized documentation and is used for various French and German government projects. Including Digital state, a precursor to Xroute, GOV.UK and Common Ground. The project is now part of joinup.eu (the European equivalent of Common Ground).',
-                'version' => '1.0.3',
+                'version'     => '1.0.3',
             ],
             'servers' => [
                 [
-                    'url' => $this->parameters->get('app_url', 'https://localhost'),
+                    'url'         => $this->parameters->get('app_url', 'https://localhost'),
                     'description' => 'The kubernetes server',
-                ]
+                ],
             ],
-            'paths' => [],
+            'paths'      => [],
             'components' => [],
-            'security' => [],
-            'tags' => [],
+            'security'   => [],
+            'tags'       => [],
         ];
 
         // Add the endpoints.
@@ -89,12 +88,12 @@ class OasService
             $pathArray = [];
             foreach ($endpoint->getPath() as $path) {
                 if ($path === 'id') {
-                    $pathArray[] = '{' . $path . '}';
+                    $pathArray[] = '{'.$path.'}';
                     continue;
                 }
                 $pathArray[] = $path;
             }
-            $oas['paths']['/' . implode('/', $pathArray)] = $this->getEndpointOperations($endpoint);
+            $oas['paths']['/'.implode('/', $pathArray)] = $this->getEndpointOperations($endpoint);
 
             // Add the schemas.
             $oas['components']['schemas'] = array_merge($oas['components']['schemas'], $this->getEndpointSchemas($endpoint));
@@ -119,25 +118,25 @@ class OasService
             // We dont do a request body on GET, DELETE and UPDATE requests.
             if (in_array($method, ['DELETE']) === true) {
                 $operations[strtolower($method)] = [
-                    'operationId' => strtolower($endpoint->getName() . '-' . $method),
-                    'summary' => $endpoint->getName(),
-                    'tags' => [strtolower($endpoint->getName())],
+                    'operationId' => strtolower($endpoint->getName().'-'.$method),
+                    'summary'     => $endpoint->getName(),
+                    'tags'        => [strtolower($endpoint->getName())],
                     'description' => $endpoint->getDescription(),
-                    'responses' => [
+                    'responses'   => [
                         '200' => [
                             'description' => $endpoint->getDescription(),
-                            'content' => [
+                            'content'     => [
                                 'application/json' => [
                                     'schema' => [
-                                        'type' => 'string',
-                                        'example' => 'Object is successfully deleted'
-                                    ]
+                                        'type'    => 'string',
+                                        'example' => 'Object is successfully deleted',
+                                    ],
                                 ],
                                 'application/xml' => [
                                     'schema' => [
-                                        'type' => 'string',
-                                        'example' => 'Object is successfully deleted'
-                                    ]
+                                        'type'    => 'string',
+                                        'example' => 'Object is successfully deleted',
+                                    ],
                                 ],
                             ],
                         ],
@@ -148,19 +147,19 @@ class OasService
 
             // In all other cases we want include a schema.
             $operations[strtolower($method)] = [
-                'operationId' => strtolower($endpoint->getName() . '-' . $method),
-                'summary' => $endpoint->getName(),
-                'tags' => [strtolower($endpoint->getName())],
+                'operationId' => strtolower($endpoint->getName().'-'.$method),
+                'summary'     => $endpoint->getName(),
+                'tags'        => [strtolower($endpoint->getName())],
                 'description' => $endpoint->getDescription(),
-                'parameters' => [
-                    ['name' => 'id',
-                        'in' => 'path',
+                'parameters'  => [
+                    ['name'           => 'id',
+                        'in'          => 'path',
                         'description' => '',
-                        'required' => true,
-                        'schema' => [
-                            'type' => 'string'
-                        ]
-                    ]
+                        'required'    => true,
+                        'schema'      => [
+                            'type' => 'string',
+                        ],
+                    ],
                 ],
                 'requestBody' => [
                     'description' => $endpoint->getDescription(),
@@ -168,29 +167,29 @@ class OasService
                     'content' => [
                         'application/json' => [
                             'schema' => [
-                                '$ref' => '#/components/schemas/' . $endpoint->getEntities()->first()->getName()
+                                '$ref' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
                             ],
                         ],
                         'application/xml' => [
                             'schema' => [
-                                '$ref' => '#/components/schemas/' . $endpoint->getEntities()->first()->getName()
+                                '$ref' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
                             ],
-                        ]
+                        ],
                     ],
                 ],
                 'responses' => [
                     '200' => [
                         'description' => $endpoint->getDescription(),
-                        'content' => [
+                        'content'     => [
                             'application/json' => [
                                 'schema' => [
-                                    '$ref' => '#/components/schemas/' . $endpoint->getEntities()->first()->getName()
-                                ]
+                                    '$ref' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
+                                ],
                             ],
                             'application/xml' => [
                                 'schema' => [
-                                    '$ref' => '#/components/schemas/' . $endpoint->getEntities()->first()->getName()
-                                ]
+                                    '$ref' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
+                                ],
                             ],
                         ],
                     ],
