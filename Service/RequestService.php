@@ -503,6 +503,8 @@ class RequestService
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
+                $this->object = $this->entityManager->find("App:ObjectEntity", $this->id);
+
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
                 if ($this->object->hydrate($this->content, true)) { // This should be an unsafe hydration
                     if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
@@ -533,6 +535,8 @@ class RequestService
                 if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     return new Response('Object is not supported by this endpoint', '406');
                 }
+
+                $this->object = $this->entityManager->find("App:ObjectEntity", $this->id);
 
                 //if ($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
                 if ($this->object->hydrate($this->content)) {
