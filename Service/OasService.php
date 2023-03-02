@@ -39,6 +39,8 @@ class OasService
      */
     public function createOas(): array
     {
+        //todo: Escapen voorkomen dat moet vermoedenlijk in de controller door config op te json_encode call
+        //todo: parameters in de url als parameter opnemen -> hack /object/id /object/[id] en dan parameters op het path
 
         // Setup the basic oas array.
         $oas = [
