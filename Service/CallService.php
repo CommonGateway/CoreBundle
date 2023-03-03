@@ -328,7 +328,7 @@ class CallService
         }
         
         return $responseData;
-    }//end handleEndpointConfigOut()
+    }//end handleEndpointConfigIn()
 
     /**
      * Determine the content type of a response.
