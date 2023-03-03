@@ -266,14 +266,12 @@ class RequestService
         }//end if
 
         // Get clean query parameters without all the symfony shizzle.
-        $query = $this->realRequestQueryAll($this->data['method']);
+        $this->data['query'] = $this->realRequestQueryAll($this->data['method']);
         if (isset($data['path']['{route}']) === true) {
             $this->data['path'] = '/'.$data['path']['{route}'];
         } else {
             $this->data['path'] = '';
         }
-    
-        $this->handleEndpointsConfigOut($proxy);
     
         unset($this->data['headers']['authorization']);
         // Make a guzzle call to the source based on the incoming call.
@@ -282,13 +280,11 @@ class RequestService
             $this->data['path'],
             $this->data['method'],
             [
-                'query'   => $query,
+                'query'   => $this->data['query'],
                 'headers' => $this->data['headers'],
                 'body'    => $this->data['crude_body'],
             ]
         );
-    
-        $this->handleEndpointsConfigIn($proxy);
 
         // Let create a response from the guzzle call.
         $responce = new Response(
@@ -302,16 +298,6 @@ class RequestService
         // And don so lets return what we have.
         return $responce;
     }//end proxyHandler()
-    
-    private function handleEndpointsConfigIn(Source $source)
-    {
-//        $this->data['path'];
-    }
-    
-    private function handleEndpointsConfigOut(Source $source)
-    {
-//        $this->data['path'];
-    }
 
     /**
      * Get a scopes array for the current user (or of the anonymus if no user s logged in).
