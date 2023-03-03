@@ -658,9 +658,9 @@ class CacheService
         if (is_string($search)) {
             $filter['$text']
                 = [
-                '$search'       => $search,
-                '$caseSensitive'=> false,
-            ];
+                    '$search'       => $search,
+                    '$caseSensitive'=> false,
+                ];
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value
         elseif (is_array($search)) {
