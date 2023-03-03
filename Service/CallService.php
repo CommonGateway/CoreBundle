@@ -149,10 +149,13 @@ class CallService
 //        $log->setMethod($method);
 //        $log->setConfig($config);
 //        $log->setRequestBody($config['body'] ?? null);
-
-        // Set authenticion if needed
+        
+        if (empty($source->getLocation())) {
+            throw new HttpException('409', "This source has no location: {$source->getName()}");
+        }
         $parsedUrl = parse_url($source->getLocation());
-
+    
+        // Set authentication if needed
         $config = array_merge_recursive($this->getAuthentication($source), $config);
         $createCertificates && $config = array_merge($config, $this->getCertificate($config));
         $config['headers']['host'] = $parsedUrl['host'];
