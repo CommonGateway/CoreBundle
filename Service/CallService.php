@@ -52,24 +52,27 @@ class CallService
      *
      * @param array $config The configuration as stored in the source
      *
-     * @return array The overrides on the configuration with filenames instead of certificate contents
+     * @return void
      */
-    public function getCertificate(array $config): array
+    public function getCertificate(array &$config)
     {
-        $configs = [];
         if (isset($config['cert']) === true) {
-            $contents = is_array($config['cert']) ? $config['cert'][0] : $config['cert'];
-            $configs['cert'] = $this->fileService->writeFile('certificate', $contents);
+            if (is_array($config['cert'])) {
+                $config['cert'][0] = $this->fileService->writeFile('certificate', $config['cert'][0]);
+            } elseif (is_string($config['cert'])) {
+                $config['cert'] = $this->fileService->writeFile('certificate', $config['cert']);
+            }
         }
         if (isset($config['ssl_key']) === true) {
-            $contents = is_array($config['ssl_key']) ? $config['ssl_key'][0] : $config['ssl_key'];
-            $configs['ssl_key'] = $this->fileService->writeFile('privateKey', $contents);
+            if (is_array($config['ssl_key'])) {
+                $config['ssl_key'][0] = $this->fileService->writeFile('privateKey', $config['ssl_key'][0]);
+            } elseif (is_string($config['ssl_key'])) {
+                $config['ssl_key'] = $this->fileService->writeFile('privateKey', $config['ssl_key']);
+            }
         }
         if (isset($config['verify']) === true && is_string($config['verify']) === true) {
-            $configs['verify'] = $this->fileService->writeFile('verify', $config['ssl_key']);
+            $config['verify'] = $this->fileService->writeFile('verify', $config['verify']);
         }
-
-        return $configs;
     }
 
     /**
@@ -157,7 +160,7 @@ class CallService
 
         // Set authentication if needed
         $config = array_merge_recursive($this->getAuthentication($source), $config);
-        $createCertificates && $config = array_merge($config, $this->getCertificate($config));
+        $createCertificates && $this->getCertificate($config);
         $config['headers']['host'] = $parsedUrl['host'];
         $config['headers'] = $this->removeEmptyHeaders($config['headers']);
 //        $log->setRequestHeaders($config['headers'] ?? null);

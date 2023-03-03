@@ -167,9 +167,9 @@ Writes the certificate and ssl keys to disk, returns the filenames.
 
 **Return Values**
 
-`array`
+`void`
 
-> The overrides on the configuration with filenames instead of certificate contents
+
 
 
 <hr />
