@@ -284,7 +284,7 @@ class CacheService
 
         // Check if object is in the cache ????
         if ($object = $collection->findOne(['_id'=>$id])) {
-            return $object;
+            return json_decode(json_encode($object), true);
         }
 
         // Fall back tot the entity manager
