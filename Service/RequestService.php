@@ -503,7 +503,7 @@ class RequestService
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
-                $this->object = $this->entityManager->find("App:ObjectEntity", $this->id);
+                $this->object = $this->entityManager->find('App:ObjectEntity', $this->id);
 
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
                 if ($this->object->hydrate($this->content, true)) { // This should be an unsafe hydration
@@ -536,7 +536,7 @@ class RequestService
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
-                $this->object = $this->entityManager->find("App:ObjectEntity", $this->id);
+                $this->object = $this->entityManager->find('App:ObjectEntity', $this->id);
 
                 //if ($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
                 if ($this->object->hydrate($this->content)) {
