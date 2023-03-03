@@ -243,7 +243,7 @@ class RequestService
 
         // If we already have a proxy, we can skip these checks.
         if ($proxy instanceof Source === false) {
-            // We only do proxing if the endpoint forces it and we do not have a proxy.
+            // We only do proxying if the endpoint forces it, and we do not have a proxy.
             if (!$data['endpoint'] instanceof Endpoint || !$proxy = $data['endpoint']->getProxy()) {
                 $message = !$data['endpoint'] instanceof Endpoint ?
                     "No Endpoint in data['endpoint']" :
@@ -259,21 +259,24 @@ class RequestService
             if ($proxy instanceof Source && !$proxy->getIsEnabled()) {
                 return new Response(
                     json_encode(['Message' => "This Source is not enabled: {$proxy->getName()}"]),
-                    Response::HTTP_OK, // This should be ok so we can disable Sources without creating error responses?
+                    Response::HTTP_OK, // This should be ok, so we can disable Sources without creating error responses?
                     ['content-type' => 'application/json']
                 );
             }
         }//end if
 
-        // Get clean query paramters without all the symfony shizzle.
+        // Get clean query parameters without all the symfony shizzle.
         $query = $this->realRequestQueryAll($this->data['method']);
         if (isset($data['path']['{route}']) === true) {
             $this->data['path'] = '/'.$data['path']['{route}'];
         } else {
-            $this->data['path'] = '/';
+            $this->data['path'] = '';
         }
-
-        // Make a guzzle call to the source bassed on the incomming call.
+    
+        $this->handleEndpointsConfigOut($proxy);
+    
+        unset($this->data['headers']['authorization']);
+        // Make a guzzle call to the source based on the incoming call.
         $result = $this->callService->call(
             $proxy,
             $this->data['path'],
@@ -284,8 +287,10 @@ class RequestService
                 'body'    => $this->data['crude_body'],
             ]
         );
+    
+        $this->handleEndpointsConfigIn($proxy);
 
-        // Let create a responce from the guzle call.
+        // Let create a response from the guzzle call.
         $responce = new Response(
             $result->getBody()->getContents(),
             $result->getStatusCode(),
@@ -297,6 +302,16 @@ class RequestService
         // And don so lets return what we have.
         return $responce;
     }//end proxyHandler()
+    
+    private function handleEndpointsConfigIn(Source $source)
+    {
+//        $this->data['path'];
+    }
+    
+    private function handleEndpointsConfigOut(Source $source)
+    {
+//        $this->data['path'];
+    }
 
     /**
      * Get a scopes array for the current user (or of the anonymus if no user s logged in).
