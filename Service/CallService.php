@@ -238,10 +238,15 @@ class CallService
         if (empty($endpointsConfig)) {
             return $config;
         }
-        $endpoint = empty($endpoint) ? 'global' : $endpoint;
+        
+        // Let's check if the endpoint used on this source has "out" configuration in the EndpointsConfig of the source.
         if (array_key_exists($endpoint, $endpointsConfig) === true && array_key_exists("out", $endpointsConfig[$endpoint])) {
             $endpointConfigOut = $endpointsConfig[$endpoint]["out"];
-            
+        } elseif (array_key_exists('global', $endpointsConfig) === true && array_key_exists("out", $endpointsConfig['global'])) {
+            $endpointConfigOut = $endpointsConfig['global']["out"];
+        }
+        
+        if (isset($endpointConfigOut) === true) {
             $config = $this->handleEndpointConfigOut($config, $endpointConfigOut, 'query');
             $config = $this->handleEndpointConfigOut($config, $endpointConfigOut, 'headers');
             $config = $this->handleEndpointConfigOut($config, $endpointConfigOut, 'body');
@@ -293,10 +298,15 @@ class CallService
         if (empty($endpointsConfig)) {
             return $response;
         }
-        $endpoint = empty($endpoint) ? 'global' : $endpoint;
+        
+        // Let's check if the endpoint used on this source has "in" configuration in the EndpointsConfig of the source.
         if (array_key_exists($endpoint, $endpointsConfig) === true && array_key_exists("in", $endpointsConfig[$endpoint])) {
             $endpointConfigIn = $endpointsConfig[$endpoint]["in"];
-    
+        } elseif (array_key_exists('global', $endpointsConfig) === true && array_key_exists("in", $endpointsConfig['global'])) {
+            $endpointConfigIn = $endpointsConfig['global']["in"];
+        }
+        
+        if (isset($endpointConfigIn) === true) {
             $headers = $this->handleEndpointConfigIn($response->getHeaders(), $endpointConfigIn, 'headers');
             $body = $this->handleEndpointConfigIn($response->getBody(), $endpointConfigIn, 'body');
     
