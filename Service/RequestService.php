@@ -80,17 +80,18 @@ class RequestService
      * This function will not.
      *
      * @param string $method The method of the Request
+     * @param string|null $queryString A queryString from a request if we want to give it to this function instead of using global var $_SERVER.
      *
      * @return array An array with all query parameters.
      */
-    public function realRequestQueryAll(string $method = 'get'): array
+    public function realRequestQueryAll(string $method = 'get', ?string $queryString = ''): array
     {
         $vars = [];
-        if (strtolower($method) === 'get' && empty($this->data['querystring'])) {
+        if (strtolower($method) === 'get' && empty($this->data['querystring']) && empty($queryString)) {
             return $vars;
         }
 
-        $pairs = explode('&', $_SERVER['QUERY_STRING']);
+        $pairs = explode('&', empty($queryString) === false ? $queryString : $_SERVER['QUERY_STRING']);
         foreach ($pairs as $pair) {
             $nv = explode('=', $pair);
             $name = urldecode($nv[0]);
