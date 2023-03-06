@@ -81,7 +81,30 @@ class OasService
         // Get all the endpoints.
         $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
 
-        $oas['components']['schemas'] = [];
+        // Lets define the basis schemas
+        $oas['components']['schemas'] = [
+            'error' => [
+                "type" =>"object",
+                "properties" =>[
+                    "code" => [
+                        "type" => "integer",
+                        "description" => "The error code",
+                        "example" => 404,
+                    ],
+                    "message" => [
+                        "type" => "string",
+                        "description" => "The error message",
+                        "example" => "Object not found",
+                    ],
+                    "description" => [
+                        "type" => "string",
+                        "description" => "An explanation of the thrown error",
+                        "example" => "The required object could not be retrieved",
+                    ]
+                ],
+            ]
+        ];
+
         // Add the endpoints to the OAS.
         foreach ($endpoints as $endpoint) {
             // Add the path to the paths.
@@ -93,7 +116,7 @@ class OasService
                 }
                 $pathArray[] = $path;
             }
-            $oas['paths']['/'.implode('/', $pathArray)] = $this->getEndpointOperations($endpoint);
+            $oas['paths']['/api/'.implode('/', $pathArray)] = $this->getEndpointOperations($endpoint);
 
             // Add the schemas.
             $oas['components']['schemas'] = array_merge($oas['components']['schemas'], $this->getEndpointSchemas($endpoint));
@@ -115,35 +138,6 @@ class OasService
 
         // Lets take a look at the methods.
         foreach ($endpoint->getMethods() as $method) {
-            // We dont do a request body on GET, DELETE and UPDATE requests.
-            if (in_array($method, ['DELETE']) === true) {
-                $operations[strtolower($method)] = [
-                    'operationId' => strtolower($endpoint->getName().'-'.$method),
-                    'summary'     => $endpoint->getName(),
-                    'tags'        => [strtolower($endpoint->getName())],
-                    'description' => $endpoint->getDescription(),
-                    'responses'   => [
-                        '200' => [
-                            'description' => $endpoint->getDescription(),
-                            'content'     => [
-                                'application/json' => [
-                                    'schema' => [
-                                        'type'    => 'string',
-                                        'example' => 'Object is successfully deleted',
-                                    ],
-                                ],
-                                'application/xml' => [
-                                    'schema' => [
-                                        'type'    => 'string',
-                                        'example' => 'Object is successfully deleted',
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                ];
-                continue;
-            }
 
             // In all other cases we want include a schema.
             $operations[strtolower($method)] = [
@@ -158,10 +152,15 @@ class OasService
                         'required'    => true,
                         'schema'      => [
                             'type' => 'string',
+                            'format' => 'uuid'
                         ],
                     ],
                 ],
-                'requestBody' => [
+            ];
+
+            // We dont do a request body on GET, DELETE and UPDATE requests.
+            if (in_array($method, ['PUT','PATCH','POST']) === true) {
+                $operations[strtolower($method)][ 'requestBody'] = [
                     'description' => $endpoint->getDescription(),
                     //'required' =>// Todo: figure out what we want to do here
                     'content' => [
@@ -176,30 +175,30 @@ class OasService
                             ],
                         ],
                     ],
-                ],
-                'responses' => [
-                    '200' => [
-                        'description' => $endpoint->getDescription(),
-                        'content'     => [
-                            'application/json' => [
-                                'schema' => [
-                                    '$ref' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
-                                ],
+                ];
+            }
+
+
+            if (in_array($method, ['PUT','PATCH','POST','GET']) === true) {
+                $status = 200;
+                $operations[strtolower($method)][ 'responses'] = [ $status => [
+                    'description' => $endpoint->getDescription(),
+                    'content'     => [
+                        'application/json' => [
+                            'schema' => [
+                                '$ref' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
                             ],
-                            'application/xml' => [
-                                'schema' => [
-                                    '$ref' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
-                                ],
+                        ],
+                        'application/xml' => [
+                            'schema' => [
+                                '$ref' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
                             ],
                         ],
                     ],
-                ],
-            ];
-
-            // We dont do a request body on GET, DELETE and UPDATE requests.
-            if ($method === 'GET' || $method === 'PUT') {
-                unset($operations[strtolower($method)]['requestBody']);
+                ]
+                ];
             }
+
 
             // TODO: Collection endpoints
         }//end foreach
@@ -236,4 +235,109 @@ class OasService
     {
         return $oas;
     }//end addSecurity()
+
+    /**
+     * Determine a primary status code for the schema
+     *
+     * @param string $method The method for witch to get a primarty responce status
+     * @return integer The status code
+     */
+    private function getPrimaryStatus(string $method): integer
+    {
+        switch ($method){
+            case 'DELETE':
+                return 202;
+            case 'GET':
+            case 'PUT':
+            case 'PATCH':
+                return 200;
+            case 'POST':
+                return 201;
+            default:
+                //todo: throw error
+                return 0;
+        }
+    }//end getPrimaryStatus()
+
+    /**
+     * Generate aditional reponces besides the primary responce model
+     *
+     * @param string $method The method for wich to establish more responces
+     * @return array The aditional responces for this method
+     */
+    private function getSecondaryResponce(string $method): array
+    {
+        $responces = [];
+
+        $responces[500] = [
+            'description' => 'Internal server error',
+            'content'     => [
+                'application/json' => [
+                    'schema' => [
+                        '$ref' => '#/components/schemas/error',
+                    ],
+                ],
+                'application/xml' => [
+                    'schema' => [
+                        '$ref' => '#/components/schemas/error',
+                    ],
+                ],
+            ]
+        ];
+
+        // Not finding an object is only posible on items
+        if(in_array($method, ['GET','PUT','PATCH','DELETE']) === true){
+            $responces[404] = [
+                'description' => 'Not Found',
+                'content'     => [
+                    'application/json' => [
+                        'schema' => [
+                            '$ref' => '#/components/schemas/error',
+                        ],
+                    ],
+                    'application/xml' => [
+                        'schema' => [
+                            '$ref' => '#/components/schemas/error',
+                        ],
+                    ],
+                ]
+            ];
+        }
+
+        // Making a bad request is only posible when bringing data
+        if(in_array($method, ['PUT','PATCH','POST']) === true){
+            $responces[400] =  [
+                'description' => 'Bad request',
+                'content'     => [
+                    'application/json' => [
+                        'schema' => [
+                            '$ref' => '#/components/schemas/error',
+                        ],
+                    ],
+                    'application/xml' => [
+                        'schema' => [
+                            '$ref' => '#/components/schemas/error',
+                        ],
+                    ],
+                ]
+            ];
+            $responces[406] =  [
+                'description' => 'Not Acceptable',
+                'content'     => [
+                    'application/json' => [
+                        'schema' => [
+                            '$ref' => '#/components/schemas/error',
+                        ],
+                    ],
+                    'application/xml' => [
+                        'schema' => [
+                            '$ref' => '#/components/schemas/error',
+                        ],
+                    ],
+                ]
+            ];
+        }
+
+        return $responces;
+    }//end getSecondaryResponce()
 }//end class
