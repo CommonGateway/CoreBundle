@@ -194,9 +194,13 @@ class CallService
 //            $log->setResponseTime($stopTimer - $startTimer);
 //            $this->entityManager->persist($log);
 //            $this->entityManager->flush();
-
+    
+            // TODO: monolog
+            var_dump($e->getMessage());
             throw $e;
         } catch (GuzzleException $e) {
+    
+            // TODO: monolog
             var_dump($e->getMessage());
             throw $e;
         }
