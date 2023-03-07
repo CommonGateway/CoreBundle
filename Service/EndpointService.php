@@ -242,7 +242,7 @@ class EndpointService
             array_pop($path);
             $parameters['path'] = array_combine($path, explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
         }
-        
+
         $parameters['querystring'] = $this->request->getQueryString();
 
         try {
