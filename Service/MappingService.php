@@ -126,7 +126,7 @@ class MappingService
             }
 
             $value = $dotArray->get($key);
-    
+
             // todo: this works, we should go to php 8.0 later
             if (str_starts_with($cast, 'unsetIfValue==')) {
                 $unsetIfValue = ltrim($cast, 'unsetIfValue==');
