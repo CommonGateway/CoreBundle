@@ -196,7 +196,7 @@ class CallService
 //            $this->entityManager->flush();
 
             // TODO: monolog
-            var_dump($e->getMessage());
+//            var_dump($e->getMessage());
 
             throw $e;
         } catch (GuzzleException $e) {
