@@ -795,6 +795,7 @@ class InstallationService
                             $endpoints[] = $this->handleSubEndpointsConfig($endpoint, $subEndpointsConfig);
                         }
                     }
+
                     return $endpoints;
                 case 'schemas':
                     $repository = $this->entityManager->getRepository('App:Entity');
@@ -836,7 +837,7 @@ class InstallationService
 
         return $endpoints;
     }//end createEndpoints()
-    
+
     /**
      * This function handles the creation of an subEndpoint by adding extra data from the $subEndpointsConfig to the already created $subEndpoint with basic data.
      *
@@ -849,13 +850,13 @@ class InstallationService
     {
         if (isset($subEndpointsConfig['path'])) {
             $this->logger->debug('Creating a subEndpoint '.$subEndpointsConfig['path'].' for '.(!empty($subEndpoint->getEntity()) ? $subEndpoint->getEntity()->getReference() : ''));
-            
+
             $path = $subEndpoint->getPath();
             $path[] = $subEndpointsConfig['path'];
             $subEndpoint->setPath($path);
             $subEndpoint->setPathRegex($subEndpoint->getPathRegex().'/'.$subEndpointsConfig['path']);
             $subEndpoint->setName($subEndpoint->getName().' '.ucfirst($subEndpointsConfig['path']));
-            
+
             if (isset($subEndpointsConfig['description']) === true) {
                 $subEndpoint->setDescription($subEndpointsConfig['description']);
             }
@@ -865,7 +866,7 @@ class InstallationService
         } else {
             $this->logger->error('SubEndpointsConfig is missing a path', ['SubEndpointsConfig' => $subEndpointsConfig]);
         }
-        
+
         return $subEndpoint;
     }//end handleSubEndpointsConfig()
 
