@@ -264,7 +264,7 @@ Determines the proxy source from configuration, then use proxy handler to proxy 
 **Description**
 
 ```php
-public realRequestQueryAll (string $method)
+public realRequestQueryAll (string $method, string|null $queryString)
 ```
 
 A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore. 
@@ -275,6 +275,8 @@ This function will not.
 
 * `(string) $method`
 : The method of the Request  
+* `(string|null) $queryString`
+: A queryString from a request if we want to give it to this function instead of using global var $_SERVER.  
 
 **Return Values**
 

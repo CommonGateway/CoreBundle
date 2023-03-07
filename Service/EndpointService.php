@@ -95,7 +95,7 @@ class EndpointService
         }
 
         // If we have an proxy we will handle just that.
-        if ($endpoint->getProxy() === true) {
+        if (empty($endpoint->getProxy()) === false) {
             return $this->requestService->proxyHandler($parameters, []);
         }
 

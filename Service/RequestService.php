@@ -79,18 +79,19 @@ class RequestService
      * A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.
      * This function will not.
      *
-     * @param string $method The method of the Request
+     * @param string      $method      The method of the Request
+     * @param string|null $queryString A queryString from a request if we want to give it to this function instead of using global var $_SERVER.
      *
      * @return array An array with all query parameters.
      */
-    public function realRequestQueryAll(string $method = 'get'): array
+    public function realRequestQueryAll(string $method = 'get', ?string $queryString = ''): array
     {
         $vars = [];
-        if (strtolower($method) === 'get' && empty($this->data['querystring'])) {
+        if (strtolower($method) === 'get' && empty($this->data['querystring']) && empty($queryString)) {
             return $vars;
         }
 
-        $pairs = explode('&', $_SERVER['QUERY_STRING']);
+        $pairs = explode('&', empty($queryString) === false ? $queryString : $_SERVER['QUERY_STRING']);
         foreach ($pairs as $pair) {
             $nv = explode('=', $pair);
             $name = urldecode($nv[0]);
@@ -243,7 +244,7 @@ class RequestService
 
         // If we already have a proxy, we can skip these checks.
         if ($proxy instanceof Source === false) {
-            // We only do proxing if the endpoint forces it and we do not have a proxy.
+            // We only do proxying if the endpoint forces it, and we do not have a proxy.
             if (!$data['endpoint'] instanceof Endpoint || !$proxy = $data['endpoint']->getProxy()) {
                 $message = !$data['endpoint'] instanceof Endpoint ?
                     "No Endpoint in data['endpoint']" :
@@ -259,33 +260,34 @@ class RequestService
             if ($proxy instanceof Source && !$proxy->getIsEnabled()) {
                 return new Response(
                     json_encode(['Message' => "This Source is not enabled: {$proxy->getName()}"]),
-                    Response::HTTP_OK, // This should be ok so we can disable Sources without creating error responses?
+                    Response::HTTP_OK, // This should be ok, so we can disable Sources without creating error responses?
                     ['content-type' => 'application/json']
                 );
             }
         }//end if
 
-        // Get clean query paramters without all the symfony shizzle.
-        $query = $this->realRequestQueryAll($this->data['method']);
+        // Get clean query parameters without all the symfony shizzle.
+        $this->data['query'] = $this->realRequestQueryAll($this->data['method']);
         if (isset($data['path']['{route}']) === true) {
             $this->data['path'] = '/'.$data['path']['{route}'];
         } else {
-            $this->data['path'] = '/';
+            $this->data['path'] = '';
         }
 
-        // Make a guzzle call to the source bassed on the incomming call.
+        unset($this->data['headers']['authorization']);
+        // Make a guzzle call to the source based on the incoming call.
         $result = $this->callService->call(
             $proxy,
             $this->data['path'],
             $this->data['method'],
             [
-                'query'   => $query,
+                'query'   => $this->data['query'],
                 'headers' => $this->data['headers'],
                 'body'    => $this->data['crude_body'],
             ]
         );
 
-        // Let create a responce from the guzle call.
+        // Let create a response from the guzzle call.
         $responce = new Response(
             $result->getBody()->getContents(),
             $result->getStatusCode(),

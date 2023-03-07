@@ -786,6 +786,12 @@ class InstallationService
         foreach ($endpointsData as $type => $endpointTypeData) {
             // Let's determine the proper repo to use.
             switch ($type) {
+                case 'subEndpoints':
+                    $subEndpointsConfig = $endpointTypeData;
+                    unset($subEndpointsConfig['schemas']);
+                    $endpointTypeData = $endpointTypeData['schemas'];
+                    $repository = $this->entityManager->getRepository('App:Entity');
+                    break;
                 case 'schemas':
                     $repository = $this->entityManager->getRepository('App:Entity');
                     break;
@@ -816,6 +822,9 @@ class InstallationService
 
                 // todo ? maybe create a second constructor?
                 $endpoint = $type === 'sources' ? new Endpoint(null, $object, $endpointData) : new Endpoint($object, null, $endpointData);
+                if (isset($subEndpointsConfig) === true) {
+                    $endpoint = $this->handleSubEndpointsConfig($endpoint, $subEndpointsConfig);
+                }
                 $endpoints[] = $endpoint;
                 $this->entityManager->persist($endpoint);
                 $this->logger->debug('Endpoint created for '.$endpointData['reference']);
@@ -826,6 +835,38 @@ class InstallationService
 
         return $endpoints;
     }//end createEndpoints()
+
+    /**
+     * This function handles the creation of an subEndpoint by adding extra data from the $subEndpointsConfig to the already created $subEndpoint with basic data.
+     *
+     * @param Endpoint $subEndpoint        A newly created endpoint with some basic data.
+     * @param array    $subEndpointsConfig Configuration from the installation.json ['endpoints']['subEndpoints'] array.
+     *
+     * @return Endpoint The updated subEndpoint with data from the $subEndpointsConfig.
+     */
+    private function handleSubEndpointsConfig(Endpoint $subEndpoint, array $subEndpointsConfig): Endpoint
+    {
+        if (isset($subEndpointsConfig['path'])) {
+            $this->logger->debug('Creating a subEndpoint '.$subEndpointsConfig['path'].' for '.$subEndpoint->getEntity()->getReference());
+
+            $path = $subEndpoint->getPath();
+            $path[] = $subEndpointsConfig['path'];
+            $subEndpoint->setPath($path);
+            $subEndpoint->setPathRegex($subEndpoint->getPathRegex().'/'.$subEndpointsConfig['path']);
+            $subEndpoint->setName($subEndpoint->getName().' '.ucfirst($subEndpointsConfig['path']));
+
+            if (isset($subEndpointsConfig['description']) === true) {
+                $subEndpoint->setDescription($subEndpointsConfig['description']);
+            }
+            if (isset($subEndpointsConfig['throws']) === true) {
+                $subEndpoint->setThrows($subEndpointsConfig['throws']);
+            }
+        } else {
+            $this->logger->error('SubEndpointsConfig is missing a path', ['SubEndpointsConfig' => $subEndpointsConfig]);
+        }
+
+        return $subEndpoint;
+    }//end handleSubEndpointsConfig()
 
     /**
      * This functions creates actions for an array of handlers.

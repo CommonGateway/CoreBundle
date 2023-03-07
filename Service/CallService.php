@@ -33,18 +33,21 @@ class CallService
     private Client $client;
     private EntityManagerInterface $entityManager;
     private FileService $fileService;
+    private MappingService $mappingService;
 
     /**
      * @param AuthenticationService  $authenticationService
      * @param EntityManagerInterface $entityManager
      * @param FileService            $fileService
+     * @param MappingService         $mappingService
      */
-    public function __construct(AuthenticationService $authenticationService, EntityManagerInterface $entityManager, FileService $fileService)
+    public function __construct(AuthenticationService $authenticationService, EntityManagerInterface $entityManager, FileService $fileService, MappingService $mappingService)
     {
         $this->authenticationService = $authenticationService;
         $this->client = new Client([]);
         $this->entityManager = $entityManager;
         $this->fileService = $fileService;
+        $this->mappingService = $mappingService;
     }
 
     /**
@@ -167,6 +170,8 @@ class CallService
 
         $url = $source->getLocation().$endpoint;
 
+        $config = $this->handleEndpointsConfigOut($source, $endpoint, $config);
+
         $startTimer = microtime(true);
         // Lets make the call
         try {
@@ -190,9 +195,16 @@ class CallService
 //            $this->entityManager->persist($log);
 //            $this->entityManager->flush();
 
+            // TODO: monolog
+//            var_dump($e->getMessage());
+
             throw $e;
         } catch (GuzzleException $e) {
+
+            // TODO: monolog
             var_dump($e->getMessage());
+
+            throw $e;
         }
 //        $stopTimer = microtime(true);
 //
@@ -210,8 +222,129 @@ class CallService
 
         $createCertificates && $this->removeFiles($config);
 
-        return $response;
+        return $this->handleEndpointsConfigIn($source, $endpoint, $response);
     }
+
+    /**
+     * Handles the endpointsConfig of a Source before we do an api-call.
+     *
+     * @param Source $source   The source.
+     * @param string $endpoint The endpoint used to do an api-call on the source.
+     * @param array  $config   The configuration for an api-call we might want to change.
+     *
+     * @return array The configuration array.
+     */
+    private function handleEndpointsConfigOut(Source $source, string $endpoint, array $config): array
+    {
+        $endpointsConfig = $source->getEndpointsConfig();
+        if (empty($endpointsConfig)) {
+            return $config;
+        }
+
+        // Let's check if the endpoint used on this source has "out" configuration in the EndpointsConfig of the source.
+        if (array_key_exists($endpoint, $endpointsConfig) === true && array_key_exists('out', $endpointsConfig[$endpoint])) {
+            $endpointConfigOut = $endpointsConfig[$endpoint]['out'];
+        } elseif (array_key_exists('global', $endpointsConfig) === true && array_key_exists('out', $endpointsConfig['global'])) {
+            $endpointConfigOut = $endpointsConfig['global']['out'];
+        }
+
+        if (isset($endpointConfigOut) === true) {
+            $config = $this->handleEndpointConfigOut($config, $endpointConfigOut, 'query');
+            $config = $this->handleEndpointConfigOut($config, $endpointConfigOut, 'headers');
+            $config = $this->handleEndpointConfigOut($config, $endpointConfigOut, 'body');
+        }
+
+        return $config;
+    }//end handleEndpointsConfigOut()
+
+    /**
+     * Handles endpointConfig for a specific endpoint on a source and a specific configuration key like: 'query' or 'headers'.
+     * Before we do an api-call.
+     *
+     * @param array  $config            The configuration for an api-call we might want to change.
+     * @param array  $endpointConfigOut The endpointConfig 'out' of a specific endpoint and source.
+     * @param string $configKey         The specific configuration key to check if its data needs to be changed and if so, change the data for.
+     *
+     * @return array The configuration array.
+     */
+    private function handleEndpointConfigOut(array $config, array $endpointConfigOut, string $configKey): array
+    {
+        if (array_key_exists($configKey, $config) === false || array_key_exists($configKey, $endpointConfigOut) === false) {
+            return $config;
+        }
+
+        if (array_key_exists('mapping', $endpointConfigOut[$configKey])) {
+            $mapping = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $endpointConfigOut[$configKey]['mapping']]);
+            if ($mapping === null) {
+                //todo: log error
+                return $config;
+            }
+            $config[$configKey] = $this->mappingService->mapping($mapping, $config[$configKey]);
+        }
+
+        return $config;
+    }//end handleEndpointConfigOut()
+
+    /**
+     * Handles the endpointsConfig of a Source after we did an api-call.
+     *
+     * @param Source   $source   The source.
+     * @param string   $endpoint The endpoint used to do an api-call on the source.
+     * @param Response $response The response of an api-call we might want to change.
+     *
+     * @return Response The response.
+     */
+    private function handleEndpointsConfigIn(Source $source, string $endpoint, Response $response): Response
+    {
+        $endpointsConfig = $source->getEndpointsConfig();
+        if (empty($endpointsConfig)) {
+            return $response;
+        }
+
+        // Let's check if the endpoint used on this source has "in" configuration in the EndpointsConfig of the source.
+        if (array_key_exists($endpoint, $endpointsConfig) === true && array_key_exists('in', $endpointsConfig[$endpoint])) {
+            $endpointConfigIn = $endpointsConfig[$endpoint]['in'];
+        } elseif (array_key_exists('global', $endpointsConfig) === true && array_key_exists('in', $endpointsConfig['global'])) {
+            $endpointConfigIn = $endpointsConfig['global']['in'];
+        }
+
+        if (isset($endpointConfigIn) === true) {
+            $headers = $this->handleEndpointConfigIn($response->getHeaders(), $endpointConfigIn, 'headers');
+            $body = $this->handleEndpointConfigIn($response->getBody(), $endpointConfigIn, 'body');
+
+            return new Response($response->getStatusCode(), $headers, $body, $response->getProtocolVersion());
+        }
+
+        return $response;
+    }//end handleEndpointsConfigIn()
+
+    /**
+     * Handles endpointConfig for a specific endpoint on a source and a specific response property like: 'headers' or 'body'.
+     * After we did an api-call.
+     *
+     * @param mixed  $responseData     Some specific data from the response we might want to change. This data should match with the correct $responseProperty.
+     * @param array  $endpointConfigIn The endpointConfig 'in' of a specific endpoint and source.
+     * @param string $responseProperty The specific response property to check if its data needs to be changed and if so, change the data for.
+     *
+     * @return array The configuration array.
+     */
+    private function handleEndpointConfigIn($responseData, array $endpointConfigIn, string $responseProperty): array
+    {
+        if (empty($responseData) === true || array_key_exists($responseProperty, $endpointConfigIn) === false) {
+            return $responseData;
+        }
+
+        if (array_key_exists('mapping', $endpointConfigIn[$responseProperty])) {
+            $mapping = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $endpointConfigIn[$responseProperty]['mapping']]);
+            if ($mapping === null) {
+                //todo: log error
+                return $responseData;
+            }
+            $responseData = $this->mappingService->mapping($mapping, $responseData);
+        }
+
+        return $responseData;
+    }//end handleEndpointConfigIn()
 
     /**
      * Determine the content type of a response.
