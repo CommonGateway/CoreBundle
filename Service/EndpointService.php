@@ -234,7 +234,13 @@ class EndpointService
         // Lets make sure that we always have a path.
 
         $parameters['pathRaw'] = $this->request->getPathInfo();
-        $parameters['path'] = array_combine($this->endpoint->getPath(), explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
+        try {
+            $parameters['path'] = array_combine($this->endpoint->getPath(), explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
+        } catch (Exception $exception) {
+            $path = $this->endpoint->getPath();
+            unset($path[array_key_last($path)]);
+            $parameters['path'] = array_combine($path, explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
+        }
         $parameters['querystring'] = $this->request->getQueryString();
 
         try {
