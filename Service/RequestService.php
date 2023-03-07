@@ -79,7 +79,7 @@ class RequestService
      * A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.
      * This function will not.
      *
-     * @param string $method The method of the Request
+     * @param string      $method      The method of the Request
      * @param string|null $queryString A queryString from a request if we want to give it to this function instead of using global var $_SERVER.
      *
      * @return array An array with all query parameters.
@@ -273,7 +273,7 @@ class RequestService
         } else {
             $this->data['path'] = '';
         }
-    
+
         unset($this->data['headers']['authorization']);
         // Make a guzzle call to the source based on the incoming call.
         $result = $this->callService->call(
