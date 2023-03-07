@@ -127,6 +127,12 @@ class MappingService
 
             $value = $dotArray->get($key);
 
+            // todo: this works, we should go to php 8.0 later
+            if (str_starts_with($cast, 'unsetIfValue==')) {
+                $unsetIfValue = ltrim($cast, 'unsetIfValue==');
+                $cast = 'unsetIfValue';
+            }
+
             switch ($cast) {
                 case 'int':
                 case 'integer':
@@ -141,6 +147,11 @@ class MappingService
                     break;
                 case 'keyCantBeValue':
                     if ($key == $value) {
+                        $dotArray->delete($key);
+                    }
+                    break;
+                case 'unsetIfValue':
+                    if (isset($unsetIfValue) === true && $value == $unsetIfValue) {
                         $dotArray->delete($key);
                     }
                     break;
