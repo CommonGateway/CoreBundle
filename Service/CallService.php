@@ -310,6 +310,8 @@ class CallService
             $headers = $this->handleEndpointConfigIn($response->getHeaders(), $endpointConfigIn, 'headers');
             $body = $this->handleEndpointConfigIn($response->getBody(), $endpointConfigIn, 'body');
     
+            is_array($body) && $body = json_encode($body);
+    
             return new Response($response->getStatusCode(), $headers, $body, $response->getProtocolVersion());
         }
         
@@ -338,6 +340,7 @@ class CallService
                 //todo: log error
                 return $responseData;
             }
+            $responseData = json_decode($responseData->getContents(), true); 
             $responseData = $this->mappingService->mapping($mapping, $responseData);
         }
         
