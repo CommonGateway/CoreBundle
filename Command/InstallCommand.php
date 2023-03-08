@@ -8,7 +8,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 class InstallCommand extends Command
 {
@@ -35,8 +34,6 @@ class InstallCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->installationService->setStyle(new SymfonyStyle($input, $output));
-
         $bundle = $input->getArgument('bundle');
 
         $options = [
