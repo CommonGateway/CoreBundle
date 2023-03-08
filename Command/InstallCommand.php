@@ -35,8 +35,6 @@ class InstallCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->installationService->setStyle(new SymfonyStyle($input, $output));
-
         $bundle = $input->getArgument('bundle');
 
         $options = [
