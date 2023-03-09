@@ -602,11 +602,9 @@ class RequestService
 
         if ($this->session->get('application') !== null) {
             $application = $this->entityManager->getRepository('App:Application')->findOneBy(['id' => $this->session->get('application')]);
-            if ($application !== null
-                && isset($application->getConfiguration()['embedded']['unset']['jsonld']) === true
-                && $application->getConfiguration()['embedded']['unset']['jsonld'] === true) {
+            if ($application !== null && isset($application->getConfiguration()['embedded']['unset']) === true) {
                 // TODO: find a cleaner way to handle this?
-                $result = $this->shouldWeUnsetEmbedded($result, $this->data['headers']['accept'] ?? null, $isCollection ?? false);
+                $result = $this->shouldWeUnsetEmbedded($result, $application->getConfiguration()['embedded']['unset']);
             }
         }
 
@@ -617,21 +615,19 @@ class RequestService
      * If embedded should be shown or not.
      *
      * @param object|array $result fetched result
-     * @param ?array       $accept accept header
+     * @param array $unsetConfig Application configuration ['embedded']['unset']
      *
      * @return array|null
      */
-    public function shouldWeUnsetEmbedded($result, ?array $accept, ?bool $isCollection = false)
+    public function shouldWeUnsetEmbedded($result, array $unsetConfig)
     {
         if (
             isset($result) &&
-            (isset($accept) &&
-                !in_array('application/json+ld', $accept) &&
-                !in_array('application/ld+json', $accept))
-            ||
-            !isset($accept)
+            (isset($unsetConfig['except']) === true && isset($this->data['headers']['accept']) === true &&
+                empty(array_intersect($unsetConfig['except'], $this->data['headers']['accept'])) === true)
+            || isset($this->data['headers']['accept']) === false
         ) {
-            if (isset($isCollection) && isset($result['results'])) {
+            if (isset($result['results'])) {
                 foreach ($result['results'] as $key => $item) {
                     $result['results'][$key] = $this->checkEmbedded($item);
                 }
