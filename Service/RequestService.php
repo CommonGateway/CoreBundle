@@ -614,8 +614,8 @@ class RequestService
     /**
      * If embedded should be shown or not.
      *
-     * @param object|array $result fetched result
-     * @param array $embeddedConfig Application configuration ['embedded']
+     * @param object|array $result         fetched result
+     * @param array        $embeddedConfig Application configuration ['embedded']
      *
      * @return array|null
      */
@@ -624,7 +624,7 @@ class RequestService
         if (isset($embeddedConfig['unset']) === false) {
             return $result;
         }
-        
+
         if (
             isset($result)
             && (isset($embeddedConfig['unset']['except']) === true && isset($this->data['headers']['accept']) === true
