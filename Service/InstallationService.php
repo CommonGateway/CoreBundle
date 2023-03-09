@@ -813,16 +813,23 @@ class InstallationService
             // Then we can handle some data.
             foreach ($endpointTypeData as $endpointData) {
                 $object = $repository->findOneBy(['reference' => $endpointData['reference']]);
-
                 if ($object === null) {
                     $this->logger->error('No object found for '.$endpointData['reference'].' while trying to create an Endpoint.', ['type' => $type]);
                     continue;
                 }
 
-                $criteria = $type === 'sources' ? ['proxy' => $object] : ['entity' => $object];
-                $endpoint = $this->entityManager->getRepository('App:Endpoint')->findOneBy($criteria);
+                $parsedUrl = parse_url($object->getReference());
+                if (array_key_exists('host', $parsedUrl) === false || empty($parsedUrl['host']) === true || empty($object->getName()) === true) {
+                    $this->logger->error('Could not create a unique reference for a new endpoint while trying to create an endpoint for '.$object->getReference(), ['type' => $type]);
+                    continue;
+                }
+                $endpointType = $type === 'sources' ? 'Proxy' : 'Entity';
+                $name = str_replace(' ', '-', $object->getName());
+                $endpointData['$id'] = "https://{$parsedUrl['host']}/{$endpointType}Endpoint/$name.endpoint.json";
+
+                $endpoint = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $endpointData['$id']]);
                 if ($endpoint !== null) {
-                    $this->logger->debug('Endpoint found for '.$endpointData['reference']);
+                    $this->logger->debug('Endpoint found with reference '.$endpointData['$id']);
                     continue;
                 }
 
@@ -830,7 +837,7 @@ class InstallationService
                 $endpoint = $type === 'sources' ? new Endpoint(null, $object, $endpointData) : new Endpoint($object, null, $endpointData);
                 $endpoints[] = $endpoint;
                 $this->entityManager->persist($endpoint);
-                $this->logger->debug('Endpoint created for '.$endpointData['reference']);
+                $this->logger->debug('Endpoint created for '.$object->getReference().' with reference: '.$endpointData['$id']);
             }
         }//end foreach
 
