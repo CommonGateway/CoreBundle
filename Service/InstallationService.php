@@ -19,6 +19,7 @@ use App\Kernel;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -854,7 +855,8 @@ class InstallationService
             $path = $subEndpoint->getPath();
             $path[] = $subEndpointsConfig['path'];
             $subEndpoint->setPath($path);
-            $subEndpoint->setPathRegex($subEndpoint->getPathRegex().'/'.$subEndpointsConfig['path']);
+            $pathRegex = rtrim($subEndpoint->getPathRegex(), '$');
+            $subEndpoint->setPathRegex($pathRegex.'/'.$subEndpointsConfig['path'].'$');
             $subEndpoint->setName($subEndpoint->getName().' '.ucfirst($subEndpointsConfig['path']));
 
             if (isset($subEndpointsConfig['description']) === true) {
@@ -862,6 +864,12 @@ class InstallationService
             }
             if (isset($subEndpointsConfig['throws']) === true) {
                 $subEndpoint->setThrows($subEndpointsConfig['throws']);
+                // Throws only trigger when an Endpoint has no proxy and no entities.
+                $subEndpoint->setProxy(null);
+                $subEndpoint->setEntity(null); // Old way of setting Entity for Endpoints
+                foreach ($subEndpoint->getEntities() as $removeEntity) {
+                    $subEndpoint->removeEntity($removeEntity);
+                }
             }
         } else {
             $this->logger->error('SubEndpointsConfig is missing a path', ['SubEndpointsConfig' => $subEndpointsConfig]);
@@ -1013,14 +1021,14 @@ class InstallationService
         foreach ($overrides as $key => $override) {
             if (is_array($override) && $this->isAssociative($override)) {
                 $defaultConfig[$key] = $this->overrideConfig(isset($defaultConfig[$key]) ? $defaultConfig[$key] : [], $override);
-            } elseif ($key == 'entity') {
+            } elseif ($key == 'entity' && is_string($override) && Uuid::isValid($override) === false) {
                 $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $override]);
                 if (!$entity) {
                     $this->logger->error("No entity found with reference {$override} (overrideConfig() for installation.json)");
                     continue;
                 }
                 $defaultConfig[$key] = $entity->getId()->toString();
-            } elseif ($key == 'source') {
+            } elseif ($key == 'source' && is_string($override) && Uuid::isValid($override) === false) {
                 $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $override]);
                 if (!$source) {
                     $this->logger->error("No source found with reference {$override} (overrideConfig() for installation.json)");
