@@ -351,7 +351,7 @@ This function searches all the objectEntities and formats the data.
 **Description**
 
 ```php
-public shouldWeUnsetEmbedded (object|array $result, array $unsetConfig)
+public shouldWeUnsetEmbedded (object|array $result, array $embeddedConfig)
 ```
 
 If embedded should be shown or not. 
@@ -362,8 +362,8 @@ If embedded should be shown or not.
 
 * `(object|array) $result`
 : fetched result  
-* `(array) $unsetConfig`
-: Application configuration ['embedded']['unset']  
+* `(array) $embeddedConfig`
+: Application configuration ['embedded']  
 
 **Return Values**
 
