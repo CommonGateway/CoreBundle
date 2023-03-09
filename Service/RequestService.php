@@ -614,8 +614,8 @@ class RequestService
     /**
      * If embedded should be shown or not.
      *
-     * @param object|array $result fetched result
-     * @param array $unsetConfig Application configuration ['embedded']['unset']
+     * @param object|array $result      fetched result
+     * @param array        $unsetConfig Application configuration ['embedded']['unset']
      *
      * @return array|null
      */
