@@ -4,12 +4,9 @@
 
 namespace CommonGateway\CoreBundle\Subscriber;
 
-use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\ObjectEntity;
-use CommonGateway\CoreBundle\Service\CacheService;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -55,9 +52,10 @@ class ObjectUriSubscriber implements EventSubscriberInterface
         $object = $args->getObject();
         // if this subscriber only applies to certain entity types,
         if ($object instanceof ObjectEntity) {
-            if($object->getUri() === null || str_contains($object->getUri(), $object->getSelf()) === false) {
+            if ($object->getUri() === null || str_contains($object->getUri(), $object->getSelf()) === false) {
                 $object->setUri(rtrim($this->parameterBag->get('app_url'), '/').$object->getSelf());
             }
+
             return;
         }
     }
