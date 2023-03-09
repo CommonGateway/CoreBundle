@@ -164,6 +164,7 @@ class CallService
         // Set authentication if needed
         $config = array_merge_recursive($this->getAuthentication($source), $config);
         $createCertificates && $this->getCertificate($config);
+        $config['headers'] = array_merge_recursive($source->getHeaders() ?? [], $config['headers']); // Backwards compatible, $source->getHeaders = deprecated
         $config['headers']['host'] = $parsedUrl['host'];
         $config['headers'] = $this->removeEmptyHeaders($config['headers']);
 //        $log->setRequestHeaders($config['headers'] ?? null);
