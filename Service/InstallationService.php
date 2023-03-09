@@ -863,6 +863,7 @@ class InstallationService
             }
             if (isset($subEndpointsConfig['throws']) === true) {
                 $subEndpoint->setThrows($subEndpointsConfig['throws']);
+                $subEndpoint->setEntity(null);
             }
         } else {
             $this->logger->error('SubEndpointsConfig is missing a path', ['SubEndpointsConfig' => $subEndpointsConfig]);
