@@ -602,9 +602,9 @@ class RequestService
 
         if ($this->session->get('application') !== null) {
             $application = $this->entityManager->getRepository('App:Application')->findOneBy(['id' => $this->session->get('application')]);
-            if ($application !== null && isset($application->getConfiguration()['embedded']['unset']) === true) {
+            if ($application !== null && isset($application->getConfiguration()['embedded']) === true) {
                 // TODO: find a cleaner way to handle this?
-                $result = $this->shouldWeUnsetEmbedded($result, $application->getConfiguration()['embedded']['unset']);
+                $result = $this->shouldWeUnsetEmbedded($result, $application->getConfiguration()['embedded']);
             }
         }
 
@@ -614,18 +614,23 @@ class RequestService
     /**
      * If embedded should be shown or not.
      *
-     * @param object|array $result      fetched result
-     * @param array        $unsetConfig Application configuration ['embedded']['unset']
+     * @param object|array $result fetched result
+     * @param array $embeddedConfig Application configuration ['embedded']
      *
      * @return array|null
      */
-    public function shouldWeUnsetEmbedded($result, array $unsetConfig)
+    public function shouldWeUnsetEmbedded($result, array $embeddedConfig)
     {
+        if (isset($embeddedConfig['unset']) === false) {
+            return $result;
+        }
+        
         if (
-            isset($result) &&
-            (isset($unsetConfig['except']) === true && isset($this->data['headers']['accept']) === true &&
-                empty(array_intersect($unsetConfig['except'], $this->data['headers']['accept'])) === true)
+            isset($result)
+            && (isset($embeddedConfig['unset']['except']) === true && isset($this->data['headers']['accept']) === true
+                && empty(array_intersect($embeddedConfig['unset']['except'], $this->data['headers']['accept'])) === true)
             || isset($this->data['headers']['accept']) === false
+            || isset($embeddedConfig['unset']['except']) === false
         ) {
             if (isset($result['results'])) {
                 foreach ($result['results'] as $key => $item) {
