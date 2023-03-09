@@ -16,6 +16,7 @@ use App\Entity\Organization;
 use App\Entity\SecurityGroup;
 //use App\Entity\User;
 use App\Kernel;
+use Ramsey\Uuid\Uuid;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
@@ -1020,14 +1021,14 @@ class InstallationService
         foreach ($overrides as $key => $override) {
             if (is_array($override) && $this->isAssociative($override)) {
                 $defaultConfig[$key] = $this->overrideConfig(isset($defaultConfig[$key]) ? $defaultConfig[$key] : [], $override);
-            } elseif ($key == 'entity') {
+            } elseif ($key == 'entity' && is_string($override) && Uuid::isValid($override) === false) {
                 $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $override]);
                 if (!$entity) {
                     $this->logger->error("No entity found with reference {$override} (overrideConfig() for installation.json)");
                     continue;
                 }
                 $defaultConfig[$key] = $entity->getId()->toString();
-            } elseif ($key == 'source') {
+            } elseif ($key == 'source' && is_string($override) && Uuid::isValid($override) === false) {
                 $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $override]);
                 if (!$source) {
                     $this->logger->error("No source found with reference {$override} (overrideConfig() for installation.json)");
