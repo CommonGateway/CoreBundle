@@ -57,7 +57,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
                 $object->setObject($entity);
                 if ($object->getInversedByPropertyName() && !$object->getInversedBy()) {
                     $attribute = $entity->getAttributeByName($object->getInversedByPropertyName());
-                    if($attribute !== false) {
+                    if ($attribute !== false) {
                         $object->setInversedBy($attribute);
                     }
                 }
@@ -77,7 +77,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
                 $attribute->setObject($object);
                 if ($attribute->getInversedByPropertyName() && !$attribute->getInversedBy()) {
                     $attribute = $object->getAttributeByName($attribute->getInversedByPropertyName());
-                    if($attribute !== false) {
+                    if ($attribute !== false) {
                         $attribute->setInversedBy($attribute);
                     }
                 }
