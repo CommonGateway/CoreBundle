@@ -30,8 +30,8 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     public function getSubscribedEvents(): array
     {
         return [
-            Events::prePersist,
-            Events::preUpdate,
+            Events::postPersist,
+            Events::postUpdate,
         ];
     }
 
@@ -42,7 +42,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
      *
      * @return void
      */
-    public function prePersist(LifecycleEventArgs $args): void
+    public function postPersist(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
 
@@ -55,12 +55,18 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
             $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $object->getSchema()]);
             if ($entity !== null) {
                 $object->setObject($entity);
+                if ($object->getInversedByPropertyName() && !$object->getInversedBy()) {
+                    $attribute = $entity->getAttributeByName($object->getInversedByPropertyName());
+                    if ($attribute !== false) {
+                        $object->setInversedBy($attribute);
+                    }
+                }
             }
 
             return;
         }
         if (
-            $object instanceof Entity // Is it an antity
+            $object instanceof Entity // Is it an entity
             && $object->getReference() // Does it have a reference
         ) {
             $attributes = $this->entityManager->getRepository('App:Attribute')->findBy(['schema' => $object->getReference()]);
@@ -70,7 +76,10 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
                 }
                 $attribute->setObject($object);
                 if ($attribute->getInversedByPropertyName() && !$attribute->getInversedBy()) {
-                    $attribute->setInversedBy($object->getAttributeByName($attribute->getInversedByPropertyName()));
+                    $attribute = $object->getAttributeByName($attribute->getInversedByPropertyName());
+                    if ($attribute !== false) {
+                        $attribute->setInversedBy($attribute);
+                    }
                 }
             }
 
@@ -78,8 +87,8 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
         }
     }
 
-    public function preUpdate(LifecycleEventArgs $args): void
+    public function postUpdate(LifecycleEventArgs $args): void
     {
-        $this->prePersist($args);
+        $this->postPersist($args);
     }
 }
