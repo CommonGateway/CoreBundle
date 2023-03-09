@@ -863,7 +863,12 @@ class InstallationService
             }
             if (isset($subEndpointsConfig['throws']) === true) {
                 $subEndpoint->setThrows($subEndpointsConfig['throws']);
-                $subEndpoint->setEntity(null);
+                // Throws only trigger when an Endpoint has no proxy and no entities.
+                $subEndpoint->setProxy(null);
+                $subEndpoint->setEntity(null); // Old way of setting Entity for Endpoints
+                foreach ($subEndpoint->getEntities() as $removeEntity) {
+                    $subEndpoint->removeEntity($removeEntity);
+                }
             }
         } else {
             $this->logger->error('SubEndpointsConfig is missing a path', ['SubEndpointsConfig' => $subEndpointsConfig]);
