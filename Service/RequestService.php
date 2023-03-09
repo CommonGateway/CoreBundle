@@ -621,7 +621,7 @@ class RequestService
      *
      * @return array|null
      */
-    public function shouldWeUnsetEmbedded($result = null, ?array $accept, ?bool $isCollection = false)
+    public function shouldWeUnsetEmbedded($result, ?array $accept, ?bool $isCollection = false)
     {
         if (
             isset($result) &&
