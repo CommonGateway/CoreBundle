@@ -854,7 +854,8 @@ class InstallationService
             $path = $subEndpoint->getPath();
             $path[] = $subEndpointsConfig['path'];
             $subEndpoint->setPath($path);
-            $subEndpoint->setPathRegex($subEndpoint->getPathRegex().'/'.$subEndpointsConfig['path']);
+            $pathRegex = rtrim($subEndpoint->getPathRegex(), '$');
+            $subEndpoint->setPathRegex($pathRegex.'/'.$subEndpointsConfig['path']).'$';
             $subEndpoint->setName($subEndpoint->getName().' '.ucfirst($subEndpointsConfig['path']));
 
             if (isset($subEndpointsConfig['description']) === true) {
