@@ -809,7 +809,7 @@ class InstallationService
                     $this->logger->error('Unknown type used for endpoint creation: '.$type);
                     continue 2;
             }//end switch
-    
+
             // Then we can handle some data.
             foreach ($endpointTypeData as $endpointData) {
                 $object = $repository->findOneBy(['reference' => $endpointData['reference']]);
@@ -817,7 +817,7 @@ class InstallationService
                     $this->logger->error('No object found for '.$endpointData['reference'].' while trying to create an Endpoint.', ['type' => $type]);
                     continue;
                 }
-        
+
                 $parsedUrl = parse_url($object->getReference());
                 if (array_key_exists('host', $parsedUrl) === false || empty($parsedUrl['host']) === true || empty($object->getName()) === true) {
                     $this->logger->error('Could not create a unique reference for a new endpoint while trying to create an endpoint for '.$object->getReference(), ['type' => $type]);
@@ -826,13 +826,13 @@ class InstallationService
                 $endpointType = $type === 'sources' ? 'Proxy' : 'Entity';
                 $name = str_replace(' ', '-', $object->getName());
                 $endpointData['$id'] = "https://{$parsedUrl['host']}/{$endpointType}Endpoint/$name.endpoint.json";
-        
+
                 $endpoint = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $endpointData['$id']]);
                 if ($endpoint !== null) {
                     $this->logger->debug('Endpoint found with reference '.$endpointData['$id']);
                     continue;
                 }
-        
+
                 // todo ? maybe create a second constructor?
                 $endpoint = $type === 'sources' ? new Endpoint(null, $object, $endpointData) : new Endpoint($object, null, $endpointData);
                 $endpoints[] = $endpoint;
