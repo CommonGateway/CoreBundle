@@ -52,8 +52,7 @@ class CallService
         MappingService $mappingService,
         SessionInterface $session,
         LoggerInterface $callLogger
-    )
-    {
+    ) {
         $this->authenticationService = $authenticationService;
         $this->client = new Client([]);
         $this->entityManager = $entityManager;
@@ -220,6 +219,7 @@ class CallService
 //            var_dump($e->getMessage());
 
             $this->logger->error('Request failed with error '.$exception->getMessage().' and body '.$exception->getResponse()->getBody()->getContents());
+
             throw $exception;
         } catch (GuzzleException $exception) {
 
@@ -449,6 +449,7 @@ class CallService
             return $result;
         } catch (\Exception $exception) {
             $this->logger->error('Could not decode body, content type could not be determined');
+
             throw new \Exception('Could not decode body, content type could not be determined');
         }
     }

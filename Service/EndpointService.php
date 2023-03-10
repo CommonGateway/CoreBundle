@@ -94,7 +94,7 @@ class EndpointService
         // Get the Endpoint.
         $this->endpoint = $endpoint = $this->getEndpoint();
         $this->session->set('endpoint', $endpoint->getId()->toString());
-        $this->logger->info('Handling request to endpoint '. $endpoint->getName());
+        $this->logger->info('Handling request to endpoint '.$endpoint->getName());
 
         // Get the accept type.
         $this->logger->debug('Determine accept type');
@@ -114,12 +114,14 @@ class EndpointService
         // If we have an proxy we will handle just that.
         if (empty($endpoint->getProxy()) === false) {
             $this->logger->info('Handling proxied endpoint');
+
             return $this->requestService->proxyHandler($parameters, []);
         }
 
         // If we have shema's lets handle those.
         if (count($endpoint->getEntities()) > 0) {
             $this->logger->info('Handling entity endpoint');
+
             return $this->requestService->requestHandler($parameters, []);
         }
 
@@ -136,6 +138,7 @@ class EndpointService
         }
 
         $this->logger->error('No proxy, schema or events could be established for this endpoint');
+
         throw new Exception('No proxy, schema or events could be established for this endpoint');
     }//end handleRequest()
 
@@ -197,6 +200,7 @@ class EndpointService
 
         // If we endup we cant detirmine what kind of accept we need so lets throw an error.
         $this->logger->error('No proper accept could be determined');
+
         throw new BadRequestException('No proper accept could be determined');
     }//end getAcceptType()
 
@@ -262,6 +266,7 @@ class EndpointService
         $parameters['pathRaw'] = $this->request->getPathInfo();
 
         $this->logger->debug('Split the path into an array');
+
         try {
             $parameters['path'] = array_combine($this->endpoint->getPath(), explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
         } catch (Exception $exception) {
