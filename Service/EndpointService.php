@@ -7,9 +7,11 @@ use App\Event\ActionEvent;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -44,6 +46,13 @@ class EndpointService
     private EventDispatcherInterface $eventDispatcher;
 
     /**
+     * @var SessionInterface
+     */
+    private SessionInterface $session;
+
+    private LoggerInterface $logger;
+
+    /**
      * @var Endpoint|null
      */
     private ?Endpoint $endpoint = null;
@@ -58,12 +67,16 @@ class EndpointService
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
         RequestService $requestService,
-        EventDispatcherInterface $eventDispatcher
+        EventDispatcherInterface $eventDispatcher,
+        SessionInterface $session,
+        LoggerInterface $endpointLogger
     ) {
         $this->entityManager = $entityManager;
         $this->serializer = $serializer;
         $this->requestService = $requestService;
         $this->eventDispatcher = $eventDispatcher;
+        $this->session = $session;
+        $this->logger = $endpointLogger;
     }//end __construct()
 
     /**
@@ -80,11 +93,15 @@ class EndpointService
 
         // Get the Endpoint.
         $this->endpoint = $endpoint = $this->getEndpoint();
+        $this->session->set('endpoint', $endpoint->getId()->toString());
+        $this->logger->info('Handling request to endpoint '. $endpoint->getName());
 
         // Get the accept type.
+        $this->logger->debug('Determine accept type');
         $accept = $this->getAcceptType();
 
         // Get the parameters.
+        $this->logger->debug('Determine parameters for request');
         $parameters = $this->getParametersFromRequest();
         $parameters['endpoint'] = $endpoint;
         $parameters['accept'] = $accept;
@@ -96,16 +113,19 @@ class EndpointService
 
         // If we have an proxy we will handle just that.
         if (empty($endpoint->getProxy()) === false) {
+            $this->logger->info('Handling proxied endpoint');
             return $this->requestService->proxyHandler($parameters, []);
         }
 
         // If we have shema's lets handle those.
         if (count($endpoint->getEntities()) > 0) {
+            $this->logger->info('Handling entity endpoint');
             return $this->requestService->requestHandler($parameters, []);
         }
 
         // Last but not least we check for throw.
         if (count($endpoint->getThrows()) > 0) {
+            $this->logger->info('Handling event endpoint');
             $parameters['response'] = new Response('Object is not supported by this endpoint', '200');
             foreach ($endpoint->getThrows() as $throw) {
                 $event = new ActionEvent('commongateway.action.event', $parameters, $throw);
@@ -115,6 +135,7 @@ class EndpointService
             return $event->getData()['response'];
         }
 
+        $this->logger->error('No proxy, schema or events could be established for this endpoint');
         throw new Exception('No proxy, schema or events could be established for this endpoint');
     }//end handleRequest()
 
@@ -132,11 +153,13 @@ class EndpointService
         $acceptHeader = $this->request->headers->get('accept');
 
         // If the accept header does not provide useful info, check if the endpoint contains a pointer.
+        $this->logger->debug('Get Accept header');
         if (($acceptHeader === null || $acceptHeader === '*/*') && $this->endpoint !== null && $this->endpoint->getDefaultContentType() !== null) {
             $acceptHeader = $this->endpoint->getDefaultContentType();
         }//end if
 
         // Determine the accept type.
+        $this->logger->debug('Determine accept type from accept header');
         switch ($acceptHeader) {
             case 'application/json':
                 return 'json';
@@ -161,6 +184,7 @@ class EndpointService
         }//end switch
 
         // As a backup we look at any file extenstion.
+        $this->logger->debug('Determine accept type from path extension');
         $path = $this->request->getPathInfo();
         $pathparts = explode('.', $path);
         if (count($pathparts) >= 2) {
@@ -172,7 +196,8 @@ class EndpointService
         }
 
         // If we endup we cant detirmine what kind of accept we need so lets throw an error.
-        throw new BadRequestException('No proper accept could be detirmend');
+        $this->logger->error('No proper accept could be determined');
+        throw new BadRequestException('No proper accept could be determined');
     }//end getAcceptType()
 
     /**
@@ -184,6 +209,7 @@ class EndpointService
     {
 
         // Get the content type.
+        $this->logger->info('Decoding body');
         $contentType = $this->request->getContentType();
         if ($contentType === null) {
             $contentType = $this->request->headers->get('Accept');
@@ -232,9 +258,10 @@ class EndpointService
     private function getParametersFromRequest(?array $parameters = []): array
     {
         // Lets make sure that we always have a path.
-
+        $this->logger->debug('Get the raw path');
         $parameters['pathRaw'] = $this->request->getPathInfo();
 
+        $this->logger->debug('Split the path into an array');
         try {
             $parameters['path'] = array_combine($this->endpoint->getPath(), explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
         } catch (Exception $exception) {
@@ -243,15 +270,19 @@ class EndpointService
             $parameters['path'] = array_combine($path, explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
         }
 
+        $this->logger->debug('Get the query string');
         $parameters['querystring'] = $this->request->getQueryString();
 
         try {
             $parameters['body'] = $this->request->toArray();
         } catch (Exception $exception) {
+            $this->logger->warning('The request does not have a body, this might result in undefined behaviour');
             // In a lot of condtions (basically any illigal post) this will return an error. But we want an empty array instead.
         }
 
         $parameters['crude_body'] = $this->request->getContent();
+
+        $this->logger->debug('Get general request information');
         $parameters['method'] = $this->request->getMethod();
         $parameters['query'] = $this->request->query->all();
 
