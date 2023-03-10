@@ -871,9 +871,55 @@ class InstallationService
     }//end createEndpoint()
 
     /**
-     * Creates subEndpoints for an Entity Endpoint. Example: domain.com/api/entities/subEndpoint['path'].
+     * Creates the basics for a new subEndpoint or subSchemaEndpoint.
      *
-     * @TODO: test and cleanup this function, remove duplicate code...
+     * @param array $baseEndpointData The base endpoint data from installation.json['endpoints']['schemas'][someEndpoint] for which we are creating subEndpoints or subSchemaEndpoints.
+     * @param array $newEndpointData Data for creating a new subEndpoint or subSchemaEndpoint, used for creating a unique reference.
+     *
+     * @return Endpoint|null A newly created Endpoint with basic settings and e unique reference. Or null if it already existed / is not a new Endpoint.
+     */
+    private function createBaseEndpoint(array $baseEndpointData, array $newEndpointData): ?Endpoint
+    {
+        $name = ucfirst($newEndpointData['path']);
+        
+        $endpointData = $baseEndpointData;
+        if (isset($newEndpointData['$id']) === true) {
+            $endpointData['$id'] = $newEndpointData['$id'];
+        } else {
+            $endpointData['$id'] = str_replace('.endpoint.json', $name.'.endpoint.json', $baseEndpointData['$id']);
+        }
+        
+        return $this->createEndpoint('schemas', $endpointData);
+    }//end createBaseEndpoint()
+    
+    /**
+     * Updates some basic fields like name, description and throws for a new subEndpoint or subSchemaEndpoint.
+     *
+     * @param Endpoint $newEndpoint A newly created subEndpoint or subSchemaEndpoint.
+     * @param array $newEndpointData The data from installation.json for this specific subEndpoint or subSchemaEndpoint.
+     *
+     * @return Endpoint The updated Endpoint.
+     */
+    private function setEndpointBasics(Endpoint $newEndpoint, array $newEndpointData): Endpoint
+    {
+        $name = ucfirst($newEndpointData['path']);
+        $newEndpoint->setName($newEndpoint->getName().' '.$name);
+        if (isset($subEndpointData['description']) === true) {
+            $newEndpoint->setDescription($newEndpointData['description']);
+        }
+    
+        $newEndpoint->setThrows($newEndpointData['throws']);
+        // Throws only trigger when an Endpoint has no entities.
+        $newEndpoint->setEntity(null); // Old way of setting Entity for Endpoints
+        foreach ($newEndpoint->getEntities() as $removeEntity) {
+            $newEndpoint->removeEntity($removeEntity);
+        }
+        
+        return $newEndpoint;
+    }//end setEndpointBasics()
+    
+    /**
+     * Creates subEndpoints for an Entity Endpoint. Example: domain.com/api/entities/subEndpoint['path'].
      *
      * @param array $baseEndpointData The base endpoint data from installation.json['endpoints']['schemas'][someEndpoint] for which we are creating subEndpoints.
      * @param array $subEndpoints     An array of data from installation.json[someEndpoint]['subEndpoints'] used for creating subEndpoints.
@@ -891,16 +937,9 @@ class InstallationService
                 $this->logger->error('SubEndpointData is missing a path or throws', ['SubEndpointData' => $subEndpointData]);
                 continue;
             }
-
-            // Create base $subEndpoint Endpoint with unique reference.
-            $name = ucfirst($subEndpointData['path']);
-            $endpointData = $baseEndpointData;
-            if (isset($subEndpointData['$id']) === true) {
-                $endpointData['$id'] = $subEndpointData['$id'];
-            } else {
-                $endpointData['$id'] = str_replace('.endpoint.json', $name.'.endpoint.json', $baseEndpointData['$id']);
-            }
-            $subEndpoint = $this->createEndpoint('schemas', $endpointData);
+            
+            // Create base $subEndpoint Endpoint with a unique reference.
+            $subEndpoint = $this->createBaseEndpoint($baseEndpointData, $subEndpointData);
             if ($subEndpoint === null) {
                 continue;
             }
@@ -912,18 +951,9 @@ class InstallationService
             $pathRegex = rtrim($subEndpoint->getPathRegex(), '$');
             $pathRegex = str_replace('?([a-z0-9-]+)?', '([a-z0-9-]+)', $pathRegex);
             $subEndpoint->setPathRegex($pathRegex.'/'.$subEndpointData['path'].'$');
-
-            $subEndpoint->setName($subEndpoint->getName().' '.$name);
-            if (isset($subEndpointData['description']) === true) {
-                $subEndpoint->setDescription($subEndpointData['description']);
-            }
-
-            $subEndpoint->setThrows($subEndpointData['throws']);
-            // Throws only trigger when an Endpoint has no entities.
-            $subEndpoint->setEntity(null); // Old way of setting Entity for Endpoints
-            foreach ($subEndpoint->getEntities() as $removeEntity) {
-                $subEndpoint->removeEntity($removeEntity);
-            }
+            
+            $subEndpoint = $this->setEndpointBasics($subEndpoint, $subEndpointData);
+    
             $this->entityManager->persist($subEndpoint);
         }
 
@@ -932,8 +962,6 @@ class InstallationService
 
     /**
      * Creates subSchemaEndpoints for an Entity Endpoint. Example: domain.com/api/entities/{uuid}/subSchemaEndpoint['path']/{uuid}.
-     *
-     * @TODO: test and cleanup this function, remove duplicate code...
      *
      * @param array $baseEndpointData   The base endpoint data from installation.json['endpoints']['schemas'][someEndpoint] for which we are creating subSchemaEndpoints.
      * @param array $subSchemaEndpoints An array of data from installation.json[someEndpoint]['subSchemaEndpoints'] used for creating subSchemaEndpoints.
@@ -951,16 +979,9 @@ class InstallationService
                 $this->logger->error('SubSchemaEndpointData is missing a reference, path or throws', ['SubSchemaEndpointData' => $subSchemaEndpointData]);
                 continue;
             }
-
-            // Create base $subSchemaEndpoint Endpoint with unique reference.
-            $name = ucfirst($subSchemaEndpointData['path']);
-            $endpointData = $baseEndpointData;
-            if (isset($subSchemaEndpointData['$id']) === true) {
-                $endpointData['$id'] = $subSchemaEndpointData['$id'];
-            } else {
-                $endpointData['$id'] = str_replace('.endpoint.json', $name.'.endpoint.json', $baseEndpointData['$id']);
-            }
-            $subSchemaEndpoint = $this->createEndpoint('schemas', $endpointData);
+    
+            // Create base $subSchemaEndpoint Endpoint with a unique reference.
+            $subSchemaEndpoint = $this->createBaseEndpoint($baseEndpointData, $subSchemaEndpointData);
             if ($subSchemaEndpoint === null) {
                 continue;
             }
@@ -980,18 +1001,9 @@ class InstallationService
             $pathRegex = rtrim($subSchemaEndpoint->getPathRegex(), '$');
             $pathRegex = str_replace('?([a-z0-9-]+)?', '([a-z0-9-]+)', $pathRegex);
             $subSchemaEndpoint->setPathRegex($pathRegex.'/'.$subSchemaEndpointData['path'].'/?([a-z0-9-]+)?$');
-
-            $subSchemaEndpoint->setName($subSchemaEndpoint->getName().' '.$name);
-            if (isset($subSchemaEndpointData['description']) === true) {
-                $subSchemaEndpoint->setDescription($subSchemaEndpointData['description']);
-            }
-
-            $subSchemaEndpoint->setThrows($subSchemaEndpointData['throws']);
-            // Throws only trigger when an Endpoint has no entities.
-            $subSchemaEndpoint->setEntity(null); // Old way of setting Entity for Endpoints
-            foreach ($subSchemaEndpoint->getEntities() as $removeEntity) {
-                $subSchemaEndpoint->removeEntity($removeEntity);
-            }
+    
+            $subSchemaEndpoint = $this->setEndpointBasics($subSchemaEndpoint, $subSchemaEndpointData);
+            
             $this->entityManager->persist($subSchemaEndpoint);
         }
 
