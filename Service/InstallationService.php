@@ -1076,8 +1076,6 @@ class InstallationService
     /**
      * This functions replaces references in the action->configuration array with corresponding ids of the entity/source.
      *
-     * @TODO: clean this up, cleaner code, maybe less functions over all, etc.
-     *
      * @param array $actionRefs An array of references of Actions we are going to check.
      *
      * @return void An array of Action objects
@@ -1158,8 +1156,6 @@ class InstallationService
     /**
      * Overrides the default configuration of an Action. Will also set entity and source to id if a reference is given.
      *
-     * @TODO: clean this up, cleaner code, maybe less functions over all, etc.
-     *
      * @param array $defaultConfig
      * @param array $overrides
      *
@@ -1194,8 +1190,6 @@ class InstallationService
 
     /**
      * Decides if an array is associative.
-     *
-     * @TODO: clean this up, cleaner code, maybe less functions over all, etc.
      *
      * @param array $array The array to check.
      *
