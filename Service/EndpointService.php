@@ -143,7 +143,7 @@ class EndpointService
             case 'application/json+hal':
             case 'application/hal+json':
                 return 'jsonhal';
-            case 'application/json+ls':
+            case 'application/json+ld':
             case 'application/ld+json':
                 return 'jsonld';
             case 'application/json+fromio':

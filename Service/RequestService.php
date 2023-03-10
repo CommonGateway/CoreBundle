@@ -18,6 +18,7 @@ use Ramsey\Uuid\Uuid;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -41,6 +42,7 @@ class RequestService
     private Security $security;
     private EventDispatcherInterface $eventDispatcher;
     private SerializerInterface $serializer;
+    private SessionInterface $session;
 
     /**
      * @param EntityManagerInterface   $entityManager
@@ -52,6 +54,7 @@ class RequestService
      * @param Security                 $security
      * @param EventDispatcherInterface $eventDispatcher
      * @param SerializerInterface      $serializer
+     * @param SessionInterface         $session
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -62,7 +65,8 @@ class RequestService
         CallService $callService,
         Security $security,
         EventDispatcherInterface $eventDispatcher,
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        SessionInterface $session
     ) {
         $this->entityManager = $entityManager;
         $this->cacheService = $cacheService;
@@ -73,6 +77,7 @@ class RequestService
         $this->security = $security;
         $this->eventDispatcher = $eventDispatcher;
         $this->serializer = $serializer;
+        $this->session = $session;
     }
 
     /**
@@ -595,9 +600,13 @@ class RequestService
 
         $this->handleMetadataSelf($result, $metadataSelf);
 
-        // TODO: Removed this so embedded keeps working for all accept types (for projects like KISS & OC)
-        // TODO: find another way to get this working as expected for Roxit.
-//        $result = $this->shouldWeUnsetEmbedded($result, $this->data['headers']['accept'] ?? null, $isCollection ?? false);
+        if ($this->session->get('application') !== null) {
+            $application = $this->entityManager->getRepository('App:Application')->findOneBy(['id' => $this->session->get('application')]);
+            if ($application !== null && isset($application->getConfiguration()['embedded']) === true) {
+                // TODO: find a cleaner way to handle this?
+                $result = $this->shouldWeUnsetEmbedded($result, $application->getConfiguration()['embedded']);
+            }
+        }
 
         return $this->createResponse($result);
     }
@@ -605,22 +614,25 @@ class RequestService
     /**
      * If embedded should be shown or not.
      *
-     * @param object|array $result fetched result
-     * @param ?array       $accept accept header
+     * @param object|array $result         fetched result
+     * @param array        $embeddedConfig Application configuration ['embedded']
      *
      * @return array|null
      */
-    public function shouldWeUnsetEmbedded($result = null, ?array $accept, ?bool $isCollection = false)
+    public function shouldWeUnsetEmbedded($result, array $embeddedConfig)
     {
+        if (isset($embeddedConfig['unset']) === false) {
+            return $result;
+        }
+
         if (
-            isset($result) &&
-            (isset($accept) &&
-                !in_array('application/json+ld', $accept) &&
-                !in_array('application/ld+json', $accept))
-            ||
-            !isset($accept)
+            isset($result)
+            && (isset($embeddedConfig['unset']['except']) === true && isset($this->data['headers']['accept']) === true
+                && empty(array_intersect($embeddedConfig['unset']['except'], $this->data['headers']['accept'])) === true)
+            || isset($this->data['headers']['accept']) === false
+            || isset($embeddedConfig['unset']['except']) === false
         ) {
-            if (isset($isCollection) && isset($result['results'])) {
+            if (isset($result['results'])) {
                 foreach ($result['results'] as $key => $item) {
                     $result['results'][$key] = $this->checkEmbedded($item);
                 }
