@@ -798,6 +798,16 @@ class InstallationService
                     }
 
                     return $endpoints;
+                case 'multipleEndpoints':
+                    foreach ($endpointTypeData as $endpointData) {
+                        $multipleEndpoints = $this->createEndpoints(['schemas' => $endpointData['schemas']]);
+                        $multipleEndpointsConfig = $endpointData;
+                        unset($multipleEndpointsConfig['schemas']);
+                        foreach ($multipleEndpoints as $endpoint) {
+                            $endpoints[] = $this->handleMultipleEndpointsConfig($endpoint, $multipleEndpointsConfig);
+                        }
+                    }
+                    return $endpoints;
                 case 'schemas':
                     $repository = $this->entityManager->getRepository('App:Entity');
                     break;
@@ -863,7 +873,7 @@ class InstallationService
         $this->logger->debug('Endpoint created for '.$object->getReference().' with reference: '.$endpointData['$id']);
         
         return $endpoint;
-    }
+    }//end createEndpoint()
 
     /**
      * This function handles the creation of an subEndpoint by adding extra data from the $subEndpointsConfig to the already created $subEndpoint with basic data.
@@ -902,6 +912,52 @@ class InstallationService
         }
 
         return $subEndpoint;
+    }//end handleSubEndpointsConfig()
+    
+    /**
+     * This function handles the creation of an subEndpoint by adding extra data from the $subEndpointsConfig to the already created $subEndpoint with basic data.
+     *
+     * @param Endpoint $subEndpoint        A newly created endpoint with some basic data.
+     * @param array    $subEndpointsConfig Configuration from the installation.json ['endpoints']['subEndpoints'] array.
+     *
+     * @return Endpoint The updated subEndpoint with data from the $subEndpointsConfig.
+     */
+    private function handleMultipleEndpointsConfig(Endpoint $subEndpoint, array $subEndpointsConfig): Endpoint
+    {
+        // TODO
+//        if (isset($subEndpointsConfig['path'])) {
+//            $this->logger->debug('Creating a subEndpoint '.$subEndpointsConfig['path'].' for '.(!empty($subEndpoint->getEntity()) ? $subEndpoint->getEntity()->getReference() : ''));
+//
+//            $path = $subEndpoint->getPath();
+//            $path[] = $subEndpointsConfig['path'];
+//            $subEndpoint->setPath($path);
+//            $pathRegex = rtrim($subEndpoint->getPathRegex(), '$');
+//            $subEndpoint->setPathRegex($pathRegex.'/'.$subEndpointsConfig['path'].'$');
+//
+//            $name = ucfirst($subEndpointsConfig['path']);
+//            $subEndpoint->setName($subEndpoint->getName().' '.$name);
+//            $subEndpoint->setReference(
+//                str_replace('.endpoint.json', $name.'.endpoint.json', $subEndpoint->getReference())
+//            );
+//
+//            if (isset($subEndpointsConfig['description']) === true) {
+//                $subEndpoint->setDescription($subEndpointsConfig['description']);
+//            }
+//            if (isset($subEndpointsConfig['throws']) === true) {
+//                $subEndpoint->setThrows($subEndpointsConfig['throws']);
+//                // Throws only trigger when an Endpoint has no proxy and no entities.
+//                $subEndpoint->setProxy(null);
+//                $subEndpoint->setEntity(null); // Old way of setting Entity for Endpoints
+//                foreach ($subEndpoint->getEntities() as $removeEntity) {
+//                    $subEndpoint->removeEntity($removeEntity);
+//                }
+//            }
+//        } else {
+//            $this->logger->error('SubEndpointsConfig is missing a path', ['SubEndpointsConfig' => $subEndpointsConfig]);
+//        }
+//
+//        return $subEndpoint;
+        return null;
     }//end handleSubEndpointsConfig()
 
     /**
