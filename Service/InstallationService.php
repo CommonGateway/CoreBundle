@@ -794,7 +794,9 @@ class InstallationService
             // Then we can handle some data.
             foreach ($endpointTypeData as $endpointData) {
                 // Just in case unset these.
+                $subEndpoints = $endpointData['subEndpoints'] ?? [];
                 unset($endpointData['subEndpoints']);
+                $subSchemaEndpoints = $endpointData['subSchemaEndpoints'] ?? [];
                 unset($endpointData['subSchemaEndpoints']);
                 
                 // Create the base Endpoint.
@@ -806,8 +808,8 @@ class InstallationService
                 
                 // Handle sub and subSchema Endpoints.
                 $endpointData['$id'] = $endpoint->getReference();
-                $endpoints = array_merge($endpoints, $this->handleSubEndpoints($endpointData, $endpointData['subEndpoints'] ?? []));
-                $endpoints = array_merge($endpoints, $this->handleSubSchemaEndpoints($endpointData, $endpointData['subSchemaEndpoints'] ?? []));
+                $endpoints = array_merge($endpoints, $this->handleSubEndpoints($endpointData, $subEndpoints));
+                $endpoints = array_merge($endpoints, $this->handleSubSchemaEndpoints($endpointData, $subSchemaEndpoints));
             }
         }//end foreach
 
