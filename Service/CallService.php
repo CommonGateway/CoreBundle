@@ -11,6 +11,8 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Response;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
@@ -34,6 +36,8 @@ class CallService
     private EntityManagerInterface $entityManager;
     private FileService $fileService;
     private MappingService $mappingService;
+    private SessionInterface $session;
+    private LoggerInterface $logger;
 
     /**
      * @param AuthenticationService  $authenticationService
@@ -41,13 +45,21 @@ class CallService
      * @param FileService            $fileService
      * @param MappingService         $mappingService
      */
-    public function __construct(AuthenticationService $authenticationService, EntityManagerInterface $entityManager, FileService $fileService, MappingService $mappingService)
-    {
+    public function __construct(
+        AuthenticationService $authenticationService,
+        EntityManagerInterface $entityManager,
+        FileService $fileService,
+        MappingService $mappingService,
+        SessionInterface $session,
+        LoggerInterface $callLogger
+    ) {
         $this->authenticationService = $authenticationService;
         $this->client = new Client([]);
         $this->entityManager = $entityManager;
         $this->fileService = $fileService;
         $this->mappingService = $mappingService;
+        $this->session = $session;
+        $this->logger = $callLogger;
     }
 
     /**
@@ -142,6 +154,9 @@ class CallService
         bool $asynchronous = false,
         bool $createCertificates = true
     ): Response {
+        $this->session->set('source', $source->getId()->toString());
+        $this->logger->info('Calling source '.$source->getName());
+
         if (!$source->getIsEnabled()) {
             throw new HttpException('409', "This source is not enabled: {$source->getName()}");
         }
@@ -164,16 +179,19 @@ class CallService
         // Set authentication if needed
         $config = array_merge_recursive($this->getAuthentication($source), $config);
         $createCertificates && $this->getCertificate($config);
-        $config['headers'] = array_merge_recursive($source->getHeaders() ?? [], $config['headers']); // Backwards compatible, $source->getHeaders = deprecated
+        $config['headers'] = array_merge($source->getHeaders() ?? [], $config['headers']); // Backwards compatible, $source->getHeaders = deprecated
         $config['headers']['host'] = $parsedUrl['host'];
         $config['headers'] = $this->removeEmptyHeaders($config['headers']);
 //        $log->setRequestHeaders($config['headers'] ?? null);
 
         $url = $source->getLocation().$endpoint;
+        $this->logger->info('Calling url '.$url);
 
         $config = $this->handleEndpointsConfigOut($source, $endpoint, $config);
 
         $startTimer = microtime(true);
+
+        $this->logger->debug('Call configuration: ', $config);
         // Lets make the call
         try {
             if (!$asynchronous) {
@@ -181,7 +199,8 @@ class CallService
             } else {
                 $response = $this->client->requestAsync($method, $url, $config);
             }
-        } catch (ServerException|ClientException|RequestException|Exception $e) {
+            $this->logger->info("Request to $url succesful");
+        } catch (ServerException|ClientException|RequestException|Exception $exception) {
 //            $stopTimer = microtime(true);
 //            $log->setResponseStatus('');
 //            if ($e->getResponse()) {
@@ -199,13 +218,15 @@ class CallService
             // TODO: monolog
 //            var_dump($e->getMessage());
 
-            throw $e;
-        } catch (GuzzleException $e) {
+            $this->logger->error('Request failed with error '.$exception->getMessage().' and body '.$exception->getResponse()->getBody()->getContents());
+
+            throw $exception;
+        } catch (GuzzleException $exception) {
 
             // TODO: monolog
-            var_dump($e->getMessage());
+            $this->logger->error('Request failed with error '.$exception);
 
-            throw $e;
+            throw $exception;
         }
 //        $stopTimer = microtime(true);
 //
@@ -237,6 +258,7 @@ class CallService
      */
     private function handleEndpointsConfigOut(Source $source, string $endpoint, array $config): array
     {
+        $this->logger->info('Handling outgoing configuration for endpoints');
         $endpointsConfig = $source->getEndpointsConfig();
         if (empty($endpointsConfig)) {
             return $config;
@@ -270,6 +292,7 @@ class CallService
      */
     private function handleEndpointConfigOut(array $config, array $endpointConfigOut, string $configKey): array
     {
+        $this->logger->info('Handling outgoing configuration for endpoint');
         if (array_key_exists($configKey, $config) === false || array_key_exists($configKey, $endpointConfigOut) === false) {
             return $config;
         }
@@ -297,6 +320,7 @@ class CallService
      */
     private function handleEndpointsConfigIn(Source $source, string $endpoint, Response $response): Response
     {
+        $this->logger->info('Handling incoming configuration for endpoints');
         $endpointsConfig = $source->getEndpointsConfig();
         if (empty($endpointsConfig)) {
             return $response;
@@ -333,6 +357,7 @@ class CallService
      */
     private function handleEndpointConfigIn($responseData, array $endpointConfigIn, string $responseProperty): array
     {
+        $this->logger->info('Handling incoming configuration for endpoint');
         if (empty($responseData) === true || array_key_exists($responseProperty, $endpointConfigIn) === false) {
             return $responseData;
         }
@@ -360,6 +385,7 @@ class CallService
      */
     private function getContentType(Response $response, Source $source): string
     {
+        $this->logger->debug('Determine content type of response');
 
         // switch voor obejct
         $contentType = $response->getHeader('content-type')[0];
@@ -386,6 +412,7 @@ class CallService
         Response $response,
         ?string $contentType = 'application/json'
     ): array {
+        $this->logger->info('Decoding response content');
         // resultaat omzetten
 
         // als geen content-type header dan content-type header is accept header
@@ -393,6 +420,7 @@ class CallService
         if (!$responseBody) {
             return [];
         }
+        $this->logger->debug('Response content: '.$responseBody);
 
         $xmlEncoder = new XmlEncoder(['xml_root_node_name' => $this->configuration['apiSource']['location']['xmlRootNodeName'] ?? 'response']);
         $yamlEncoder = new YamlEncoder();
@@ -420,6 +448,8 @@ class CallService
 
             return $result;
         } catch (\Exception $exception) {
+            $this->logger->error('Could not decode body, content type could not be determined');
+
             throw new \Exception('Could not decode body, content type could not be determined');
         }
     }
@@ -449,6 +479,7 @@ class CallService
      */
     public function getAllResults(Source $source, string $endpoint = '', array $config = []): array
     {
+        $this->logger->info('Fetch all data from source and combine the results into one array');
         $errorCount = 0;
         $pageCount = 1;
         $results = [];
