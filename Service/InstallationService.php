@@ -812,32 +812,11 @@ class InstallationService
 
             // Then we can handle some data.
             foreach ($endpointTypeData as $endpointData) {
-                $object = $repository->findOneBy(['reference' => $endpointData['reference']]);
-                if ($object === null) {
-                    $this->logger->error('No object found for '.$endpointData['reference'].' while trying to create an Endpoint.', ['type' => $type]);
+                $endpoint = $this->createEndpoint($repository, $type, $endpointData);
+                if ($endpoint === null) {
                     continue;
                 }
-
-                $parsedUrl = parse_url($object->getReference());
-                if (array_key_exists('host', $parsedUrl) === false || empty($parsedUrl['host']) === true || empty($object->getName()) === true) {
-                    $this->logger->error('Could not create a unique reference for a new endpoint while trying to create an endpoint for '.$object->getReference(), ['type' => $type]);
-                    continue;
-                }
-                $endpointType = $type === 'sources' ? 'Proxy' : 'Entity';
-                $name = str_replace(' ', '-', $object->getName());
-                $endpointData['$id'] = "https://{$parsedUrl['host']}/{$endpointType}Endpoint/$name.endpoint.json";
-
-                $endpoint = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $endpointData['$id']]);
-                if ($endpoint !== null) {
-                    $this->logger->debug('Endpoint found with reference '.$endpointData['$id']);
-                    continue;
-                }
-
-                // todo ? maybe create a second constructor?
-                $endpoint = $type === 'sources' ? new Endpoint(null, $object, $endpointData) : new Endpoint($object, null, $endpointData);
                 $endpoints[] = $endpoint;
-                $this->entityManager->persist($endpoint);
-                $this->logger->debug('Endpoint created for '.$object->getReference().' with reference: '.$endpointData['$id']);
             }
         }//end foreach
 
@@ -845,6 +824,46 @@ class InstallationService
 
         return $endpoints;
     }//end createEndpoints()
+    
+    /**
+     * Creates a single endpoint for an Entity or a Source using the data from installation.json
+     *
+     * @param mixed $repository The entityManager->repository matching the $type we are creating an Endpoint for.
+     * @param string $type The type, used in installation.json['endpoints'][$type] we are creating an Endpoint for.
+     * @param array $endpointData The data used to create an Endpoint containing a reference (of type $type), path & methods.
+     *
+     * @return Endpoint|null The created Endpoint or null.
+     */
+    private function createEndpoint($repository, string $type, array $endpointData): ?Endpoint
+    {
+        $object = $repository->findOneBy(['reference' => $endpointData['reference']]);
+        if ($object === null) {
+            $this->logger->error('No object found for '.$endpointData['reference'].' while trying to create an Endpoint.', ['type' => $type]);
+            return null;
+        }
+    
+        $parsedUrl = parse_url($object->getReference());
+        if (array_key_exists('host', $parsedUrl) === false || empty($parsedUrl['host']) === true || empty($object->getName()) === true) {
+            $this->logger->error('Could not create a unique reference for a new endpoint while trying to create an endpoint for '.$object->getReference(), ['type' => $type]);
+            return null;
+        }
+        $endpointType = $type === 'sources' ? 'Proxy' : 'Entity';
+        $name = str_replace(' ', '-', $object->getName());
+        $endpointData['$id'] = "https://{$parsedUrl['host']}/{$endpointType}Endpoint/$name.endpoint.json";
+    
+        $endpoint = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $endpointData['$id']]);
+        if ($endpoint !== null) {
+            $this->logger->debug('Endpoint found with reference '.$endpointData['$id']);
+            return null;
+        }
+    
+        // todo ? maybe create a second constructor?
+        $endpoint = $type === 'sources' ? new Endpoint(null, $object, $endpointData) : new Endpoint($object, null, $endpointData);
+        $this->entityManager->persist($endpoint);
+        $this->logger->debug('Endpoint created for '.$object->getReference().' with reference: '.$endpointData['$id']);
+        
+        return $endpoint;
+    }
 
     /**
      * This function handles the creation of an subEndpoint by adding extra data from the $subEndpointsConfig to the already created $subEndpoint with basic data.
