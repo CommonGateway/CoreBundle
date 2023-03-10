@@ -893,7 +893,12 @@ class InstallationService
             $subEndpoint->setPath($path);
             $pathRegex = rtrim($subEndpoint->getPathRegex(), '$');
             $subEndpoint->setPathRegex($pathRegex.'/'.$subEndpointsConfig['path'].'$');
-            $subEndpoint->setName($subEndpoint->getName().' '.ucfirst($subEndpointsConfig['path']));
+            
+            $name = ucfirst($subEndpointsConfig['path']);
+            $subEndpoint->setName($subEndpoint->getName().' '.$name);
+            $subEndpoint->setReference(
+                str_replace('.endpoint.json', $name.'.endpoint.json', $subEndpoint->getReference())
+            );
 
             if (isset($subEndpointsConfig['description']) === true) {
                 $subEndpoint->setDescription($subEndpointsConfig['description']);
