@@ -798,14 +798,14 @@ class InstallationService
                 unset($endpointData['subEndpoints']);
                 $subSchemaEndpoints = $endpointData['subSchemaEndpoints'] ?? [];
                 unset($endpointData['subSchemaEndpoints']);
-                
+
                 // Create the base Endpoint.
                 $endpoint = $this->createEndpoint($type, $endpointData);
                 if ($endpoint === null) {
                     continue;
                 }
                 $endpoints[] = $endpoint;
-                
+
                 // Handle sub and subSchema Endpoints.
                 $endpointData['$id'] = $endpoint->getReference();
                 $endpoints = array_merge($endpoints, $this->handleSubEndpoints($endpointData, $subEndpoints));
@@ -817,12 +817,12 @@ class InstallationService
 
         return $endpoints;
     }//end createEndpoints()
-    
+
     /**
-     * Creates a single endpoint for an Entity or a Source using the data from installation.json
+     * Creates a single endpoint for an Entity or a Source using the data from installation.json.
      *
-     * @param string $type The type, used in installation.json['endpoints'][$type] we are creating an Endpoint for.
-     * @param array $endpointData The data used to create an Endpoint containing a reference (of type $type), path & methods.
+     * @param string $type         The type, used in installation.json['endpoints'][$type] we are creating an Endpoint for.
+     * @param array  $endpointData The data used to create an Endpoint containing a reference (of type $type), path & methods.
      *
      * @return Endpoint|null The created Endpoint or null.
      */
@@ -833,61 +833,65 @@ class InstallationService
         } else {
             $repository = $this->entityManager->getRepository('App:Entity');
         }
-        
+
         $object = $repository->findOneBy(['reference' => $endpointData['reference']]);
         if ($object === null) {
             $this->logger->error('No object found for '.$endpointData['reference'].' while trying to create an Endpoint.', ['type' => $type]);
+
             return null;
         }
-    
+
         // todo: this works, we should go to php 8.0 later
         if (isset($endpointData['$id']) === false || str_contains($endpointData['$id'], '.endpoint.json') === false) {
             $parsedUrl = parse_url($object->getReference());
             if (array_key_exists('host', $parsedUrl) === false || empty($parsedUrl['host']) === true || empty($object->getName()) === true) {
                 $this->logger->error('Could not create a unique reference for a new endpoint while trying to create an endpoint for '.$object->getReference(), ['type' => $type]);
+
                 return null;
             }
-            
+
             $endpointType = $type === 'sources' ? 'Proxy' : 'Entity';
             $name = str_replace(' ', '-', $object->getName());
             $endpointData['$id'] = "https://{$parsedUrl['host']}/{$endpointType}Endpoint/$name.endpoint.json";
         }
-    
+
         $endpoint = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $endpointData['$id']]);
         if ($endpoint !== null) {
             $this->logger->debug('Endpoint found with reference '.$endpointData['$id']);
+
             return null;
         }
-    
+
         // todo ? maybe create a second constructor?
         $endpoint = $type === 'sources' ? new Endpoint(null, $object, $endpointData) : new Endpoint($object, null, $endpointData);
         $this->entityManager->persist($endpoint);
         $this->logger->debug('Endpoint created for '.$object->getReference().' with reference: '.$endpointData['$id']);
-        
+
         return $endpoint;
     }//end createEndpoint()
-    
+
     /**
      * Creates subEndpoints for an Entity Endpoint. Example: domain.com/api/entities/subEndpoint['path'].
+     *
      * @TODO: test and cleanup this function, remove duplicate code...
      *
      * @param array $baseEndpointData The base endpoint data from installation.json['endpoints']['schemas'][someEndpoint] for which we are creating subEndpoints.
-     * @param array $subEndpoints An array of data from installation.json[someEndpoint]['subEndpoints'] used for creating subEndpoints.
+     * @param array $subEndpoints     An array of data from installation.json[someEndpoint]['subEndpoints'] used for creating subEndpoints.
      *
      * @return array An array of created subEndpoints.
      */
     private function handleSubEndpoints(array $baseEndpointData, array $subEndpoints): array
     {
         $endpoints = [];
-        
+
         foreach ($subEndpoints as $subEndpointData) {
             $this->logger->debug('Creating a subEndpoint '.$subEndpointData['path'].' for '.$baseEndpointData['reference']);
-            
+
             if (isset($subEndpointData['path']) === false || isset($subEndpointData['throws']) === false) {
                 $this->logger->error('SubEndpointData is missing a path or throws', ['SubEndpointData' => $subEndpointData]);
                 continue;
             }
-            
+
             // Create base $subEndpoint Endpoint with unique reference.
             $name = ucfirst($subEndpointData['path']);
             $endpointData = $baseEndpointData;
@@ -900,20 +904,20 @@ class InstallationService
             if ($subEndpoint === null) {
                 continue;
             }
-            
+
             $path = $subEndpoint->getPath();
             $path[] = $subEndpointData['path'];
             $subEndpoint->setPath($path);
-            
+
             $pathRegex = rtrim($subEndpoint->getPathRegex(), '$');
             $pathRegex = str_replace('?([a-z0-9-]+)?', '([a-z0-9-]+)', $pathRegex);
             $subEndpoint->setPathRegex($pathRegex.'/'.$subEndpointData['path'].'$');
-            
+
             $subEndpoint->setName($subEndpoint->getName().' '.$name);
             if (isset($subEndpointData['description']) === true) {
                 $subEndpoint->setDescription($subEndpointData['description']);
             }
-            
+
             $subEndpoint->setThrows($subEndpointData['throws']);
             // Throws only trigger when an Endpoint has no entities.
             $subEndpoint->setEntity(null); // Old way of setting Entity for Endpoints
@@ -922,15 +926,16 @@ class InstallationService
             }
             $this->entityManager->persist($subEndpoint);
         }
-        
+
         return $endpoints;
     }//end handleSubSchemaEndpoints()
-    
+
     /**
      * Creates subSchemaEndpoints for an Entity Endpoint. Example: domain.com/api/entities/{uuid}/subSchemaEndpoint['path']/{uuid}.
+     *
      * @TODO: test and cleanup this function, remove duplicate code...
      *
-     * @param array $baseEndpointData The base endpoint data from installation.json['endpoints']['schemas'][someEndpoint] for which we are creating subSchemaEndpoints.
+     * @param array $baseEndpointData   The base endpoint data from installation.json['endpoints']['schemas'][someEndpoint] for which we are creating subSchemaEndpoints.
      * @param array $subSchemaEndpoints An array of data from installation.json[someEndpoint]['subSchemaEndpoints'] used for creating subSchemaEndpoints.
      *
      * @return array An array of created subSchemaEndpoints.
@@ -938,15 +943,15 @@ class InstallationService
     private function handleSubSchemaEndpoints(array $baseEndpointData, array $subSchemaEndpoints): array
     {
         $endpoints = [];
-        
+
         foreach ($subSchemaEndpoints as $subSchemaEndpointData) {
             $this->logger->debug('Creating a subSchemaEndpoint '.$subSchemaEndpointData['path'].' for '.$baseEndpointData['reference']);
-    
+
             if (isset($subSchemaEndpointData['path']) === false || isset($subSchemaEndpointData['throws']) === false || isset($subSchemaEndpointData['reference']) === false) {
                 $this->logger->error('SubSchemaEndpointData is missing a reference, path or throws', ['SubSchemaEndpointData' => $subSchemaEndpointData]);
                 continue;
             }
-    
+
             // Create base $subSchemaEndpoint Endpoint with unique reference.
             $name = ucfirst($subSchemaEndpointData['path']);
             $endpointData = $baseEndpointData;
@@ -959,28 +964,28 @@ class InstallationService
             if ($subSchemaEndpoint === null) {
                 continue;
             }
-    
+
             $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $subSchemaEndpointData['reference']]);
             if ($entity === null) {
                 $this->logger->error('No entity found for '.$subSchemaEndpointData['reference'].' while trying to create a subSchemaEndpoint.');
                 continue;
             }
-    
+
             $path = $subSchemaEndpoint->getPath();
             $path[array_search('id', $path)] = '{'.strtolower($entity->getName()).'._self.id}';
             $path[] = $subSchemaEndpointData['path'];
             $path[] = '{id}';
             $subSchemaEndpoint->setPath($path);
-            
+
             $pathRegex = rtrim($subSchemaEndpoint->getPathRegex(), '$');
             $pathRegex = str_replace('?([a-z0-9-]+)?', '([a-z0-9-]+)', $pathRegex);
             $subSchemaEndpoint->setPathRegex($pathRegex.'/'.$subSchemaEndpointData['path'].'/?([a-z0-9-]+)?$');
-            
+
             $subSchemaEndpoint->setName($subSchemaEndpoint->getName().' '.$name);
             if (isset($subSchemaEndpointData['description']) === true) {
                 $subSchemaEndpoint->setDescription($subSchemaEndpointData['description']);
             }
-    
+
             $subSchemaEndpoint->setThrows($subSchemaEndpointData['throws']);
             // Throws only trigger when an Endpoint has no entities.
             $subSchemaEndpoint->setEntity(null); // Old way of setting Entity for Endpoints
@@ -989,7 +994,7 @@ class InstallationService
             }
             $this->entityManager->persist($subSchemaEndpoint);
         }
-        
+
         return $endpoints;
     }//end handleSubSchemaEndpoints()
 
