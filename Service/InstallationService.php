@@ -843,16 +843,10 @@ class InstallationService
 
         // todo: this works, we should go to php 8.0 later
         if (isset($endpointData['$id']) === false || str_contains($endpointData['$id'], '.endpoint.json') === false) {
-            $parsedUrl = parse_url($object->getReference());
-            if (array_key_exists('host', $parsedUrl) === false || empty($parsedUrl['host']) === true || empty($object->getName()) === true) {
-                $this->logger->error('Could not create a unique reference for a new endpoint while trying to create an endpoint for '.$object->getReference(), ['type' => $type]);
-
+            $endpointData['$id'] = $this->createEndpointReference($object, $type);
+            if ($endpointData['$id'] === null) {
                 return null;
             }
-
-            $endpointType = $type === 'sources' ? 'Proxy' : 'Entity';
-            $name = str_replace(' ', '-', $object->getName());
-            $endpointData['$id'] = "https://{$parsedUrl['host']}/{$endpointType}Endpoint/$name.endpoint.json";
         }
 
         $endpoint = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $endpointData['$id']]);
@@ -869,6 +863,29 @@ class InstallationService
 
         return $endpoint;
     }//end createEndpoint()
+    
+    /**
+     * Creates a reference for a new Endpoint using the name of the object we are creating it for and the domain of its reference.
+     *
+     * @param Entity|Source $object The object (Entity or Source) we are creating an Endpoint (reference) for.
+     * @param string $type The type, used in installation.json['endpoints'][$type] we are creating an Endpoint for.
+     *
+     * @return string|null The reference for the Entity or Proxy Endpoint.
+     */
+    private function createEndpointReference($object, string $type): ?string
+    {
+        $parsedUrl = parse_url($object->getReference());
+        if (array_key_exists('host', $parsedUrl) === false || empty($parsedUrl['host']) === true || empty($object->getName()) === true) {
+            $this->logger->error('Could not create a unique reference for a new endpoint while trying to create an endpoint for '.$object->getReference(), ['type' => $type]);
+        
+            return null;
+        }
+    
+        $endpointType = $type === 'sources' ? 'Proxy' : 'Entity';
+        $name = str_replace(' ', '-', $object->getName());
+        
+        return "https://{$parsedUrl['host']}/{$endpointType}Endpoint/$name.endpoint.json";
+    }
 
     /**
      * Creates the basics for a new subEndpoint or subSchemaEndpoint.
