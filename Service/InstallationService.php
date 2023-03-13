@@ -386,7 +386,6 @@ class InstallationService
      */
     private function readfile(SplFileInfo $file)
     {
-
         // Check if it is a valid json object.
         $mappingSchema = json_decode($file->getContents(), true);
         if (empty($mappingSchema) === true) {
@@ -418,7 +417,6 @@ class InstallationService
      */
     private function addToObjects(array $schema)
     {
-
         // It is a schema so lets save it like that.
         if (array_key_exists('$schema', $schema) === true) {
             $this->objects[$schema['$schema']][] = $schema;

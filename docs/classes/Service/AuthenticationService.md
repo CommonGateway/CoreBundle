@@ -13,6 +13,7 @@
 |[__construct](#authenticationservice__construct)||
 |[checkHS256](#authenticationservicecheckhs256)|Decides if the provided JWT token is signed with the HS256 Algorithm.|
 |[checkHeadersAndGetJWK](#authenticationservicecheckheadersandgetjwk)|Checks the algorithm of the JWT token and decides how to generate a JWK from the provided public key.|
+|[checkRS256](#authenticationservicecheckrs256)|Decides if the provided JWT token is signed with the HS256 Algorithm.|
 |[checkRS512](#authenticationservicecheckrs512)|Decides if the provided JWT token is signed with the RS512 Algorithm.|
 |[convertRSAKeyToJWK](#authenticationserviceconvertrsakeytojwk)|Converts a string RSA key to a JWK via the filesystem.|
 |[convertRSAtoJWK](#authenticationserviceconvertrsatojwk)|Converts a RSA private key to a JWK.|
@@ -108,6 +109,33 @@ Checks the algorithm of the JWT token and decides how to generate a JWK from the
 `\JWK`
 
 > The resulting JWK for verifying the JWT
+
+
+<hr />
+
+
+### AuthenticationService::checkRS256  
+
+**Description**
+
+```php
+public checkRS256 (\JWT $token)
+```
+
+Decides if the provided JWT token is signed with the HS256 Algorithm. 
+
+ 
+
+**Parameters**
+
+* `(\JWT) $token`
+: The token provided by the user  
+
+**Return Values**
+
+`bool`
+
+> Whether the token is in HS256 or not
 
 
 <hr />

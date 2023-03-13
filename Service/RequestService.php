@@ -151,7 +151,6 @@ class RequestService
      */
     public function getSchema(array $parameters)
     {
-
         // If we have an object this is easy
         if (isset($this->object)) {
             return $this->object->getEntity();
