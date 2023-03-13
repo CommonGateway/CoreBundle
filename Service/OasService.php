@@ -39,7 +39,6 @@ class OasService
      */
     public function createOas(): array
     {
-
         // Setup the basic oas array.
         $oas = [
             'openapi' => '3.0.0',

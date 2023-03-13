@@ -308,7 +308,6 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      */
     public function postFlush(PostFlushEventArgs $args): void
     {
-
         // Write the log
         $this->logger->info(
             'Flushed entity manager',

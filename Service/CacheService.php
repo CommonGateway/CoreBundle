@@ -23,6 +23,7 @@ use Symfony\Component\Serializer\SerializerInterface;
  * This service provides a guzzle wrapper to work with sources in the common gateway.
  *
  * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
+ *
  * @TODO add all backend developers here?
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
@@ -77,17 +78,17 @@ class CacheService
      */
     public function cleanup()
     {
-        (isset($this->io) ? $this->io->writeln([
+        isset($this->io) ? $this->io->writeln([
             'Common Gateway Cache Cleanup',
             '============',
             '',
-        ]) : '');
+        ]) : '';
 
-        (isset($this->io) ? $this->io->section('Cleaning Object\'s') : '');
+        isset($this->io) ? $this->io->section('Cleaning Object\'s') : '';
         $collection = $this->client->objects->json;
         $filter = [];
         $objects = $collection->find($filter)->toArray();
-        (isset($this->io) ? $this->io->writeln('Found '.count($objects).'') : '');
+        isset($this->io) ? $this->io->writeln('Found '.count($objects).'') : '';
     }
 
     /**
@@ -95,25 +96,25 @@ class CacheService
      */
     public function warmup()
     {
-        (isset($this->io) ? $this->io->writeln([
+        isset($this->io) ? $this->io->writeln([
             'Common Gateway Cache Warmup',
             '============',
             '',
-        ]) : '');
+        ]) : '';
 
-        (isset($this->io) ? $this->io->writeln('Connecting to'.$this->parameters->get('cache_url')) : '');
+        isset($this->io) ? $this->io->writeln('Connecting to'.$this->parameters->get('cache_url')) : '';
 
         // Backwards compatablity
         if (!isset($this->client)) {
-            (isset($this->io) ? $this->io->writeln('No cache client found, halting warmup') : '');
+            isset($this->io) ? $this->io->writeln('No cache client found, halting warmup') : '';
 
             return Command::SUCCESS;
         }
 
         // Objects
-        (isset($this->io) ? $this->io->section('Caching Objects\'s') : '');
+        isset($this->io) ? $this->io->section('Caching Objects\'s') : '';
         $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
-        (isset($this->io) ? $this->io->writeln('Found '.count($objectEntities).' objects\'s') : '');
+        isset($this->io) ? $this->io->writeln('Found '.count($objectEntities).' objects\'s') : '';
 
         foreach ($objectEntities as $objectEntity) {
             try {
@@ -125,9 +126,9 @@ class CacheService
         }
 
         // Schemas
-        (isset($this->io) ? $this->io->section('Caching Schema\'s') : '');
+        isset($this->io) ? $this->io->section('Caching Schema\'s') : '';
         $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
-        (isset($this->io) ? $this->io->writeln('Found '.count($schemas).' Schema\'s') : '');
+        isset($this->io) ? $this->io->writeln('Found '.count($schemas).' Schema\'s') : '';
 
         foreach ($schemas as $schema) {
             try {
@@ -139,9 +140,9 @@ class CacheService
         }
 
         // Endpoints
-        (isset($this->io) ? $this->io->section('Caching Endpoint\'s') : '');
+        isset($this->io) ? $this->io->section('Caching Endpoint\'s') : '';
         $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
-        (isset($this->io) ? $this->io->writeln('Found '.count($endpoints).' Endpoint\'s') : '');
+        isset($this->io) ? $this->io->writeln('Found '.count($endpoints).' Endpoint\'s') : '';
 
         foreach ($endpoints as $endpoint) {
             try {
@@ -157,10 +158,10 @@ class CacheService
         $collection = $this->client->schemas->json->createIndex(['$**'=>'text']);
         $collection = $this->client->endpoints->json->createIndex(['$**'=>'text']);
 
-        (isset($this->io) ? $this->io->writeln(['Removing deleted endpoints', '============']) : '');
+        isset($this->io) ? $this->io->writeln(['Removing deleted endpoints', '============']) : '';
         $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
 
-        (isset($this->io) ? $this->io->writeln(['Removing deleted objects', '============']) : '');
+        isset($this->io) ? $this->io->writeln(['Removing deleted objects', '============']) : '';
         $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
 
         return Command::SUCCESS;
@@ -236,11 +237,11 @@ class CacheService
         if ($collection->findOneAndReplace(
             ['_id'=>$id],
             $array,
-            ['upsert'=>true]
+            ['upsert'=> true]
         )) {
-            (isset($this->io) ? $this->io->writeln('Updated object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache') : '');
+            isset($this->io) ? $this->io->writeln('Updated object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache') : '';
         } else {
-            (isset($this->io) ? $this->io->writeln('Wrote object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache') : '');
+            isset($this->io) ? $this->io->writeln('Wrote object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache') : '';
         }
 
         return $objectEntity;
@@ -769,11 +770,11 @@ class CacheService
         if ($collection->findOneAndReplace(
             ['id' => $endpoint->getId()->toString()],
             $endpointArray,
-            ['upsert'=>true]
+            ['upsert'=> true]
         )) {
-            (isset($this->io) ? $this->io->writeln('Updated endpoint '.$endpoint->getId()->toString().' to cache') : '');
+            isset($this->io) ? $this->io->writeln('Updated endpoint '.$endpoint->getId()->toString().' to cache') : '';
         } else {
-            (isset($this->io) ? $this->io->writeln('Wrote object '.$endpoint->getId()->toString().' to cache') : '');
+            isset($this->io) ? $this->io->writeln('Wrote object '.$endpoint->getId()->toString().' to cache') : '';
         }
 
         return $endpoint;

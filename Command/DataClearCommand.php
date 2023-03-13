@@ -68,7 +68,6 @@ class DataClearCommand extends Command
         $progressBar->start();
 
         foreach ($objects as $object) {
-
             // advances the progress bar 1 unit
             $progressBar->advance();
 

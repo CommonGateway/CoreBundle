@@ -2,10 +2,11 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
-use function PHPUnit\Framework\throwException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
+
+use function PHPUnit\Framework\throwException;
 
 class ComposerService
 {
@@ -323,7 +324,6 @@ class ComposerService
         $results = $this->getLockFile();
         $plugins = [];
         foreach ($results as $key => $result) {
-
             // Remove non gateway plugins from the result
             if (!isset($result['keywords']) || !in_array('common-gateway-plugin', $result['keywords'])) {
                 continue;

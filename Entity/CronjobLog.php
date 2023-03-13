@@ -7,13 +7,16 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ApiResource()
+ *
  * @ORM\Entity()
  */
 class CronjobLog
 {
     /**
      * @ORM\Id
+     *
      * @ORM\GeneratedValue
+     *
      * @ORM\Column(type="integer")
      */
     private $id;

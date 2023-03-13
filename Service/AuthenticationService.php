@@ -426,7 +426,7 @@ class AuthenticationService
             return $jwk;
         } elseif ($this->checkHS256($token)) {
             return new JWKSet([JWKFactory::createFromSecret($publicKey, ['alg' => 'HS256', 'use' => 'sig'])]);
-        } elseif($this->checkRS256($token)) {
+        } elseif ($this->checkRS256($token)) {
             return JWKFactory::createFromJsonObject($publicKey);
         }
     }//end checkHeadersAndGetJWK()

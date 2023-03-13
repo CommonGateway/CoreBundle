@@ -23,6 +23,7 @@ use Symfony\Component\Serializer\Encoder\YamlEncoder;
  * This service provides a guzzle wrapper to work with sources in the common gateway.
  *
  * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
+ *
  * @TODO add all backend developers here?
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
@@ -222,7 +223,6 @@ class CallService
 
             throw $exception;
         } catch (GuzzleException $exception) {
-
             // TODO: monolog
             $this->logger->error('Request failed with error '.$exception);
 
