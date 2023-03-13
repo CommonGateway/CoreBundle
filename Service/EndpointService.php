@@ -151,7 +151,6 @@ class EndpointService
      */
     public function getAcceptType(): string
     {
-
         // Lets first look at the accept header.
         $acceptHeader = $this->request->headers->get('accept');
 
@@ -211,7 +210,6 @@ class EndpointService
      */
     public function decodeBody(): ?array
     {
-
         // Get the content type.
         $this->logger->info('Decoding body');
         $contentType = $this->request->getContentType();

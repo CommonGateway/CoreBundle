@@ -155,12 +155,12 @@ class MappingService
                         $dotArray->delete($key);
                     }
                     break;
-                // Todo: Add more casts
+                    // Todo: Add more casts
                 case 'jsonToArray':
                     $value = str_replace(['&quot;', '&amp;quot;'], '"', $value);
                     $value = json_decode($value, true);
                 default:
-                        isset($this->io) ?? $this->io->debug('Trying to cast to an unsupported cast type: '.$cast);
+                    isset($this->io) ?? $this->io->debug('Trying to cast to an unsupported cast type: '.$cast);
                     break;
             }
 
