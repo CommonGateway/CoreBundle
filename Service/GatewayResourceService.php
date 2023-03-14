@@ -2,6 +2,7 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\Gateway as Source;
 use App\Entity\Mapping;
@@ -99,9 +100,9 @@ class GatewayResourceService
      * @param string $reference  The location to look for.
      * @param string $pluginName The name of the plugin that requests the resource.
      *
-     * @return Source|null
+     * @return Endpoint|null
      */
-    public function getEndpoint(string $reference, string $pluginName): ?Source
+    public function getEndpoint(string $reference, string $pluginName): ?Endpoint
     {
         $source = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $reference]);
         if ($source === null) {
