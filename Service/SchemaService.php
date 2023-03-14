@@ -7,6 +7,7 @@ use App\Entity\ObjectEntity;
 use App\Entity\Value;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
  * The schema service is used to validate schema's.
@@ -30,14 +31,19 @@ class SchemaService
     private LoggerInterface $logger;
 
     /**
+     * @var SessionInterface
+     */
+    private SessionInterface $session;
+
+    /**
      * @param EntityManagerInterface $entityManager The entity manager
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        LoggerInterface $schemaServiceLogger
+        LoggerInterface $schemaLogger
     ) {
         $this->entityManager = $entityManager;
-        $this->logger = $schemaServiceLogger;
+        $this->logger = $schemaLogger;
     }//end __construct()
 
     /**
@@ -53,6 +59,7 @@ class SchemaService
 
         // Lets go go go !
         foreach ($objects as $object) {
+            $this->session->set('object', $object->getId()->toString());
             if ($object->get === true) {
                 // ToDo: Build.
             }
@@ -91,6 +98,7 @@ class SchemaService
 
         // Lets go go go !
         foreach ($schemas as $schema) {
+            $this->session->set('schema', $this->schema->getId()->toString());
             $this->validateSchema($schema);
         }//end foreach
 
