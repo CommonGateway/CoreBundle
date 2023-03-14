@@ -473,18 +473,21 @@ class RequestService
                 if (isset($this->id) === true && empty($this->id) === false) {
                     $this->session->set('object', $this->id);
                     $this->logger->error('You can not POST to an (existing) id, consider using PUT or PATCH instead');
+
                     return new Response('You can not POST to an (existing) id, consider using PUT or PATCH instead', '400');
                 }
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
                 if ($this->schema instanceof Entity === false) {
                     $this->logger->error('No schema could be established for your request');
+
                     return new Response('No schema could be established for your request', '400');
                 }
 
                 // Lets see if the found result is allowed for this endpoint
                 if (isset($this->data['endpoint']) === true && in_array($this->schema->getId(), $allowedSchemas['id']) === false) {
                     $this->logger->error('Object is not supported by this endpoint');
+
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
@@ -509,6 +512,7 @@ class RequestService
                 // We dont have an id on a PUT so die
                 if (!isset($this->id)) {
                     $this->logger->error('No id could be established for your request');
+
                     return new Response('No id could be established for your request', '400');
                 }
                 $this->session->set('object', $this->id);
@@ -516,12 +520,14 @@ class RequestService
                 // We need to know the type of object that the user is trying to post, so lets look that up
                 if ($this->schema instanceof Entity === false) {
                     $this->logger->error('No schema could be established for your request');
+
                     return new Response('No schema could be established for your request', '400');
                 }
 
                 // Lets see if the found result is allowd for this endpoint
                 if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     $this->logger->error('Object is not supported by this endpoint');
+
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
@@ -547,6 +553,7 @@ class RequestService
                 // We dont have an id on a PATCH so die
                 if (!isset($this->id)) {
                     $this->logger->error('No id could be established for your request');
+
                     return new Response('No id could be established for your request', '400');
                 }
                 $this->session->set('object', $this->id);
@@ -554,12 +561,14 @@ class RequestService
                 // We need to know the type of object that the user is trying to post, so lets look that up
                 if ($this->schema instanceof Entity === false) {
                     $this->logger->error('No schema could be established for your request');
+
                     return new Response('No schema could be established for your request', '400');
                 }
 
                 // Lets see if the found result is allowd for this endpoint
                 if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     $this->logger->error('Object is not supported by this endpoint');
+
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
@@ -584,6 +593,7 @@ class RequestService
                 // We dont have an id on a PUT so die
                 if (!isset($this->id)) {
                     $this->logger->error('No id could be established for your request');
+
                     return new Response('No id could be established for your request', '400');
                 }
                 $this->session->set('object', $this->id);
@@ -591,12 +601,14 @@ class RequestService
                 // We need to know the type of object that the user is trying to post, so lets look that up
                 if ($this->schema instanceof Entity === false) {
                     $this->logger->error('No schema could be established for your request');
+
                     return new Response('No schema could be established for your request', '400');
                 }
 
                 // Lets see if the found result is allowd for this endpoint
                 if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     $this->logger->error('Object is not supported by this endpoint');
+
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
@@ -604,10 +616,12 @@ class RequestService
                 //                $this->cacheService - removeObject($this->id); /* @todo this is hacky, the above schould alredy do this */
                 $this->entityManager->flush();
                 $this->logger->info('Succesfully deleted object');
+
                 return new Response('Succesfully deleted object', '202');
             default:
                 break;
                 $this->logger->error('Unkown method'.$this->data['method']);
+
                 return new Response('Unkown method'.$this->data['method'], '404');
         }
 
