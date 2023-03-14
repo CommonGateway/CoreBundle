@@ -551,12 +551,12 @@ class InstallationService
 
         // Load the data. Todo: these version compare checks don't look right...
         if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) <= 0) {
-            $this->logger->debug('The new mapping has a version number equal or lower then the already present version, the object is NOT updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
-        } elseif (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) < 0) {
-            $this->logger->debug('The new mapping has a version number higher then the already present version, the object data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
+            $this->logger->debug('The schema has a version number equal or lower then the already present version, the object is NOT updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
+        } elseif (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) > 0) {
+            $this->logger->debug('The schema has a version number higher then the already present version, the object data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
         } elseif (array_key_exists('version', $schema) === false || $object->getVersion() === null) {
-            $this->logger->debug('The new mapping doesn\'t have a version number, the object data is created', ['schemaVersion' => $schema['version'] ?? null, 'objectVersion' => $object->getVersion()]);
+            $this->logger->debug('The new schema doesn\'t have a version number, the object data is created', ['schemaVersion' => $schema['version'] ?? null, 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
         }
 
