@@ -17,6 +17,12 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * This service handles calls on the ZZ endpoint (or in other words abstract routing).
+ *
+ * @Author Ruben van der Linde <ruben@conduction.nl>, Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Service
  */
 class EndpointService
 {

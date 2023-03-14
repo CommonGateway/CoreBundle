@@ -11,6 +11,12 @@ use Twig\Environment;
  * The mapping service handles the mapping (or transformation) of array A (input) to array B (output).
  *
  * More information on how to write your own mappings can be found at [/docs/mapping.md](/docs/mapping.md).
+ *
+ * @Author Ruben van der Linde <ruben@conduction.nl>, Sarai Misidjan <sarai@conduction.nl>, Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Service
  */
 class MappingService
 {

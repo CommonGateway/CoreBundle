@@ -8,6 +8,13 @@ use Symfony\Component\Process\Process;
 
 use function PHPUnit\Framework\throwException;
 
+/**
+ * @Author Ruben van der Linde <ruben@conduction.nl>, Barry Brands <barry@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Service
+ */
 class ComposerService
 {
     private function arrayEnum(array $array, array $enum): bool

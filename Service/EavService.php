@@ -6,6 +6,13 @@ use App\Entity\Attribute;
 use App\Entity\Entity;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * @Author Ruben van der Linde <ruben@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Service
+ */
 class EavService
 {
     private EntityManagerInterface $entityManager;

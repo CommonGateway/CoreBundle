@@ -31,7 +31,7 @@ use Symfony\Component\Finder\SplFileInfo;
  *
  * This class breaks complexity, methods and coupling rules. This could be solved by deviding the class into smaller classes but that would deminisch the readability of the code as a whole. All the code in this class is only used in an installation context, and it makes more sense to keep it together. Therefore, a design decision was made to keep al this code in one class.
  *
- * @Author Ruben van der Linde <ruben@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ * @Author Ruben van der Linde <ruben@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>, Barry Brands <barry@conduction.nl>, Robert Zondervan <robert@conduction.nl>, Sarai Misidjan <sarai@conduction.nl>
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
@@ -859,20 +859,20 @@ class InstallationService
 
             return null;
         }
-        
+
         $endpoint = $this->constructEndpoint($type, $object ?? null, $endpointData);
         $this->entityManager->persist($endpoint);
         $this->logger->debug('Endpoint created for '.(isset($object) === true ? $object->getReference() : 'multipleSchemas').' with reference: '.$endpointData['$id']);
 
         return $endpoint;
     }//end createEndpoint()
-    
+
     /**
      * Constructs an Endpoint using the Endpoint constructor, but how the constructor is called depends on the $type.
      *
-     * @param string $type The type of Endpoint we are creating.
-     * @param Entity|Source|null $object The object we are creating an Endpoint for.
-     * @param array $endpointData The data used to create the Endpoint.
+     * @param string             $type         The type of Endpoint we are creating.
+     * @param Entity|Source|null $object       The object we are creating an Endpoint for.
+     * @param array              $endpointData The data used to create the Endpoint.
      *
      * @return Endpoint|null The created Endpoint or null.
      */
@@ -887,17 +887,18 @@ class InstallationService
             case 'multipleSchemas':
                 return new Endpoint(null, null, $endpointData);
         }
-    
+
         $this->logger->error('Unknown type used for endpoint construction: '.$type);
+
         return null;
     }//end constructEndpoint()
-    
+
     /**
      * Checks if an object exists, using the given repository and reference.
      *
-     * @param mixed $repository The repository to search in. Entity or Source repository.
-     * @param string $reference A schema reference of an Entity or Source.
-     * @param string $type The type used in installation.json['endpoints'][$type]. The type we are creating a new Endpoint for.
+     * @param mixed  $repository The repository to search in. Entity or Source repository.
+     * @param string $reference  A schema reference of an Entity or Source.
+     * @param string $type       The type used in installation.json['endpoints'][$type]. The type we are creating a new Endpoint for.
      *
      * @return Entity|Source|null Null if we found nothing, else the object found, Entity or Source.
      */
@@ -906,10 +907,10 @@ class InstallationService
         $object = $repository->findOneBy(['reference' => $reference]);
         if ($object === null) {
             $this->logger->error('No object found for '.$reference.' while trying to create an Endpoint.', ['type' => $type]);
-        
+
             return null;
         }
-        
+
         return $object;
     }//end checkIfObjectExists()
 
@@ -925,10 +926,10 @@ class InstallationService
     {
         if ($object === null) {
             $this->logger->error('Could not create a unique reference for a new endpoint', ['type' => $type, 'object' => $object]);
-            
+
             return null;
         }
-        
+
         $parsedUrl = parse_url($object->getReference());
         if (array_key_exists('host', $parsedUrl) === false || empty($parsedUrl['host']) === true || empty($object->getName()) === true) {
             $this->logger->error('Could not create a unique reference for a new endpoint while trying to create an endpoint for '.$object->getReference(), ['type' => $type]);

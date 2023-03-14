@@ -2,6 +2,13 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+/**
+ * @Author Robert Zondervan <robert@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Service
+ */
 class FileService
 {
     public function writeFile(string $baseFileName, string $contents): string
