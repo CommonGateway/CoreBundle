@@ -14,6 +14,7 @@ use App\Service\ObjectEntityService;
 use App\Service\ResponseService;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -43,6 +44,7 @@ class RequestService
     private EventDispatcherInterface $eventDispatcher;
     private SerializerInterface $serializer;
     private SessionInterface $session;
+    private LoggerInterface $logger;
 
     /**
      * @param EntityManagerInterface   $entityManager
@@ -66,7 +68,8 @@ class RequestService
         Security $security,
         EventDispatcherInterface $eventDispatcher,
         SerializerInterface $serializer,
-        SessionInterface $session
+        SessionInterface $session,
+        LoggerInterface $requestLogger
     ) {
         $this->entityManager = $entityManager;
         $this->cacheService = $cacheService;
@@ -78,6 +81,7 @@ class RequestService
         $this->eventDispatcher = $eventDispatcher;
         $this->serializer = $serializer;
         $this->session = $session;
+        $this->logger = $requestLogger;
     }
 
     /**
@@ -378,6 +382,7 @@ class RequestService
 
         // Get the schema
         $this->schema = $this->getSchema($this->data);
+        $this->session->set('schema', $this->schema->getId()->toString());
 
         // Bit os savety cleanup <- dit zou eigenlijk in de hydrator moeten gebeuren
         unset($this->content['id']);
@@ -430,6 +435,7 @@ class RequestService
             case 'GET':
                 // We have an id (so single object)
                 if (isset($this->id) && $this->id) {
+                    $this->session->set('object', $this->id);
                     $result = $this->cacheService->getObject($this->id);
 
                     // If we do not have an object we throw an 404
@@ -465,25 +471,31 @@ class RequestService
 
                 // We have an id on a post so die
                 if (isset($this->id) === true && empty($this->id) === false) {
+                    $this->session->set('object', $this->id);
+                    $this->logger->error('You can not POST to an (existing) id, consider using PUT or PATCH instead');
                     return new Response('You can not POST to an (existing) id, consider using PUT or PATCH instead', '400');
                 }
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
                 if ($this->schema instanceof Entity === false) {
+                    $this->logger->error('No schema could be established for your request');
                     return new Response('No schema could be established for your request', '400');
                 }
 
                 // Lets see if the found result is allowed for this endpoint
                 if (isset($this->data['endpoint']) === true && in_array($this->schema->getId(), $allowedSchemas['id']) === false) {
+                    $this->logger->error('Object is not supported by this endpoint');
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
                 $this->object = new ObjectEntity($this->schema);
                 $this->object->setOwner($this->security->getUser()->getUserIdentifier());
 
+                $this->logger->debug('Hydrating object');
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
                 if ($this->object->hydrate($this->content, true)) {
                     $this->entityManager->persist($this->object);
+                    $this->session->set('object', $this->object->getId()->toString());
                     $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
                 } else {
                     // Use validation to throw an error
@@ -496,22 +508,27 @@ class RequestService
 
                 // We dont have an id on a PUT so die
                 if (!isset($this->id)) {
+                    $this->logger->error('No id could be established for your request');
                     return new Response('No id could be established for your request', '400');
                 }
+                $this->session->set('object', $this->id);
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
                 if ($this->schema instanceof Entity === false) {
+                    $this->logger->error('No schema could be established for your request');
                     return new Response('No schema could be established for your request', '400');
                 }
 
                 // Lets see if the found result is allowd for this endpoint
                 if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
+                    $this->logger->error('Object is not supported by this endpoint');
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
                 $this->object = $this->entityManager->find('App:ObjectEntity', $this->id);
 
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
+                $this->logger->debug('updating object '.$this->id);
                 if ($this->object->hydrate($this->content, true)) { // This should be an unsafe hydration
                     if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
                         $this->objectEntityService->setUnread($this->object);
@@ -527,24 +544,29 @@ class RequestService
             case 'PATCH':
                 $eventType = 'commongateway.object.update';
 
-                // We dont have an id on a PUT so die
+                // We dont have an id on a PATCH so die
                 if (!isset($this->id)) {
+                    $this->logger->error('No id could be established for your request');
                     return new Response('No id could be established for your request', '400');
                 }
+                $this->session->set('object', $this->id);
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
                 if ($this->schema instanceof Entity === false) {
+                    $this->logger->error('No schema could be established for your request');
                     return new Response('No schema could be established for your request', '400');
                 }
 
                 // Lets see if the found result is allowd for this endpoint
                 if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
+                    $this->logger->error('Object is not supported by this endpoint');
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
                 $this->object = $this->entityManager->find('App:ObjectEntity', $this->id);
 
                 //if ($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
+                $this->logger->debug('updating object '.$this->id);
                 if ($this->object->hydrate($this->content)) {
                     if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
                         $this->objectEntityService->setUnread($this->object);
@@ -561,27 +583,31 @@ class RequestService
 
                 // We dont have an id on a PUT so die
                 if (!isset($this->id)) {
+                    $this->logger->error('No id could be established for your request');
                     return new Response('No id could be established for your request', '400');
                 }
+                $this->session->set('object', $this->id);
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
                 if ($this->schema instanceof Entity === false) {
+                    $this->logger->error('No schema could be established for your request');
                     return new Response('No schema could be established for your request', '400');
                 }
 
                 // Lets see if the found result is allowd for this endpoint
                 if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
+                    $this->logger->error('Object is not supported by this endpoint');
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
                 $this->entityManager->remove($this->object);
                 //                $this->cacheService - removeObject($this->id); /* @todo this is hacky, the above schould alredy do this */
                 $this->entityManager->flush();
-
+                $this->logger->info('Succesfully deleted object');
                 return new Response('Succesfully deleted object', '202');
             default:
                 break;
-
+                $this->logger->error('Unkown method'.$this->data['method']);
                 return new Response('Unkown method'.$this->data['method'], '404');
         }
 
