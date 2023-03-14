@@ -9,6 +9,13 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * @Author Ruben van der Linde <ruben@conduction.nl>, Barry Brands <barry@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Command
+ */
 class InstallCommand extends Command
 {
     protected static $defaultName = 'commongateway:install';

@@ -8,6 +8,13 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+/**
+ * @Author Ruben van der Linde <ruben@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Command
+ */
 class ValidateSchemaCommand extends Command
 {
     protected static $defaultName = 'commongateway:validate:schema';

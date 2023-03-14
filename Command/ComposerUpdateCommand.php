@@ -9,6 +9,13 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+/**
+ * @Author Ruben van der Linde <ruben@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Command
+ */
 class ComposerUpdateCommand extends Command
 {
     protected static $defaultName = 'commongateway:composer:update';

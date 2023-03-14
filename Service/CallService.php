@@ -22,7 +22,7 @@ use Symfony\Component\Serializer\Encoder\YamlEncoder;
  *
  * This service provides a guzzle wrapper to work with sources in the common gateway.
  *
- * @Author Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
+ * @Author Ruben van der Linde <ruben@conduction.nl>, Robert Zondervan <robert@conduction.nl>, Sarai Misidjan <sarai@conduction.nl>, Barry Brands <barry@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
  *
  * @TODO add all backend developers here?
  *

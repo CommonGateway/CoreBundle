@@ -31,7 +31,7 @@ use Symfony\Component\Finder\SplFileInfo;
  *
  * This class breaks complexity, methods and coupling rules. This could be solved by deviding the class into smaller classes but that would deminisch the readability of the code as a whole. All the code in this class is only used in an installation context, and it makes more sense to keep it together. Therefore, a design decision was made to keep al this code in one class.
  *
- * @Author Ruben van der Linde <ruben@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ * @Author Ruben van der Linde <ruben@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>, Barry Brands <barry@conduction.nl>, Robert Zondervan <robert@conduction.nl>, Sarai Misidjan <sarai@conduction.nl>
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *

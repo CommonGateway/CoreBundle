@@ -14,6 +14,13 @@ use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
+/**
+ * @Author Ruben van der Linde <ruben@conduction.nl>, Barry Brands <barry@conduction.nl>, Robert Zondervan <robert@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Subscriber
+ */
 class CacheDatabaseSubscriber implements EventSubscriberInterface
 {
     private CacheService $cacheService;
