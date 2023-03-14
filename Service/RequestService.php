@@ -654,6 +654,8 @@ class RequestService
     {
         if (isset($result->embedded)) {
             unset($result->embedded);
+        } elseif (isset($result['embedded'])) {
+            unset($result['embedded']);
         }
 
         return $result;
