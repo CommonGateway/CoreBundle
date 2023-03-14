@@ -389,7 +389,7 @@ class RequestService
         // Get the schema
         $this->schema = $this->getSchema($this->data);
 
-        if($this->schema !== false) {
+        if ($this->schema !== false) {
             $this->session->set('schema', $this->schema->getId()->toString());
         }
         // Bit os savety cleanup <- dit zou eigenlijk in de hydrator moeten gebeuren

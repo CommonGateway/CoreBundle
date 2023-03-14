@@ -2,7 +2,6 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
-use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\Gateway as Source;
 use App\Entity\Mapping;
@@ -16,7 +15,6 @@ use Psr\Log\LoggerInterface;
  *
  * @Author Robert Zondervan <robert@conduction.nl>* @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
- * @package commongateway/corebundle
  * @category Service
  */
 class GatewayResourceService
@@ -112,5 +110,4 @@ class GatewayResourceService
 
         return $source;
     }//end getEndpoint()
-
 }
