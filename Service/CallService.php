@@ -175,7 +175,7 @@ class CallService
         if (empty($source->getLocation())) {
             throw new HttpException('409', "This source has no location: {$source->getName()}");
         }
-        if(isset($config['headers']) === false) {
+        if (isset($config['headers']) === false) {
             $config['headers'] = [];
         }
 
