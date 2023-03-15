@@ -175,6 +175,10 @@ class CallService
         if (empty($source->getLocation())) {
             throw new HttpException('409', "This source has no location: {$source->getName()}");
         }
+        if(isset($config['headers']) === false) {
+            $config['headers'] = [];
+        }
+
         $parsedUrl = parse_url($source->getLocation());
 
         // Set authentication if needed
@@ -503,6 +507,7 @@ class CallService
                 $previousResult = $decodedResponse;
             } catch (\Exception $exception) {
                 $errorCount++;
+                $this->logger->error($exception->getMessage());
             }
             if (isset($decodedResponse['results'])) {
                 $results = array_merge($decodedResponse['results'], $results);
