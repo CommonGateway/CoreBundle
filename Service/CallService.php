@@ -39,12 +39,14 @@ class CallService
     private MappingService $mappingService;
     private SessionInterface $session;
     private LoggerInterface $logger;
-
+    
     /**
-     * @param AuthenticationService  $authenticationService
+     * @param AuthenticationService $authenticationService
      * @param EntityManagerInterface $entityManager
-     * @param FileService            $fileService
-     * @param MappingService         $mappingService
+     * @param FileService $fileService
+     * @param MappingService $mappingService
+     * @param SessionInterface $session
+     * @param LoggerInterface $callLogger
      */
     public function __construct(
         AuthenticationService $authenticationService,
@@ -138,12 +140,12 @@ class CallService
     /**
      * Calls a source according to given configuration.
      *
-     * @param Source $source             The source to call
-     * @param string $endpoint           The endpoint on the source to call
-     * @param string $method             The method on which to call the source
-     * @param array  $config             The additional configuration to call the source
-     * @param bool   $asynchronous       Whether or not to call the source asynchronously
-     * @param bool   $createCertificates
+     * @param Source $source             The source to call.
+     * @param string $endpoint           The endpoint on the source to call.
+     * @param string $method             The method on which to call the source.
+     * @param array  $config             The additional configuration to call the source.
+     * @param bool   $asynchronous       Whether or not to call the source asynchronously.
+     * @param bool   $createCertificates Whether or not to create certificates for this source.
      *
      * @return Response
      */
@@ -220,14 +222,11 @@ class CallService
 //            $this->entityManager->persist($log);
 //            $this->entityManager->flush();
 
-            // TODO: monolog
-//            var_dump($e->getMessage());
-
-            $this->logger->error('Request failed with error '.$exception->getMessage().' and body '.$exception->getResponse()->getBody()->getContents());
+            $responseContent = method_exists(get_class($exception), 'getResponse') === true ? $exception->getResponse()->getBody()->getContents() : '';
+            $this->logger->error('Request failed with error '.$exception->getMessage().' and body '.$responseContent);
 
             throw $exception;
         } catch (GuzzleException $exception) {
-            // TODO: monolog
             $this->logger->error('Request failed with error '.$exception);
 
             throw $exception;
@@ -304,7 +303,8 @@ class CallService
         if (array_key_exists('mapping', $endpointConfigOut[$configKey])) {
             $mapping = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $endpointConfigOut[$configKey]['mapping']]);
             if ($mapping === null) {
-                //todo: log error
+                $this->logger->error("Could not find mapping with reference {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source");
+                
                 return $config;
             }
             $config[$configKey] = $this->mappingService->mapping($mapping, $config[$configKey]);
@@ -315,6 +315,7 @@ class CallService
 
     /**
      * Handles the endpointsConfig of a Source after we did an api-call.
+     * See FileSystemService->handleEndpointsConfigIn() for how we handle this on FileSystem sources.
      *
      * @param Source   $source   The source.
      * @param string   $endpoint The endpoint used to do an api-call on the source.
@@ -352,6 +353,7 @@ class CallService
     /**
      * Handles endpointConfig for a specific endpoint on a source and a specific response property like: 'headers' or 'body'.
      * After we did an api-call.
+     * See FileSystemService->handleEndpointConfigIn() for how we handle this on FileSystem sources.
      *
      * @param mixed  $responseData     Some specific data from the response we might want to change. This data should match with the correct $responseProperty.
      * @param array  $endpointConfigIn The endpointConfig 'in' of a specific endpoint and source.
@@ -369,7 +371,8 @@ class CallService
         if (array_key_exists('mapping', $endpointConfigIn[$responseProperty])) {
             $mapping = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $endpointConfigIn[$responseProperty]['mapping']]);
             if ($mapping === null) {
-                //todo: log error
+                $this->logger->error("Could not find mapping with reference {$endpointConfigIn[$responseProperty]['mapping']} while handling $responseProperty EndpointConfigIn for a Source");
+                
                 return $responseData;
             }
             $responseData = json_decode($responseData->getContents(), true);
