@@ -4,6 +4,8 @@
 
 namespace CommonGateway\CoreBundle\Command;
 
+use App\Entity\Synchronization;
+use App\Service\SynchronizationService;
 use CommonGateway\CoreBundle\Service\FileSystemService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
@@ -23,12 +25,12 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class TestFileSystemServiceCommand extends Command
 {
     private EntityManagerInterface $entityManager;
-    private FileSystemService $fileSystemService;
+    private SynchronizationService $synchronizationService;
 
-    public function __construct(EntityManagerInterface $entityManager, FileSystemService $fileSystemService, string $name = null)
+    public function __construct(EntityManagerInterface $entityManager, SynchronizationService $synchronizationService, string $name = null)
     {
         $this->entityManager = $entityManager;
-        $this->fileSystemService = $fileSystemService;
+        $this->synchronizationService = $synchronizationService;
         parent::__construct($name);
     }
 
@@ -55,12 +57,19 @@ class TestFileSystemServiceCommand extends Command
         $io->info('Fetching object from '.$input->getArgument('source').'/'.$input->getArgument('location'));
 
         $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $input->getArgument('source')]);
-
+        $location = $input->getArgument('location');
         if($source === null) {
             $source = $this->entityManager->getRepository('App:Gateway')->find($input->getArgument('source'));
         }
 
-        $result = $this->fileSystemService->call($source, $input->getArgument('location'));
+        $synchronization = new Synchronization();
+        $synchronization->setSource($source);
+        $synchronization->setSourceId($location);
+        $synchronization->setEndpoint($location);
+
+        $this->entityManager->persist($synchronization);
+
+        $result = $this->synchronizationService->getSingleFromSource($synchronization);
 
         $io->info('result');
         var_Dump($result);
