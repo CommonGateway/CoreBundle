@@ -89,7 +89,7 @@ class OasService
         $oas['components']['schemas'] = [];
         // Add the endpoints to the OAS.
         foreach ($endpoints as $endpoint) {
-            // TODO: endpoint withouth entities do exist...
+            // TODO: endpoint without entities do exist...
             if (count($endpoint->getEntities()) === 0) {
                 continue;
             }
