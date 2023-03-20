@@ -393,7 +393,7 @@ class RequestService
             $this->session->set('schema', $this->schema->getId()->toString());
         }
         // Bit os savety cleanup <- dit zou eigenlijk in de hydrator moeten gebeuren
-        unset($this->content['id']);
+//        unset($this->content['id']);
         unset($this->content['_id']);
         unset($this->content['_self']); // todo: i don't think this does anything useful?
         unset($this->content['_schema']);

@@ -232,7 +232,16 @@ class CacheService
 
         $id = $objectEntity->getId()->toString();
 
-        $array['id'] = $id;
+        if(key_exists('id',$array)) {
+            $array['id'] = $id;
+        }
+        
+        foreach($array['embedded'] as $key => $subObject)
+        {
+            if(key_exists('_self', $subObject) === true && key_exists('id', $subObject) === false) {
+                $array[$key]['id'] = $subObject['_self']['id'];
+            }
+        }
 
         if ($collection->findOneAndReplace(
             ['_id'=>$id],
