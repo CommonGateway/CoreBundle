@@ -56,10 +56,11 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
         // Let see if we need to hook an attribute to an entity
         if (
             $object instanceof Attribute // It's an attribute
-            && $object->getSchema() // It has a reference
+            && ($object->getSchema() || $object->getReference()) // It has a reference
             && !$object->getObject() // It isn't currently connected to a schema
         ) {
-            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $object->getSchema()]);
+            $reference = $object->getReference() ?? $object->getSchema();
+            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference]);
             if ($entity !== null) {
                 $object->setObject($entity);
                 if ($object->getInversedByPropertyName() && !$object->getInversedBy()) {
