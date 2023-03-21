@@ -220,14 +220,10 @@ class CallService
 //            $this->entityManager->persist($log);
 //            $this->entityManager->flush();
 
-            // TODO: monolog
-//            var_dump($e->getMessage());
-
             $this->logger->error('Request failed with error '.$exception->getMessage().' and body '.$exception->getResponse()->getBody()->getContents());
 
             throw $exception;
         } catch (GuzzleException $exception) {
-            // TODO: monolog
             $this->logger->error('Request failed with error '.$exception);
 
             throw $exception;

@@ -15,6 +15,7 @@ use App\Service\ResponseService;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Exception;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -51,18 +52,19 @@ class RequestService
     private SerializerInterface $serializer;
     private SessionInterface $session;
     private LoggerInterface $logger;
-
+    
     /**
-     * @param EntityManagerInterface   $entityManager
-     * @param CacheService             $cacheService
-     * @param ResponseService          $responseService
-     * @param ObjectEntityService      $objectEntityService
-     * @param LogService               $logService
-     * @param CallService              $callService
-     * @param Security                 $security
+     * @param EntityManagerInterface $entityManager
+     * @param CacheService $cacheService
+     * @param ResponseService $responseService
+     * @param ObjectEntityService $objectEntityService
+     * @param LogService $logService
+     * @param CallService $callService
+     * @param Security $security
      * @param EventDispatcherInterface $eventDispatcher
-     * @param SerializerInterface      $serializer
-     * @param SessionInterface         $session
+     * @param SerializerInterface $serializer
+     * @param SessionInterface $session
+     * @param LoggerInterface $requestLogger
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -290,28 +292,40 @@ class RequestService
 
         unset($this->data['headers']['authorization']);
         // Make a guzzle call to the source based on the incoming call.
-        $result = $this->callService->call(
-            $proxy,
-            $this->data['path'],
-            $this->data['method'],
-            [
-                'query'   => $this->data['query'],
-                'headers' => $this->data['headers'],
-                'body'    => $this->data['crude_body'],
-            ]
-        );
-
-        // Let create a response from the guzzle call.
-        $responce = new Response(
-            $result->getBody()->getContents(),
-            $result->getStatusCode(),
-            $result->getHeaders()
-        );
-
-        // @todo the above might need a try catch
-
+        try {
+            $result = $this->callService->call(
+                $proxy,
+                $this->data['path'],
+                $this->data['method'],
+                [
+                    'query'   => $this->data['query'],
+                    'headers' => $this->data['headers'],
+                    'body'    => $this->data['crude_body'],
+                ]
+            );
+            
+            // Let create a response from the guzzle call.
+            $response = new Response(
+                $result->getBody()->getContents(),
+                $result->getStatusCode(),
+                $result->getHeaders()
+            );
+        } catch (Exception $exception) {
+            $statusCode = $exception->getCode() ?? 500;
+            if (method_exists(get_class($exception), 'getResponse') === true && $exception->getResponse() !== null) {
+                $body = $exception->getResponse()->getBody()->getContents();
+                $statusCode = $exception->getResponse()->getStatusCode();
+                $headers = $exception->getResponse()->getHeaders();
+            }
+            $content = $this->serializer->serialize([
+                "Message" => $exception->getMessage(),
+                "Body" => $body ?? "Can\'t get a response & body for this type of Exception: ".get_class($exception)
+            ], 'json');
+            $response = new Response($content, $statusCode, $headers ?? []);
+        }
+        
         // And don so lets return what we have.
-        return $responce;
+        return $response;
     }//end proxyHandler()
 
     /**
@@ -335,7 +349,7 @@ class RequestService
     }
 
     /**
-     * Handles incomming requests and is responsible for generating a responce.
+     * Handles incomming requests and is responsible for generating a response.
      *
      * @param array $data          The data from the call
      * @param array $configuration The configuration from the call
@@ -864,7 +878,7 @@ class RequestService
     }//end proxyRequestHandler()
 
     /**
-     * Creating the responce object.
+     * Creating the response object.
      *
      * @param $data
      *

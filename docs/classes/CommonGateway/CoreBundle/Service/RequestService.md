@@ -12,13 +12,13 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 |------|-------------|
 |[__construct](#requestservice__construct)||
 |[checkEmbedded](#requestservicecheckembedded)|If embedded should be shown or not.|
-|[createResponse](#requestservicecreateresponse)|Creating the responce object.|
+|[createResponse](#requestservicecreateresponse)|Creating the response object.|
 |[getId](#requestservicegetid)|Get the ID from given parameters.|
 |[getSchema](#requestservicegetschema)|Get the schema from given parameters returns false if no schema could be established.|
 |[itemRequestHandler](#requestserviceitemrequesthandler)||
 |[proxyHandler](#requestserviceproxyhandler)||
 |[realRequestQueryAll](#requestservicerealrequestqueryall)|A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.|
-|[requestHandler](#requestservicerequesthandler)|Handles incomming requests and is responsible for generating a responce.|
+|[requestHandler](#requestservicerequesthandler)|Handles incomming requests and is responsible for generating a response.|
 |[searchRequestHandler](#requestservicesearchrequesthandler)|This function searches all the objectEntities and formats the data.|
 |[shouldWeUnsetEmbedded](#requestserviceshouldweunsetembedded)|If embedded should be shown or not.|
 
@@ -84,7 +84,7 @@ If embedded should be shown or not.
 public createResponse ( $data)
 ```
 
-Creating the responce object. 
+Creating the response object. 
 
  
 
@@ -237,7 +237,7 @@ This function will not.
 public requestHandler (array $data, array $configuration)
 ```
 
-Handles incomming requests and is responsible for generating a responce. 
+Handles incomming requests and is responsible for generating a response. 
 
  
 
