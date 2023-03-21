@@ -241,7 +241,7 @@ class CacheService
         if (key_exists('embedded', $array) === true) {
             foreach ($array['embedded'] as $key => $subObject) {
                 if (key_exists('_self', $subObject) === true && key_exists('id', $subObject) === false) {
-                    $array[$key]['id'] = $subObject['_self']['id'];
+                    $array['embedded'][$key]['id'] = $subObject['_self']['id'];
                 }
             }
         }
