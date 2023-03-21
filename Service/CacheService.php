@@ -237,10 +237,12 @@ class CacheService
             $array['id'] = $id;
         }
 
-        // Add id field to level 1 subobjects for backwards compatibility reasons
-        foreach ($array['embedded'] as $key => $subObject) {
-            if (key_exists('_self', $subObject) === true && key_exists('id', $subObject) === false) {
-                $array[$key]['id'] = $subObject['_self']['id'];
+        // Add id field to level 1 subobjects for backwards compatibility reasons.
+        if (key_exists('embedded', $array) === true) {
+            foreach ($array['embedded'] as $key => $subObject) {
+                if (key_exists('_self', $subObject) === true && key_exists('id', $subObject) === false) {
+                    $array[$key]['id'] = $subObject['_self']['id'];
+                }
             }
         }
 
