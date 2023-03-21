@@ -233,7 +233,7 @@ class CacheService
         $id = $objectEntity->getId()->toString();
 
         // Add an id field to main object only if the object not already has an id field.
-        if (key_exists('id', $array)) {
+        if (key_exists('id', $array) === false) {
             $array['id'] = $id;
         }
 
