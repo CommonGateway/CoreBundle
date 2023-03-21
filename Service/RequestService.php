@@ -14,8 +14,8 @@ use App\Service\ObjectEntityService;
 use App\Service\ResponseService;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
 use Exception;
+use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -52,19 +52,19 @@ class RequestService
     private SerializerInterface $serializer;
     private SessionInterface $session;
     private LoggerInterface $logger;
-    
+
     /**
-     * @param EntityManagerInterface $entityManager
-     * @param CacheService $cacheService
-     * @param ResponseService $responseService
-     * @param ObjectEntityService $objectEntityService
-     * @param LogService $logService
-     * @param CallService $callService
-     * @param Security $security
+     * @param EntityManagerInterface   $entityManager
+     * @param CacheService             $cacheService
+     * @param ResponseService          $responseService
+     * @param ObjectEntityService      $objectEntityService
+     * @param LogService               $logService
+     * @param CallService              $callService
+     * @param Security                 $security
      * @param EventDispatcherInterface $eventDispatcher
-     * @param SerializerInterface $serializer
-     * @param SessionInterface $session
-     * @param LoggerInterface $requestLogger
+     * @param SerializerInterface      $serializer
+     * @param SessionInterface         $session
+     * @param LoggerInterface          $requestLogger
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -303,7 +303,7 @@ class RequestService
                     'body'    => $this->data['crude_body'],
                 ]
             );
-            
+
             // Let create a response from the guzzle call.
             $response = new Response(
                 $result->getBody()->getContents(),
@@ -318,12 +318,12 @@ class RequestService
                 $headers = $exception->getResponse()->getHeaders();
             }
             $content = $this->serializer->serialize([
-                "Message" => $exception->getMessage(),
-                "Body" => $body ?? "Can\'t get a response & body for this type of Exception: ".get_class($exception)
+                'Message' => $exception->getMessage(),
+                'Body'    => $body ?? "Can\'t get a response & body for this type of Exception: ".get_class($exception),
             ], 'json');
             $response = new Response($content, $statusCode, $headers ?? []);
         }
-        
+
         // And don so lets return what we have.
         return $response;
     }//end proxyHandler()
