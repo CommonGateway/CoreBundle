@@ -232,7 +232,7 @@ class CacheService
 
         $id = $objectEntity->getId()->toString();
 
-        if (key_exists('id',$array)) {
+        if (key_exists('id', $array)) {
             $array['id'] = $id;
         }
         
