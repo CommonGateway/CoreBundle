@@ -93,7 +93,7 @@ class OasService
             if (count($endpoint->getEntities()) === 0) {
                 continue;
             }
-            
+
             // Add the path to the paths.
             $pathArray = [];
             foreach ($endpoint->getPath() as $path) {
