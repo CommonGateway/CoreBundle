@@ -15,6 +15,7 @@ use Psr\Log\LoggerInterface;
  * This service provides methods to find resources from the gateway by their reference.
  *
  * @Author Robert Zondervan <robert@conduction.nl>
+ *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
  * @package commongateway/corebundle
