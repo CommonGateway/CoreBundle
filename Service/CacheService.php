@@ -232,13 +232,12 @@ class CacheService
 
         $id = $objectEntity->getId()->toString();
 
-        if(key_exists('id',$array)) {
+        if (key_exists('id',$array)) {
             $array['id'] = $id;
         }
         
-        foreach($array['embedded'] as $key => $subObject)
-        {
-            if(key_exists('_self', $subObject) === true && key_exists('id', $subObject) === false) {
+        foreach ($array['embedded'] as $key => $subObject) {
+            if (key_exists('_self', $subObject) === true && key_exists('id', $subObject) === false) {
                 $array[$key]['id'] = $subObject['_self']['id'];
             }
         }
