@@ -179,6 +179,12 @@ class MappingService
         // Back to array
         $output = $dotArray->all();
 
+        // If something has been defined to work on root level (i.e. the object lives on root level), we can use # to define writing the root object.
+        $keys = array_keys($output);
+        if (count($keys) === 1 && $keys[0] === '#') {
+            $output = $output['#'];
+        }
+
         // Log the result
         isset($this->io) ?? $this->io->debug('Mapped object', [
             'input'      => $input,
