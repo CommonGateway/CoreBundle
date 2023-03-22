@@ -20,43 +20,54 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  */
 class DataClearCommand extends Command
 {
+
     protected static $defaultName = 'commongateway:data:clear';
+
     private $cacheService;
+
     private EntityManagerInterface $entityManagerInterface;
+
     private ParameterBagInterface $parameterBagInterface;
+
 
     public function __construct(
         CacheService $cacheService,
         EntityManagerInterface $entityManagerInterface,
         ParameterBagInterface $parameterBagInterface
     ) {
-        $this->cacheService = $cacheService;
-        $this->entitymanager = $entityManagerInterface;
+        $this->cacheService          = $cacheService;
+        $this->entitymanager         = $entityManagerInterface;
         $this->parameterBagInterface = $parameterBagInterface;
 
         parent::__construct();
-    }
+
+    }//end __construct()
+
 
     protected function configure(): void
     {
         $this
             ->setDescription('This command removes all objects from the datbase')
             ->setHelp('use with care, or better don\'t use at all');
-    }
+
+    }//end configure()
+
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $env = $this->parameterBagInterface->get('app_env');
-        $io = new SymfonyStyle($input, $output);
+        $io  = new SymfonyStyle($input, $output);
 
-        $io->writeln([
-            '',
-            '<info>Common Gateway Data Remover</info>',
-            '============',
-            '',
-            'Trying to remove all data from environment: <comment> '.$env.' </comment>',
-            '',
-        ]);
+        $io->writeln(
+            [
+                '',
+                '<info>Common Gateway Data Remover</info>',
+                '============',
+                '',
+                'Trying to remove all data from environment: <comment> '.$env.' </comment>',
+                '',
+            ]
+        );
 
         if ($env != 'dev') {
             $io->error('Could not remove the data bescouse the environment is not in dev mode');
@@ -90,5 +101,8 @@ class DataClearCommand extends Command
         $io->success('All done');
 
         return Command::SUCCESS;
-    }
-}
+
+    }//end execute()
+
+
+}//end class
