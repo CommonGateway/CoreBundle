@@ -19,7 +19,6 @@ use Psr\Log\LoggerInterface;
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
- * @package commongateway/corebundle
  * @category Service
  */
 class GatewayResourceService
@@ -115,13 +114,13 @@ class GatewayResourceService
 
         return $endpoint;
     }//end getEndpoint()
-    
+
     /**
      * Get an action by reference.
      *
-     * @param string $reference The reference to look for
+     * @param string $reference  The reference to look for
      * @param string $pluginName The name of the plugin that requests the resource.
-     * 
+     *
      * @return Action|null
      */
     public function getAction(string $reference, string $pluginName): ?Action

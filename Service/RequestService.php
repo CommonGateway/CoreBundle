@@ -524,7 +524,6 @@ class RequestService
                     //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
 
                     if ($this->object->hydrate($this->content, true)) {
-
                         $this->entityManager->persist($this->object);
                         $this->entityManager->flush();
                         $this->session->set('object', $this->object->getId()->toString());
@@ -534,7 +533,7 @@ class RequestService
                     }
                 }
 
-                if ($this->schema->getPersist() === false){
+                if ($this->schema->getPersist() === false) {
                     $this->entityManager->persist($this->object);
                     $this->entityManager->flush();
                     $this->session->set('object', $this->object->getId()->toString());
@@ -670,7 +669,7 @@ class RequestService
         $this->entityManager->flush();
 
         if (isset($eventType) === true && isset($result) === true) {
-            $event = new ActionEvent($eventType, ['response' => $result, 'entity' => $this->object->getEntity()->getReference() ?? $this->object->getEntity()->getId()->toString(), 'parameters' => $this->data], );
+            $event = new ActionEvent($eventType, ['response' => $result, 'entity' => $this->object->getEntity()->getReference() ?? $this->object->getEntity()->getId()->toString(), 'parameters' => $this->data]);
             $this->eventDispatcher->dispatch($event, $event->getType());
 
             // If we have a response return that
