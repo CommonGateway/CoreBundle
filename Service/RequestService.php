@@ -446,6 +446,9 @@ class RequestService
                     $this->session->set('object', $this->id);
                     $result = $this->cacheService->getObject($this->id);
 
+                    // check endpoint throws foreach and set the eventtype
+                    // use event dispatcher
+
                     // If we do not have an object we throw an 404
                     if ($result === null) {
                         return new Response($this->serializer->serialize([
@@ -502,25 +505,29 @@ class RequestService
                 $this->object = new ObjectEntity($this->schema);
                 $this->object->setOwner($this->security->getUser()->getUserIdentifier());
 
-                $this->logger->debug('Hydrating object');
-                //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
-
                 if ($this->schema->getPersist() === true) {
+                    $this->logger->debug('Hydrating object');
+                    //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
+
                     if ($this->object->hydrate($this->content, true)) {
 
                         $this->entityManager->persist($this->object);
+                        $this->entityManager->flush();
                         $this->session->set('object', $this->object->getId()->toString());
                         $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
                     } else {
                         // Use validation to throw an error
                     }
-                } else {
+                }
+
+                if ($this->schema->getPersist() === false){
                     $this->entityManager->persist($this->object);
+                    $this->entityManager->flush();
                     $this->session->set('object', $this->object->getId()->toString());
+                    $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
                 }
 
                 $result = $this->cacheService->getObject($this->object->getId());
-
                 break;
             case 'PUT':
                 $eventType = 'commongateway.object.update';
