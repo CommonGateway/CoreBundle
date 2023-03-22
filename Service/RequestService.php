@@ -460,6 +460,9 @@ class RequestService
                     $this->session->set('object', $this->id);
                     $result = $this->cacheService->getObject($this->id);
 
+                    // check endpoint throws foreach and set the eventtype
+                    // use event dispatcher
+
                     // If we do not have an object we throw an 404
                     if ($result === null) {
                         return new Response($this->serializer->serialize([
@@ -516,14 +519,25 @@ class RequestService
                 $this->object = new ObjectEntity($this->schema);
                 $this->object->setOwner($this->security->getUser()->getUserIdentifier());
 
-                $this->logger->debug('Hydrating object');
-                //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
-                if ($this->object->hydrate($this->content, true)) {
+                if ($this->schema->getPersist() === true) {
+                    $this->logger->debug('Hydrating object');
+                    //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
+
+                    if ($this->object->hydrate($this->content, true)) {
+                        $this->entityManager->persist($this->object);
+                        $this->entityManager->flush();
+                        $this->session->set('object', $this->object->getId()->toString());
+                        $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
+                    } else {
+                        // Use validation to throw an error
+                    }
+                }
+
+                if ($this->schema->getPersist() === false) {
                     $this->entityManager->persist($this->object);
+                    $this->entityManager->flush();
                     $this->session->set('object', $this->object->getId()->toString());
                     $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
-                } else {
-                    // Use validation to throw an error
                 }
 
                 $result = $this->cacheService->getObject($this->object->getId());
@@ -557,14 +571,17 @@ class RequestService
 
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
                 $this->logger->debug('updating object '.$this->id);
-                if ($this->object->hydrate($this->content, true)) { // This should be an unsafe hydration
-                    if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
-                        $this->objectEntityService->setUnread($this->object);
+                if ($this->schema->getPersist() === true) {
+                    if ($this->object->hydrate($this->content, true)) { // This should be an unsafe hydration
+                        if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
+                            $this->objectEntityService->setUnread($this->object);
+                        }
+
+                        $this->entityManager->persist($this->object);
+                        $this->entityManager->flush();
+                    } else {
+                        // Use validation to throw an error
                     }
-                    $this->entityManager->persist($this->object);
-                    $this->entityManager->flush();
-                } else {
-                    // Use validation to throw an error
                 }
 
                 $result = $this->cacheService->getObject($this->object->getId());
@@ -602,7 +619,9 @@ class RequestService
                     if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
                         $this->objectEntityService->setUnread($this->object);
                     }
-                    $this->entityManager->persist($this->object);
+                    if ($this->schema->getPersist() === true) {
+                        $this->entityManager->persist($this->object);
+                    }
                     $this->entityManager->flush();
                 } else {
                     // Use validation to throw an error
@@ -650,7 +669,7 @@ class RequestService
         $this->entityManager->flush();
 
         if (isset($eventType) === true && isset($result) === true) {
-            $event = new ActionEvent($eventType, ['response' => $result, 'entity' => $this->object->getEntity()->getReference() ?? $this->object->getEntity()->getId()->toString()]);
+            $event = new ActionEvent($eventType, ['response' => $result, 'entity' => $this->object->getEntity()->getReference() ?? $this->object->getEntity()->getId()->toString(), 'parameters' => $this->data]);
             $this->eventDispatcher->dispatch($event, $event->getType());
 
             // If we have a response return that
