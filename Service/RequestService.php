@@ -347,15 +347,16 @@ class RequestService
         // Lets play it save
         return [];
     }
-    
+
     /**
      * Handles incomming requests and is responsible for generating a response.
      *
-     * @param array $data The data from the call
+     * @param array $data          The data from the call
      * @param array $configuration The configuration from the call
      *
-     * @return Response The modified data
      * @throws Exception
+     *
+     * @return Response The modified data
      */
     public function requestHandler(array $data, array $configuration): Response
     {
@@ -451,7 +452,7 @@ class RequestService
                 // THROW SECURITY ERROR AND EXIT
             }
         }
-        
+
         // Get application configuration in and out for current endpoint/global if this is set on current application.
         // Note: we might want to do this earlier in this function if we want to use this configuration there...
         if ($this->session->get('application') !== null) {
@@ -665,7 +666,7 @@ class RequestService
         }
 
         $this->handleMetadataSelf($result, $metadataSelf);
-    
+
         // Handle application configuration out for embedded if we need to do this for the current application and endpoint.
         if (isset($applEndpointConfig['out']['embedded']) === true) {
             $result = $this->shouldWeUnsetEmbedded($result, $applEndpointConfig['out']['embedded']);
@@ -673,12 +674,12 @@ class RequestService
 
         return $this->createResponse($result);
     }
-    
+
     /**
      * Gets the application configuration 'in' and/or 'out' for the current endpoint.
      * First checks if the current/active application has configuration.
      * If this is the case, check if the currently used endpoint or 'global' is present in this configuration for 'in' and/or 'out'.
-     * Example: appl->config['global']['out']
+     * Example: appl->config['global']['out'].
      *
      * @return array The 'in' and 'out' configuration of the Application for the current Endpoint.
      */
@@ -692,9 +693,9 @@ class RequestService
                 array_pop($pathArray);
             }
             $endpoint = '/'.implode('/', $pathArray);
-        
+
             $applicationConfig = $application->getConfiguration();
-            
+
             // Check if there is 'in' and/or 'out' configuration for the current $endpoint or 'global'.
             foreach (['in', 'out'] as $type) {
                 if (array_key_exists($endpoint, $applicationConfig) === true && array_key_exists($type, $applicationConfig[$endpoint])) {
@@ -703,17 +704,17 @@ class RequestService
                     $applEndpointConfig[$type] = $applicationConfig['global'][$type];
                 }
             }
-            
+
             return $applEndpointConfig;
         }
-        
+
         return [];
     }
 
     /**
      * If embedded should be shown or not.
      * Configuration Example: ['global']['out']['embedded']['unset'] = true
-     * Configuration Example 2: ['global']['out']['embedded']['unset']['except'] = ['application/json+ld', 'application/ld+json']
+     * Configuration Example 2: ['global']['out']['embedded']['unset']['except'] = ['application/json+ld', 'application/ld+json'].
      *
      * @param object|array $result         fetched result
      * @param array        $embeddedConfig Application configuration ['out']['embedded']
