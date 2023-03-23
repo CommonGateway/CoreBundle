@@ -4,12 +4,16 @@ namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
 use Doctrine\ORM\EntityManagerInterface;
+use League\Flysystem\FileAttributes;
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use League\Flysystem\Ftp\FtpAdapter;
 use League\Flysystem\Ftp\FtpConnectionOptions;
+use League\Flysystem\ZipArchive\FilesystemZipArchiveProvider;
+use League\Flysystem\ZipArchive\ZipArchiveAdapter;
 use Psr\Log\LoggerInterface;
+use Ramsey\Uuid\Uuid;
 use Safe\Exceptions\UrlException;
 use Safe\Exceptions\JsonException;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
@@ -26,12 +30,12 @@ use Symfony\Component\Serializer\Encoder\YamlEncoder;
  *
  * @category Service
  */
-class FilesystemService
+class FileSystemService
 {
     private EntityManagerInterface $entityManager;
     private MappingService $mappingService;
     private LoggerInterface $logger;
-    
+
     /**
      * @param EntityManagerInterface $entityManager
      * @param MappingService $mappingService
@@ -46,7 +50,7 @@ class FilesystemService
         $this->mappingService = $mappingService;
         $this->logger = $filesystemLogger;
     }
-    
+
     /**
      * Connects to a Filesystem.
      *
@@ -96,6 +100,50 @@ class FilesystemService
     }//end getFileContents()
 
     /**
+     * Writes a zip file to a temporary file, merges the contents into an array.
+     *
+     * @param string $content The zip file as a string.
+     *
+     * @return array
+     *
+     * @throws FilesystemException
+     * @throws JsonException
+     */
+    public function getZipContents(string $content): array
+    {
+        // Let's create a temporary file.
+        $id = Uuid::uuid4();
+        $filename = "/var/tmp/tmp-{$id->toString()}.zip";
+        $fs = new \Symfony\Component\Filesystem\Filesystem();
+        $fs->touch($filename);
+        $fs->appendToFile($filename, $content);
+
+        // Open the temporary zip file.
+        $provider = new FilesystemZipArchiveProvider($filename);
+        $zip = new ZipArchiveAdapter($provider);
+
+        // Get the files in the zip file.
+        $files = $zip->listContents('/', true);
+
+        // Recursively get data from the files in the zip file.
+        $contents = [];
+        foreach($files as $file) {
+            if($file instanceof FileAttributes) {
+                $contents[$file->path()] = $this->decodeFile(
+                    $zip->read($file->path()),
+                    $file->path()
+                );
+            }
+        }
+
+        // Remove the temporary file.
+        $fs->remove($filename);
+
+        return $contents;
+
+    }
+
+    /**
      * Decodes a file content using a given format, default = json_decode.
      *
      * @param string|null $content The content to decode.
@@ -114,6 +162,8 @@ class FilesystemService
             $format = end($fileArray);
         }
         switch ($format) {
+            case 'zip':
+                return $this->getZipContents($content);
             case 'yaml':
                 $yamlEncoder = new YamlEncoder();
                 return $yamlEncoder->decode($content, $format);
@@ -129,7 +179,7 @@ class FilesystemService
                 return $data;
         }
     }//end decodeFile()
-    
+
     /**
      * Calls a Filesystem source according to given configuration.
      *
@@ -151,10 +201,10 @@ class FilesystemService
         } else {
             $decodedFile = $this->decodeFile($content, $location);
         }
-        
+
         return $this->handleEndpointsConfigIn($source, $location, $decodedFile);
     }//end call()
-    
+
     /**
      * Handles the endpointsConfig of a Filesystem Source after we did a guzzle call.
      * See CallService->handleEndpointsConfigIn() for how we handle this on other (/normal) type of sources.
@@ -172,21 +222,21 @@ class FilesystemService
         if (empty($endpointsConfig)) {
             return $decodedFile;
         }
-        
+
         // Let's check if the endpoint used on this source has "in" configuration in the EndpointsConfig of the source.
         if (array_key_exists($location, $endpointsConfig) === true && array_key_exists('in', $endpointsConfig[$location])) {
             $endpointConfigIn = $endpointsConfig[$location]['in'];
         } elseif (array_key_exists('global', $endpointsConfig) === true && array_key_exists('in', $endpointsConfig['global'])) {
             $endpointConfigIn = $endpointsConfig['global']['in'];
         }
-        
+
         if (isset($endpointConfigIn) === true) {
             $decodedFile = $this->handleEndpointConfigIn($decodedFile, $endpointConfigIn, 'root');
         }
-        
+
         return $decodedFile;
     }//end handleEndpointsConfigIn()
-    
+
     /**
      * Handles endpointConfig for a specific endpoint on a Filesystem source and a specific key like: 'root'.
      * After we did a guzzle call.
@@ -204,12 +254,12 @@ class FilesystemService
         if ((array_key_exists($key, $decodedFile) === false && $key !== 'root') || array_key_exists($key, $endpointConfigIn) === false) {
             return $decodedFile;
         }
-    
+
         if (array_key_exists('mapping', $endpointConfigIn[$key])) {
             $mapping = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $endpointConfigIn[$key]['mapping']]);
             if ($mapping === null) {
                 $this->logger->error("Could not find mapping with reference {$endpointConfigIn[$key]['mapping']} while handling $key EndpointConfigIn for a Filesystem Source");
-                
+
                 return $decodedFile;
             }
             if ($key === 'root') {
@@ -218,7 +268,7 @@ class FilesystemService
                 $decodedFile[$key] = $this->mappingService->mapping($mapping, $decodedFile[$key]);
             }
         }
-        
+
         return $decodedFile;
     }//end handleEndpointConfigIn()
 
