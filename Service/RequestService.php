@@ -451,34 +451,11 @@ class RequestService
                 // THROW SECURITY ERROR AND EXIT
             }
         }
-    
-        // todo: make this a function (with description about: appl->config['global']['out'] / ['global']['in']
-        // Get application configuration in and out for current endpoint/global if this is set on current application, in case we need these later.
+        
+        // Get application configuration in and out for current endpoint/global if this is set on current application.
+        // Note: we might want to do this earlier in this function if we want to use this configuration there...
         if ($this->session->get('application') !== null) {
-            $application = $this->entityManager->getRepository('App:Application')->findOneBy(['id' => $this->session->get('application')]);
-            if ($application !== null && $application->getConfiguration() !== null) {
-                $pathArray = isset($this->data['endpoint']) ? $this->data['endpoint']->getPath() : [];
-                if (end($pathArray) === 'id') {
-                    array_pop($pathArray);
-                }
-                $endpoint = '/'.implode('/', $pathArray);
-    
-                $applicationConfig = $application->getConfiguration();
-                // todo: make this a function with $type = 'in'
-                // Let's check if the endpoint used has "in" configuration in the Configuration of the application.
-                if (array_key_exists($endpoint, $applicationConfig) === true && array_key_exists('in', $applicationConfig[$endpoint])) {
-                    $applConfigIn = $applicationConfig[$endpoint]['in'];
-                } elseif (array_key_exists('global', $applicationConfig) === true && array_key_exists('in', $applicationConfig['global'])) {
-                    $applConfigIn = $applicationConfig['global']['in'];
-                }
-                // todo: make this a function with $type = 'out'
-                // Let's check if the endpoint used has "out" configuration in the Configuration of the application.
-                if (array_key_exists($endpoint, $applicationConfig) === true && array_key_exists('out', $applicationConfig[$endpoint])) {
-                    $applConfigOut = $applicationConfig[$endpoint]['out'];
-                } elseif (array_key_exists('global', $applicationConfig) === true && array_key_exists('out', $applicationConfig['global'])) {
-                    $applConfigOut = $applicationConfig['global']['out'];
-                }
-            }
+            $applEndpointConfig = $this->getApplEndpointConfig();
         }
 
         // All prepped so lets go
@@ -690,11 +667,47 @@ class RequestService
         $this->handleMetadataSelf($result, $metadataSelf);
     
         // Handle application configuration out for embedded if we need to do this for the current application and endpoint.
-        if (isset($applConfigOut) === true && isset($applConfigOut['embedded']) === true) {
-            $result = $this->shouldWeUnsetEmbedded($result, $applConfigOut['embedded']);
+        if (isset($applEndpointConfig['out']['embedded']) === true) {
+            $result = $this->shouldWeUnsetEmbedded($result, $applEndpointConfig['out']['embedded']);
         }
 
         return $this->createResponse($result);
+    }
+    
+    /**
+     * Gets the application configuration 'in' and/or 'out' for the current endpoint.
+     * First checks if the current/active application has configuration.
+     * If this is the case, check if the currently used endpoint or 'global' is present in this configuration for 'in' and/or 'out'.
+     * Example: appl->config['global']['out']
+     *
+     * @return array The 'in' and 'out' configuration of the Application for the current Endpoint.
+     */
+    private function getApplEndpointConfig(): array
+    {
+        $application = $this->entityManager->getRepository('App:Application')->findOneBy(['id' => $this->session->get('application')]);
+        if ($application !== null && $application->getConfiguration() !== null) {
+            $applEndpointConfig = [];
+            $pathArray = isset($this->data['endpoint']) ? $this->data['endpoint']->getPath() : [];
+            if (end($pathArray) === 'id') {
+                array_pop($pathArray);
+            }
+            $endpoint = '/'.implode('/', $pathArray);
+        
+            $applicationConfig = $application->getConfiguration();
+            
+            // Check if there is 'in' and/or 'out' configuration for the current $endpoint or 'global'.
+            foreach (['in', 'out'] as $type) {
+                if (array_key_exists($endpoint, $applicationConfig) === true && array_key_exists($type, $applicationConfig[$endpoint])) {
+                    $applEndpointConfig[$type] = $applicationConfig[$endpoint][$type];
+                } elseif (array_key_exists('global', $applicationConfig) === true && array_key_exists($type, $applicationConfig['global'])) {
+                    $applEndpointConfig[$type] = $applicationConfig['global'][$type];
+                }
+            }
+            
+            return $applEndpointConfig;
+        }
+        
+        return [];
     }
 
     /**
