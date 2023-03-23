@@ -1,24 +1,4 @@
 <?php
-
-namespace CommonGateway\CoreBundle\Service;
-
-use App\Entity\Gateway as Source;
-use Doctrine\ORM\EntityManagerInterface;
-use League\Flysystem\FileAttributes;
-use League\Flysystem\Filesystem;
-use League\Flysystem\FilesystemException;
-use League\Flysystem\FilesystemOperator;
-use League\Flysystem\Ftp\FtpAdapter;
-use League\Flysystem\Ftp\FtpConnectionOptions;
-use League\Flysystem\ZipArchive\FilesystemZipArchiveProvider;
-use League\Flysystem\ZipArchive\ZipArchiveAdapter;
-use Psr\Log\LoggerInterface;
-use Ramsey\Uuid\Uuid;
-use Safe\Exceptions\UrlException;
-use Safe\Exceptions\JsonException;
-use Symfony\Component\Serializer\Encoder\XmlEncoder;
-use Symfony\Component\Serializer\Encoder\YamlEncoder;
-
 /**
  * Service to call external Filesystem sources.
  *
@@ -30,10 +10,46 @@ use Symfony\Component\Serializer\Encoder\YamlEncoder;
  *
  * @category Service
  */
+namespace CommonGateway\CoreBundle\Service;
+
+use App\Entity\Gateway as Source;
+use Doctrine\ORM\EntityManagerInterface;
+use League\Flysystem\FileAttributes;
+use League\Flysystem\Filesystem;
+use League\Flysystem\FilesystemException;
+use League\Flysystem\Ftp\FtpAdapter;
+use League\Flysystem\Ftp\FtpConnectionOptions;
+use League\Flysystem\ZipArchive\FilesystemZipArchiveProvider;
+use League\Flysystem\ZipArchive\ZipArchiveAdapter;
+use Psr\Log\LoggerInterface;
+use Ramsey\Uuid\Uuid;
+use Safe\Exceptions\UrlException;
+use Safe\Exceptions\JsonException;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use Symfony\Component\Serializer\Encoder\YamlEncoder;
+
+
 class FileSystemService
 {
+    /**
+     * The entity manager.
+     *
+     * @var EntityManagerInterface
+     */
     private EntityManagerInterface $entityManager;
+
+    /**
+     * The mapping service.
+     *
+     * @var MappingServic
+     */
     private MappingService $mappingService;
+
+    /**
+     * The logger.
+     *
+     * @var LoggerInterface
+     */
     private LoggerInterface $logger;
 
     /**
@@ -56,11 +72,11 @@ class FileSystemService
      *
      * @param Source $source The Filesystem source to connect to.
      *
-     * @return FilesystemOperator The Filesystem Operator.
+     * @return Filesystem The Filesystem Operator.
      *
      * @throws UrlException
      */
-    public function connectFilesystem (Source $source): FilesystemOperator
+    public function connectFilesystem (Source $source): Filesystem
     {
         $url = \Safe\parse_url($source->getLocation());
         $ssl = false;
@@ -69,34 +85,38 @@ class FileSystemService
             $ssl = true;
         }
 
-        var_Dump('connecting filesystem');
-        $connectionOptions = new FtpConnectionOptions($url['host'], $url['path'], $source->getUsername(), $source->getPassword(), $url['port'], $ssl);
+        $connectionOptions = new FtpConnectionOptions(
+            $url['host'],
+            $url['path'],
+            $source->getUsername(),
+            $source->getPassword(),
+            $url['port'],
+            $ssl
+        );
 
         $adapter = new FtpAdapter($connectionOptions);
 
-        var_Dump('Filesystem connected');
         return new Filesystem($adapter);
+
     }//end connectFilesystem()
 
     /**
      * Gets the content of a file from a specific file on a filesystem.
      *
-     * @param FilesystemOperator $filesystem The filesystem to get a file from.
+     * @param Filesystem $filesystem The filesystem to get a file from.
      * @param string $location The location of the file to get.
      *
      * @return string|null The file content or null.
      *
      * @throws FilesystemException
      */
-    public function getFileContents(FilesystemOperator $filesystem, string $location): ?string
+    public function getFileContents(Filesystem $filesystem, string $location): ?string
     {
-        var_dump('get file contents');
         if ($filesystem->fileExists($location)) {
             return $filesystem->read($location);
         }
-        var_dump("file $location not found");
-        var_dump($filesystem->listContents('/')->toArray());
         return null;
+
     }//end getFileContents()
 
     /**
@@ -141,7 +161,7 @@ class FileSystemService
 
         return $contents;
 
-    }
+    }//end getZipContents()
 
     /**
      * Decodes a file content using a given format, default = json_decode.
