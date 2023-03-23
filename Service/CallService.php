@@ -38,8 +38,9 @@ class CallService
     private FileService $fileService;
     private MappingService $mappingService;
     private SessionInterface $session;
-    private LoggerInterface $logger;
-    
+    private LoggerInterface $callLogger;
+
+
     /**
      * @param AuthenticationService $authenticationService
      * @param EntityManagerInterface $entityManager
@@ -62,7 +63,7 @@ class CallService
         $this->fileService = $fileService;
         $this->mappingService = $mappingService;
         $this->session = $session;
-        $this->logger = $callLogger;
+        $this->callLogger = $callLogger;
     }
 
     /**
@@ -158,7 +159,7 @@ class CallService
         bool $createCertificates = true
     ): Response {
         $this->session->set('source', $source->getId()->toString());
-        $this->logger->info('Calling source '.$source->getName());
+        $this->callLogger->info('Calling source '.$source->getName());
 
         if (!$source->getIsEnabled()) {
             throw new HttpException('409', "This source is not enabled: {$source->getName()}");
@@ -192,13 +193,13 @@ class CallService
 //        $log->setRequestHeaders($config['headers'] ?? null);
 
         $url = $source->getLocation().$endpoint;
-        $this->logger->info('Calling url '.$url);
+        $this->callLogger->info('Calling url '.$url);
 
         $config = $this->handleEndpointsConfigOut($source, $endpoint, $config);
 
         $startTimer = microtime(true);
 
-        $this->logger->debug('Call configuration: ', $config);
+        $this->callLogger->debug('Call configuration: ', $config);
         // Lets make the call
         try {
             if (!$asynchronous) {
@@ -206,7 +207,7 @@ class CallService
             } else {
                 $response = $this->client->requestAsync($method, $url, $config);
             }
-            $this->logger->info("Request to $url succesful");
+            $this->callLogger->info("Request to $url succesful");
         } catch (ServerException|ClientException|RequestException|Exception $exception) {
 //            $stopTimer = microtime(true);
 //            $log->setResponseStatus('');
@@ -223,11 +224,11 @@ class CallService
 //            $this->entityManager->flush();
 
             $responseContent = method_exists(get_class($exception), 'getResponse') === true ? $exception->getResponse()->getBody()->getContents() : '';
-            $this->logger->error('Request failed with error '.$exception->getMessage().' and body '.$responseContent);
+            $this->callLogger->error('Request failed with error '.$exception->getMessage().' and body '.$responseContent);
 
             throw $exception;
         } catch (GuzzleException $exception) {
-            $this->logger->error('Request failed with error '.$exception);
+            $this->callLogger->error('Request failed with error '.$exception);
 
             throw $exception;
         }
@@ -261,7 +262,7 @@ class CallService
      */
     private function handleEndpointsConfigOut(Source $source, string $endpoint, array $config): array
     {
-        $this->logger->info('Handling outgoing configuration for endpoints');
+        $this->callLogger->info('Handling outgoing configuration for endpoints');
         $endpointsConfig = $source->getEndpointsConfig();
         if (empty($endpointsConfig)) {
             return $config;
@@ -295,7 +296,7 @@ class CallService
      */
     private function handleEndpointConfigOut(array $config, array $endpointConfigOut, string $configKey): array
     {
-        $this->logger->info('Handling outgoing configuration for endpoint');
+        $this->callLogger->info('Handling outgoing configuration for endpoint');
         if (array_key_exists($configKey, $config) === false || array_key_exists($configKey, $endpointConfigOut) === false) {
             return $config;
         }
@@ -303,7 +304,7 @@ class CallService
         if (array_key_exists('mapping', $endpointConfigOut[$configKey])) {
             $mapping = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $endpointConfigOut[$configKey]['mapping']]);
             if ($mapping === null) {
-                $this->logger->error("Could not find mapping with reference {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source");
+                $this->callLogger->error("Could not find mapping with reference {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source");
                 
                 return $config;
             }
@@ -325,7 +326,7 @@ class CallService
      */
     private function handleEndpointsConfigIn(Source $source, string $endpoint, Response $response): Response
     {
-        $this->logger->info('Handling incoming configuration for endpoints');
+        $this->callLogger->info('Handling incoming configuration for endpoints');
         $endpointsConfig = $source->getEndpointsConfig();
         if (empty($endpointsConfig)) {
             return $response;
@@ -363,7 +364,7 @@ class CallService
      */
     private function handleEndpointConfigIn($responseData, array $endpointConfigIn, string $responseProperty): array
     {
-        $this->logger->info('Handling incoming configuration for endpoint');
+        $this->callLogger->info('Handling incoming configuration for endpoint');
         if (empty($responseData) === true || array_key_exists($responseProperty, $endpointConfigIn) === false) {
             return $responseData;
         }
@@ -371,7 +372,7 @@ class CallService
         if (array_key_exists('mapping', $endpointConfigIn[$responseProperty])) {
             $mapping = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $endpointConfigIn[$responseProperty]['mapping']]);
             if ($mapping === null) {
-                $this->logger->error("Could not find mapping with reference {$endpointConfigIn[$responseProperty]['mapping']} while handling $responseProperty EndpointConfigIn for a Source");
+                $this->callLogger->error("Could not find mapping with reference {$endpointConfigIn[$responseProperty]['mapping']} while handling $responseProperty EndpointConfigIn for a Source");
                 
                 return $responseData;
             }
@@ -392,7 +393,7 @@ class CallService
      */
     private function getContentType(Response $response, Source $source): string
     {
-        $this->logger->debug('Determine content type of response');
+        $this->callLogger->debug('Determine content type of response');
 
         // switch voor obejct
         $contentType = $response->getHeader('content-type')[0];
@@ -419,7 +420,7 @@ class CallService
         Response $response,
         ?string $contentType = 'application/json'
     ): array {
-        $this->logger->info('Decoding response content');
+        $this->callLogger->info('Decoding response content');
         // resultaat omzetten
 
         // als geen content-type header dan content-type header is accept header
@@ -427,7 +428,7 @@ class CallService
         if (!$responseBody) {
             return [];
         }
-        $this->logger->debug('Response content: '.$responseBody);
+        $this->callLogger->debug('Response content: '.$responseBody);
 
         $xmlEncoder = new XmlEncoder(['xml_root_node_name' => $this->configuration['apiSource']['location']['xmlRootNodeName'] ?? 'response']);
         $yamlEncoder = new YamlEncoder();
@@ -455,7 +456,7 @@ class CallService
 
             return $result;
         } catch (\Exception $exception) {
-            $this->logger->error('Could not decode body, content type could not be determined');
+            $this->callLogger->error('Could not decode body, content type could not be determined');
 
             throw new \Exception('Could not decode body, content type could not be determined');
         }
@@ -486,7 +487,7 @@ class CallService
      */
     public function getAllResults(Source $source, string $endpoint = '', array $config = []): array
     {
-        $this->logger->info('Fetch all data from source and combine the results into one array');
+        $this->callLogger->info('Fetch all data from source and combine the results into one array');
         $errorCount = 0;
         $pageCount = 1;
         $results = [];
@@ -510,7 +511,7 @@ class CallService
                 $previousResult = $decodedResponse;
             } catch (\Exception $exception) {
                 $errorCount++;
-                $this->logger->error($exception->getMessage());
+                $this->callLogger->error($exception->getMessage());
             }
             if (isset($decodedResponse['results'])) {
                 $results = array_merge($decodedResponse['results'], $results);

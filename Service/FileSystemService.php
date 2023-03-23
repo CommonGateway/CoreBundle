@@ -50,22 +50,24 @@ class FileSystemService
      *
      * @var LoggerInterface
      */
-    private LoggerInterface $logger;
+    private LoggerInterface $callLogger;
 
     /**
-     * @param EntityManagerInterface $entityManager
-     * @param MappingService $mappingService
-     * @param LoggerInterface $filesystemLogger
+     * The class constructor
+     *
+     * @param EntityManagerInterface $entityManager  The entity manager.
+     * @param MappingService         $mappingService The mapping service.
+     * @param LoggerInterface        $callLogger     The call logger.
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         MappingService $mappingService,
-        LoggerInterface $filesystemLogger
+        LoggerInterface $callLogger
     ) {
         $this->entityManager = $entityManager;
         $this->mappingService = $mappingService;
-        $this->logger = $filesystemLogger;
-    }
+        $this->callLogger = $callLogger;
+    }//end __construct()
 
     /**
      * Connects to a Filesystem.
@@ -76,7 +78,7 @@ class FileSystemService
      *
      * @throws UrlException
      */
-    public function connectFilesystem (Source $source): Filesystem
+    public function connectFilesystem(Source $source): Filesystem
     {
         $url = \Safe\parse_url($source->getLocation());
         $ssl = false;
@@ -104,7 +106,7 @@ class FileSystemService
      * Gets the content of a file from a specific file on a filesystem.
      *
      * @param Filesystem $filesystem The filesystem to get a file from.
-     * @param string $location The location of the file to get.
+     * @param string     $location   The location of the file to get.
      *
      * @return string|null The file content or null.
      *
@@ -132,11 +134,11 @@ class FileSystemService
     public function getZipContents(string $content): array
     {
         // Let's create a temporary file.
-        $id = Uuid::uuid4();
-        $filename = "/var/tmp/tmp-{$id->toString()}.zip";
-        $fs = new \Symfony\Component\Filesystem\Filesystem();
-        $fs->touch($filename);
-        $fs->appendToFile($filename, $content);
+        $fileId = new Uuid();
+        $filename = "/var/tmp/tmp-{$fileId->toString()}.zip";
+        $localFileSystem = new \Symfony\Component\Filesystem\Filesystem();
+        $localFileSystem->touch($filename);
+        $localFileSystem->appendToFile($filename, $content);
 
         // Open the temporary zip file.
         $provider = new FilesystemZipArchiveProvider($filename);
@@ -147,17 +149,15 @@ class FileSystemService
 
         // Recursively get data from the files in the zip file.
         $contents = [];
-        foreach($files as $file) {
-            if($file instanceof FileAttributes) {
-                $contents[$file->path()] = $this->decodeFile(
-                    $zip->read($file->path()),
-                    $file->path()
-                );
-            }
+        foreach ($files as $file) {
+            $contents[$file->path()] = $this->decodeFile(
+                $zip->read($file->path()),
+                $file->path()
+            );
         }
 
         // Remove the temporary file.
-        $fs->remove($filename);
+        $localFileSystem->remove($filename);
 
         return $contents;
 
@@ -166,9 +166,9 @@ class FileSystemService
     /**
      * Decodes a file content using a given format, default = json_decode.
      *
-     * @param string|null $content The content to decode.
+     * @param string|null $content  The content to decode.
      * @param string      $location The (file) location to get a format from if no format is given.
-     * @param string|null $format The format to use when decoding the file content.
+     * @param string|null $format   The format to use when decoding the file content.
      *
      * @return array The decoded file content.
      *
@@ -176,8 +176,7 @@ class FileSystemService
      */
     public function decodeFile(?string $content, string $location, ?string $format = null): array
     {
-        var_dump('decode file contents');
-        if($format === null) {
+        if ($format === null) {
             $fileArray = explode('.', $location);
             $format = end($fileArray);
         }
@@ -193,7 +192,7 @@ class FileSystemService
             case 'json':
             default:
                 $data = \Safe\json_decode($content, true);
-                if($data === null) {
+                if ($data === null) {
                     return [];
                 }
                 return $data;
@@ -237,16 +236,20 @@ class FileSystemService
      */
     private function handleEndpointsConfigIn(Source $source, string $location, array $decodedFile): array
     {
-        $this->logger->info('Handling incoming configuration for Filesystem endpoints');
+        $this->callLogger->info('Handling incoming configuration for Filesystem endpoints');
         $endpointsConfig = $source->getEndpointsConfig();
         if (empty($endpointsConfig)) {
             return $decodedFile;
         }
 
         // Let's check if the endpoint used on this source has "in" configuration in the EndpointsConfig of the source.
-        if (array_key_exists($location, $endpointsConfig) === true && array_key_exists('in', $endpointsConfig[$location])) {
+        if (array_key_exists($location, $endpointsConfig) === true
+            && array_key_exists('in', $endpointsConfig[$location])
+        ) {
             $endpointConfigIn = $endpointsConfig[$location]['in'];
-        } elseif (array_key_exists('global', $endpointsConfig) === true && array_key_exists('in', $endpointsConfig['global'])) {
+        } elseif (array_key_exists('global', $endpointsConfig) === true
+            && array_key_exists('in', $endpointsConfig['global'])
+        ) {
             $endpointConfigIn = $endpointsConfig['global']['in'];
         }
 
@@ -270,15 +273,18 @@ class FileSystemService
      */
     private function handleEndpointConfigIn(array $decodedFile, array $endpointConfigIn, string $key): array
     {
-        $this->logger->info('Handling incoming configuration for Filesystem endpoint');
-        if ((array_key_exists($key, $decodedFile) === false && $key !== 'root') || array_key_exists($key, $endpointConfigIn) === false) {
+        $this->callLogger->info('Handling incoming configuration for Filesystem endpoint');
+        if ((array_key_exists($key, $decodedFile) === false && $key !== 'root')
+            || array_key_exists($key, $endpointConfigIn) === false
+        ) {
             return $decodedFile;
         }
 
         if (array_key_exists('mapping', $endpointConfigIn[$key])) {
-            $mapping = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $endpointConfigIn[$key]['mapping']]);
+            $mapping = $this->entityManager->getRepository('App:Mapping')
+                ->findOneBy(['reference' => $endpointConfigIn[$key]['mapping']]);
             if ($mapping === null) {
-                $this->logger->error("Could not find mapping with reference {$endpointConfigIn[$key]['mapping']} while handling $key EndpointConfigIn for a Filesystem Source");
+                $this->callLogger->error("Could not find mapping with reference {$endpointConfigIn[$key]['mapping']} while handling $key EndpointConfigIn for a Filesystem Source");
 
                 return $decodedFile;
             }
