@@ -26,7 +26,7 @@ use Symfony\Component\Serializer\Encoder\YamlEncoder;
  *
  * @category Service
  */
-class FilesystemService
+class FileSystemService
 {
     private EntityManagerInterface $entityManager;
     private MappingService $mappingService;
