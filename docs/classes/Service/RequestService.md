@@ -363,7 +363,7 @@ public shouldWeUnsetEmbedded (object|array $result, array $embeddedConfig)
 If embedded should be shown or not. 
 
 Configuration Example: ['global']['out']['embedded']['unset'] = true  
-Configuration Example 2: ['global']['out']['embedded']['unset']['except'] = ['application/json+ld', 'application/ld+json'] 
+Configuration Example 2: ['global']['out']['embedded']['unset']['except'] = ['application/json+ld', 'application/ld+json']. 
 
 **Parameters**
 
