@@ -357,7 +357,7 @@ class InstallationService
             }
         }
 
-        // Make sure to warn users if they have to many files in a folder.
+        // Make sure to warn users if they have to many files in a folder. (36 is maximum)
         if (count($hits->files()) > 34) {
             $this->logger->critical('Found more than 34 files in directory, try limiting your files to 32 per directory. Or you won\'t be able to load in these schema\'s locally on a windows machine.', ['location' => $location, 'files' => count($hits->files())]);
         } elseif (count($hits->files()) > 32) {

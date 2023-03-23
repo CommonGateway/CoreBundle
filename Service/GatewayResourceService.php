@@ -2,6 +2,7 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use App\Entity\Action;
 use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\Gateway as Source;
@@ -15,6 +16,7 @@ use Psr\Log\LoggerInterface;
  * This service provides methods to find resources from the gateway by their reference.
  *
  * @Author Robert Zondervan <robert@conduction.nl>
+ *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
  * @package commongateway/corebundle
@@ -97,7 +99,7 @@ class GatewayResourceService
     }//end getSource()
 
     /**
-     * Get a source by reference.
+     * Get a endpoint by reference.
      *
      * @param string $reference  The location to look for.
      * @param string $pluginName The name of the plugin that requests the resource.
@@ -106,11 +108,29 @@ class GatewayResourceService
      */
     public function getEndpoint(string $reference, string $pluginName): ?Endpoint
     {
-        $source = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $reference]);
-        if ($source === null) {
+        $endpoint = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $reference]);
+        if ($endpoint === null) {
             $this->pluginLogger->error("No endpoint found for $reference.", ['plugin'=>$pluginName]);
         }//end if
 
-        return $source;
+        return $endpoint;
     }//end getEndpoint()
+
+    /**
+     * Get an action by reference.
+     *
+     * @param string $reference  The reference to look for
+     * @param string $pluginName The name of the plugin that requests the resource.
+     *
+     * @return Action|null
+     */
+    public function getAction(string $reference, string $pluginName): ?Action
+    {
+        $action = $this->entityManager->getRepository('App:Action')->findOneBy(['reference' => $reference]);
+        if ($action === null) {
+            $this->logger->error("No action found for $reference.", ['plugin'=>$pluginName]);
+        }//end if
+
+        return $action;
+    }//end getAction()
 }

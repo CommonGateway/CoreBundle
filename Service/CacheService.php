@@ -232,7 +232,19 @@ class CacheService
 
         $id = $objectEntity->getId()->toString();
 
-        $array['id'] = $id;
+        // Add an id field to main object only if the object not already has an id field.
+        if (key_exists('id', $array) === false) {
+            $array['id'] = $id;
+        }
+
+        // Add id field to level 1 subobjects for backwards compatibility reasons.
+        if (key_exists('embedded', $array) === true) {
+            foreach ($array['embedded'] as $key => $subObject) {
+                if (key_exists('_self', $subObject) === true && key_exists('id', $subObject) === false) {
+                    $array['embedded'][$key]['id'] = $subObject['_self']['id'];
+                }
+            }
+        }
 
         if ($collection->findOneAndReplace(
             ['_id'=>$id],
