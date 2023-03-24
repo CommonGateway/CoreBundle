@@ -114,11 +114,11 @@ class FileSystemService
      */
     public function getFileContents(Filesystem $filesystem, string $location): ?string
     {
-        if ($filesystem->fileExists($location)) {
+        if ($filesystem->fileExists($location) === true) {
             return $filesystem->read($location);
         }
-        return null;
 
+        return null;
     }//end getFileContents()
 
     /**
@@ -202,20 +202,20 @@ class FileSystemService
     /**
      * Calls a Filesystem source according to given configuration.
      *
-     * @param Source $source The Filesystem source to call.
+     * @param Source $source   The Filesystem source to call.
      * @param string $location The (file) location on the Filesystem source to call.
-     * @param array $config The additional configuration to call the Filesystem source.
+     * @param array $config    The additional configuration to call the Filesystem source.
      *
      * @return array The decoded response array of the call.
      */
     public function call(Source $source, string $location, array $config = []): array
     {
-        // todo: handleEndpointsConfigOut?
+        // Todo: Also add handleEndpointsConfigOut?
         $fileSystem = $this->connectFilesystem($source);
 
         $content = $this->getFileContents($fileSystem, $location);
 
-        if (isset($config['format'])) {
+        if (isset($config['format']) === true) {
             $decodedFile = $this->decodeFile($content, $location, $config['format']);
         } else {
             $decodedFile = $this->decodeFile($content, $location);
@@ -228,9 +228,9 @@ class FileSystemService
      * Handles the endpointsConfig of a Filesystem Source after we did a guzzle call.
      * See CallService->handleEndpointsConfigIn() for how we handle this on other (/normal) type of sources.
      *
-     * @param Source   $source   The Filesystem source.
-     * @param string   $location The (file) location used to do a guzzle call on the Filesystem source.
-     * @param array    $decodedFile The decoded file, response of the guzzle call we might want to change.
+     * @param Source $source      The Filesystem source.
+     * @param string $location    The (file) location used to do a guzzle call on the Filesystem source.
+     * @param array  $decodedFile The decoded file, response of the guzzle call we might want to change.
      *
      * @return array The decoded file as array.
      */
@@ -238,17 +238,17 @@ class FileSystemService
     {
         $this->callLogger->info('Handling incoming configuration for Filesystem endpoints');
         $endpointsConfig = $source->getEndpointsConfig();
-        if (empty($endpointsConfig)) {
+        if (empty($endpointsConfig) === true) {
             return $decodedFile;
         }
 
         // Let's check if the endpoint used on this source has "in" configuration in the EndpointsConfig of the source.
         if (array_key_exists($location, $endpointsConfig) === true
-            && array_key_exists('in', $endpointsConfig[$location])
+            && array_key_exists('in', $endpointsConfig[$location]) === true
         ) {
             $endpointConfigIn = $endpointsConfig[$location]['in'];
         } elseif (array_key_exists('global', $endpointsConfig) === true
-            && array_key_exists('in', $endpointsConfig['global'])
+            && array_key_exists('in', $endpointsConfig['global']) === true
         ) {
             $endpointConfigIn = $endpointsConfig['global']['in'];
         }
@@ -280,7 +280,7 @@ class FileSystemService
             return $decodedFile;
         }
 
-        if (array_key_exists('mapping', $endpointConfigIn[$key])) {
+        if (array_key_exists('mapping', $endpointConfigIn[$key]) === true) {
             $mapping = $this->entityManager->getRepository('App:Mapping')
                 ->findOneBy(['reference' => $endpointConfigIn[$key]['mapping']]);
             if ($mapping === null) {
