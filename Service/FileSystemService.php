@@ -94,12 +94,13 @@ class FileSystemService
     /**
      * Returns the contents of all files in a filesystem.
      *
-     * @param Filesystem $filesystem
+     * @param Filesystem $filesystem The local filesystem.
+     *
      * @return array
      */
     public function getContentFromAllFiles(FileSystem $filesystem): array
     {
-        // Get all files on the filesystem
+        // Get all files on the filesystem.
         $files = $filesystem->listContents('/', true);
 
         // Recursively get data from the files in the filesystem file.
@@ -111,14 +112,14 @@ class FileSystemService
         }
 
         return $contents;
-    }//end __construct()
+    }//end getContentFromAllFiles()
 
     /**
      * Decodes a file content using a given format, default = json_decode.
      *
-     * @param string|null $content The content to decode.
-     * @param string $location The (file) location to get a format from if no format is given.
-     * @param string|null $format The format to use when decoding the file content.
+     * @param string|null $content  The content to decode.
+     * @param string      $location The (file) location to get a format from if no format is given.
+     * @param string|null $format   The format to use when decoding the file content.
      *
      * @return array The decoded file content.
      * @throws \Exception
@@ -129,6 +130,7 @@ class FileSystemService
          * Increase memory, data read from file can get quite large.
          * Design decision is to ignore codesniffer here for now until we find an alternative.
          */
+
         ini_set('memory_limit', '4096M');
 
         if ($format === null) {
