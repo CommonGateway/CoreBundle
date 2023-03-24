@@ -2,11 +2,13 @@
 /**
  * Service to call external Filesystem sources.
  *
- * This service provides a guzzle wrapper to work with Filesystem sources in the common gateway.
+ * This service provides a flysystem wrapper to get content from files.
  *
  * @Author Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @package commongateway/corebundle
  *
  * @category Service
  */

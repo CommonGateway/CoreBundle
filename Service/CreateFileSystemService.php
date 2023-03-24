@@ -1,5 +1,17 @@
 <?php
-
+/**
+ * Service to connect external filesystems.
+ *
+ * This service provides a flysystem wrapper to connect to various kinds of filesystems.
+ *
+ * @Author Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @package commongateway/corebundle
+ *
+ * @category Service
+ */
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
