@@ -40,14 +40,13 @@ class CallService
     private SessionInterface $session;
     private LoggerInterface $callLogger;
 
-
     /**
      * @param AuthenticationService $authenticationService
      * @param EntityManagerInterface $entityManager
      * @param FileService $fileService
      * @param MappingService $mappingService
      * @param SessionInterface $session
-     * @param LoggerInterface $callLogger
+     * @param LoggerInterface $callLogger The logger for the call channel.
      */
     public function __construct(
         AuthenticationService $authenticationService,

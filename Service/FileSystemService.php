@@ -14,20 +14,11 @@ namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
 use Doctrine\ORM\EntityManagerInterface;
-use League\Flysystem\FileAttributes;
 use League\Flysystem\Filesystem;
-use League\Flysystem\FilesystemException;
-use League\Flysystem\Ftp\FtpAdapter;
-use League\Flysystem\Ftp\FtpConnectionOptions;
-use League\Flysystem\ZipArchive\FilesystemZipArchiveProvider;
-use League\Flysystem\ZipArchive\ZipArchiveAdapter;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
-use Safe\Exceptions\UrlException;
-use Safe\Exceptions\JsonException;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
-
 
 class FileSystemService
 {
@@ -53,6 +44,13 @@ class FileSystemService
     private LoggerInterface $callLogger;
 
     /**
+     * Create File System Service.
+     *
+     * @var CreateFileSystemService
+     */
+    private CreateFileSystemService $cfsService;
+
+    /**
      * The class constructor
      *
      * @param EntityManagerInterface $entityManager  The entity manager.
@@ -62,45 +60,14 @@ class FileSystemService
     public function __construct(
         EntityManagerInterface $entityManager,
         MappingService $mappingService,
-        LoggerInterface $callLogger
+        LoggerInterface $callLogger,
+        CreateFileSystemService $cfsService
     ) {
         $this->entityManager = $entityManager;
         $this->mappingService = $mappingService;
         $this->callLogger = $callLogger;
+        $this->cfsService = $cfsService;
     }//end __construct()
-
-    /**
-     * Connects to a Filesystem.
-     *
-     * @param Source $source The Filesystem source to connect to.
-     *
-     * @return Filesystem The Filesystem Operator.
-     *
-     * @throws UrlException
-     */
-    public function connectFilesystem(Source $source): Filesystem
-    {
-        $url = \Safe\parse_url($source->getLocation());
-        $ssl = false;
-
-        if ($url['scheme'] === 'sftp') {
-            $ssl = true;
-        }
-
-        $connectionOptions = new FtpConnectionOptions(
-            $url['host'],
-            $url['path'],
-            $source->getUsername(),
-            $source->getPassword(),
-            $url['port'],
-            $ssl
-        );
-
-        $adapter = new FtpAdapter($connectionOptions);
-
-        return new Filesystem($adapter);
-
-    }//end connectFilesystem()
 
     /**
      * Gets the content of a file from a specific file on a filesystem.
@@ -122,46 +89,26 @@ class FileSystemService
     }//end getFileContents()
 
     /**
-     * Writes a zip file to a temporary file, merges the contents into an array.
+     * Returns the contents of all files in a filesystem.
      *
-     * @param string $content The zip file as a string.
-     *
+     * @param Filesystem $filesystem
      * @return array
-     *
-     * @throws FilesystemException
-     * @throws JsonException
      */
-    public function getZipContents(string $content): array
+    public function getContentFromAllFiles(FileSystem $filesystem): array
     {
-        // Let's create a temporary file.
-        $fileId = new Uuid();
-        $filename = "/var/tmp/tmp-{$fileId->toString()}.zip";
-        $localFileSystem = new \Symfony\Component\Filesystem\Filesystem();
-        $localFileSystem->touch($filename);
-        $localFileSystem->appendToFile($filename, $content);
+        // Get all files on the filesystem
+        $files = $filesystem->listContents('/', true);
 
-        // Open the temporary zip file.
-        $provider = new FilesystemZipArchiveProvider($filename);
-        $zip = new ZipArchiveAdapter($provider);
-
-        // Get the files in the zip file.
-        $files = $zip->listContents('/', true);
-
-        // Recursively get data from the files in the zip file.
-        $contents = [];
+        // Recursively get data from the files in the filesystem file.
         foreach ($files as $file) {
             $contents[$file->path()] = $this->decodeFile(
-                $zip->read($file->path()),
+                $this->getFileContents($filesystem, $file->path()),
                 $file->path()
             );
         }
 
-        // Remove the temporary file.
-        $localFileSystem->remove($filename);
-
         return $contents;
-
-    }//end getZipContents()
+    }
 
     /**
      * Decodes a file content using a given format, default = json_decode.
@@ -171,11 +118,10 @@ class FileSystemService
      * @param string|null $format   The format to use when decoding the file content.
      *
      * @return array The decoded file content.
-     *
-     * @throws JsonException
      */
     public function decodeFile(?string $content, string $location, ?string $format = null): array
     {
+        ini_set('memory_limit', '4096M');
         if ($format === null) {
             $fileArray = explode('.', $location);
             $format = end($fileArray);
@@ -183,7 +129,11 @@ class FileSystemService
 
         switch ($format) {
             case 'zip':
-                return $this->getZipContents($content);
+                $zipFile = $this->cfsService->createZipFileFromContent($content);
+                $filesystem = $this->cfsService->openZipFilesystem($zipFile);
+                $content = $this->getContentFromAllFiles($filesystem);
+                $this->cfsService->removeZipFile($zipFile);
+                return $content;
             case 'yaml':
                 $yamlEncoder = new YamlEncoder();
                 return $yamlEncoder->decode($content, $format);
@@ -192,11 +142,11 @@ class FileSystemService
                 return $xmlEncoder->decode($content, $format);
             case 'json':
             default:
-                $data = \Safe\json_decode($content, true);
-                if ($data === null) {
+                try {
+                    return \Safe\json_decode($content, true);
+                } catch (\Exception $exception) {
                     return [];
                 }
-                return $data;
         }
     }//end decodeFile()
 
@@ -212,13 +162,13 @@ class FileSystemService
     public function call(Source $source, string $location, array $config = []): array
     {
         // Todo: Also add handleEndpointsConfigOut?
-        $fileSystem = $this->connectFilesystem($source);
+        $fileSystem = $this->cfsService->openFtpFilesystem($source);
 
         $content = $this->getFileContents($fileSystem, $location);
 
         if (isset($config['format']) === true) {
             $decodedFile = $this->decodeFile($content, $location, $config['format']);
-        } else if (isset($config['format']) === false) {
+        } elseif (isset($config['format']) === false) {
             $decodedFile = $this->decodeFile($content, $location);
         }
 
@@ -268,7 +218,7 @@ class FileSystemService
      *
      * @param array  $decodedFile      The decoded file, response of the guzzle call we might want to change.
      * @param array  $endpointConfigIn The endpointConfig 'in' of a specific endpoint and Filesystem source.
-     * @param string $key              The specific key to check if its data needs to be changed and if so, change the data for.
+     * @param string $key              The specific key to check if data needs to be changed.
      *
      * @return array The decoded file as array.
      */
@@ -293,7 +243,7 @@ class FileSystemService
             if ($key === 'root') {
                 return$this->mappingService->mapping($mapping, $decodedFile);
             }
-            
+
             $decodedFile[$key] = $this->mappingService->mapping($mapping, $decodedFile[$key]);
         }
 
