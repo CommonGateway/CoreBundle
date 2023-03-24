@@ -180,6 +180,7 @@ class FileSystemService
             $fileArray = explode('.', $location);
             $format = end($fileArray);
         }
+
         switch ($format) {
             case 'zip':
                 return $this->getZipContents($content);
@@ -204,7 +205,7 @@ class FileSystemService
      *
      * @param Source $source   The Filesystem source to call.
      * @param string $location The (file) location on the Filesystem source to call.
-     * @param array $config    The additional configuration to call the Filesystem source.
+     * @param array  $config   The additional configuration to call the Filesystem source.
      *
      * @return array The decoded response array of the call.
      */
@@ -217,7 +218,7 @@ class FileSystemService
 
         if (isset($config['format']) === true) {
             $decodedFile = $this->decodeFile($content, $location, $config['format']);
-        } else {
+        } else if(isset($config['format']) === false) {
             $decodedFile = $this->decodeFile($content, $location);
         }
 
@@ -265,9 +266,9 @@ class FileSystemService
      * After we did a guzzle call.
      * See CallService->handleEndpointConfigIn() for how we handle this on other (/normal) type of sources.
      *
-     * @param array  $decodedFile The decoded file, response of the guzzle call we might want to change.
+     * @param array  $decodedFile      The decoded file, response of the guzzle call we might want to change.
      * @param array  $endpointConfigIn The endpointConfig 'in' of a specific endpoint and Filesystem source.
-     * @param string $key The specific key to check if its data needs to be changed and if so, change the data for.
+     * @param string $key              The specific key to check if its data needs to be changed and if so, change the data for.
      *
      * @return array The decoded file as array.
      */
