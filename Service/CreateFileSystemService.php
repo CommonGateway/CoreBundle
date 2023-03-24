@@ -36,7 +36,7 @@ class CreateFileSystemService
      */
     public function __construct()
     {
-        $this->localFilesystem = new \Symfony\Component\Filesystem\Filesystem();
+        $this->filesystem = new \Symfony\Component\Filesystem\Filesystem();
     }//end __construct()
 
     /**
@@ -51,8 +51,8 @@ class CreateFileSystemService
         // Let's create a temporary file.
         $fileId = new Uuid();
         $filename = "/var/tmp/tmp-{$fileId->toString()}.zip";
-        $this->localFilesystem->touch($filename);
-        $this->localFilesystem->appendToFile($filename, $content);
+        $this->filesystem->touch($filename);
+        $this->filesystem->appendToFile($filename, $content);
 
         return $filename;
     }//end createZipFileFromContent()
@@ -66,7 +66,7 @@ class CreateFileSystemService
      */
     public function removeZipFile(string $filename): void
     {
-        $this->localFilesystem->remove($filename);
+        $this->filesystem->remove($filename);
     }//end removeZipFile()
 
     /**
@@ -85,6 +85,7 @@ class CreateFileSystemService
         } catch (\Exception $exception) {
             throw new \Exception('Could not parse source location');
         }
+
         $ssl = false;
 
         if ($url['scheme'] === 'sftp') {
@@ -121,5 +122,5 @@ class CreateFileSystemService
         $adapter = new ZipArchiveAdapter($provider);
 
         return new Filesystem($adapter);
-    }//end openZipFilesystem
-}
+    }//end openZipFilesystem()
+}//end class

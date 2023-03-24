@@ -55,9 +55,10 @@ class FileSystemService
     /**
      * The class constructor
      *
-     * @param EntityManagerInterface $entityManager  The entity manager.
-     * @param MappingService         $mappingService The mapping service.
-     * @param LoggerInterface        $callLogger     The call logger.
+     * @param EntityManagerInterface  $entityManager  The entity manager.
+     * @param MappingService          $mappingService The mapping service.
+     * @param LoggerInterface         $callLogger     The call logger.
+     * @param CreateFileSystemService $cfsService     The create file system service
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -110,20 +111,26 @@ class FileSystemService
         }
 
         return $contents;
-    }
+    }//end __construct()
 
     /**
      * Decodes a file content using a given format, default = json_decode.
      *
-     * @param string|null $content  The content to decode.
-     * @param string      $location The (file) location to get a format from if no format is given.
-     * @param string|null $format   The format to use when decoding the file content.
+     * @param string|null $content The content to decode.
+     * @param string $location The (file) location to get a format from if no format is given.
+     * @param string|null $format The format to use when decoding the file content.
      *
      * @return array The decoded file content.
+     * @throws \Exception
      */
     public function decodeFile(?string $content, string $location, ?string $format = null): array
     {
-        \sini_set('memory_limit', '4096M');
+        /*
+         * Increase memory, data read from file can get quite large.
+         * Design decision is to ignore codesniffer here for now until we find an alternative.
+         */
+        ini_set('memory_limit', '4096M');
+
         if ($format === null) {
             $fileArray = explode('.', $location);
             $format = end($fileArray);
@@ -149,7 +156,7 @@ class FileSystemService
                 } catch (\Exception $exception) {
                     return [];
                 }
-        }
+        }//end switch
     }//end decodeFile()
 
     /**
