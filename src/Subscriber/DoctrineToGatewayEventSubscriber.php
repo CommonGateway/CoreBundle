@@ -1,7 +1,6 @@
 <?php
 
 // src/Subscriber/DatabaseActivitySubscriber.php
-
 namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Entity\Entity;
@@ -33,11 +32,17 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
  */
 class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
 {
+
     private CacheService $cacheService;
+
     private EntityManagerInterface $entityManager;
+
     private SessionInterface $session;
+
     private EventDispatcherInterface $eventDispatcher;
+
     private Logger $logger;
+
 
     /**
      * Load requiered services, schould not be aprouched directly.
@@ -53,12 +58,14 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         SessionInterface $session,
         EventDispatcherInterface $eventDispatcher
     ) {
-        $this->cacheService = $cacheService;
-        $this->entityManager = $entityManager;
-        $this->session = $session;
+        $this->cacheService    = $cacheService;
+        $this->entityManager   = $entityManager;
+        $this->session         = $session;
         $this->eventDispatcher = $eventDispatcher;
-        $this->logger = new Logger('object');
-    }
+        $this->logger          = new Logger('object');
+
+    }//end __construct()
+
 
     // this method can only return the event names; you cannot define a
     // custom method name to execute when each event triggers
@@ -75,7 +82,9 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             Events::preFlush,
             Events::postFlush,
         ];
-    }
+
+    }//end getSubscribedEvents()
+
 
     /**
      * Deleting object from database.
@@ -97,15 +106,17 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         $this->logger->info(
             'Deleting object from database',
             [
-                'object'    => $object->getId(),
-                'entity'    => $object->getEntity()->getId(),
+                'object' => $object->getId(),
+                'entity' => $object->getEntity()->getId(),
             ]
         );
 
         // Throw the event
         $event = new ActionEvent('commongateway.object.pre.delete', ['object' => $object]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.pre.delete');
-    }
+
+    }//end preRemove()
+
 
     /**
      * Creating object in database.
@@ -127,15 +138,17 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         $this->logger->info(
             'Creating object in database',
             [
-                'object'    => $object->getId(),
-                'entity'    => $object->getEntity()->getId(),
+                'object' => $object->getId(),
+                'entity' => $object->getEntity()->getId(),
             ]
         );
 
         // Throw the event
         $event = new ActionEvent('commongateway.object.pre.create', ['object' => $object]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.pre.create');
-    }
+
+    }//end prePersist()
+
 
     /**
      * Updating object to database.
@@ -157,15 +170,17 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         $this->logger->info(
             'Updating object to database',
             [
-                'object'    => $object->getId(),
-                'entity'    => $object->getEntity()->getId(),
+                'object' => $object->getId(),
+                'entity' => $object->getEntity()->getId(),
             ]
         );
 
         // Throw the event
         $event = new ActionEvent('commongateway.object.pre.update', ['object' => $object]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.pre.update');
-    }
+
+    }//end preUpdate()
+
 
     /**
      * Deleted object from database.
@@ -186,14 +201,15 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         // Write the log
         $this->logger->info(
             'Deleted object from database',
-            [
-            ]
+            []
         );
 
         // Throw the event
         $event = new ActionEvent('commongateway.object.post.delete', []);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.post.delete');
-    }
+
+    }//end postRemove()
+
 
     /**
      * Created object in database.
@@ -215,15 +231,17 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         $this->logger->info(
             'Created object in database',
             [
-                'object'    => $object->getId(),
-                'entity'    => $object->getEntity()->getId(),
+                'object' => $object->getId(),
+                'entity' => $object->getEntity()->getId(),
             ]
         );
 
         // Throw the event
         $event = new ActionEvent('commongateway.object.post.create', ['object' => $object]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.post.create');
-    }
+
+    }//end postPersist()
+
 
     /**
      * Updated object in database.
@@ -245,15 +263,17 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         $this->logger->info(
             'Updated object in database',
             [
-                'object'    => $object->getId(),
-                'entity'    => $object->getEntity()->getId(),
+                'object' => $object->getId(),
+                'entity' => $object->getEntity()->getId(),
             ]
         );
 
         // Throw the event
         $event = new ActionEvent('commongateway.object.post.update', ['object' => $object]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.post.update');
-    }
+
+    }//end postUpdate()
+
 
     /**
      * Read object from database.
@@ -275,14 +295,16 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         $this->logger->info(
             'Read object from database',
             [
-                'object'    => $object->getId(),
+                'object' => $object->getId(),
             ]
         );
 
         // Throw the event
         $event = new ActionEvent('commongateway.object.post.read', ['object' => $object]);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.post.read');
-    }
+
+    }//end postLoad()
+
 
     /**
      * Flushing entity manager.
@@ -296,14 +318,15 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         // Write the log
         $this->logger->info(
             'Flushing entity manager',
-            [
-            ]
+            []
         );
 
         // Throw the event
         $event = new ActionEvent('commongateway.object.pre.flush', []);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.pre.flush');
-    }
+
+    }//end preFlush()
+
 
     /**
      * Flushed entity manager.
@@ -317,12 +340,14 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         // Write the log
         $this->logger->info(
             'Flushed entity manager',
-            [
-            ]
+            []
         );
 
         // Throw the event
         $event = new ActionEvent('commongateway.object.post.flush', []);
         $this->eventDispatcher->dispatch($event, 'commongateway.object.post.flush');
-    }
-}
+
+    }//end postFlush()
+
+
+}//end class

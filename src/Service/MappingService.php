@@ -20,11 +20,13 @@ use Twig\Environment;
  */
 class MappingService
 {
+
     // Add symfony style bundle in order to output to the console.
     private SymfonyStyle $io;
 
     // Create a private variable to store the twig environment
     private Environment $twig;
+
 
     /**
      * Setting up the base class with required services.
@@ -35,7 +37,9 @@ class MappingService
         Environment $twig
     ) {
         $this->twig = $twig;
-    }
+
+    }//end __construct()
+
 
     /**
      * Set symfony style in order to output to the console.
@@ -49,7 +53,9 @@ class MappingService
         $this->io = $io;
 
         return $this;
-    }
+
+    }//end setStyle()
+
 
     /**
      * Replaces strings in array keys, helpful for characters like . in array keys.
@@ -75,7 +81,9 @@ class MappingService
         }
 
         return $result;
+
     }//end encodeArrayKeys()
+
 
     /**
      * Maps (transforms) an array (input) to a different array (output).
@@ -89,16 +97,16 @@ class MappingService
     {
         $input = $this->encodeArrayKeys($input, '.', '&#46;');
 
-        isset($this->io) ?? $this->io->debug('Mapping array based on mapping object '.$mappingObject->getName().' (id:'.$mappingObject->getId()->toString().' / ref:'.$mappingObject->getReference().') v:'.$mappingObject->getversion());
+        (isset($this->io) ?? $this->io->debug('Mapping array based on mapping object '.$mappingObject->getName().' (id:'.$mappingObject->getId()->toString().' / ref:'.$mappingObject->getReference().') v:'.$mappingObject->getversion()));
 
         // Determine pass trough
         // Let's get the dot array based on https://github.com/adbario/php-dot-notation
         if ($mappingObject->getPassTrough()) {
             $dotArray = new Dot($input);
-            isset($this->io) ?? $this->io->debug('Mapping *with* pass trough');
+            (isset($this->io) ?? $this->io->debug('Mapping *with* pass trough'));
         } else {
             $dotArray = new Dot();
-            isset($this->io) ?? $this->io->debug('Mapping *without* pass trough');
+            (isset($this->io) ?? $this->io->debug('Mapping *without* pass trough'));
         }
 
         $dotInput = new Dot($input);
@@ -118,16 +126,17 @@ class MappingService
         // Unset unwanted key's
         foreach ($mappingObject->getUnset() as $unset) {
             if (!$dotArray->has($unset)) {
-                isset($this->io) ?? $this->io->debug("Trying to unset an property that doesn't exist during mapping");
+                (isset($this->io) ?? $this->io->debug("Trying to unset an property that doesn't exist during mapping"));
                 continue;
             }
+
             $dotArray->delete($unset);
         }
 
         // Cast values to a specific type
         foreach ($mappingObject->getCast() as $key => $cast) {
             if (!$dotArray->has($key)) {
-                isset($this->io) ?? $this->io->debug("Trying to cast an property that doesn't exist during mapping");
+                (isset($this->io) ?? $this->io->debug("Trying to cast an property that doesn't exist during mapping"));
                 continue;
             }
 
@@ -136,45 +145,45 @@ class MappingService
             // todo: this works, we should go to php 8.0 later
             if (str_starts_with($cast, 'unsetIfValue==')) {
                 $unsetIfValue = substr($cast, 14);
-                $cast = 'unsetIfValue';
+                $cast         = 'unsetIfValue';
             }
 
             switch ($cast) {
-                case 'int':
-                case 'integer':
-                    $value = intval($value);
-                    break;
-                case 'bool':
-                case 'boolean':
-                    echo 'i equals 1';
-                    break;
-                case 'string':
-                    echo 'i equals 2';
-                    break;
-                case 'keyCantBeValue':
-                    if ($key == $value) {
-                        $dotArray->delete($key);
-                    }
-                    break;
-                case 'unsetIfValue':
-                    if (isset($unsetIfValue) === true && $value == $unsetIfValue) {
-                        $dotArray->delete($key);
-                    }
-                    break;
+            case 'int':
+            case 'integer':
+                $value = intval($value);
+                break;
+            case 'bool':
+            case 'boolean':
+                echo 'i equals 1';
+                break;
+            case 'string':
+                echo 'i equals 2';
+                break;
+            case 'keyCantBeValue':
+                if ($key == $value) {
+                    $dotArray->delete($key);
+                }
+                break;
+            case 'unsetIfValue':
+                if (isset($unsetIfValue) === true && $value == $unsetIfValue) {
+                    $dotArray->delete($key);
+                }
+                break;
                     // Todo: Add more casts
-                case 'jsonToArray':
-                    $value = str_replace(['&quot;', '&amp;quot;'], '"', $value);
-                    $value = json_decode($value, true);
-                default:
-                    isset($this->io) ?? $this->io->debug('Trying to cast to an unsupported cast type: '.$cast);
-                    break;
-            }
+            case 'jsonToArray':
+                $value = str_replace(['&quot;', '&amp;quot;'], '"', $value);
+                $value = json_decode($value, true);
+            default:
+                (isset($this->io) ?? $this->io->debug('Trying to cast to an unsupported cast type: '.$cast));
+                break;
+            }//end switch
 
             // dont reset key that was deleted on purpose
             if ($dotArray->has($key)) {
                 $dotArray->set($key, $value);
             }
-        }
+        }//end foreach
 
         // Back to array
         $output = $dotArray->all();
@@ -186,13 +195,19 @@ class MappingService
         }
 
         // Log the result
-        isset($this->io) ?? $this->io->debug('Mapped object', [
-            'input'      => $input,
-            'output'     => $output,
-            'passTrough' => $mappingObject->getPassTrough(),
-            'mapping'    => $mappingObject->getMapping(),
-        ]);
+        (isset($this->io) ?? $this->io->debug(
+            'Mapped object',
+            [
+                'input'      => $input,
+                'output'     => $output,
+                'passTrough' => $mappingObject->getPassTrough(),
+                'mapping'    => $mappingObject->getMapping(),
+            ]
+        ));
 
         return $output;
-    }
-}
+
+    }//end mapping()
+
+
+}//end class

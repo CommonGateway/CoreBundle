@@ -1,7 +1,6 @@
 <?php
 
 // src/Controller/PluginController.php
-
 namespace CommonGateway\CoreBundle\Controller;
 
 use CommonGateway\CoreBundle\Service\ComposerService;
@@ -13,39 +12,46 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * Class PluginControllerc.
  *
- *
  * @Route("/admin/plugins")
  */
 class PluginController extends AbstractController
 {
+
     private ComposerService $composerService;
+
 
     public function __construct(ComposerService $composerService)
     {
         $this->composerService = $composerService;
-    }
+
+    }//end __construct()
+
 
     /**
      * @Route("/installed", methods={"GET"})
      */
     public function installedAction(Request $request)
     {
-        $status = 200;
+        $status  = 200;
         $plugins = $this->composerService->getAll(['--installed'])['installed'];
 
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
-    }
+
+    }//end installedAction()
+
 
     /**
      * @Route("/audit", methods={"GET"})
      */
     public function auditAction(Request $request)
     {
-        $status = 200;
+        $status  = 200;
         $plugins = $this->composerService->audit(['--format=json']);
 
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
-    }
+
+    }//end auditAction()
+
 
     /**
      * @Route("/available", methods={"GET"})
@@ -59,7 +65,9 @@ class PluginController extends AbstractController
         $plugins = $this->composerService->search($search, ['--type=common-gateway-plugin']);
 
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
-    }
+
+    }//end availableAction()
+
 
     /**
      * @Route("/view", methods={"GET"})
@@ -73,7 +81,9 @@ class PluginController extends AbstractController
         $plugins = $this->composerService->getSingle($packadge);
 
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
-    }
+
+    }//end viewAction()
+
 
     /**
      * @Route("/installl", methods={"POST"})
@@ -89,7 +99,9 @@ class PluginController extends AbstractController
         $plugins = $this->composerService->require($packadge);
 
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
-    }
+
+    }//end installlAction()
+
 
     /**
      * @Route("/upgrade", methods={"POST"})
@@ -105,7 +117,9 @@ class PluginController extends AbstractController
         $plugins = $this->composerService->upgrade($packadge);
 
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
-    }
+
+    }//end upgradeAction()
+
 
     /**
      * @Route("/remove", methods={"POST"})
@@ -121,5 +135,8 @@ class PluginController extends AbstractController
         $plugins = $this->composerService->remove($packadge);
 
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
-    }
-}
+
+    }//end removeAction()
+
+
+}//end class

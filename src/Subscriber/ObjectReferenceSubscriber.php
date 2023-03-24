@@ -1,7 +1,6 @@
 <?php
 
 // src/Subscriber/DatabaseActivitySubscriber.php
-
 namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Entity\Attribute;
@@ -21,16 +20,21 @@ use Doctrine\Persistence\Event\LifecycleEventArgs;
  */
 class ObjectReferenceSubscriber implements EventSubscriberInterface
 {
+
     private EavService $eavService;
+
     private EntityManagerInterface $entityManager;
+
 
     public function __construct(
         EntityManagerInterface $entityManager,
         EavService $eavService
     ) {
         $this->entityManager = $entityManager;
-        $this->eavService = $eavService;
-    }
+        $this->eavService    = $eavService;
+
+    }//end __construct()
+
 
     // this method can only return the event names; you cannot define a
     // custom method name to execute when each event triggers
@@ -40,7 +44,9 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
             Events::postPersist,
             Events::postUpdate,
         ];
-    }
+
+    }//end getSubscribedEvents()
+
 
     /**
      * Checks whether we should check attributes and entities for connections.
@@ -54,13 +60,12 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
         $object = $args->getObject();
 
         // Let see if we need to hook an attribute to an entity
-        if (
-            $object instanceof Attribute // It's an attribute
+        if ($object instanceof Attribute // It's an attribute
             && ($object->getSchema() || $object->getReference()) // It has a reference
             && !$object->getObject() // It isn't currently connected to a schema
         ) {
-            $reference = $object->getReference() ?? $object->getSchema();
-            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference]);
+            $reference = ($object->getReference() ?? $object->getSchema());
+            $entity    = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference]);
             if ($entity !== null) {
                 $object->setObject($entity);
                 if ($object->getInversedByPropertyName() && !$object->getInversedBy()) {
@@ -73,8 +78,8 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
 
             return;
         }
-        if (
-            $object instanceof Entity // Is it an entity
+
+        if ($object instanceof Entity // Is it an entity
             && $object->getReference() // Does it have a reference
         ) {
             $attributes = $this->entityManager->getRepository('App:Attribute')->findBy(['schema' => $object->getReference()]);
@@ -82,6 +87,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
                 if ($attribute instanceof Attribute === false) {
                     continue;
                 }
+
                 $attribute->setObject($object);
                 if ($attribute->getInversedByPropertyName() && !$attribute->getInversedBy()) {
                     $attribute = $object->getAttributeByName($attribute->getInversedByPropertyName());
@@ -93,10 +99,15 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
 
             return;
         }
-    }
+
+    }//end postPersist()
+
 
     public function postUpdate(LifecycleEventArgs $args): void
     {
         $this->postPersist($args);
-    }
-}
+
+    }//end postUpdate()
+
+
+}//end class
