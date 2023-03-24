@@ -41,12 +41,12 @@ class CallService
     private LoggerInterface $callLogger;
 
     /**
-     * @param AuthenticationService $authenticationService
-     * @param EntityManagerInterface $entityManager
-     * @param FileService $fileService
-     * @param MappingService $mappingService
-     * @param SessionInterface $session
-     * @param LoggerInterface $callLogger The logger for the call channel.
+     * @param AuthenticationService  $authenticationService The authentication service
+     * @param EntityManagerInterface $entityManager         The entity manager
+     * @param FileService            $fileService           The file service
+     * @param MappingService         $mappingService        The mapping service
+     * @param SessionInterface       $session               The current session.
+     * @param LoggerInterface        $callLogger            The logger for the call channel.
      */
     public function __construct(
         AuthenticationService $authenticationService,
@@ -304,7 +304,7 @@ class CallService
             $mapping = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $endpointConfigOut[$configKey]['mapping']]);
             if ($mapping === null) {
                 $this->callLogger->error("Could not find mapping with reference {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source");
-                
+
                 return $config;
             }
             $config[$configKey] = $this->mappingService->mapping($mapping, $config[$configKey]);
@@ -372,7 +372,7 @@ class CallService
             $mapping = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $endpointConfigIn[$responseProperty]['mapping']]);
             if ($mapping === null) {
                 $this->callLogger->error("Could not find mapping with reference {$endpointConfigIn[$responseProperty]['mapping']} while handling $responseProperty EndpointConfigIn for a Source");
-                
+
                 return $responseData;
             }
             $responseData = json_decode($responseData->getContents(), true);

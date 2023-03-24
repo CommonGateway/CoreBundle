@@ -16,7 +16,6 @@ namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
 use League\Flysystem\Filesystem;
-use League\Flysystem\FilesystemException;
 use League\Flysystem\Ftp\FtpAdapter;
 use League\Flysystem\Ftp\FtpConnectionOptions;
 use League\Flysystem\ZipArchive\FilesystemZipArchiveProvider;
@@ -74,9 +73,9 @@ class CreateFileSystemService
      *
      * @param Source $source The Filesystem source to connect to.
      *
-     * @return Filesystem The Filesystem Operator.
-     *
      * @throws \Exception
+     *
+     * @return Filesystem The Filesystem Operator.
      */
     public function openFtpFilesystem(Source $source): Filesystem
     {
@@ -111,9 +110,9 @@ class CreateFileSystemService
      *
      * @param string $filename The Filename of the zip file.
      *
-     * @return Filesystem The Filesystem Operator.
-     *
      * @throws \Exception
+     *
+     * @return Filesystem The Filesystem Operator.
      */
     public function openZipFilesystem(string $filename): Filesystem
     {

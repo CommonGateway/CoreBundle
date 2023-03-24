@@ -53,7 +53,7 @@ class FileSystemService
     private CreateFileSystemService $cfsService;
 
     /**
-     * The class constructor
+     * The class constructor.
      *
      * @param EntityManagerInterface  $entityManager  The entity manager.
      * @param MappingService          $mappingService The mapping service.
@@ -78,9 +78,9 @@ class FileSystemService
      * @param Filesystem $filesystem The filesystem to get a file from.
      * @param string     $location   The location of the file to get.
      *
-     * @return string|null The file content or null.
-     *
      * @throws FilesystemException
+     *
+     * @return string|null The file content or null.
      */
     public function getFileContents(Filesystem $filesystem, string $location): ?string
     {
@@ -95,6 +95,8 @@ class FileSystemService
      * Returns the contents of all files in a filesystem.
      *
      * @param Filesystem $filesystem The local filesystem.
+     *
+     * @throws \Exception
      *
      * @return array
      */
@@ -121,8 +123,9 @@ class FileSystemService
      * @param string      $location The (file) location to get a format from if no format is given.
      * @param string|null $format   The format to use when decoding the file content.
      *
-     * @return array The decoded file content.
      * @throws \Exception
+     *
+     * @return array The decoded file content.
      */
     public function decodeFile(?string $content, string $location, ?string $format = null): array
     {
@@ -144,12 +147,15 @@ class FileSystemService
                 $filesystem = $this->cfsService->openZipFilesystem($zipFile);
                 $content = $this->getContentFromAllFiles($filesystem);
                 $this->cfsService->removeZipFile($zipFile);
+
                 return $content;
             case 'yaml':
                 $yamlEncoder = new YamlEncoder();
+
                 return $yamlEncoder->decode($content, $format);
             case 'xml':
                 $xmlEncoder = new XmlEncoder();
+
                 return $xmlEncoder->decode($content, $format);
             case 'json':
             default:
@@ -260,5 +266,4 @@ class FileSystemService
 
         return $decodedFile;
     }//end handleEndpointConfigIn()
-
 }//end class
