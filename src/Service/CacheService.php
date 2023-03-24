@@ -407,7 +407,7 @@ class CacheService
         $this->setPagination($limit, $start, $completeFilter);
 
         // Order
-        $order = isset($completeFilter['_order']) ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
+        $order                                          = isset($completeFilter['_order']) ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
         !empty($order) && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
 
         // Find / Search
@@ -953,7 +953,7 @@ class CacheService
         $collection = $this->client->endpoints->json;
 
         if (isset($filter['path'])) {
-            $path = $filter['path'];
+            $path             = $filter['path'];
             $filter['$where'] = "\"$path\".match(this.pathRegex)";
             unset($filter['path']);
         }
@@ -998,7 +998,7 @@ class CacheService
         $collection = $this->client->schemas->json;
 
         // Remap the array
-        $array = $entity->toSchema(null);
+        $array              = $entity->toSchema(null);
         $array['reference'] = $array['$id'];
         $array['schema']    = $array['$schema'];
         unset($array['$id']);

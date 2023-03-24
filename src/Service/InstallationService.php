@@ -1133,10 +1133,10 @@ class InstallationService
                 continue;
             }
 
-            $path = $subSchemaEndpoint->getPath();
+            $path                            = $subSchemaEndpoint->getPath();
             $path[array_search('id', $path)] = '{'.strtolower($entity->getName()).'._self.id}';
-            $path[] = $subSchemaEndpointData['path'];
-            $path[] = '{id}';
+            $path[]                          = $subSchemaEndpointData['path'];
+            $path[]                          = '{id}';
             $subSchemaEndpoint->setPath($path);
 
             $pathRegex = rtrim($subSchemaEndpoint->getPathRegex(), '$');

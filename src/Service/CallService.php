@@ -63,12 +63,12 @@ class CallService
         LoggerInterface $callLogger
     ) {
         $this->authenticationService = $authenticationService;
-        $this->client         = new Client([]);
-        $this->entityManager  = $entityManager;
-        $this->fileService    = $fileService;
-        $this->mappingService = $mappingService;
-        $this->session        = $session;
-        $this->logger         = $callLogger;
+        $this->client                = new Client([]);
+        $this->entityManager         = $entityManager;
+        $this->fileService           = $fileService;
+        $this->mappingService        = $mappingService;
+        $this->session               = $session;
+        $this->logger                = $callLogger;
 
     }//end __construct()
 

@@ -106,8 +106,8 @@ class RequestService
         $this->security            = $security;
         $this->eventDispatcher     = $eventDispatcher;
         $this->serializer          = $serializer;
-        $this->session = $session;
-        $this->logger  = $requestLogger;
+        $this->session             = $session;
+        $this->logger              = $requestLogger;
 
     }//end __construct()
 
@@ -830,7 +830,7 @@ class RequestService
         }
 
         $this->responseService->xCommongatewayMetadata = $metadataSelf;
-        $resultMetadataSelf = (array) $result['_self'];
+        $resultMetadataSelf                            = (array) $result['_self'];
         $this->responseService->addToMetadata($resultMetadataSelf, 'dateRead', $objectEntity);
         $result['_self'] = $resultMetadataSelf;
 

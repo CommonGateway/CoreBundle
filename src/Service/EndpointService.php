@@ -112,7 +112,7 @@ class EndpointService
 
         // Get the parameters.
         $this->logger->debug('Determine parameters for request');
-        $parameters = $this->getParametersFromRequest();
+        $parameters             = $this->getParametersFromRequest();
         $parameters['endpoint'] = $endpoint;
         $parameters['accept']   = $accept;
         $parameters['body']     = $this->decodeBody();
