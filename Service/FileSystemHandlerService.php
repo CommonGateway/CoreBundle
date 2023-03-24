@@ -21,7 +21,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
 
-class FileSystemHandleService
+class FileSystemHandlerService
 {
     /**
      * The entity manager.
