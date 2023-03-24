@@ -123,7 +123,7 @@ class FileSystemService
      */
     public function decodeFile(?string $content, string $location, ?string $format = null): array
     {
-        ini_set('memory_limit', '4096M');
+        \sini_set('memory_limit', '4096M');
         if ($format === null) {
             $fileArray = explode('.', $location);
             $format = end($fileArray);
