@@ -689,7 +689,7 @@ class RequestService
         if ($application === null || $application->getConfiguration() === null) {
             return [];
         }
-        
+
         $endpoint = $this->getCurrentEndpoint();
 
         $applicationConfig = $application->getConfiguration();
@@ -706,7 +706,7 @@ class RequestService
 
         return $appEndpointConfig;
     }
-    
+
     /**
      * Gets the path (/endpoint) of the currently used Endpoint, using the path array of the current Endpoint.
      *
@@ -718,13 +718,13 @@ class RequestService
         if (isset($this->data['endpoint'])) {
             $pathArray = $this->data['endpoint']->getPath();
         }
-        
+
         // Remove ending id from path to get the core/main endpoint.
         // This way /endpoint without /id can be used in Application Configuration for all CRUD calls.
         if (end($pathArray) === 'id') {
             array_pop($pathArray);
         }
-        
+
         return '/'.implode('/', $pathArray);
     }
 
