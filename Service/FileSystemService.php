@@ -218,7 +218,7 @@ class FileSystemService
 
         if (isset($config['format']) === true) {
             $decodedFile = $this->decodeFile($content, $location, $config['format']);
-        } else if(isset($config['format']) === false) {
+        } else if (isset($config['format']) === false) {
             $decodedFile = $this->decodeFile($content, $location);
         }
 
@@ -289,11 +289,12 @@ class FileSystemService
 
                 return $decodedFile;
             }
+
             if ($key === 'root') {
-                $decodedFile = $this->mappingService->mapping($mapping, $decodedFile);
-            } else {
-                $decodedFile[$key] = $this->mappingService->mapping($mapping, $decodedFile[$key]);
+                return$this->mappingService->mapping($mapping, $decodedFile);
             }
+            
+            $decodedFile[$key] = $this->mappingService->mapping($mapping, $decodedFile[$key]);
         }
 
         return $decodedFile;
