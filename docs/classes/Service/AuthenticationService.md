@@ -1,16 +1,10 @@
-# CommonGateway\CoreBundle\Service\AuthenticationService  
-
-
-
-
-
-
+# CommonGateway\CoreBundle\Service\AuthenticationService
 
 ## Methods
 
 | Name | Description |
 |------|-------------|
-|[__construct](#authenticationservice__construct)||
+|[\_\_construct](#authenticationservice__construct)||
 |[checkHS256](#authenticationservicecheckhs256)|Decides if the provided JWT token is signed with the HS256 Algorithm.|
 |[checkHeadersAndGetJWK](#authenticationservicecheckheadersandgetjwk)|Checks the algorithm of the JWT token and decides how to generate a JWK from the provided public key.|
 |[checkRS256](#authenticationservicecheckrs256)|Decides if the provided JWT token is signed with the HS256 Algorithm.|
@@ -31,10 +25,7 @@
 |[serializeUser](#authenticationserviceserializeuser)|Serializes a user to be used by the token authenticator.|
 |[verifyJWTToken](#authenticationserviceverifyjwttoken)|Verifies the JWT token and returns the payload if the JWT token is valid.|
 
-
-
-
-### AuthenticationService::__construct  
+### AuthenticationService::\_\_construct
 
 **Description**
 
@@ -42,10 +33,6 @@
  __construct (void)
 ```
 
- 
-
- 
-
 **Parameters**
 
 `This function has no parameters.`
@@ -54,11 +41,9 @@
 
 `void`
 
-
 <hr />
 
-
-### AuthenticationService::checkHS256  
+### AuthenticationService::checkHS256
 
 **Description**
 
@@ -66,14 +51,12 @@
 public checkHS256 (\JWT $token)
 ```
 
-Decides if the provided JWT token is signed with the HS256 Algorithm. 
-
- 
+Decides if the provided JWT token is signed with the HS256 Algorithm.
 
 **Parameters**
 
-* `(\JWT) $token`
-: The token provided by the user  
+*   `(\JWT) $token`
+    : The token provided by the user
 
 **Return Values**
 
@@ -81,11 +64,9 @@ Decides if the provided JWT token is signed with the HS256 Algorithm.
 
 > Whether the token is in HS256 or not
 
-
 <hr />
 
-
-### AuthenticationService::checkHeadersAndGetJWK  
+### AuthenticationService::checkHeadersAndGetJWK
 
 **Description**
 
@@ -93,16 +74,14 @@ Decides if the provided JWT token is signed with the HS256 Algorithm.
 public checkHeadersAndGetJWK (\JWT $token, string $publicKey)
 ```
 
-Checks the algorithm of the JWT token and decides how to generate a JWK from the provided public key. 
-
- 
+Checks the algorithm of the JWT token and decides how to generate a JWK from the provided public key.
 
 **Parameters**
 
-* `(\JWT) $token`
-: The JWT token sent by the user  
-* `(string) $publicKey`
-: The public key provided by the application  
+*   `(\JWT) $token`
+    : The JWT token sent by the user
+*   `(string) $publicKey`
+    : The public key provided by the application
 
 **Return Values**
 
@@ -110,11 +89,9 @@ Checks the algorithm of the JWT token and decides how to generate a JWK from the
 
 > The resulting JWK for verifying the JWT
 
-
 <hr />
 
-
-### AuthenticationService::checkRS256  
+### AuthenticationService::checkRS256
 
 **Description**
 
@@ -122,14 +99,12 @@ Checks the algorithm of the JWT token and decides how to generate a JWK from the
 public checkRS256 (\JWT $token)
 ```
 
-Decides if the provided JWT token is signed with the HS256 Algorithm. 
-
- 
+Decides if the provided JWT token is signed with the HS256 Algorithm.
 
 **Parameters**
 
-* `(\JWT) $token`
-: The token provided by the user  
+*   `(\JWT) $token`
+    : The token provided by the user
 
 **Return Values**
 
@@ -137,11 +112,9 @@ Decides if the provided JWT token is signed with the HS256 Algorithm.
 
 > Whether the token is in HS256 or not
 
-
 <hr />
 
-
-### AuthenticationService::checkRS512  
+### AuthenticationService::checkRS512
 
 **Description**
 
@@ -149,14 +122,12 @@ Decides if the provided JWT token is signed with the HS256 Algorithm.
 public checkRS512 (\JWT $token)
 ```
 
-Decides if the provided JWT token is signed with the RS512 Algorithm. 
-
- 
+Decides if the provided JWT token is signed with the RS512 Algorithm.
 
 **Parameters**
 
-* `(\JWT) $token`
-: The token provided by the user  
+*   `(\JWT) $token`
+    : The token provided by the user
 
 **Return Values**
 
@@ -164,11 +135,9 @@ Decides if the provided JWT token is signed with the RS512 Algorithm.
 
 > Whether the token is in HS256 or not
 
-
 <hr />
 
-
-### AuthenticationService::convertRSAKeyToJWK  
+### AuthenticationService::convertRSAKeyToJWK
 
 **Description**
 
@@ -176,14 +145,12 @@ Decides if the provided JWT token is signed with the RS512 Algorithm.
 public convertRSAKeyToJWK (string $key)
 ```
 
-Converts a string RSA key to a JWK via the filesystem. 
-
- 
+Converts a string RSA key to a JWK via the filesystem.
 
 **Parameters**
 
-* `(string) $key`
-: The key to load  
+*   `(string) $key`
+    : The key to load
 
 **Return Values**
 
@@ -191,11 +158,9 @@ Converts a string RSA key to a JWK via the filesystem.
 
 > The resulting Json Web Key
 
-
 <hr />
 
-
-### AuthenticationService::convertRSAtoJWK  
+### AuthenticationService::convertRSAtoJWK
 
 **Description**
 
@@ -203,13 +168,11 @@ Converts a string RSA key to a JWK via the filesystem.
 public convertRSAtoJWK (\Source $source)
 ```
 
-Converts a RSA private key to a JWK. 
-
- 
+Converts a RSA private key to a JWK.
 
 **Parameters**
 
-* `(\Source) $source`
+*   `(\Source) $source`
 
 **Return Values**
 
@@ -217,11 +180,9 @@ Converts a RSA private key to a JWK.
 
 > The resulting Json Web Key
 
-
 <hr />
 
-
-### AuthenticationService::createJwtToken  
+### AuthenticationService::createJwtToken
 
 **Description**
 
@@ -229,16 +190,14 @@ Converts a RSA private key to a JWK.
 public createJwtToken (string $key, array $payload)
 ```
 
-Creates a JWT token to identify with on the application. 
-
- 
+Creates a JWT token to identify with on the application.
 
 **Parameters**
 
-* `(string) $key`
-: The private key to create a JWT token with  
-* `(array) $payload`
-: The payload to create a JWT token with  
+*   `(string) $key`
+    : The private key to create a JWT token with
+*   `(array) $payload`
+    : The payload to create a JWT token with
 
 **Return Values**
 
@@ -246,11 +205,9 @@ Creates a JWT token to identify with on the application.
 
 > The resulting JWT token
 
-
 <hr />
 
-
-### AuthenticationService::getAlgorithm  
+### AuthenticationService::getAlgorithm
 
 **Description**
 
@@ -258,14 +215,12 @@ Creates a JWT token to identify with on the application.
 public getAlgorithm (\Source $source)
 ```
 
-Determines the algorithm for the JWT token to create from the source. 
-
- 
+Determines the algorithm for the JWT token to create from the source.
 
 **Parameters**
 
-* `(\Source) $source`
-: The source to determine the algorithm for  
+*   `(\Source) $source`
+    : The source to determine the algorithm for
 
 **Return Values**
 
@@ -273,11 +228,9 @@ Determines the algorithm for the JWT token to create from the source.
 
 > The algorithm to use
 
-
 <hr />
 
-
-### AuthenticationService::getApplicationId  
+### AuthenticationService::getApplicationId
 
 **Description**
 
@@ -285,14 +238,12 @@ Determines the algorithm for the JWT token to create from the source.
 public getApplicationId (\Source $source)
 ```
 
-Gets an application id for a source. 
-
- 
+Gets an application id for a source.
 
 **Parameters**
 
-* `(\Source) $source`
-: The source to dermine the application id for  
+*   `(\Source) $source`
+    : The source to dermine the application id for
 
 **Return Values**
 
@@ -300,11 +251,9 @@ Gets an application id for a source.
 
 > The application ID to use
 
-
 <hr />
 
-
-### AuthenticationService::getAuthentication  
+### AuthenticationService::getAuthentication
 
 **Description**
 
@@ -312,10 +261,6 @@ Gets an application id for a source.
  getAuthentication (void)
 ```
 
- 
-
- 
-
 **Parameters**
 
 `This function has no parameters.`
@@ -324,11 +269,9 @@ Gets an application id for a source.
 
 `void`
 
-
 <hr />
 
-
-### AuthenticationService::getCertificate  
+### AuthenticationService::getCertificate
 
 **Description**
 
@@ -336,14 +279,12 @@ Gets an application id for a source.
 public getCertificate (array $config)
 ```
 
-Writes the certificate and ssl keys to disk, returns the filenames. 
-
- 
+Writes the certificate and ssl keys to disk, returns the filenames.
 
 **Parameters**
 
-* `(array) $config`
-: The configuration as stored in the source  
+*   `(array) $config`
+    : The configuration as stored in the source
 
 **Return Values**
 
@@ -351,11 +292,9 @@ Writes the certificate and ssl keys to disk, returns the filenames.
 
 > The overrides on the configuration with filenames instead of certificate contents
 
-
 <hr />
 
-
-### AuthenticationService::getHmacToken  
+### AuthenticationService::getHmacToken
 
 **Description**
 
@@ -363,10 +302,6 @@ Writes the certificate and ssl keys to disk, returns the filenames.
  getHmacToken (void)
 ```
 
- 
-
- 
-
 **Parameters**
 
 `This function has no parameters.`
@@ -375,11 +310,9 @@ Writes the certificate and ssl keys to disk, returns the filenames.
 
 `void`
 
-
 <hr />
 
-
-### AuthenticationService::getJWK  
+### AuthenticationService::getJWK
 
 **Description**
 
@@ -387,14 +320,12 @@ Writes the certificate and ssl keys to disk, returns the filenames.
 public getJWK (string $algorithm, \Source $source)
 ```
 
-Gets a JWK for a source based on the algorithm of the source. 
-
- 
+Gets a JWK for a source based on the algorithm of the source.
 
 **Parameters**
 
-* `(string) $algorithm`
-* `(\Source) $source`
+*   `(string) $algorithm`
+*   `(\Source) $source`
 
 **Return Values**
 
@@ -402,11 +333,9 @@ Gets a JWK for a source based on the algorithm of the source.
 
 > The resulting Json Web Key
 
-
 <hr />
 
-
-### AuthenticationService::getJwtPayload  
+### AuthenticationService::getJwtPayload
 
 **Description**
 
@@ -414,14 +343,12 @@ Gets a JWK for a source based on the algorithm of the source.
 public getJwtPayload (\Source $source)
 ```
 
-Creates the JWT payload to identify at an external source. 
-
- 
+Creates the JWT payload to identify at an external source.
 
 **Parameters**
 
-* `(\Source) $source`
-: The source to create a payload for  
+*   `(\Source) $source`
+    : The source to create a payload for
 
 **Return Values**
 
@@ -429,11 +356,9 @@ Creates the JWT payload to identify at an external source.
 
 > The JWT payload to use
 
-
 <hr />
 
-
-### AuthenticationService::getJwtToken  
+### AuthenticationService::getJwtToken
 
 **Description**
 
@@ -441,14 +366,12 @@ Creates the JWT payload to identify at an external source.
 public getJwtToken (\Source $source)
 ```
 
-Create a JWT token from Component settings. 
-
- 
+Create a JWT token from Component settings.
 
 **Parameters**
 
-* `(\Source) $source`
-: The source to authenticate to  
+*   `(\Source) $source`
+    : The source to authenticate to
 
 **Return Values**
 
@@ -456,21 +379,15 @@ Create a JWT token from Component settings.
 
 > The resulting JWT token
 
-
 <hr />
 
-
-### AuthenticationService::getTokenFromUrl  
+### AuthenticationService::getTokenFromUrl
 
 **Description**
 
 ```php
  getTokenFromUrl (void)
 ```
-
- 
-
- 
 
 **Parameters**
 
@@ -480,11 +397,9 @@ Create a JWT token from Component settings.
 
 `void`
 
-
 <hr />
 
-
-### AuthenticationService::removeFiles  
+### AuthenticationService::removeFiles
 
 **Description**
 
@@ -492,26 +407,20 @@ Create a JWT token from Component settings.
 public removeFiles (array $config)
 ```
 
-Removes certificates and private keys from disk if they are not necessary anymore. 
-
- 
+Removes certificates and private keys from disk if they are not necessary anymore.
 
 **Parameters**
 
-* `(array) $config`
-: The configuration with filenames  
+*   `(array) $config`
+    : The configuration with filenames
 
 **Return Values**
 
 `void`
 
-
-
-
 <hr />
 
-
-### AuthenticationService::serializeUser  
+### AuthenticationService::serializeUser
 
 **Description**
 
@@ -519,16 +428,14 @@ Removes certificates and private keys from disk if they are not necessary anymor
 public serializeUser (\User $user, \SessionInterface $session)
 ```
 
-Serializes a user to be used by the token authenticator. 
-
- 
+Serializes a user to be used by the token authenticator.
 
 **Parameters**
 
-* `(\User) $user`
-: The user to be serialized  
-* `(\SessionInterface) $session`
-: The session to use  
+*   `(\User) $user`
+    : The user to be serialized
+*   `(\SessionInterface) $session`
+    : The session to use
 
 **Return Values**
 
@@ -536,11 +443,9 @@ Serializes a user to be used by the token authenticator.
 
 > The serialized user
 
-
 <hr />
 
-
-### AuthenticationService::verifyJWTToken  
+### AuthenticationService::verifyJWTToken
 
 **Description**
 
@@ -548,16 +453,14 @@ Serializes a user to be used by the token authenticator.
 public verifyJWTToken (string $token, string $publicKey)
 ```
 
-Verifies the JWT token and returns the payload if the JWT token is valid. 
-
- 
+Verifies the JWT token and returns the payload if the JWT token is valid.
 
 **Parameters**
 
-* `(string) $token`
-: The token to verify  
-* `(string) $publicKey`
-: The public key to verify the token to  
+*   `(string) $token`
+    : The token to verify
+*   `(string) $publicKey`
+    : The public key to verify the token to
 
 **Return Values**
 
@@ -565,12 +468,10 @@ Verifies the JWT token and returns the payload if the JWT token is valid.
 
 > The payload of the token
 
-
 **Throws Exceptions**
 
-
 `\HttpException`
+
 > Thrown when the token cannot be verified
 
 <hr />
-
