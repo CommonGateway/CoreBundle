@@ -21,7 +21,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
 
-class FileSystemService
+class FileSystemHandleService
 {
     /**
      * The entity manager.
@@ -47,9 +47,9 @@ class FileSystemService
     /**
      * Create File System Service.
      *
-     * @var CreateFileSystemService
+     * @var FileSystemCreateService
      */
-    private CreateFileSystemService $cfsService;
+    private FileSystemCreateService $fscService;
 
     /**
      * The class constructor.
@@ -57,18 +57,18 @@ class FileSystemService
      * @param EntityManagerInterface  $entityManager  The entity manager.
      * @param MappingService          $mappingService The mapping service.
      * @param LoggerInterface         $callLogger     The call logger.
-     * @param CreateFileSystemService $cfsService     The create file system service
+     * @param FileSystemCreateService $fscService     The file system create service
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         MappingService $mappingService,
         LoggerInterface $callLogger,
-        CreateFileSystemService $cfsService
+        FileSystemCreateService $fscService
     ) {
         $this->entityManager = $entityManager;
         $this->mappingService = $mappingService;
         $this->callLogger = $callLogger;
-        $this->cfsService = $cfsService;
+        $this->fscService = $fscService;
     }//end __construct()
 
     /**
@@ -142,10 +142,10 @@ class FileSystemService
 
         switch ($format) {
             case 'zip':
-                $zipFile = $this->cfsService->createZipFileFromContent($content);
-                $filesystem = $this->cfsService->openZipFilesystem($zipFile);
+                $zipFile = $this->fscService->createZipFileFromContent($content);
+                $filesystem = $this->fscService->openZipFilesystem($zipFile);
                 $content = $this->getContentFromAllFiles($filesystem);
-                $this->cfsService->removeZipFile($zipFile);
+                $this->fscService->removeZipFile($zipFile);
 
                 return $content;
             case 'yaml':
@@ -178,7 +178,7 @@ class FileSystemService
     public function call(Source $source, string $location, array $config = []): array
     {
         // Todo: Also add handleEndpointsConfigOut?
-        $fileSystem = $this->cfsService->openFtpFilesystem($source);
+        $fileSystem = $this->fscService->openFtpFilesystem($source);
 
         $content = $this->getFileContents($fileSystem, $location);
 
