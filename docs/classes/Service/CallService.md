@@ -61,16 +61,17 @@ Calls a source according to given configuration.
 **Parameters**
 
 * `(\Source) $source`
-: The source to call  
+: The source to call.  
 * `(string) $endpoint`
-: The endpoint on the source to call  
+: The endpoint on the source to call.  
 * `(string) $method`
-: The method on which to call the source  
+: The method on which to call the source.  
 * `(array) $config`
-: The additional configuration to call the source  
+: The additional configuration to call the source.  
 * `(bool) $asynchronous`
-: Whether or not to call the source asynchronously  
+: Whether or not to call the source asynchronously.  
 * `(bool) $createCertificates`
+: Whether or not to create certificates for this source.  
 
 **Return Values**
 
