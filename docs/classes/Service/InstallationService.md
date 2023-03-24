@@ -1,37 +1,26 @@
-# CommonGateway\CoreBundle\Service\InstallationService  
+# CommonGateway\CoreBundle\Service\InstallationService
 
 The installation service is used to install plugins (or actually symfony bundles) on the gateway.
 
-This class breaks complexity, methods and coupling rules. This could be solved by deviding the class into smaller classes but that would deminisch the readability of the code as a whole. All the code in this class is only used in an installation context, and it makes more sense to keep it together. Therefore, a design decision was made to keep al this code in one class.  
-
-
-
-
+This class breaks complexity, methods and coupling rules. This could be solved by deviding the class into smaller classes but that would deminisch the readability of the code as a whole. All the code in this class is only used in an installation context, and it makes more sense to keep it together. Therefore, a design decision was made to keep al this code in one class.
 
 ## Methods
 
 | Name | Description |
 |------|-------------|
-|[__construct](#installationservice__construct)||
+|[\_\_construct](#installationservice__construct)||
 |[addActionConfiguration](#installationserviceaddactionconfiguration)|This function creates default configuration for the action.|
 |[install](#installationserviceinstall)|Installs the files from a bundle.|
 |[overrideConfig](#installationserviceoverrideconfig)|Overrides the default configuration of an Action. Will also set entity and source to id if a reference is given.|
 |[update](#installationserviceupdate)|Updates all commonground bundles on the common gateway installation.|
 
-
-
-
-### InstallationService::__construct  
+### InstallationService::\_\_construct
 
 **Description**
 
 ```php
  __construct (void)
 ```
-
- 
-
- 
 
 **Parameters**
 
@@ -41,11 +30,9 @@ This class breaks complexity, methods and coupling rules. This could be solved b
 
 `void`
 
-
 <hr />
 
-
-### InstallationService::addActionConfiguration  
+### InstallationService::addActionConfiguration
 
 **Description**
 
@@ -53,26 +40,20 @@ This class breaks complexity, methods and coupling rules. This could be solved b
 public addActionConfiguration (mixed $actionHandler)
 ```
 
-This function creates default configuration for the action. 
-
- 
+This function creates default configuration for the action.
 
 **Parameters**
 
-* `(mixed) $actionHandler`
-: The actionHandler for witch the default configuration is set.  
+*   `(mixed) $actionHandler`
+    : The actionHandler for witch the default configuration is set.
 
 **Return Values**
 
 `array`
 
-
-
-
 <hr />
 
-
-### InstallationService::install  
+### InstallationService::install
 
 **Description**
 
@@ -80,16 +61,16 @@ This function creates default configuration for the action.
 public install (string $bundle, array $config)
 ```
 
-Installs the files from a bundle. 
+Installs the files from a bundle.
 
-Based on the default action handler so schould supoprt a config parrameter even if we do not use it 
+Based on the default action handler so schould supoprt a config parrameter even if we do not use it
 
 **Parameters**
 
-* `(string) $bundle`
-: The bundle.  
-* `(array) $config`
-: Optional config.  
+*   `(string) $bundle`
+    : The bundle.
+*   `(array) $config`
+    : Optional config.
 
 **Return Values**
 
@@ -97,17 +78,13 @@ Based on the default action handler so schould supoprt a config parrameter even 
 
 > The result of the installation.
 
-
 **Throws Exceptions**
-
 
 `\Exception`
 
-
 <hr />
 
-
-### InstallationService::overrideConfig  
+### InstallationService::overrideConfig
 
 **Description**
 
@@ -115,26 +92,20 @@ Based on the default action handler so schould supoprt a config parrameter even 
 public overrideConfig (array $defaultConfig, array $overrides)
 ```
 
-Overrides the default configuration of an Action. Will also set entity and source to id if a reference is given. 
-
- 
+Overrides the default configuration of an Action. Will also set entity and source to id if a reference is given.
 
 **Parameters**
 
-* `(array) $defaultConfig`
-* `(array) $overrides`
+*   `(array) $defaultConfig`
+*   `(array) $overrides`
 
 **Return Values**
 
 `array`
 
-
-
-
 <hr />
 
-
-### InstallationService::update  
+### InstallationService::update
 
 **Description**
 
@@ -142,27 +113,21 @@ Overrides the default configuration of an Action. Will also set entity and sourc
 public update (array $config)
 ```
 
-Updates all commonground bundles on the common gateway installation. 
+Updates all commonground bundles on the common gateway installation.
 
-This functions serves as the jump of point for the `commengateway:plugins:update` command 
+This functions serves as the jump of point for the `commengateway:plugins:update` command
 
 **Parameters**
 
-* `(array) $config`
-: The (optional) configuration  
+*   `(array) $config`
+    : The (optional) configuration
 
 **Return Values**
 
 `int`
 
-
-
-
 **Throws Exceptions**
-
 
 `\Exception`
 
-
 <hr />
-
