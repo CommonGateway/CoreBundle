@@ -20,22 +20,23 @@ use League\Flysystem\Ftp\FtpAdapter;
 use League\Flysystem\Ftp\FtpConnectionOptions;
 use League\Flysystem\ZipArchive\FilesystemZipArchiveProvider;
 use League\Flysystem\ZipArchive\ZipArchiveAdapter;
+use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
+
 class FileSystemCreateService
 {
-
     /**
      * The local filesystem.
      *
-     * @var Filesystem
+     * @var SymfonyFilesystem
      */
-    private Filesystem $filesystem;
+    private SymfonyFilesystem $filesystem;
 
     /**
      * The class constructor.
      */
     public function __construct()
     {
-        $this->filesystem = new \Symfony\Component\Filesystem\Filesystem();
+        $this->filesystem = new SymfonyFilesystem();
     }//end __construct()
 
     /**
