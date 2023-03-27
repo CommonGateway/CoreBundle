@@ -508,7 +508,7 @@ class RequestService
 
                                // If we have a response return that
                                if ($event->getData()['response']) {
-                                   return new Response(json_encode($event->getData()['response']));
+                                   return new Response(json_encode($event->getData()['response']), $event->getData()['responseCode'] ?? 200);
                                }
                            }
                         }
