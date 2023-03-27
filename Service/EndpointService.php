@@ -8,10 +8,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\Exception\BadRequestHttpException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -138,7 +138,7 @@ class EndpointService
             if(isset($parameters['response']) === false) {
                 $parameters['response'] = new Response('Object is not supported by this endpoint', '200');
             }
-            
+
             foreach ($endpoint->getThrows() as $throw) {
                 $event = new ActionEvent('commongateway.action.event', $parameters, $throw);
                 $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
@@ -146,7 +146,7 @@ class EndpointService
 
             $parameters['response'] = $event->getData()['response'];
         }
-        
+
         if(isset($parameters['response']) === true) {
             return $parameters['response'];
         }
