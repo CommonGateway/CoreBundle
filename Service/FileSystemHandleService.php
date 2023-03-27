@@ -255,12 +255,12 @@ class FileSystemHandleService
 
                 return $decodedFile;
             }
-    
+            
             try {
                 if ($key === 'root') {
                     return $this->mappingService->mapping($mapping, $decodedFile);
                 }
-    
+                
                 $decodedFile[$key] = $this->mappingService->mapping($mapping, $decodedFile[$key]);
             } catch (Exception $exception) {
                 $this->callLogger->error("Could not map with mapping {$endpointConfigIn[$key]['mapping']} while handling $key EndpointConfigIn for a Filesystem Source. ".$exception->getMessage());
