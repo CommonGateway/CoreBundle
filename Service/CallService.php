@@ -307,7 +307,11 @@ class CallService
 
                 return $config;
             }
-            $config[$configKey] = $this->mappingService->mapping($mapping, $config[$configKey]);
+            try {
+                $config[$configKey] = $this->mappingService->mapping($mapping, $config[$configKey]);
+            } catch (Exception $exception) {
+                $this->callLogger->error("Could not map with mapping {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source. ".$exception->getMessage());
+            }
         }
 
         return $config;
@@ -371,12 +375,16 @@ class CallService
         if (array_key_exists('mapping', $endpointConfigIn[$responseProperty])) {
             $mapping = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $endpointConfigIn[$responseProperty]['mapping']]);
             if ($mapping === null) {
-                $this->callLogger->error("Could not find mapping with reference {$endpointConfigIn[$responseProperty]['mapping']} while handling $responseProperty EndpointConfigIn for a Source");
+                $this->callLogger->error("Could not find mapping with reference {$endpointConfigIn[$responseProperty]['mapping']} while handling $responseProperty EndpointConfigIn for a Source.");
 
                 return $responseData;
             }
             $responseData = json_decode($responseData->getContents(), true);
-            $responseData = $this->mappingService->mapping($mapping, $responseData);
+            try {
+                $responseData = $this->mappingService->mapping($mapping, $responseData);
+            } catch (Exception $exception) {
+                $this->callLogger->error("Could not map with mapping {$endpointConfigIn[$responseProperty]['mapping']} while handling $responseProperty EndpointConfigIn for a Source. ".$exception->getMessage());
+            }
         }
 
         return $responseData;

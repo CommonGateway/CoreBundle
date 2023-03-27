@@ -251,16 +251,20 @@ class FileSystemHandleService
             $mapping = $this->entityManager->getRepository('App:Mapping')
                 ->findOneBy(['reference' => $endpointConfigIn[$key]['mapping']]);
             if ($mapping === null) {
-                $this->callLogger->error("Could not find mapping with reference {$endpointConfigIn[$key]['mapping']} while handling $key EndpointConfigIn for a Filesystem Source");
+                $this->callLogger->error("Could not find mapping with reference {$endpointConfigIn[$key]['mapping']} while handling $key EndpointConfigIn for a Filesystem Source.");
 
                 return $decodedFile;
             }
-
-            if ($key === 'root') {
-                return$this->mappingService->mapping($mapping, $decodedFile);
+    
+            try {
+                if ($key === 'root') {
+                    return $this->mappingService->mapping($mapping, $decodedFile);
+                }
+    
+                $decodedFile[$key] = $this->mappingService->mapping($mapping, $decodedFile[$key]);
+            } catch (Exception $exception) {
+                $this->callLogger->error("Could not map with mapping {$endpointConfigIn[$key]['mapping']} while handling $key EndpointConfigIn for a Filesystem Source. ".$exception->getMessage());
             }
-
-            $decodedFile[$key] = $this->mappingService->mapping($mapping, $decodedFile[$key]);
         }
 
         return $decodedFile;
