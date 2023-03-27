@@ -21,7 +21,9 @@
 	],
 	"require" : {
 		"php" : "^7.4.0",
-		"symfony/monolog-bundle": "^3.8"
+		"symfony/monolog-bundle": "^3.8",
+		"league/flysystem-bundle": "^2.4",
+		"league/flysystem-ftp": "^2.4"
 	},
 	"require-dev" : {
 		"cache/integration-tests" : "dev-master",

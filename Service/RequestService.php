@@ -354,6 +354,8 @@ class RequestService
      * @param array $data          The data from the call
      * @param array $configuration The configuration from the call
      *
+     * @throws Exception
+     *
      * @return Response The modified data
      */
     public function requestHandler(array $data, array $configuration): Response
@@ -451,6 +453,12 @@ class RequestService
             }
         }
 
+        // Get application configuration in and out for current endpoint/global if this is set on current application.
+        // Note: we might want to do this earlier in this function if we want to use this configuration there...
+        if ($this->session->get('application') !== null) {
+            $appEndpointConfig = $this->getAppEndpointConfig();
+        }
+
         // All prepped so lets go
         // todo: split these into functions?
         switch ($this->data['method']) {
@@ -473,7 +481,7 @@ class RequestService
                         ], 'json'), Response::HTTP_NOT_FOUND);
                     }
 
-                    // Lets see if the found result is allowd for this endpoint
+                    // Lets see if the found result is allowed for this endpoint
                     if (isset($this->data['endpoint']) && !in_array($result['_self']['schema']['id'], $allowedSchemas['id'])) {
                         return new Response('Object is not supported by this endpoint', '406');
                     }
@@ -670,13 +678,11 @@ class RequestService
                 }
 
                 $this->entityManager->remove($this->object);
-                //                $this->cacheService - removeObject($this->id); /* @todo this is hacky, the above schould alredy do this */
                 $this->entityManager->flush();
                 $this->logger->info('Succesfully deleted object');
 
                 return new Response('Succesfully deleted object', '202');
             default:
-                break;
                 $this->logger->error('Unkown method'.$this->data['method']);
 
                 return new Response('Unkown method'.$this->data['method'], '404');
@@ -696,22 +702,74 @@ class RequestService
 
         $this->handleMetadataSelf($result, $metadataSelf);
 
-        if ($this->session->get('application') !== null) {
-            $application = $this->entityManager->getRepository('App:Application')->findOneBy(['id' => $this->session->get('application')]);
-            if ($application !== null && isset($application->getConfiguration()['embedded']) === true) {
-                // TODO: find a cleaner way to handle this?
-                $result = $this->shouldWeUnsetEmbedded($result, $application->getConfiguration()['embedded']);
-            }
+        // Handle application configuration out for embedded if we need to do this for the current application and current endpoint.
+        if (isset($appEndpointConfig['out']['embedded']) === true) {
+            $result = $this->shouldWeUnsetEmbedded($result, $appEndpointConfig['out']['embedded']);
         }
 
         return $this->createResponse($result);
     }
 
     /**
+     * Gets the application configuration 'in' and/or 'out' for the current endpoint.
+     * First checks if the current/active application has configuration.
+     * If this is the case, check if the currently used endpoint or 'global' is present in this configuration for 'in' and/or 'out'.
+     * Example: application->configuration['global']['out'].
+     *
+     * @return array The 'in' and 'out' configuration of the Application for the current Endpoint.
+     */
+    private function getAppEndpointConfig(): array
+    {
+        $application = $this->entityManager->getRepository('App:Application')->findOneBy(['id' => $this->session->get('application')]);
+        if ($application === null || $application->getConfiguration() === null) {
+            return [];
+        }
+
+        $endpoint = $this->getCurrentEndpoint();
+
+        $applicationConfig = $application->getConfiguration();
+
+        // Check if there is 'in' and/or 'out' configuration for the current $endpoint or 'global'.
+        $appEndpointConfig = [];
+        foreach (['in', 'out'] as $type) {
+            if (array_key_exists($endpoint, $applicationConfig) === true && array_key_exists($type, $applicationConfig[$endpoint])) {
+                $appEndpointConfig[$type] = $applicationConfig[$endpoint][$type];
+            } elseif (array_key_exists('global', $applicationConfig) === true && array_key_exists($type, $applicationConfig['global'])) {
+                $appEndpointConfig[$type] = $applicationConfig['global'][$type];
+            }
+        }
+
+        return $appEndpointConfig;
+    }
+
+    /**
+     * Gets the path (/endpoint) of the currently used Endpoint, using the path array of the current Endpoint.
+     *
+     * @return string The /endpoint string of the current Endpoint.
+     */
+    private function getCurrentEndpoint(): string
+    {
+        $pathArray = [];
+        if (isset($this->data['endpoint'])) {
+            $pathArray = $this->data['endpoint']->getPath();
+        }
+
+        // Remove ending id from path to get the core/main endpoint.
+        // This way /endpoint without /id can be used in Application Configuration for all CRUD calls.
+        if (end($pathArray) === 'id') {
+            array_pop($pathArray);
+        }
+
+        return '/'.implode('/', $pathArray);
+    }
+
+    /**
      * If embedded should be shown or not.
+     * Configuration Example: ['global']['out']['embedded']['unset'] = true
+     * Configuration Example 2: ['global']['out']['embedded']['unset']['except'] = ['application/json+ld', 'application/ld+json'].
      *
      * @param object|array $result         fetched result
-     * @param array        $embeddedConfig Application configuration ['embedded']
+     * @param array        $embeddedConfig Application configuration ['out']['embedded']
      *
      * @return array|null
      */
