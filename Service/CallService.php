@@ -307,7 +307,7 @@ class CallService
 
                 return $config;
             }
-            
+
             try {
                 $config[$configKey] = $this->mappingService->mapping($mapping, $config[$configKey]);
             } catch (Exception $exception) {
@@ -381,7 +381,7 @@ class CallService
                 return $responseData;
             }
             $responseData = json_decode($responseData->getContents(), true);
-            
+
             try {
                 $responseData = $this->mappingService->mapping($mapping, $responseData);
             } catch (Exception $exception) {
