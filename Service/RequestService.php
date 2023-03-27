@@ -489,6 +489,22 @@ class RequestService
                 } else {
                     //$this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
                     $result = $this->cacheService->searchObjects(null, $filters, $allowedSchemas['id']);
+
+                    if (count($allowedSchemas['id']) === 1) {
+                        $entity = $this->entityManager->getRepository('App:Entity')->find($allowedSchemas['id'][0]);
+
+                        if (empty($this->data['endpoint']->getThrows()) === false) {
+                           foreach ($this->data['endpoint']->getThrows() as $throw) {
+                               $event = new ActionEvent('commongateway.object.read', ['response' => $result, 'entity' => $entity->getReference() ?? $entity->getId()->toString(), 'parameters' => $this->data], $throw);
+                               $this->eventDispatcher->dispatch($event, $event->getType());
+
+                               // If we have a response return that
+                               if ($event->getData()['response']) {
+                                   return new Response(json_encode($event->getData()['response']));
+                               }
+                           }
+                        }
+                    }
                 }
                 break;
             case 'POST':
