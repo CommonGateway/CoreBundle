@@ -135,7 +135,7 @@ class EndpointService
         if (count($endpoint->getThrows()) > 0) {
             $this->logger->info('Handling event endpoint');
 
-            if(isset($parameters['response']) === false) {
+            if (isset($parameters['response']) === false) {
                 $parameters['response'] = new Response('Object is not supported by this endpoint', '200');
             }
 
@@ -147,7 +147,7 @@ class EndpointService
             $parameters['response'] = $event->getData()['response'];
         }
 
-        if(isset($parameters['response']) === true) {
+        if (isset($parameters['response']) === true) {
             return $parameters['response'];
         }
 
