@@ -16,6 +16,7 @@ namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
 use League\Flysystem\Filesystem;
+use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
 use League\Flysystem\Ftp\FtpAdapter;
 use League\Flysystem\Ftp\FtpConnectionOptions;
 use League\Flysystem\ZipArchive\FilesystemZipArchiveProvider;
@@ -26,16 +27,16 @@ class FileSystemCreateService
     /**
      * The local filesystem.
      *
-     * @var Filesystem
+     * @var SymfonyFilesystem
      */
-    private Filesystem $filesystem;
+    private SymfonyFilesystem $filesystem;
 
     /**
      * The class constructor.
      */
     public function __construct()
     {
-        $this->filesystem = new \Symfony\Component\Filesystem\Filesystem();
+        $this->filesystem = new SymfonyFilesystem();
     }//end __construct()
 
     /**
