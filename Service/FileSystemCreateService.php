@@ -16,14 +16,14 @@ namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
 use League\Flysystem\Filesystem;
-use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
 use League\Flysystem\Ftp\FtpAdapter;
 use League\Flysystem\Ftp\FtpConnectionOptions;
 use League\Flysystem\ZipArchive\FilesystemZipArchiveProvider;
 use League\Flysystem\ZipArchive\ZipArchiveAdapter;
+use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
+
 class FileSystemCreateService
 {
-
     /**
      * The local filesystem.
      *
