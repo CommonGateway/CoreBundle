@@ -94,7 +94,7 @@ class FileSystemCreateService
 
         $connectionOptions = new FtpConnectionOptions(
             $url['host'],
-            $url['path'],
+            $url['path'] ?? "/",
             $source->getUsername(),
             $source->getPassword(),
             $url['port'],
