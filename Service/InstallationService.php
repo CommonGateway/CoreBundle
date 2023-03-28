@@ -692,7 +692,7 @@ class InstallationService
             $this->createCronjobs($data['cronjobs']['actions']);
         }
 
-        // Create users with given SecurityGroups
+        // Create users with given Organization, Applications & SecurityGroups.
         if (isset($data['users']) === true) {
             $this->createUsers($data['users']);
         }
@@ -1315,7 +1315,7 @@ class InstallationService
     {
         $orgRepository = $this->entityManager->getRepository('App:Organization');
 
-        foreach ($usersData as $key => $userData) {
+        foreach ($usersData as $key => &$userData) {
             if (isset($userData['email']) === false || isset($userData['securityGroups']) === false || isset($userData['$id']) === false) {
                 $this->logger->error("Can't create an User without 'email': 'username', '\$id': 'reference' and 'securityGroups': [securityGroup-references]", ['userData' => $userData]);
                 unset($usersData[$key]);
