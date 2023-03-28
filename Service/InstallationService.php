@@ -451,7 +451,7 @@ class InstallationService
     private function handleObjectType(string $type, array $schemas): array
     {
         $objects = [];
-        
+
         foreach ($schemas as $schema) {
             $object = $this->handleObject($type, $schema);
             if ($object === null) {
@@ -462,7 +462,7 @@ class InstallationService
             $this->entityManager->persist($object);
             $objects[] = $object;
         }
-        
+
         return $objects;
     }//end handleObjectType();
 
@@ -515,7 +515,7 @@ class InstallationService
                 [
                     'class'  => get_class($object),
                     // If you get a "::$id must not be accessed before initialization" error here, remove type UuidInterface from the class^ $id declaration. Something to do with read_secure I think.
-                    'id'     => $object->getId()
+                    'id'     => $object->getId(),
                 ]
             );
         }
@@ -701,7 +701,7 @@ class InstallationService
         if (isset($data['cronjobs']['actions']) === true) {
             $this->createCronjobs($data['cronjobs']['actions']);
         }
-        
+
         // Create users with given SecurityGroups
         if (isset($data['users']) === true) {
             $this->createUsers($data['users']);
@@ -1301,7 +1301,7 @@ class InstallationService
             }
 
             //TODO: CHECK IF THIS CRONJOB ALREADY EXISTS ?!?
-            
+
             $cronjob = new Cronjob($action);
             $this->entityManager->persist($cronjob);
             $cronjobs[] = $cronjob;
@@ -1312,10 +1312,10 @@ class InstallationService
 
         return $cronjobs;
     }//end createCronjobs()
-    
+
     /**
      * This function creates users with the given $users data.
-     * Each user in this array should have a securityGroups array with references to SecurityGroups
+     * Each user in this array should have a securityGroups array with references to SecurityGroups.
      *
      * @param array $usersData An array of arrays describing the user objects we want to create or update.
      *
@@ -1324,37 +1324,37 @@ class InstallationService
     private function createUsers(array $usersData): array
     {
         $orgRepository = $this->entityManager->getRepository('App:Organization');
-        
+
         foreach ($usersData as $key => $userData) {
             if (isset($userData['email']) === false || isset($userData['securityGroups']) === false || isset($userData['$id']) === false) {
                 $this->logger->error("Can't create an User without 'email': 'username', '\$id': 'reference' and 'securityGroups': [securityGroup-references]", ['userData' => $userData]);
                 unset($usersData[$key]);
-                
+
                 continue;
             }
             $this->handleUserGroups($userData);
             $this->handleUserApps($userData);
-            
+
             $organization = $userData['organization'] ?? 'https://docs.commongateway.nl/organization/default.organization.json';
             $userData['organization'] = $this->checkIfObjectExists($orgRepository, $organization, 'Organization');
             if ($userData['organization'] instanceof Organization === false) {
                 unset($usersData[$key]);
-                
+
                 continue;
             }
-            
+
             if (isset($userData['title']) === false) {
                 $userData['title'] = $userData['name'] ?? $userData['email'];
             }
         }
-        
+
         $users = $this->handleObjectType('https://docs.commongateway.nl/schemas/User.schema.json', $usersData);
-    
+
         $this->logger->info(count($users).' Users Created');
-        
+
         return $users;
     }//end createUsers()
-    
+
     /**
      * Replaces $userData['securityGroups'] references with real SecurityGroups objects,
      * so the fromSchema function for User can create a user with this.
@@ -1367,10 +1367,10 @@ class InstallationService
     private function handleUserGroups(array &$userData): array
     {
         $repository = $this->entityManager->getRepository('App:SecurityGroup');
-        
+
         $securityGroups = $userData['securityGroups'];
         unset($userData['securityGroups']);
-        
+
         foreach ($securityGroups as $reference) {
             $securityGroup = $this->checkIfObjectExists($repository, $reference, 'SecurityGroup');
             if ($securityGroup instanceof SecurityGroup === false) {
@@ -1379,17 +1379,17 @@ class InstallationService
             foreach ($securityGroup->getScopes() as $scope) {
                 // todo: this works, we should go to php 8.0 later
                 if (str_contains(strtolower($scope), 'admin')) {
-                    $this->logger->error("It is forbidden to change or add users with admin scopes!", ['securityGroup' => $reference,'userData' => $userData]);
+                    $this->logger->error('It is forbidden to change or add users with admin scopes!', ['securityGroup' => $reference, 'userData' => $userData]);
                     continue 2;
                 }
             }
-        
+
             $userData['securityGroups'][] = $securityGroup;
         }
-        
+
         return $userData;
     }//end handleUserGroups()
-    
+
     /**
      * Replaces $userData['applications'] references with real Application objects,
      * so the fromSchema function for User can create a user with this.
@@ -1401,23 +1401,23 @@ class InstallationService
     private function handleUserApps(array &$userData): array
     {
         $repository = $this->entityManager->getRepository('App:Application');
-        
+
         if (isset($userData['applications']) === false) {
-            $userData['applications'] = ["https://docs.commongateway.nl/application/default.application.json"];
+            $userData['applications'] = ['https://docs.commongateway.nl/application/default.application.json'];
         }
-        
+
         $applications = $userData['applications'];
         unset($userData['applications']);
-        
+
         foreach ($applications as $reference) {
             $application = $this->checkIfObjectExists($repository, $reference, 'Application');
             if ($application instanceof Application === false) {
                 continue;
             }
-            
+
             $userData['applications'][] = $application;
         }
-        
+
         return $userData;
     }//end handleUserGroups()
 

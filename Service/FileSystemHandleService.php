@@ -8,10 +8,9 @@
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
- * @package commongateway/corebundle
- *
  * @category Service
  */
+
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
@@ -264,7 +263,7 @@ class FileSystemHandleService
                 }
 
                 $decodedFile[$key] = $this->mappingService->mapping($mapping, $decodedFile[$key]);
-            } catch (Exception | LoaderError | SyntaxError $exception) {
+            } catch (Exception|LoaderError|SyntaxError $exception) {
                 $this->callLogger->error("Could not map with mapping {$endpointConfigIn[$key]['mapping']} while handling $key EndpointConfigIn for a Filesystem Source. ".$exception->getMessage());
             }
         }
