@@ -1322,9 +1322,8 @@ class InstallationService
                 continue;
             }
             $this->handleUserGroups($userData, $repository);
-            
-            if (isset($userData['name']) === false) {
-                $userData['name'] = $userData['email'];
+            if (isset($userData['title']) === false) {
+                $userData['title'] = $userData['name'] ?? $userData['email'];
             }
         }
         
