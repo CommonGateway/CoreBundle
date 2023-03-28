@@ -1316,12 +1316,12 @@ class InstallationService
         
         foreach ($usersData as $key => $userData) {
             if (isset($userData['securityGroups']) === false || isset($userData['$id']) === false) {
-                $this->logger->error("Can't create an User without '\$id': 'reference' and 'securityGroups': [securityGroup-references]", ['userData' => $usersData]);
+                $this->logger->error("Can't create an User without '\$id': 'reference' and 'securityGroups': [securityGroup-references]", ['userData' => $userData]);
                 unset($usersData[$key]);
                 
                 continue;
             }
-            $usersData = $this->handleUserGroups($usersData, $repository);
+            $this->handleUserGroups($userData, $repository);
         }
         
         $users = $this->handleObjectType('https://docs.commongateway.nl/schemas/User.schema.json', $usersData);
@@ -1341,7 +1341,7 @@ class InstallationService
      *
      * @return array The updated $userData array.
      */
-    private function handleUserGroups(array $userData, $repository): array
+    private function handleUserGroups(array &$userData, $repository): array
     {
         $securityGroups = $userData['securityGroups'];
         unset($userData['securityGroups']);
