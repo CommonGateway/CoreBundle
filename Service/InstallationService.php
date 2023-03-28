@@ -1321,15 +1321,7 @@ class InstallationService
                 
                 continue;
             }
-            $securityGroups = $userData['securityGroups'];
-            unset($userData['securityGroups']);
-            foreach ($securityGroups as $securityGroup) {
-                $object = $this->checkIfObjectExists($repository, $securityGroup, 'SecurityGroup');
-                if ($object instanceof SecurityGroup === false) {
-                    continue;
-                }
-                $userData['securityGroups'][] = $object;
-            }
+            $usersData = $this->handleUserGroups($usersData, $repository);
         }
         
         $users = $this->handleObjectType('https://docs.commongateway.nl/schemas/User.schema.json', $usersData);
@@ -1338,6 +1330,40 @@ class InstallationService
         
         return $users;
     }//end createUsers()
+    
+    /**
+     * Replaces $userData['securityGroups'] references with real SecurityGroups objects,
+     * so the fromSchema function for User can create a user with this.
+     * Will also check if someone is trying to add admin scopes through this method.
+     *
+     * @param array $userData An array describing the user object we want to create or update.
+     * @param mixed $repository The repository to search in. Entity or Source repository.
+     *
+     * @return array The updated $userData array.
+     */
+    private function handleUserGroups(array $userData, $repository): array
+    {
+        $securityGroups = $userData['securityGroups'];
+        unset($userData['securityGroups']);
+        
+        foreach ($securityGroups as $reference) {
+            $securityGroup = $this->checkIfObjectExists($repository, $reference, 'SecurityGroup');
+            if ($securityGroup instanceof SecurityGroup === false) {
+                continue;
+            }
+            foreach ($securityGroup->getScopes() as $scope) {
+                // todo: this works, we should go to php 8.0 later
+                if (str_contains(strtolower($scope), 'admin')) {
+                    $this->logger->error("It is forbidden to change or add users with admin scopes!", ['securityGroup' => $reference,'userData' => $userData]);
+                    continue 2;
+                }
+            }
+        
+            $userData['securityGroups'][] = $securityGroup;
+        }
+        
+        return $userData;
+    }//end handleUserGroups()
 
     /**
      * This functions creates dashboard cars for an array of endpoints, sources, schema's or objects.
