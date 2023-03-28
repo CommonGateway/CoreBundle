@@ -91,7 +91,7 @@ class InstallationService
         'https://docs.commongateway.nl/schemas/Mapping.schema.json',
         'https://docs.commongateway.nl/schemas/Organization.schema.json',
         'https://docs.commongateway.nl/schemas/SecurityGroup.schema.json',
-        //        'https://docs.commongateway.nl/schemas/User.schema.json',
+        'https://docs.commongateway.nl/schemas/User.schema.json',
     ];
 
     /**
@@ -446,10 +446,12 @@ class InstallationService
      * @param string $type    The type of the object
      * @param array  $schemas The schemas to handle
      *
-     * @return void
+     * @return array The objects.
      */
-    private function handleObjectType(string $type, array $schemas): void
+    private function handleObjectType(string $type, array $schemas): array
     {
+        $objects = [];
+        
         foreach ($schemas as $schema) {
             $object = $this->handleObject($type, $schema);
             if ($object === null) {
@@ -458,7 +460,10 @@ class InstallationService
 
             // Save it to the database.
             $this->entityManager->persist($object);
+            $objects[] = $object;
         }
+        
+        return $objects;
     }//end handleObjectType();
 
     /**
@@ -595,8 +600,8 @@ class InstallationService
                 return new Organization();
             case 'SecurityGroup':
                 return new SecurityGroup();
-//            case 'User':
-//                return new User();
+            case 'User':
+                return new User();
             default:
                 return null;
         }
@@ -684,6 +689,11 @@ class InstallationService
         // Cronjobs for actions for action handlers.
         if (isset($data['cronjobs']['actions']) === true) {
             $this->createCronjobs($data['cronjobs']['actions']);
+        }
+        
+        // Create users with given SecurityGroups
+        if (isset($data['users']) === true) {
+            $this->createUsers($data['users']);
         }
 
         // Lets see if we have things that we want to create cards for stuff (Since this might create cards for the stuff above this should always be last).
@@ -906,7 +916,7 @@ class InstallationService
     {
         $object = $repository->findOneBy(['reference' => $reference]);
         if ($object === null) {
-            $this->logger->error('No object found for '.$reference.' while trying to create an Endpoint.', ['type' => $type]);
+            $this->logger->error('No object found for '.$reference.' while trying to create an Endpoint or User.', ['type' => $type]);
 
             return null;
         }
@@ -1265,7 +1275,7 @@ class InstallationService
      *
      * @param array $actions An array of references of actions for wih actions cronjobs be created
      *
-     * @return array An array of cronjobs
+     * @return array An array of cronjobs.
      */
     private function createCronjobs(array $actions = []): array
     {
@@ -1279,6 +1289,8 @@ class InstallationService
                 continue;
             }
 
+            //TODO: CHECK IF THIS CRONJOB ALREADY EXISTS ?!?
+            
             $cronjob = new Cronjob($action);
             $this->entityManager->persist($cronjob);
             $cronjobs[] = $cronjob;
@@ -1289,6 +1301,43 @@ class InstallationService
 
         return $cronjobs;
     }//end createCronjobs()
+    
+    /**
+     * This function creates users with the given $users data.
+     * Each user in this array should have a securityGroups array with references to SecurityGroups
+     *
+     * @param array $usersData An array of arrays describing the user objects we want to create or update.
+     *
+     * @return array An array of users.
+     */
+    private function createUsers(array $usersData): array
+    {
+        $repository = $this->entityManager->getRepository('App:SecurityGroup');
+        
+        foreach ($usersData as $key => $userData) {
+            if (isset($userData['securityGroups']) === false || isset($userData['$id']) === false) {
+                $this->logger->error("Can't create an User without '\$id': 'reference' and 'securityGroups': [securityGroup-references]", ['userData' => $usersData]);
+                unset($usersData[$key]);
+                
+                continue;
+            }
+            $securityGroups = $userData['securityGroups'];
+            unset($userData['securityGroups']);
+            foreach ($securityGroups as $securityGroup) {
+                $object = $this->checkIfObjectExists($repository, $securityGroup, 'SecurityGroup');
+                if ($object instanceof SecurityGroup === false) {
+                    continue;
+                }
+                $userData['securityGroups'][] = $object;
+            }
+        }
+        
+        $users = $this->handleObjectType('https://docs.commongateway.nl/schemas/User.schema.json', $usersData);
+    
+        $this->logger->info(count($users).' Users Created');
+        
+        return $users;
+    }//end createUsers()
 
     /**
      * This functions creates dashboard cars for an array of endpoints, sources, schema's or objects.
