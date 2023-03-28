@@ -8,10 +8,9 @@
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
- * @package commongateway/corebundle
- *
  * @category Service
  */
+
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
