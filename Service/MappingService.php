@@ -6,6 +6,8 @@ use Adbar\Dot;
 use App\Entity\Mapping;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Twig\Environment;
+use Twig\Error\LoaderError;
+use Twig\Error\SyntaxError;
 
 /**
  * The mapping service handles the mapping (or transformation) of array A (input) to array B (output).
@@ -84,6 +86,8 @@ class MappingService
      * @param array   $input         The array that need to be mapped (transformed) otherwise known as input
      *
      * @return array The result (output) of the mapping process
+     *
+     * @throws LoaderError|SyntaxError Twig Exceptions
      */
     public function mapping(Mapping $mappingObject, array $input): array
     {

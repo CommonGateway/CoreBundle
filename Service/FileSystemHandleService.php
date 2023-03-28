@@ -20,6 +20,8 @@ use League\Flysystem\Filesystem;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
+use Twig\Error\LoaderError;
+use Twig\Error\SyntaxError;
 
 class FileSystemHandleService
 {
@@ -262,7 +264,7 @@ class FileSystemHandleService
                 }
 
                 $decodedFile[$key] = $this->mappingService->mapping($mapping, $decodedFile[$key]);
-            } catch (Exception $exception) {
+            } catch (Exception|LoaderError|SyntaxError $exception) {
                 $this->callLogger->error("Could not map with mapping {$endpointConfigIn[$key]['mapping']} while handling $key EndpointConfigIn for a Filesystem Source. ".$exception->getMessage());
             }
         }
