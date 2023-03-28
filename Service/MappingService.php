@@ -85,9 +85,9 @@ class MappingService
      * @param Mapping $mappingObject The mapping object that forms the recipe for the mapping
      * @param array   $input         The array that need to be mapped (transformed) otherwise known as input
      *
-     * @return array The result (output) of the mapping process
-     *
      * @throws LoaderError|SyntaxError Twig Exceptions
+     *
+     * @return array The result (output) of the mapping process
      */
     public function mapping(Mapping $mappingObject, array $input): array
     {
