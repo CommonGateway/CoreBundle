@@ -549,7 +549,7 @@ class InstallationService
             return null;
         }
 
-        // Load the data. Todo: these version compare checks don't look right...
+        // Load the data. Compare version to check if we need to update or not.
         if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) <= 0) {
             $this->logger->debug('The schema has a version number equal or lower then the already present version, the object is NOT updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
         } elseif (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) > 0) {
