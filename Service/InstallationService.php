@@ -497,25 +497,15 @@ class InstallationService
         }
 
         // Let's see if it is a new object.
-        try {
-            if ($this->entityManager->contains($object) === false) {
-                $this->logger->info(
-                    'A new object has been created trough the installation service',
-                    [
-                        'class'  => get_class($object),
-                        // If you get a "::$id must not be accessed before initialization" error here, remove type UuidInterface from the class^ $id declaration. Something to do with read_secure I think.
-                        'id'     => $object->getId(),
-                        'object' => method_exists(get_class($object), 'toSchema') === true ? $object->toSchema() : 'toSchema function does not exists.',
-                    ]
-                );
-            }
-        } catch (Exception $exception) {
-            $this->logger->warning(
-                "Could not log 'toSchema' data of object created trough the installation service",
+        if ($this->entityManager->contains($object) === false) {
+            $this->logger->info(
+                'A new object has been created trough the installation service',
                 [
                     'class'  => get_class($object),
                     // If you get a "::$id must not be accessed before initialization" error here, remove type UuidInterface from the class^ $id declaration. Something to do with read_secure I think.
                     'id'     => $object->getId(),
+                    // TODO: using toSchema on an object that is not persisted yet breaks stuff... "must not be accessed before initialization" errors
+//                    'object' => method_exists(get_class($object), 'toSchema') === true ? $object->toSchema() : 'toSchema function does not exists.',
                 ]
             );
         }
