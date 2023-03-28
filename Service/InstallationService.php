@@ -14,7 +14,7 @@ use App\Entity\Mapping;
 use App\Entity\ObjectEntity;
 use App\Entity\Organization;
 use App\Entity\SecurityGroup;
-//use App\Entity\User;
+use App\Entity\User;
 use App\Kernel;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
