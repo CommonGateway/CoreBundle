@@ -1322,6 +1322,15 @@ class InstallationService
                 continue;
             }
             $this->handleUserGroups($userData, $repository);
+            
+            $organization = $usersData['organization'] ?? 'https://docs.commongateway.nl/organization/default.organization.json';
+            $organization = $this->checkIfObjectExists($repository, $organization, 'Organization');
+            if ($organization instanceof Organization === false) {
+                unset($usersData[$key]);
+                
+                continue;
+            }
+            
             if (isset($userData['title']) === false) {
                 $userData['title'] = $userData['name'] ?? $userData['email'];
             }
