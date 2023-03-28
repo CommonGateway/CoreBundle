@@ -1315,13 +1315,17 @@ class InstallationService
         $repository = $this->entityManager->getRepository('App:SecurityGroup');
         
         foreach ($usersData as $key => $userData) {
-            if (isset($userData['securityGroups']) === false || isset($userData['$id']) === false) {
-                $this->logger->error("Can't create an User without '\$id': 'reference' and 'securityGroups': [securityGroup-references]", ['userData' => $userData]);
+            if (isset($userData['email']) === false || isset($userData['securityGroups']) === false || isset($userData['$id']) === false) {
+                $this->logger->error("Can't create an User without 'email': 'username', '\$id': 'reference' and 'securityGroups': [securityGroup-references]", ['userData' => $userData]);
                 unset($usersData[$key]);
                 
                 continue;
             }
             $this->handleUserGroups($userData, $repository);
+            
+            if (isset($userData['name']) === false) {
+                $userData['name'] = $userData['email'];
+            }
         }
         
         $users = $this->handleObjectType('https://docs.commongateway.nl/schemas/User.schema.json', $usersData);
