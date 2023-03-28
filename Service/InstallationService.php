@@ -1312,7 +1312,6 @@ class InstallationService
      */
     private function createUsers(array $usersData): array
     {
-        $repository = $this->entityManager->getRepository('App:SecurityGroup');
         $orgRepository = $this->entityManager->getRepository('App:Organization');
         
         foreach ($usersData as $key => $userData) {
@@ -1322,7 +1321,8 @@ class InstallationService
                 
                 continue;
             }
-            $this->handleUserGroups($userData, $repository);
+            $this->handleUserGroups($userData);
+            $this->handleUserApps($userData);
             
             $organization = $userData['organization'] ?? 'https://docs.commongateway.nl/organization/default.organization.json';
             $userData['organization'] = $this->checkIfObjectExists($orgRepository, $organization, 'Organization');
@@ -1350,12 +1350,13 @@ class InstallationService
      * Will also check if someone is trying to add admin scopes through this method.
      *
      * @param array $userData An array describing the user object we want to create or update.
-     * @param mixed $repository The repository to search in. Entity or Source repository.
      *
      * @return array The updated $userData array.
      */
-    private function handleUserGroups(array &$userData, $repository): array
+    private function handleUserGroups(array &$userData): array
     {
+        $repository = $this->entityManager->getRepository('App:SecurityGroup');
+        
         $securityGroups = $userData['securityGroups'];
         unset($userData['securityGroups']);
         
@@ -1373,6 +1374,37 @@ class InstallationService
             }
         
             $userData['securityGroups'][] = $securityGroup;
+        }
+        
+        return $userData;
+    }//end handleUserGroups()
+    
+    /**
+     * Replaces $userData['applications'] references with real Application objects,
+     * so the fromSchema function for User can create a user with this.
+     *
+     * @param array $userData An array describing the user object we want to create or update.
+     *
+     * @return array The updated $userData array.
+     */
+    private function handleUserApps(array &$userData): array
+    {
+        $repository = $this->entityManager->getRepository('App:Application');
+        
+        if (isset($userData['applications']) === false) {
+            $userData['applications'] = ["https://docs.commongateway.nl/application/default.application.json"];
+        }
+        
+        $applications = $userData['applications'];
+        unset($userData['applications']);
+        
+        foreach ($applications as $reference) {
+            $application = $this->checkIfObjectExists($repository, $reference, 'Application');
+            if ($application instanceof Application === false) {
+                continue;
+            }
+            
+            $userData['applications'][] = $application;
         }
         
         return $userData;
