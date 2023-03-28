@@ -1313,6 +1313,7 @@ class InstallationService
     private function createUsers(array $usersData): array
     {
         $repository = $this->entityManager->getRepository('App:SecurityGroup');
+        $orgRepository = $this->entityManager->getRepository('App:Organization');
         
         foreach ($usersData as $key => $userData) {
             if (isset($userData['email']) === false || isset($userData['securityGroups']) === false || isset($userData['$id']) === false) {
@@ -1324,7 +1325,7 @@ class InstallationService
             $this->handleUserGroups($userData, $repository);
             
             $organization = $usersData['organization'] ?? 'https://docs.commongateway.nl/organization/default.organization.json';
-            $organization = $this->checkIfObjectExists($repository, $organization, 'Organization');
+            $organization = $this->checkIfObjectExists($orgRepository, $organization, 'Organization');
             if ($organization instanceof Organization === false) {
                 unset($usersData[$key]);
                 
