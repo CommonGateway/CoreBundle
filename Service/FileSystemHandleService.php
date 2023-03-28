@@ -264,7 +264,7 @@ class FileSystemHandleService
                 }
 
                 $decodedFile[$key] = $this->mappingService->mapping($mapping, $decodedFile[$key]);
-            } catch (Exception|LoaderError|SyntaxError $exception) {
+            } catch (Exception | LoaderError | SyntaxError $exception) {
                 $this->callLogger->error("Could not map with mapping {$endpointConfigIn[$key]['mapping']} while handling $key EndpointConfigIn for a Filesystem Source. ".$exception->getMessage());
             }
         }

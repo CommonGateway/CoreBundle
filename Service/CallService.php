@@ -310,7 +310,7 @@ class CallService
 
             try {
                 $config[$configKey] = $this->mappingService->mapping($mapping, $config[$configKey]);
-            } catch (Exception|LoaderError|SyntaxError $exception) {
+            } catch (Exception | LoaderError | SyntaxError $exception) {
                 $this->callLogger->error("Could not map with mapping {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source. ".$exception->getMessage());
             }
         }
@@ -384,7 +384,7 @@ class CallService
 
             try {
                 $responseData = $this->mappingService->mapping($mapping, $responseData);
-            } catch (Exception|LoaderError|SyntaxError $exception) {
+            } catch (Exception | LoaderError | SyntaxError $exception) {
                 $this->callLogger->error("Could not map with mapping {$endpointConfigIn[$responseProperty]['mapping']} while handling $responseProperty EndpointConfigIn for a Source. ".$exception->getMessage());
             }
         }
