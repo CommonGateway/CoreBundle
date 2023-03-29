@@ -203,6 +203,13 @@ class MappingService
         return $output;
     }
 
+    /**
+     * Converts a coordinate string to an array of coordinates.
+     *
+     * @param string $coordinates A string containing coordinates.
+     *
+     * @return array An array of coordinates.
+     */
     public function coordinateStringToArray(string $coordinates): array
     {
         $halfs = explode(' ', $coordinates);
@@ -217,10 +224,10 @@ class MappingService
         }
         $coordinateArray[] = $point;
 
-        if(count($coordinateArray) === 1) {
+        if (count($coordinateArray) === 1) {
             $coordinateArray = $coordinateArray[0];
         }
 
         return $coordinateArray;
-    }
-}
+    }//end coordinateStringToArray()
+}//end class
