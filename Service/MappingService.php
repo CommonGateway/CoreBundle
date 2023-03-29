@@ -169,6 +169,7 @@ class MappingService
                 case 'jsonToArray':
                     $value = str_replace(['&quot;', '&amp;quot;'], '"', $value);
                     $value = json_decode($value, true);
+                    break;
                 case 'coordinateStringToArray':
                     $value = $this->coordinateStringToArray($value);
                     break;
