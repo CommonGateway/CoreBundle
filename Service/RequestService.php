@@ -447,7 +447,7 @@ class RequestService
 
         // Security
         $scopes = $this->getScopes();
-        foreach ($allowedSchemas['id'] as $schema) {
+        foreach ($allowedSchemas['name'] as $schema) {
             if (!isset($scopes[$schema][$this->data['method']])) {
                 // THROW SECURITY ERROR AND EXIT
             }
