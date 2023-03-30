@@ -3,6 +3,7 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Endpoint;
+use App\Entity\Entity;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
@@ -82,7 +83,7 @@ class OasService
      *
      * @return array The OAS array including parameters for paths with id.
      */
-    private function addParametersForPathWithId(array $oas, Endpoint $endpoint): array
+    private function addParametersForPathWithId(array $oas, Endpoint $endpoint, array $pathArray): array
     {
         if (in_array('GET', $endpoint->getMethods()) === true
             || in_array('PUT', $endpoint->getMethods()) === true
@@ -146,10 +147,10 @@ class OasService
             }//end if
 
             // Add the path to the paths.
-            $pathArray = $this->getPathArray();
+            $pathArray = $this->getPathArray($endpoint);
 
             // Add parameters for paths with an id.
-            $oas = $this->addParametersForPathWithId($oas, $endpoint);
+            $oas = $this->addParametersForPathWithId($oas, $endpoint, $pathArray);
 
             foreach ($endpoint->getMethods() as $method) {
 
@@ -185,6 +186,60 @@ class OasService
 
         return $oas;
     }//end addEndpoints()
+
+    /**
+     * Gets the operations for a given endpoint.
+     *
+     * @param Entity $entity The entity to create parameters for.
+     *
+     * @return array The operations for the given endpoint
+     */
+    private function addParameters(Entity $entity): array
+    {
+        $parameters = [];
+        $index = 0;
+        foreach ($entity->getAttributes() as $attribute) {
+//            if ($attribute->getType() === 'object') {
+//                foreach ($attribute->getObject()->getAttributes() as $objectAttribute) {
+//                    $properties[] = [
+//                        'name'        => $attribute->getName(),
+//                        'in'          => 'query',
+//                        'description' => $attribute->getDescription() !== null ? $attribute->getDescription() : '',
+//                        'required'    => $attribute->getRequired() === true ? true : false,
+//                        'schema'      => [
+//                            'type' => $attribute->getType(),
+//                        ],
+//                    ];
+//                }
+//            }
+
+            $parameters[] = [
+                'name'        => $attribute->getName(),
+                'in'          => 'query',
+                'description' => $attribute->getDescription() !== null ? $attribute->getDescription() : '',
+                'required'    => $attribute->getRequired() === true ? true : false,
+                'schema'      => [
+                    'type' => $attribute->getType(),
+                    'properties' => isset($properties) ? $properties : null,
+                    'items' => [
+                        'type' => 'string'
+                    ]
+                ],
+            ];
+
+            if ($attribute->getType() !== 'array') {
+                unset($parameters[$index]['schema']['items']);
+            }
+
+            if ($parameters[$index]['schema']['properties'] === null) {
+                unset($parameters[$index]['schema']['properties']);
+            }
+
+            $index++;
+        }
+
+        return $parameters;
+    }
 
     /**
      * Gets the operations for a given endpoint.
@@ -289,6 +344,7 @@ class OasService
         // Don't set the parameters with a GET collection request
         if ($method === 'GET' && $operationId === 'collection') {
             unset($operations['parameters']);
+            $operations['parameters'] = $this->addParameters($endpoint->getEntities()->first());
         }//end if
 
         // Don't set the parameters with a POST request
