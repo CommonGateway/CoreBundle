@@ -14,7 +14,7 @@ use App\Entity\Mapping;
 use App\Entity\ObjectEntity;
 use App\Entity\Organization;
 use App\Entity\SecurityGroup;
-//use App\Entity\User;
+use App\Entity\User;
 use App\Kernel;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -91,7 +91,7 @@ class InstallationService
         'https://docs.commongateway.nl/schemas/Mapping.schema.json',
         'https://docs.commongateway.nl/schemas/Organization.schema.json',
         'https://docs.commongateway.nl/schemas/SecurityGroup.schema.json',
-        //        'https://docs.commongateway.nl/schemas/User.schema.json',
+        'https://docs.commongateway.nl/schemas/User.schema.json',
     ];
 
     /**
@@ -446,10 +446,12 @@ class InstallationService
      * @param string $type    The type of the object
      * @param array  $schemas The schemas to handle
      *
-     * @return void
+     * @return array The objects.
      */
-    private function handleObjectType(string $type, array $schemas): void
+    private function handleObjectType(string $type, array $schemas): array
     {
+        $objects = [];
+
         foreach ($schemas as $schema) {
             $object = $this->handleObject($type, $schema);
             if ($object === null) {
@@ -458,7 +460,10 @@ class InstallationService
 
             // Save it to the database.
             $this->entityManager->persist($object);
+            $objects[] = $object;
         }
+
+        return $objects;
     }//end handleObjectType();
 
     /**
@@ -499,7 +504,8 @@ class InstallationService
                     'class'  => get_class($object),
                     // If you get a "::$id must not be accessed before initialization" error here, remove type UuidInterface from the class^ $id declaration. Something to do with read_secure I think.
                     'id'     => $object->getId(),
-                    'object' => method_exists(get_class($object), 'toSchema') === true ? $object->toSchema() : 'toSchema function does not exists.',
+                    // TODO: using toSchema on an object that is not persisted yet breaks stuff... "must not be accessed before initialization" errors
+                    // 'object' => method_exists(get_class($object), 'toSchema') === true ? $object->toSchema() : 'toSchema function does not exists.',
                 ]
             );
         }
@@ -549,7 +555,7 @@ class InstallationService
             return null;
         }
 
-        // Load the data. Todo: these version compare checks don't look right...
+        // Load the data. Compare version to check if we need to update or not.
         if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) <= 0) {
             $this->logger->debug('The schema has a version number equal or lower then the already present version, the object is NOT updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
         } elseif (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) > 0) {
@@ -595,8 +601,8 @@ class InstallationService
                 return new Organization();
             case 'SecurityGroup':
                 return new SecurityGroup();
-//            case 'User':
-//                return new User();
+            case 'User':
+                return new User();
             default:
                 return null;
         }
@@ -684,6 +690,11 @@ class InstallationService
         // Cronjobs for actions for action handlers.
         if (isset($data['cronjobs']['actions']) === true) {
             $this->createCronjobs($data['cronjobs']['actions']);
+        }
+
+        // Create users with given Organization, Applications & SecurityGroups.
+        if (isset($data['users']) === true) {
+            $this->createUsers($data['users']);
         }
 
         // Lets see if we have things that we want to create cards for stuff (Since this might create cards for the stuff above this should always be last).
@@ -906,7 +917,7 @@ class InstallationService
     {
         $object = $repository->findOneBy(['reference' => $reference]);
         if ($object === null) {
-            $this->logger->error('No object found for '.$reference.' while trying to create an Endpoint.', ['type' => $type]);
+            $this->logger->error('No object found for '.$reference.' while trying to create an Endpoint or User.', ['type' => $type]);
 
             return null;
         }
@@ -1265,7 +1276,7 @@ class InstallationService
      *
      * @param array $actions An array of references of actions for wih actions cronjobs be created
      *
-     * @return array An array of cronjobs
+     * @return array An array of cronjobs.
      */
     private function createCronjobs(array $actions = []): array
     {
@@ -1279,6 +1290,8 @@ class InstallationService
                 continue;
             }
 
+            //TODO: CHECK IF THIS CRONJOB ALREADY EXISTS ?!?
+
             $cronjob = new Cronjob($action);
             $this->entityManager->persist($cronjob);
             $cronjobs[] = $cronjob;
@@ -1289,6 +1302,114 @@ class InstallationService
 
         return $cronjobs;
     }//end createCronjobs()
+
+    /**
+     * This function creates users with the given $users data.
+     * Each user in this array should have a securityGroups array with references to SecurityGroups.
+     *
+     * @param array $usersData An array of arrays describing the user objects we want to create or update.
+     *
+     * @return array An array of users.
+     */
+    private function createUsers(array $usersData): array
+    {
+        $orgRepository = $this->entityManager->getRepository('App:Organization');
+
+        foreach ($usersData as $key => &$userData) {
+            if (isset($userData['email']) === false || isset($userData['securityGroups']) === false || isset($userData['$id']) === false) {
+                $this->logger->error("Can't create an User without 'email': 'username', '\$id': 'reference' and 'securityGroups': [securityGroup-references]", ['userData' => $userData]);
+                unset($usersData[$key]);
+
+                continue;
+            }
+            $this->handleUserGroups($userData);
+            $this->handleUserApps($userData);
+
+            $organization = $userData['organization'] ?? 'https://docs.commongateway.nl/organization/default.organization.json';
+            $userData['organization'] = $this->checkIfObjectExists($orgRepository, $organization, 'Organization');
+            if ($userData['organization'] instanceof Organization === false) {
+                unset($usersData[$key]);
+
+                continue;
+            }
+
+            if (isset($userData['title']) === false) {
+                $userData['title'] = $userData['name'] ?? $userData['email'];
+            }
+        }
+
+        $users = $this->handleObjectType('https://docs.commongateway.nl/schemas/User.schema.json', $usersData);
+
+        $this->logger->info(count($users).' Users Created');
+
+        return $users;
+    }//end createUsers()
+
+    /**
+     * Replaces $userData['securityGroups'] references with real SecurityGroups objects,
+     * so the fromSchema function for User can create a user with this.
+     * Will also check if someone is trying to add admin scopes through this method.
+     *
+     * @param array $userData An array describing the user object we want to create or update.
+     *
+     * @return array The updated $userData array.
+     */
+    private function handleUserGroups(array &$userData): array
+    {
+        $repository = $this->entityManager->getRepository('App:SecurityGroup');
+
+        $securityGroups = $userData['securityGroups'];
+        unset($userData['securityGroups']);
+
+        foreach ($securityGroups as $reference) {
+            $securityGroup = $this->checkIfObjectExists($repository, $reference, 'SecurityGroup');
+            if ($securityGroup instanceof SecurityGroup === false) {
+                continue;
+            }
+            foreach ($securityGroup->getScopes() as $scope) {
+                // todo: this works, we should go to php 8.0 later
+                if (str_contains(strtolower($scope), 'admin')) {
+                    $this->logger->error('It is forbidden to change or add users with admin scopes!', ['securityGroup' => $reference, 'userData' => $userData]);
+                    continue 2;
+                }
+            }
+
+            $userData['securityGroups'][] = $securityGroup;
+        }
+
+        return $userData;
+    }//end handleUserGroups()
+
+    /**
+     * Replaces $userData['applications'] references with real Application objects,
+     * so the fromSchema function for User can create a user with this.
+     *
+     * @param array $userData An array describing the user object we want to create or update.
+     *
+     * @return array The updated $userData array.
+     */
+    private function handleUserApps(array &$userData): array
+    {
+        $repository = $this->entityManager->getRepository('App:Application');
+
+        if (isset($userData['applications']) === false) {
+            $userData['applications'] = ['https://docs.commongateway.nl/application/default.application.json'];
+        }
+
+        $applications = $userData['applications'];
+        unset($userData['applications']);
+
+        foreach ($applications as $reference) {
+            $application = $this->checkIfObjectExists($repository, $reference, 'Application');
+            if ($application instanceof Application === false) {
+                continue;
+            }
+
+            $userData['applications'][] = $application;
+        }
+
+        return $userData;
+    }//end handleUserGroups()
 
     /**
      * This functions creates dashboard cars for an array of endpoints, sources, schema's or objects.
