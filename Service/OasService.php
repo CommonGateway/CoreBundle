@@ -33,8 +33,9 @@ class OasService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        ParameterBagInterface $parameters
-    ) {
+        ParameterBagInterface  $parameters
+    )
+    {
         $this->entityManager = $entityManager;
         $this->parameters = $parameters;
     }//end __construct()
@@ -49,21 +50,21 @@ class OasService
         // Setup the basic oas array.
         $oas = [
             'openapi' => '3.0.0',
-            'info'    => [
-                'title'       => 'Common Gateway',
+            'info' => [
+                'title' => 'Common Gateway',
                 'description' => 'The Common Gateway is a further Dutch development of the European API Platform. API Platform is a project of Les Tilleus and, in itself, an extension of the Symfony framework. API Platform is a tool for delivering APIs based on standardized documentation and is used for various French and German government projects. Including Digital state, a precursor to Xroute, GOV.UK and Common Ground. The project is now part of joinup.eu (the European equivalent of Common Ground).',
-                'version'     => '1.0.3',
+                'version' => '1.0.3',
             ],
             'servers' => [
                 [
-                    'url'         => $this->parameters->get('app_url', 'https://localhost'),
+                    'url' => $this->parameters->get('app_url', 'https://localhost'),
                     'description' => 'The kubernetes server',
                 ],
             ],
-            'paths'      => [],
+            'paths' => [],
             'components' => [],
-            'security'   => [],
-            'tags'       => [],
+            'security' => [],
+            'tags' => [],
         ];
 
         // Add the endpoints.
@@ -89,8 +90,8 @@ class OasService
             || in_array('PUT', $endpoint->getMethods()) === true
             || in_array('PATCH', $endpoint->getMethods()) === true
             || in_array('DELETE', $endpoint->getMethods()) === true
-        ){
-            $oas['paths']['/'.implode('/', $pathArray).'/{id}']['parameters'][] = [
+        ) {
+            $oas['paths']['/' . implode('/', $pathArray) . '/{id}']['parameters'][] = [
                 'name' => 'id',
                 'in' => 'path',
                 'description' => 'Unieke resource identifier (UUID4)',
@@ -159,7 +160,7 @@ class OasService
                     || $method === 'PATCH'
                     || $method === 'DELETE'
                 ) {
-                    $oas['paths']['/'.implode('/', $pathArray).'/{id}'][strtolower($method)]= $this->getEndpointOperations($endpoint, $method, 'item');
+                    $oas['paths']['/' . implode('/', $pathArray) . '/{id}'][strtolower($method)] = $this->getEndpointOperations($endpoint, $method, 'item');
                 }//end if
 
                 if ($method === 'GET'
@@ -174,8 +175,8 @@ class OasService
                         $operationId = 'item';
                     }//end if
 
-                    unset($oas['paths']['/'.implode('/', $pathArray).'/{id}']['parameters']);
-                    $oas['paths']['/'.implode('/', $pathArray)][strtolower($method)] = $this->getEndpointOperations($endpoint, $method, $operationId);
+                    unset($oas['paths']['/' . implode('/', $pathArray) . '/{id}']['parameters']);
+                    $oas['paths']['/' . implode('/', $pathArray)][strtolower($method)] = $this->getEndpointOperations($endpoint, $method, $operationId);
                 }//end if
             }//end foreach
 
@@ -199,26 +200,18 @@ class OasService
         $parameters = [];
         $index = 0;
         foreach ($entity->getAttributes() as $attribute) {
-//            if ($attribute->getType() === 'object') {
-//                foreach ($attribute->getObject()->getAttributes() as $objectAttribute) {
-//                    $properties[] = [
-//                        'name'        => $attribute->getName(),
-//                        'in'          => 'query',
-//                        'description' => $attribute->getDescription() !== null ? $attribute->getDescription() : '',
-//                        'required'    => $attribute->getRequired() === true ? true : false,
-//                        'schema'      => [
-//                            'type' => $attribute->getType(),
-//                        ],
-//                    ];
-//                }
-//            }
+            if ($attribute->getType() === 'object') {
+                $schema = $attribute->getObject()->toSchema();
+
+                $properties = $schema['properties'];
+            }
 
             $parameters[] = [
-                'name'        => $attribute->getName(),
-                'in'          => 'query',
+                'name' => $attribute->getName(),
+                'in' => 'query',
                 'description' => $attribute->getDescription() !== null ? $attribute->getDescription() : '',
-                'required'    => $attribute->getRequired() === true ? true : false,
-                'schema'      => [
+                'required' => $attribute->getRequired() === true ? true : false,
+                'schema' => [
                     'type' => $attribute->getType(),
                     'properties' => isset($properties) ? $properties : null,
                     'items' => [
@@ -239,6 +232,45 @@ class OasService
         }
 
         return $parameters;
+    }
+
+    /**
+     * Gets the operations for a given endpoint.
+     *
+     * @param Endpoint $endpoint The endpoint to create operations for
+     *
+     * @return array The operations for the given endpoint
+     */
+    private function setCollectionResponse(Endpoint $endpoint): array
+    {
+        return [
+            'schema' => [
+                'required' => ['count', 'results'],
+                'type' => 'object',
+                'properties' => [
+                    'count' => [
+                        'type' => 'integer',
+                        'example' => 1
+                    ],
+                    'next' => [
+                        'type' => 'string',
+                        'format' => 'uri',
+                        'nullable' => true
+                    ],
+                    'previous' => [
+                        'type' => 'string',
+                        'format' => 'uri',
+                        'nullable' => true
+                    ],
+                    'results' => [
+                        'type' => 'array',
+                        'items' => [
+                            '$ref' => '#/components/schemas/' . $endpoint->getEntities()->first()->getName(),
+                        ]
+                    ]
+                ],
+            ]
+        ];
     }
 
     /**
@@ -341,10 +373,22 @@ class OasService
             ],
         ];
 
+        $collectionResponse = $this->setCollectionResponse($endpoint);
+
         // Don't set the parameters with a GET collection request
         if ($method === 'GET' && $operationId === 'collection') {
+            unset($operations['responses']['200']);
             unset($operations['parameters']);
             $operations['parameters'] = $this->addParameters($endpoint->getEntities()->first());
+            $operations['responses'] = [
+                '200' => [
+                    'description' => 'OK',
+                    'content' => [
+                        'application/json' => $collectionResponse,
+                        'application/xml' =>  $collectionResponse,
+                    ],
+                ]
+            ];
         }//end if
 
         // Don't set the parameters with a POST request
