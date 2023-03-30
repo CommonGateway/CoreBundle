@@ -505,7 +505,7 @@ class InstallationService
                     // If you get a "::$id must not be accessed before initialization" error here, remove type UuidInterface from the class^ $id declaration. Something to do with read_secure I think.
                     'id'     => $object->getId(),
                     // TODO: using toSchema on an object that is not persisted yet breaks stuff... "must not be accessed before initialization" errors
-//                    'object' => method_exists(get_class($object), 'toSchema') === true ? $object->toSchema() : 'toSchema function does not exists.',
+                    // 'object' => method_exists(get_class($object), 'toSchema') === true ? $object->toSchema() : 'toSchema function does not exists.',
                 ]
             );
         }
