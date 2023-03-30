@@ -93,16 +93,16 @@ class MappingService
     {
         $input = $this->encodeArrayKeys($input, '.', '&#46;');
 
-        isset($this->io) ?? $this->io->debug('Mapping array based on mapping object '.$mappingObject->getName().' (id:'.$mappingObject->getId()->toString().' / ref:'.$mappingObject->getReference().') v:'.$mappingObject->getversion());
+            isset($this->io) ?? $this->io->debug('Mapping array based on mapping object '.$mappingObject->getName().' (id:'.$mappingObject->getId()->toString().' / ref:'.$mappingObject->getReference().') v:'.$mappingObject->getversion());
 
         // Determine pass trough
         // Let's get the dot array based on https://github.com/adbario/php-dot-notation
         if ($mappingObject->getPassTrough()) {
             $dotArray = new Dot($input);
-            isset($this->io) ?? $this->io->debug('Mapping *with* pass trough');
+                isset($this->io) ?? $this->io->debug('Mapping *with* pass trough');
         } else {
             $dotArray = new Dot();
-            isset($this->io) ?? $this->io->debug('Mapping *without* pass trough');
+                isset($this->io) ?? $this->io->debug('Mapping *without* pass trough');
         }
 
         $dotInput = new Dot($input);
@@ -122,7 +122,7 @@ class MappingService
         // Unset unwanted key's
         foreach ($mappingObject->getUnset() as $unset) {
             if (!$dotArray->has($unset)) {
-                isset($this->io) ?? $this->io->debug("Trying to unset an property that doesn't exist during mapping");
+                    isset($this->io) ?? $this->io->debug("Trying to unset an property that doesn't exist during mapping");
                 continue;
             }
             $dotArray->delete($unset);
@@ -131,7 +131,7 @@ class MappingService
         // Cast values to a specific type
         foreach ($mappingObject->getCast() as $key => $cast) {
             if (!$dotArray->has($key)) {
-                isset($this->io) ?? $this->io->debug("Trying to cast an property that doesn't exist during mapping");
+                    isset($this->io) ?? $this->io->debug("Trying to cast an property that doesn't exist during mapping");
                 continue;
             }
 
@@ -165,12 +165,16 @@ class MappingService
                         $dotArray->delete($key);
                     }
                     break;
-                    // Todo: Add more casts
+                // Todo: Add more casts
                 case 'jsonToArray':
                     $value = str_replace(['&quot;', '&amp;quot;'], '"', $value);
                     $value = json_decode($value, true);
+                    break;
+                case 'coordinateStringToArray':
+                    $value = $this->coordinateStringToArray($value);
+                    break;
                 default:
-                    isset($this->io) ?? $this->io->debug('Trying to cast to an unsupported cast type: '.$cast);
+                        isset($this->io) ?? $this->io->debug('Trying to cast to an unsupported cast type: '.$cast);
                     break;
             }
 
@@ -190,7 +194,7 @@ class MappingService
         }
 
         // Log the result
-        isset($this->io) ?? $this->io->debug('Mapped object', [
+            isset($this->io) ?? $this->io->debug('Mapped object', [
             'input'      => $input,
             'output'     => $output,
             'passTrough' => $mappingObject->getPassTrough(),
@@ -199,4 +203,32 @@ class MappingService
 
         return $output;
     }
-}
+
+    /**
+     * Converts a coordinate string to an array of coordinates.
+     *
+     * @param string $coordinates A string containing coordinates.
+     *
+     * @return array An array of coordinates.
+     */
+    public function coordinateStringToArray(string $coordinates): array
+    {
+        $halfs = explode(' ', $coordinates);
+        $point = [];
+        $coordinateArray = [];
+        foreach ($halfs as $half) {
+            if (count($point) > 1) {
+                $coordinateArray[] = $point;
+                $point = [];
+            }
+            $point[] = $half;
+        }
+        $coordinateArray[] = $point;
+
+        if (count($coordinateArray) === 1) {
+            $coordinateArray = $coordinateArray[0];
+        }
+
+        return $coordinateArray;
+    }//end coordinateStringToArray()
+}//end class

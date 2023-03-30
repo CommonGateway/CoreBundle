@@ -627,7 +627,7 @@ class InstallationService
 
         // If we have an id let try to grab an object.
         if (array_key_exists('id', $schema) === true) {
-            $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $schema['$id']]);
+            $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $schema['id']]);
         }
 
         // Create it if we don't.
