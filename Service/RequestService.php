@@ -623,16 +623,16 @@ class RequestService
 
                 //if ($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
                 $this->logger->debug('updating object '.$this->id);
-                if ($this->object->hydrate($this->content)) {
-                    if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
-                        $this->objectEntityService->setUnread($this->object);
-                    }
-                    if ($this->schema->getPersist() === true) {
+                if ($this->schema->getPersist() === true) {
+                    if ($this->object->hydrate($this->content)) {
+                        if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
+                            $this->objectEntityService->setUnread($this->object);
+                        }
                         $this->entityManager->persist($this->object);
+                        $this->entityManager->flush();
+                    } else {
+                        // Use validation to throw an error
                     }
-                    $this->entityManager->flush();
-                } else {
-                    // Use validation to throw an error
                 }
 
                 $result = $this->cacheService->getObject($this->object->getId());
