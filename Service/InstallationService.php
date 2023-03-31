@@ -691,6 +691,11 @@ class InstallationService
         if (isset($data['cronjobs']['actions']) === true) {
             $this->createCronjobs($data['cronjobs']['actions']);
         }
+    
+        // Create users with given Organization, Applications & SecurityGroups.
+        if (isset($data['applications']) === true) {
+            $this->createApplications($data['applications']);
+        }
 
         // Create users with given Organization, Applications & SecurityGroups.
         if (isset($data['users']) === true) {
@@ -1302,7 +1307,48 @@ class InstallationService
 
         return $cronjobs;
     }//end createCronjobs()
-
+    
+    /**
+     * This function creates applications with the given $applications data.
+     * Each application in this array should have an organization = reference.
+     *
+     * @param array $applicationsData An array of arrays describing the application objects we want to create or update.
+     *
+     * @return array An array of applications.
+     */
+    private function createApplications(array $applicationsData): array
+    {
+        $orgRepository = $this->entityManager->getRepository('App:Organization');
+        
+        foreach ($applicationsData as $key => &$applicationData) {
+            if (isset($applicationData['$id']) === false) {
+                $this->logger->error("Can't create an Application without '\$id': 'reference'", ['applicationData' => $applicationData]);
+                unset($applicationsData[$key]);
+                
+                continue;
+            }
+            
+            $organization = $applicationData['organization'] ?? 'https://docs.commongateway.nl/organization/default.organization.json';
+            $applicationData['organization'] = $this->checkIfObjectExists($orgRepository, $organization, 'Organization');
+            if ($applicationData['organization'] instanceof Organization === false) {
+                unset($applicationsData[$key]);
+                
+                continue;
+            }
+            
+            if (isset($applicationData['title']) === false) {
+                $applicationData['title'] = $applicationData['name'] ?? '';
+            }
+        }//end foreach
+        
+        $applications = $this->handleObjectType('https://docs.commongateway.nl/schemas/Application.schema.json', $applicationsData);
+        
+        $this->logger->info(count($applications).' Applications Created');
+        
+        return $applications;
+        
+    }//end createApplications()
+    
     /**
      * This function creates users with the given $users data.
      * Each user in this array should have a securityGroups array with references to SecurityGroups.
