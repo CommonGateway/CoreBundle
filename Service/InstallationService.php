@@ -1321,8 +1321,8 @@ class InstallationService
         $orgRepository = $this->entityManager->getRepository('App:Organization');
         
         foreach ($applicationsData as $key => &$applicationData) {
-            if (isset($applicationData['organization']) === false || isset($applicationData['$id']) === false) {
-                $this->logger->error("Can't create an Application without '\$id': 'reference' and 'organization': organization-reference", ['applicationData' => $applicationData]);
+            if (isset($applicationData['$id']) === false) {
+                $this->logger->error("Can't create an Application without '\$id': 'reference'", ['applicationData' => $applicationData]);
                 unset($applicationsData[$key]);
                 
                 continue;
