@@ -1339,7 +1339,7 @@ class InstallationService
             if (isset($applicationData['title']) === false) {
                 $applicationData['title'] = $applicationData['name'] ?? '';
             }
-        }
+        }//end foreach
         
         $applications = $this->handleObjectType('https://docs.commongateway.nl/schemas/Application.schema.json', $applicationsData);
         
