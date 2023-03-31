@@ -1346,6 +1346,7 @@ class InstallationService
         $this->logger->info(count($applications).' Applications Created');
         
         return $applications;
+        
     }//end createApplications()
     
     /**
