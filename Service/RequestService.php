@@ -581,23 +581,11 @@ class RequestService
                 $this->logger->debug('updating object '.$this->id);
                 if ($this->schema->getPersist() === true) {
 
-                    if ($this->object->getLock() !== null
+                    if ($this->object->getLock() === null
+                        || $this->object->getLock() !== null
                         && key_exists('lock', $this->content)
                         && $this->object->getLock() === $this->content['lock']
                     ) {
-                        if ($this->object->hydrate($this->content, true)) { // This should be an unsafe hydration
-                            if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
-                                $this->objectEntityService->setUnread($this->object);
-                            }
-
-                            $this->entityManager->persist($this->object);
-                            $this->entityManager->flush();
-                        } else {
-                            // Use validation to throw an error
-                        }
-                    }
-
-                    if ($this->object->getLock() === null) {
                         if ($this->object->hydrate($this->content, true)) { // This should be an unsafe hydration
                             if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
                                 $this->objectEntityService->setUnread($this->object);
@@ -644,22 +632,11 @@ class RequestService
                 $this->logger->debug('updating object '.$this->id);
                 if ($this->schema->getPersist() === true) {
 
-                    if ($this->object->getLock() !== null
+                    if ($this->object->getLock() === null
+                        || $this->object->getLock() !== null
                         && key_exists('lock', $this->content)
                         && $this->object->getLock() === $this->content['lock']
                     ) {
-                        if ($this->object->hydrate($this->content)) {
-                            if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
-                                $this->objectEntityService->setUnread($this->object);
-                            }
-                            $this->entityManager->persist($this->object);
-                            $this->entityManager->flush();
-                        } else {
-                            // Use validation to throw an error
-                        }
-                    }
-
-                    if ($this->object->getLock() === null) {
                         if ($this->object->hydrate($this->content)) {
                             if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
                                 $this->objectEntityService->setUnread($this->object);
