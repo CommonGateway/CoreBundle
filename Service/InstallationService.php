@@ -141,18 +141,18 @@ class InstallationService
         if (isset($config['plugin']) === true) {
             $this->logger->debug('Running plugin installer for a single plugin: '.$config['plugin']);
             $this->install($config['plugin'], $config);
-
-            return Command::SUCCESS;
+        } else {
+            // If we don't want to update a single plugin then we want to install al the plugins.
+            $plugins = $this->composerService->getAll();
+    
+            $this->logger->debug('Running plugin installer for all plugins');
+    
+            foreach ($plugins as $plugin) {
+                $this->install($plugin['name'], $config);
+            }
         }
-
-        // If we don't want to update a single plugin then we want to install al the plugins.
-        $plugins = $this->composerService->getAll();
-
-        $this->logger->debug('Running plugin installer for all plugins');
-
-        foreach ($plugins as $plugin) {
-            $this->install($plugin['name'], $config);
-        }
+    
+        $this->logger->debug('Do a cache warmup after installer is done...');
     
         $this->cacheService->warmup();
 
