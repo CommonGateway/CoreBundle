@@ -1014,14 +1014,14 @@ class InstallationService
         }
 
         $newEndpoint->setThrows($newEndpointData['throws']);
-    
+
         // Check for reference to entity, if so, add entity to endpoint.
         if (isset($newEndpointData['reference']) === true) {
             $newEndpoint->setEntity(null); // Old way of setting Entity for Endpoints
             foreach ($newEndpoint->getEntities() as $removeEntity) {
                 $newEndpoint->removeEntity($removeEntity);
             }
-            
+
             $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $newEndpointData['reference']]);
             if ($entity !== null) {
                 $newEndpoint->addEntity($entity);
