@@ -1014,10 +1014,18 @@ class InstallationService
         }
 
         $newEndpoint->setThrows($newEndpointData['throws']);
-        // Throws only trigger when an Endpoint has no entities.
-        $newEndpoint->setEntity(null); // Old way of setting Entity for Endpoints
-        foreach ($newEndpoint->getEntities() as $removeEntity) {
-            $newEndpoint->removeEntity($removeEntity);
+    
+        // Check for reference to entity, if so, add entity to endpoint.
+        if (isset($newEndpointData['reference']) === true) {
+            $newEndpoint->setEntity(null); // Old way of setting Entity for Endpoints
+            foreach ($newEndpoint->getEntities() as $removeEntity) {
+                $newEndpoint->removeEntity($removeEntity);
+            }
+            
+            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $newEndpointData['reference']]);
+            if ($entity !== null) {
+                $newEndpoint->addEntity($entity);
+            }
         }
 
         return $newEndpoint;
@@ -1108,14 +1116,6 @@ class InstallationService
             $subSchemaEndpoint->setPathRegex($pathRegex.'/'.$subSchemaEndpointData['path'].'/?([a-z0-9-]+)?$');
 
             $subSchemaEndpoint = $this->setEndpointBasics($subSchemaEndpoint, $subSchemaEndpointData);
-
-            // Check for reference to entity, if so, add entity to endpoint.
-            if (isset($subSchemaEndpointData['reference']) === true) {
-                $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $subSchemaEndpointData['reference']]);
-                if ($entity instanceof Entity === true) {
-                    $subSchemaEndpoint->addEntity($entity);
-                }//end if
-            }//end if
 
             $this->entityManager->persist($subSchemaEndpoint);
         }
