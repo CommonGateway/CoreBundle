@@ -155,9 +155,12 @@ class InstallationService
         }
     
         $this->logger->debug('Do a cache warmup after installer is done...');
-    
-        $this->cacheService->setStyle($io);
-        $io !== null ? $io->section('') : 'Running cache warmup';
+        
+        if ($io !== null) {
+            $this->cacheService->setStyle($io);
+            $io->info('Done running installer...');
+            $io->section('Running cache warmup');
+        }
         $this->cacheService->warmup();
 
         return Command::SUCCESS;
