@@ -165,7 +165,7 @@ class MappingService
                         $dotArray->delete($key);
                     }
                     break;
-                // Todo: Add more casts
+                    // Todo: Add more casts
                 case 'jsonToArray':
                     $value = str_replace(['&quot;', '&amp;quot;'], '"', $value);
                     $value = json_decode($value, true);

@@ -47,21 +47,21 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
             Events::postUpdate,
         ];
     }
-    
+
     public function preUpdate(LifecycleEventArgs $args): void
     {
         $this->prePersist($args);
     }
-    
+
     public function prePersist(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
-        
+
         if ($object instanceof ObjectEntity) {
             $this->updateParents($object);
         }
     }
-    
+
     public function postUpdate(LifecycleEventArgs $args): void
     {
         $this->postPersist($args);
@@ -124,8 +124,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
             return;
         }
     }
-    
-    
+
     public function updateParents(ObjectEntity $objectEntity, array $handled = [])
     {
         foreach ($objectEntity->getSubresourceOf() as $subresourceOf) {
@@ -141,5 +140,4 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         }
         $this->entityManager->flush();
     }
-    
 }

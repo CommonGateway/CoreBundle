@@ -526,10 +526,10 @@ class RequestService
 
                 $this->object = new ObjectEntity($this->schema);
                 $this->object->setOwner($this->security->getUser()->getUserIdentifier());
-    
+
                 $this->logger->debug('Hydrating object');
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
-    
+
                 if ($this->object->hydrate($this->content, true)) {
                     if ($this->schema->getPersist() === true) {
                         $this->entityManager->persist($this->object);
@@ -572,7 +572,7 @@ class RequestService
 
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
                 $this->logger->debug('updating object '.$this->id);
-                
+
                 if ($this->object->getLock() === null
                     || $this->object->getLock() !== null
                     && key_exists('lock', $this->content)
@@ -582,7 +582,7 @@ class RequestService
                         if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
                             $this->objectEntityService->setUnread($this->object);
                         }
-    
+
                         if ($this->schema->getPersist() === true) {
                             $this->entityManager->persist($this->object);
                             $this->entityManager->flush();
@@ -623,7 +623,7 @@ class RequestService
 
                 //if ($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
                 $this->logger->debug('updating object '.$this->id);
-                
+
                 if ($this->object->getLock() === null
                     || $this->object->getLock() !== null
                     && key_exists('lock', $this->content)
@@ -633,7 +633,7 @@ class RequestService
                         if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
                             $this->objectEntityService->setUnread($this->object);
                         }
-            
+
                         if ($this->schema->getPersist() === true) {
                             $this->entityManager->persist($this->object);
                             $this->entityManager->flush();
