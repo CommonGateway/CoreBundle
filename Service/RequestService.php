@@ -534,9 +534,9 @@ class RequestService
                     if ($this->schema->getPersist() === true) {
                         $this->entityManager->persist($this->object);
                         $this->entityManager->flush();
+                        $this->session->set('object', $this->object->getId()->toString());
+                        $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
                     }
-                    $this->session->set('object', $this->object->getId()->toString());
-                    $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
                 } else {
                     // Use validation to throw an error
                 }
