@@ -143,6 +143,7 @@ class MappingService
                 $cast = 'unsetIfValue';
             }
 
+            // Todo: Add more casts
             switch ($cast) {
                 case 'int':
                 case 'integer':
@@ -165,7 +166,6 @@ class MappingService
                         $dotArray->delete($key);
                     }
                     break;
-                // Todo: Add more casts
                 case 'jsonToArray':
                     $value = str_replace(['&quot;', '&amp;quot;'], '"', $value);
                     $value = json_decode($value, true);

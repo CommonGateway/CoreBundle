@@ -21,6 +21,7 @@ use Exception;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -70,6 +71,11 @@ class InstallationService
     private SchemaService $schemaService;
 
     /**
+     * @var CacheService
+     */
+    private CacheService $cacheService;
+
+    /**
      * @var string The location of the vendor folder.
      */
     private string $vendorFolder = 'vendor';
@@ -106,14 +112,16 @@ class InstallationService
         ComposerService $composerService,
         EntityManagerInterface $entityManager,
         Kernel $kernel,
+        LoggerInterface $installationLogger,
         SchemaService $schemaService,
-        LoggerInterface $installationLogger
+        CacheService $cacheService
     ) {
         $this->composerService = $composerService;
         $this->entityManager = $entityManager;
         $this->container = $kernel->getContainer();
         $this->logger = $installationLogger;
         $this->schemaService = $schemaService;
+        $this->cacheService = $cacheService;
         $this->filesystem = new Filesystem();
     }//end __construct()
 
@@ -122,30 +130,38 @@ class InstallationService
      *
      * This functions serves as the jump of point for the `commengateway:plugins:update` command
      *
-     * @param array $config The (optional) configuration
+     * @param array             $config The (optional) configuration
+     * @param SymfonyStyle|null $io     In case we run update from the :initialize command and want cache:warmup to show IO messages.
      *
      * @throws Exception
      *
      * @return int
      */
-    public function update(array $config = []): int
+    public function update(array $config = [], SymfonyStyle $io = null): int
     {
         // Let's see if we are trying to update a single plugin.
         if (isset($config['plugin']) === true) {
             $this->logger->debug('Running plugin installer for a single plugin: '.$config['plugin']);
             $this->install($config['plugin'], $config);
+        } else {
+            // If we don't want to update a single plugin then we want to install al the plugins.
+            $plugins = $this->composerService->getAll();
 
-            return Command::SUCCESS;
+            $this->logger->debug('Running plugin installer for all plugins');
+
+            foreach ($plugins as $plugin) {
+                $this->install($plugin['name'], $config);
+            }
         }
 
-        // If we don't want to update a single plugin then we want to install al the plugins.
-        $plugins = $this->composerService->getAll();
+        $this->logger->debug('Do a cache warmup after installer is done...');
 
-        $this->logger->debug('Running plugin installer for all plugins');
-
-        foreach ($plugins as $plugin) {
-            $this->install($plugin['name'], $config);
+        if ($io !== null) {
+            $this->cacheService->setStyle($io);
+            $io->info('Done running installer...');
+            $io->section('Running cache warmup');
         }
+        $this->cacheService->warmup();
 
         return Command::SUCCESS;
     }//end update()
@@ -691,7 +707,7 @@ class InstallationService
         if (isset($data['cronjobs']['actions']) === true) {
             $this->createCronjobs($data['cronjobs']['actions']);
         }
-    
+
         // Create users with given Organization, Applications & SecurityGroups.
         if (isset($data['applications']) === true) {
             $this->createApplications($data['applications']);
@@ -1307,7 +1323,7 @@ class InstallationService
 
         return $cronjobs;
     }//end createCronjobs()
-    
+
     /**
      * This function creates applications with the given $applications data.
      * Each application in this array should have an organization = reference.
@@ -1319,36 +1335,35 @@ class InstallationService
     private function createApplications(array $applicationsData): array
     {
         $orgRepository = $this->entityManager->getRepository('App:Organization');
-        
+
         foreach ($applicationsData as $key => &$applicationData) {
             if (isset($applicationData['$id']) === false) {
                 $this->logger->error("Can't create an Application without '\$id': 'reference'", ['applicationData' => $applicationData]);
                 unset($applicationsData[$key]);
-                
+
                 continue;
             }
-            
+
             $organization = $applicationData['organization'] ?? 'https://docs.commongateway.nl/organization/default.organization.json';
             $applicationData['organization'] = $this->checkIfObjectExists($orgRepository, $organization, 'Organization');
             if ($applicationData['organization'] instanceof Organization === false) {
                 unset($applicationsData[$key]);
-                
+
                 continue;
             }
-            
+
             if (isset($applicationData['title']) === false) {
                 $applicationData['title'] = $applicationData['name'] ?? '';
             }
         }//end foreach
-        
+
         $applications = $this->handleObjectType('https://docs.commongateway.nl/schemas/Application.schema.json', $applicationsData);
-        
+
         $this->logger->info(count($applications).' Applications Created');
-        
+
         return $applications;
-        
     }//end createApplications()
-    
+
     /**
      * This function creates users with the given $users data.
      * Each user in this array should have a securityGroups array with references to SecurityGroups.
