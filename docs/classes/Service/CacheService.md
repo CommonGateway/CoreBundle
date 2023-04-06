@@ -21,6 +21,7 @@ This service provides a guzzle wrapper to work with sources in the common gatewa
 |[getEndpoints](#cacheservicegetendpoints)||
 |[getObject](#cacheservicegetobject)|Get a single object from the cache.|
 |[getSchema](#cacheservicegetschema)|Get a single schema from the cache.|
+|[handleResultPagination](#cacheservicehandleresultpagination)|Adds pagination variables to an array with the results we found with searchObjects().|
 |[removeEndpoint](#cacheserviceremoveendpoint)|Removes an endpoint from the cache.|
 |[removeObject](#cacheserviceremoveobject)|Removes an object from the cache.|
 |[removeSchema](#cacheserviceremoveschema)|Removes an Schema from the cache.|
@@ -255,6 +256,34 @@ Get a single schema from the cache.
 `array|null`
 
 
+
+
+<hr />
+
+
+### CacheService::handleResultPagination  
+
+**Description**
+
+```php
+public handleResultPagination (array $filter, array $results, int $total)
+```
+
+Adds pagination variables to an array with the results we found with searchObjects(). 
+
+ 
+
+**Parameters**
+
+* `(array) $filter`
+* `(array) $results`
+* `(int) $total`
+
+**Return Values**
+
+`array`
+
+> the result with pagination.
 
 
 <hr />
