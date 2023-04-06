@@ -21,6 +21,7 @@ use Exception;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -130,12 +131,13 @@ class InstallationService
      * This functions serves as the jump of point for the `commengateway:plugins:update` command
      *
      * @param array $config The (optional) configuration
+     * @param SymfonyStyle|null $io In case we run update from the :initialize command and want cache:warmup to show IO messages.
      *
      * @throws Exception
      *
      * @return int
      */
-    public function update(array $config = []): int
+    public function update(array $config = [], SymfonyStyle $io = null): int
     {
         // Let's see if we are trying to update a single plugin.
         if (isset($config['plugin']) === true) {
@@ -154,6 +156,8 @@ class InstallationService
     
         $this->logger->debug('Do a cache warmup after installer is done...');
     
+        $this->cacheService->setStyle($io);
+        $io !== null ? $io->section('') : 'Running cache warmup';
         $this->cacheService->warmup();
 
         return Command::SUCCESS;
