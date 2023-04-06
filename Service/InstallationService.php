@@ -68,6 +68,11 @@ class InstallationService
      * @var SchemaService
      */
     private SchemaService $schemaService;
+    
+    /**
+     * @var CacheService
+     */
+    private CacheService $cacheService;
 
     /**
      * @var string The location of the vendor folder.
@@ -106,14 +111,16 @@ class InstallationService
         ComposerService $composerService,
         EntityManagerInterface $entityManager,
         Kernel $kernel,
+        LoggerInterface $installationLogger,
         SchemaService $schemaService,
-        LoggerInterface $installationLogger
+        CacheService $cacheService
     ) {
         $this->composerService = $composerService;
         $this->entityManager = $entityManager;
         $this->container = $kernel->getContainer();
         $this->logger = $installationLogger;
         $this->schemaService = $schemaService;
+        $this->cacheService = $cacheService;
         $this->filesystem = new Filesystem();
     }//end __construct()
 
@@ -146,6 +153,8 @@ class InstallationService
         foreach ($plugins as $plugin) {
             $this->install($plugin['name'], $config);
         }
+    
+        $this->cacheService->warmup();
 
         return Command::SUCCESS;
     }//end update()
