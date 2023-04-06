@@ -142,7 +142,7 @@ class MappingService
                 $unsetIfValue = substr($cast, 14);
                 $cast = 'unsetIfValue';
             }
-    
+
             // Todo: Add more casts
             switch ($cast) {
                 case 'int':
