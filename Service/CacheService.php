@@ -726,7 +726,7 @@ class CacheService
      *
      * @return array the result with pagination.
      */
-    private function handleResultPagination(array $filter, array $results, int $total = 0): array
+    public function handleResultPagination(array $filter, array $results, int $total = 0): array
     {
         $start = isset($filter['_start']) && is_numeric($filter['_start']) ? (int) $filter['_start'] : 0;
         $limit = isset($filter['_limit']) && is_numeric($filter['_limit']) ? (int) $filter['_limit'] : 30;

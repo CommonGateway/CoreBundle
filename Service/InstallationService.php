@@ -1093,11 +1093,12 @@ class InstallationService
 
             $subSchemaEndpoint = $this->setEndpointBasics($subSchemaEndpoint, $subSchemaEndpointData);
 
+            // Check for reference to entity, if so, add entity to endpoint.
             if (isset($subSchemaEndpointData['reference']) === true) {
                 $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $subSchemaEndpointData['reference']]);
-                if ($entity instanceof Entity) {
+                if ($entity instanceof Entity === true) {
                     $subSchemaEndpoint->addEntity($entity);
-                }
+                }//end if
             }//end if
 
             $this->entityManager->persist($subSchemaEndpoint);
