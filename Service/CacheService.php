@@ -5,6 +5,7 @@ namespace CommonGateway\CoreBundle\Service;
 use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\ObjectEntity;
+use App\Entity\User;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
@@ -226,7 +227,7 @@ class CacheService
         $collection = $this->client->objects->json;
 
         // Lets not cash the entire schema
-        $array = $objectEntity->toArray(['embedded' => true]);
+        $array = $objectEntity->toArray(['embedded' => true, 'user' => $this->getObjectUser($objectEntity)]);
 
         //(isset($array['_schema']['$id'])?$array['_schema'] = $array['_schema']['$id']:'');
 
@@ -247,16 +248,34 @@ class CacheService
         }
 
         if ($collection->findOneAndReplace(
-            ['_id'=>$id],
+            ['_id' => $id],
             $array,
-            ['upsert'=> true]
+            ['upsert' => true]
         )) {
-            isset($this->io) ? $this->io->writeln('Updated object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache') : '';
+            isset($this->io) ? $this->io->writeln('Updated object ' . $objectEntity->getId()->toString() . ' of type ' . $objectEntity->getEntity()->getName() . ' to cache') : '';
         } else {
-            isset($this->io) ? $this->io->writeln('Wrote object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache') : '';
+            isset($this->io) ? $this->io->writeln('Wrote object ' . $objectEntity->getId()->toString() . ' of type ' . $objectEntity->getEntity()->getName() . ' to cache') : '';
         }
 
         return $objectEntity;
+    }
+    
+    /**
+     * Gets the User object of an ObjectEntity.
+     *
+     * @param ObjectEntity $objectEntity
+     *
+     * @return User|null
+     */
+    private function getObjectUser(ObjectEntity $objectEntity): ?User
+    {
+        $user = $this->entityManager->getRepository('App:User')->findOneBy(['id' => $objectEntity->getOwner()]);
+        
+        if ($user === null) {
+            //todo monolog?
+        }
+        
+        return $user;
     }
 
     /**
