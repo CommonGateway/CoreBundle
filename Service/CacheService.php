@@ -252,14 +252,14 @@ class CacheService
             $array,
             ['upsert' => true]
         )) {
-            isset($this->io) ? $this->io->writeln('Updated object ' . $objectEntity->getId()->toString() . ' of type ' . $objectEntity->getEntity()->getName() . ' to cache') : '';
+            isset($this->io) ? $this->io->writeln('Updated object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache') : '';
         } else {
-            isset($this->io) ? $this->io->writeln('Wrote object ' . $objectEntity->getId()->toString() . ' of type ' . $objectEntity->getEntity()->getName() . ' to cache') : '';
+            isset($this->io) ? $this->io->writeln('Wrote object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache') : '';
         }
 
         return $objectEntity;
     }
-    
+
     /**
      * Gets the User object of an ObjectEntity.
      *
@@ -270,11 +270,11 @@ class CacheService
     private function getObjectUser(ObjectEntity $objectEntity): ?User
     {
         $user = $this->entityManager->getRepository('App:User')->findOneBy(['id' => $objectEntity->getOwner()]);
-        
+
         if ($user === null) {
             //todo monolog?
         }
-        
+
         return $user;
     }
 
