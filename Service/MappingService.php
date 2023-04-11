@@ -151,7 +151,7 @@ class MappingService
                     break;
                 case 'bool':
                 case 'boolean':
-                    if((int) $value === 1 || $value === 'true' || $value === 'True' || $value === 'TRUE') {
+                    if ((int) $value === 1 || $value === 'true' || $value === 'True' || $value === 'TRUE') {
                         $value = true;
                         break;
                     }
