@@ -151,7 +151,11 @@ class MappingService
                     break;
                 case 'bool':
                 case 'boolean':
-                    echo 'i equals 1';
+                    if ((int) $value === 1 || $value === 'true' || $value === 'True' || $value === 'TRUE') {
+                        $value = true;
+                        break;
+                    }
+                    $value = false;
                     break;
                 case 'string':
                     echo 'i equals 2';

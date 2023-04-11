@@ -686,9 +686,18 @@ class RequestService
             $event = new ActionEvent($eventType, ['response' => $result, 'entity' => $this->object->getEntity()->getReference() ?? $this->object->getEntity()->getId()->toString(), 'parameters' => $this->data]);
             $this->eventDispatcher->dispatch($event, $event->getType());
 
+            switch($this->data['method']) {
+                case 'POST':
+                    $code = 201;
+                    break;
+                default:
+                    $code = 200;
+                    break;
+            }
+
             // If we have a response return that
             if ($event->getData()['response']) {
-                return new Response(json_encode($event->getData()['response']));
+                return new Response(json_encode($event->getData()['response']), $code, ['content-type' => 'application/json']);
             }
         }
 
