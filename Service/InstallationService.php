@@ -1138,7 +1138,15 @@ class InstallationService
             $actionHandler = $this->container->get($handlerData['actionHandler']);
 
             $action = $this->entityManager->getRepository('App:Action')->findOneBy(['class' => get_class($actionHandler)]);
-            if ($action !== null) {
+
+            $blockUpdate = true;
+            if ($action !== null && $action->getVersion() && isset($handlerData['version']) === true) {
+                $blockUpdate = version_compare($handlerData['version'], $action->getVersion()) <= 0;
+            } else if (isset($handlerData['version']) === true) {
+                $blockUpdate = false;
+            }
+
+            if ($action !== null && $blockUpdate === true) {
                 $this->logger->debug('Action found for '.$handlerData['actionHandler'].' with class '.get_class($actionHandler));
                 continue;
             }
@@ -1149,7 +1157,9 @@ class InstallationService
                 continue;
             }
 
-            $action = new Action($actionHandler);
+            if ($action === null) {
+                $action = new Action($actionHandler);
+            }
             array_key_exists('name', $handlerData) ? $action->setName($handlerData['name']) : '';
             array_key_exists('reference', $handlerData) ? $action->setReference($handlerData['reference']) : '';
             $action->setListens($handlerData['listens'] ?? []);
@@ -1159,8 +1169,12 @@ class InstallationService
             isset($handlerData['configuration']) && $defaultConfig = $this->overrideConfig($defaultConfig, $handlerData['configuration'] ?? []);
             $action->setConfiguration($defaultConfig);
 
+            if (isset($handlerData['version']) === true) {
+                $action->setVersion($handlerData['version']);
+            }
             $this->entityManager->persist($action);
             $actions[] = $action;
+
             $this->logger->debug('Action created for '.$handlerData['actionHandler'].' with class '.get_class($actionHandler));
         }
 
