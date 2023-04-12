@@ -1142,7 +1142,7 @@ class InstallationService
             $blockUpdate = true;
             if ($action !== null && $action->getVersion() && isset($handlerData['version']) === true) {
                 $blockUpdate = version_compare($handlerData['version'], $action->getVersion()) <= 0;
-            } elseif(isset($handlerData['version']) === true) {
+            } else if (isset($handlerData['version']) === true) {
                 $blockUpdate = false;
             }
 
@@ -1157,7 +1157,7 @@ class InstallationService
                 continue;
             }
 
-            if($action === null) {
+            if ($action === null) {
                 $action = new Action($actionHandler);
             }
             array_key_exists('name', $handlerData) ? $action->setName($handlerData['name']) : '';
@@ -1169,7 +1169,7 @@ class InstallationService
             isset($handlerData['configuration']) && $defaultConfig = $this->overrideConfig($defaultConfig, $handlerData['configuration'] ?? []);
             $action->setConfiguration($defaultConfig);
 
-            if(isset($handlerData['version']) === true) {
+            if (isset($handlerData['version']) === true) {
                 $action->setVersion($handlerData['version']);
             }
             $this->entityManager->persist($action);
