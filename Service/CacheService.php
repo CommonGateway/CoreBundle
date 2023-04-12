@@ -797,6 +797,7 @@ class CacheService
         $collection = $this->client->endpoints->json;
 
         $endpointArray = $this->serializer->normalize($endpoint);
+        $endpointArray['_id'] = $endpointArray['id'];
 
         if ($collection->findOneAndReplace(
             ['id' => $endpoint->getId()->toString()],
