@@ -586,6 +586,7 @@ class RequestService
                         if ($this->schema->getPersist() === true) {
                             $this->entityManager->persist($this->object);
                             $this->entityManager->flush();
+                            $this->cacheService->cacheObject($this->object);
                         }
                     } else {
                         // Use validation to throw an error
@@ -637,6 +638,7 @@ class RequestService
                         if ($this->schema->getPersist() === true) {
                             $this->entityManager->persist($this->object);
                             $this->entityManager->flush();
+                            $this->cacheService->cacheObject($this->object);
                         }
                     } else {
                         // Use validation to throw an error
