@@ -58,7 +58,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         $object = $args->getObject();
 
         if ($object instanceof ObjectEntity) {
-            $this->updateParents($object);
+//            $this->updateParents($object);
         }
     }
 
@@ -79,7 +79,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         $object = $args->getObject();
         // if this subscriber only applies to certain entity types,
         if ($object instanceof ObjectEntity) {
-            $this->updateParents($object);
+//            $this->updateParents($object);
             $this->cacheService->cacheObject($object);
 
             return;
