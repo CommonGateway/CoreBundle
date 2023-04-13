@@ -541,7 +541,7 @@ class RequestService
                     // Use validation to throw an error
                 }
 
-                $result = $this->cacheService->getObject($this->object->getId());
+                $result = $this->cacheService->getObject($this->object->toArray());
                 break;
             case 'PUT':
                 $eventType = 'commongateway.object.update';
