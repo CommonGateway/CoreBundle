@@ -137,7 +137,7 @@ class EndpointService
             $this->logger->info('Handling event endpoint');
 
             if (isset($parameters['response']) === false) {
-                $parameters['response'] = new Response('Object is not supported by this endpoint', '200');
+                $parameters['response'] = new Response('Object is not supported by this endpoint', '501', ['Content-type' => 'application/json']);
             }
 
             foreach ($endpoint->getThrows() as $throw) {
