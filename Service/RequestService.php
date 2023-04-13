@@ -269,7 +269,7 @@ class RequestService
                 return new Response(
                     json_encode(['Message' => $message]),
                     Response::HTTP_NOT_FOUND,
-                    ['content-type' => 'application/json']
+                    ['Content-type' => isset($this->data['endpoint']) ? $this->data['endpoint']->getDefaultContentType() : 'application/json']
                 );
             }
 
@@ -277,7 +277,7 @@ class RequestService
                 return new Response(
                     json_encode(['Message' => "This Source is not enabled: {$proxy->getName()}"]),
                     Response::HTTP_OK, // This should be ok, so we can disable Sources without creating error responses?
-                    ['content-type' => 'application/json']
+                    ['Content-type' => isset($this->data['endpoint']) ? $this->data['endpoint']->getDefaultContentType() : 'application/json']
                 );
             }
         }//end if
@@ -447,7 +447,7 @@ class RequestService
 
         // Security
         $scopes = $this->getScopes();
-        foreach ($allowedSchemas['id'] as $schema) {
+        foreach ($allowedSchemas['name'] as $schema) {
             if (!isset($scopes[$schema][$this->data['method']])) {
                 // THROW SECURITY ERROR AND EXIT
             }
@@ -483,7 +483,7 @@ class RequestService
 
                     // Lets see if the found result is allowed for this endpoint
                     if (isset($this->data['endpoint']) && !in_array($result['_self']['schema']['id'], $allowedSchemas['id'])) {
-                        return new Response('Object is not supported by this endpoint', '406');
+                        return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                     }
 
                     // create log
@@ -507,48 +507,45 @@ class RequestService
                     $this->session->set('object', $this->id);
                     $this->logger->error('You can not POST to an (existing) id, consider using PUT or PATCH instead');
 
-                    return new Response('You can not POST to an (existing) id, consider using PUT or PATCH instead', '400');
+                    return new Response('You can not POST to an (existing) id, consider using PUT or PATCH instead', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
                 if ($this->schema instanceof Entity === false) {
                     $this->logger->error('No schema could be established for your request');
 
-                    return new Response('No schema could be established for your request', '400');
+                    return new Response('No schema could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
                 // Lets see if the found result is allowed for this endpoint
                 if (isset($this->data['endpoint']) === true && in_array($this->schema->getId(), $allowedSchemas['id']) === false) {
                     $this->logger->error('Object is not supported by this endpoint');
 
-                    return new Response('Object is not supported by this endpoint', '406');
+                    return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
                 $this->object = new ObjectEntity($this->schema);
                 $this->object->setOwner($this->security->getUser()->getUserIdentifier());
 
-                if ($this->schema->getPersist() === true) {
-                    $this->logger->debug('Hydrating object');
-                    //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
+                $this->logger->debug('Hydrating object');
+                //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
 
-                    if ($this->object->hydrate($this->content, true)) {
+                if ($this->object->hydrate($this->content, true)) {
+                    if ($this->schema->getPersist() === true) {
                         $this->entityManager->persist($this->object);
                         $this->entityManager->flush();
                         $this->session->set('object', $this->object->getId()->toString());
                         $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
                     } else {
-                        // Use validation to throw an error
+                        $this->entityManager->persist($this->object);
+                        $this->session->set('object', $this->object->getId()->toString());
+                        $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
                     }
+                } else {
+                    // Use validation to throw an error
                 }
 
-                if ($this->schema->getPersist() === false) {
-                    $this->entityManager->persist($this->object);
-                    $this->entityManager->flush();
-                    $this->session->set('object', $this->object->getId()->toString());
-                    $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
-                }
-
-                $result = $this->cacheService->getObject($this->object->getId());
+                $result = $this->cacheService->getObject($this->object->getId()->toString());
                 break;
             case 'PUT':
                 $eventType = 'commongateway.object.update';
@@ -557,7 +554,7 @@ class RequestService
                 if (!isset($this->id)) {
                     $this->logger->error('No id could be established for your request');
 
-                    return new Response('No id could be established for your request', '400');
+                    return new Response('No id could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
                 $this->session->set('object', $this->id);
 
@@ -565,28 +562,36 @@ class RequestService
                 if ($this->schema instanceof Entity === false) {
                     $this->logger->error('No schema could be established for your request');
 
-                    return new Response('No schema could be established for your request', '400');
+                    return new Response('No schema could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
                 // Lets see if the found result is allowd for this endpoint
                 if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     $this->logger->error('Object is not supported by this endpoint');
 
-                    return new Response('Object is not supported by this endpoint', '406');
+                    return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
                 $this->object = $this->entityManager->find('App:ObjectEntity', $this->id);
 
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
                 $this->logger->debug('updating object '.$this->id);
-                if ($this->schema->getPersist() === true) {
+
+                if ($this->object->getLock() === null
+                    || $this->object->getLock() !== null
+                    && key_exists('lock', $this->content)
+                    && $this->object->getLock() === $this->content['lock']
+                ) {
                     if ($this->object->hydrate($this->content, true)) { // This should be an unsafe hydration
                         if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
                             $this->objectEntityService->setUnread($this->object);
                         }
 
-                        $this->entityManager->persist($this->object);
-                        $this->entityManager->flush();
+                        if ($this->schema->getPersist() === true) {
+                            $this->entityManager->persist($this->object);
+                            $this->entityManager->flush();
+                            $this->cacheService->cacheObject($this->object);
+                        }
                     } else {
                         // Use validation to throw an error
                     }
@@ -601,7 +606,7 @@ class RequestService
                 if (!isset($this->id)) {
                     $this->logger->error('No id could be established for your request');
 
-                    return new Response('No id could be established for your request', '400');
+                    return new Response('No id could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
                 $this->session->set('object', $this->id);
 
@@ -609,30 +614,39 @@ class RequestService
                 if ($this->schema instanceof Entity === false) {
                     $this->logger->error('No schema could be established for your request');
 
-                    return new Response('No schema could be established for your request', '400');
+                    return new Response('No schema could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
                 // Lets see if the found result is allowd for this endpoint
                 if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     $this->logger->error('Object is not supported by this endpoint');
 
-                    return new Response('Object is not supported by this endpoint', '406');
+                    return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
                 $this->object = $this->entityManager->find('App:ObjectEntity', $this->id);
 
                 //if ($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
                 $this->logger->debug('updating object '.$this->id);
-                if ($this->object->hydrate($this->content)) {
-                    if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
-                        $this->objectEntityService->setUnread($this->object);
+
+                if ($this->object->getLock() === null
+                    || $this->object->getLock() !== null
+                    && key_exists('lock', $this->content)
+                    && $this->object->getLock() === $this->content['lock']
+                ) {
+                    if ($this->object->hydrate($this->content)) {
+                        if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
+                            $this->objectEntityService->setUnread($this->object);
+                        }
+
+                        if ($this->schema->getPersist() === true) {
+                            $this->entityManager->persist($this->object);
+                            $this->entityManager->flush();
+                            $this->cacheService->cacheObject($this->object);
+                        }
+                    } else {
+                        // Use validation to throw an error
                     }
-                    if ($this->schema->getPersist() === true) {
-                        $this->entityManager->persist($this->object);
-                    }
-                    $this->entityManager->flush();
-                } else {
-                    // Use validation to throw an error
                 }
 
                 $result = $this->cacheService->getObject($this->object->getId());
@@ -643,7 +657,7 @@ class RequestService
                 if (!isset($this->id)) {
                     $this->logger->error('No id could be established for your request');
 
-                    return new Response('No id could be established for your request', '400');
+                    return new Response('No id could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
                 $this->session->set('object', $this->id);
 
@@ -651,25 +665,25 @@ class RequestService
                 if ($this->schema instanceof Entity === false) {
                     $this->logger->error('No schema could be established for your request');
 
-                    return new Response('No schema could be established for your request', '400');
+                    return new Response('No schema could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
                 // Lets see if the found result is allowd for this endpoint
                 if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     $this->logger->error('Object is not supported by this endpoint');
 
-                    return new Response('Object is not supported by this endpoint', '406');
+                    return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
                 $this->entityManager->remove($this->object);
                 $this->entityManager->flush();
                 $this->logger->info('Succesfully deleted object');
 
-                return new Response('Succesfully deleted object', '202');
+                return new Response('Succesfully deleted object', '202', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             default:
                 $this->logger->error('Unkown method'.$this->data['method']);
 
-                return new Response('Unkown method'.$this->data['method'], '404');
+                return new Response('Unkown method'.$this->data['method'], '404', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
         }
 
         $this->entityManager->flush();
@@ -678,9 +692,18 @@ class RequestService
             $event = new ActionEvent($eventType, ['response' => $result, 'entity' => $this->object->getEntity()->getReference() ?? $this->object->getEntity()->getId()->toString(), 'parameters' => $this->data]);
             $this->eventDispatcher->dispatch($event, $event->getType());
 
+            switch($this->data['method']) {
+                case 'POST':
+                    $code = 201;
+                    break;
+                default:
+                    $code = 200;
+                    break;
+            }
+
             // If we have a response return that
             if ($event->getData()['response']) {
-                return new Response(json_encode($event->getData()['response']));
+                return new Response(json_encode($event->getData()['response']), $code, ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             }
         }
 
@@ -845,6 +868,8 @@ class RequestService
     }
 
     /**
+     * @TODO use and fix/clean-up this function or just remove this function?
+     *
      * @param array $data          The data from the call
      * @param array $configuration The configuration from the call
      *
@@ -931,7 +956,7 @@ class RequestService
         $this->data['response'] = $response = new Response(
             json_encode($response),
             200,
-            ['content-type' => 'application/json']
+            ['Content-type' => isset($this->data['endpoint']) ? $this->data['endpoint']->getDefaultContentType() : 'application/json']
         );
 
         return $this->data;
@@ -953,13 +978,13 @@ class RequestService
 
         return $data;
     }//end proxyRequestHandler()
-
+    
     /**
      * Creating the response object.
      *
      * @param $data
      *
-     * @return \CommonGateway\CoreBundle\Service\Response
+     * @return Response
      */
     public function createResponse($data): Response
     {
@@ -972,7 +997,7 @@ class RequestService
         return new Response(
             json_encode($data),
             200,
-            ['content-type' => 'application/json']
+            ['Content-type' => isset($this->data['endpoint']) ? $this->data['endpoint']->getDefaultContentType() : 'application/json']
         );
     }
 }

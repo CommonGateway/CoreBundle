@@ -14,13 +14,14 @@ use App\Entity\Mapping;
 use App\Entity\ObjectEntity;
 use App\Entity\Organization;
 use App\Entity\SecurityGroup;
-//use App\Entity\User;
+use App\Entity\User;
 use App\Kernel;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -70,6 +71,11 @@ class InstallationService
     private SchemaService $schemaService;
 
     /**
+     * @var CacheService
+     */
+    private CacheService $cacheService;
+
+    /**
      * @var string The location of the vendor folder.
      */
     private string $vendorFolder = 'vendor';
@@ -91,7 +97,7 @@ class InstallationService
         'https://docs.commongateway.nl/schemas/Mapping.schema.json',
         'https://docs.commongateway.nl/schemas/Organization.schema.json',
         'https://docs.commongateway.nl/schemas/SecurityGroup.schema.json',
-        //        'https://docs.commongateway.nl/schemas/User.schema.json',
+        'https://docs.commongateway.nl/schemas/User.schema.json',
     ];
 
     /**
@@ -106,14 +112,16 @@ class InstallationService
         ComposerService $composerService,
         EntityManagerInterface $entityManager,
         Kernel $kernel,
+        LoggerInterface $installationLogger,
         SchemaService $schemaService,
-        LoggerInterface $installationLogger
+        CacheService $cacheService
     ) {
         $this->composerService = $composerService;
         $this->entityManager = $entityManager;
         $this->container = $kernel->getContainer();
         $this->logger = $installationLogger;
         $this->schemaService = $schemaService;
+        $this->cacheService = $cacheService;
         $this->filesystem = new Filesystem();
     }//end __construct()
 
@@ -122,30 +130,38 @@ class InstallationService
      *
      * This functions serves as the jump of point for the `commengateway:plugins:update` command
      *
-     * @param array $config The (optional) configuration
+     * @param array             $config The (optional) configuration
+     * @param SymfonyStyle|null $io     In case we run update from the :initialize command and want cache:warmup to show IO messages.
      *
      * @throws Exception
      *
      * @return int
      */
-    public function update(array $config = []): int
+    public function update(array $config = [], SymfonyStyle $io = null): int
     {
         // Let's see if we are trying to update a single plugin.
         if (isset($config['plugin']) === true) {
             $this->logger->debug('Running plugin installer for a single plugin: '.$config['plugin']);
             $this->install($config['plugin'], $config);
+        } else {
+            // If we don't want to update a single plugin then we want to install al the plugins.
+            $plugins = $this->composerService->getAll();
 
-            return Command::SUCCESS;
+            $this->logger->debug('Running plugin installer for all plugins');
+
+            foreach ($plugins as $plugin) {
+                $this->install($plugin['name'], $config);
+            }
         }
 
-        // If we don't want to update a single plugin then we want to install al the plugins.
-        $plugins = $this->composerService->getAll();
+        $this->logger->debug('Do a cache warmup after installer is done...');
 
-        $this->logger->debug('Running plugin installer for all plugins');
-
-        foreach ($plugins as $plugin) {
-            $this->install($plugin['name'], $config);
+        if ($io !== null) {
+            $this->cacheService->setStyle($io);
+            $io->info('Done running installer...');
+            $io->section('Running cache warmup');
         }
+        $this->cacheService->warmup();
 
         return Command::SUCCESS;
     }//end update()
@@ -446,10 +462,12 @@ class InstallationService
      * @param string $type    The type of the object
      * @param array  $schemas The schemas to handle
      *
-     * @return void
+     * @return array The objects.
      */
-    private function handleObjectType(string $type, array $schemas): void
+    private function handleObjectType(string $type, array $schemas): array
     {
+        $objects = [];
+
         foreach ($schemas as $schema) {
             $object = $this->handleObject($type, $schema);
             if ($object === null) {
@@ -458,7 +476,10 @@ class InstallationService
 
             // Save it to the database.
             $this->entityManager->persist($object);
+            $objects[] = $object;
         }
+
+        return $objects;
     }//end handleObjectType();
 
     /**
@@ -499,7 +520,8 @@ class InstallationService
                     'class'  => get_class($object),
                     // If you get a "::$id must not be accessed before initialization" error here, remove type UuidInterface from the class^ $id declaration. Something to do with read_secure I think.
                     'id'     => $object->getId(),
-                    'object' => method_exists(get_class($object), 'toSchema') === true ? $object->toSchema() : 'toSchema function does not exists.',
+                    // TODO: using toSchema on an object that is not persisted yet breaks stuff... "must not be accessed before initialization" errors
+                    // 'object' => method_exists(get_class($object), 'toSchema') === true ? $object->toSchema() : 'toSchema function does not exists.',
                 ]
             );
         }
@@ -549,7 +571,7 @@ class InstallationService
             return null;
         }
 
-        // Load the data. Todo: these version compare checks don't look right...
+        // Load the data. Compare version to check if we need to update or not.
         if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) <= 0) {
             $this->logger->debug('The schema has a version number equal or lower then the already present version, the object is NOT updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
         } elseif (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) > 0) {
@@ -595,8 +617,8 @@ class InstallationService
                 return new Organization();
             case 'SecurityGroup':
                 return new SecurityGroup();
-//            case 'User':
-//                return new User();
+            case 'User':
+                return new User();
             default:
                 return null;
         }
@@ -621,7 +643,7 @@ class InstallationService
 
         // If we have an id let try to grab an object.
         if (array_key_exists('id', $schema) === true) {
-            $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $schema['$id']]);
+            $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $schema['id']]);
         }
 
         // Create it if we don't.
@@ -684,6 +706,16 @@ class InstallationService
         // Cronjobs for actions for action handlers.
         if (isset($data['cronjobs']['actions']) === true) {
             $this->createCronjobs($data['cronjobs']['actions']);
+        }
+
+        // Create users with given Organization, Applications & SecurityGroups.
+        if (isset($data['applications']) === true) {
+            $this->createApplications($data['applications']);
+        }
+
+        // Create users with given Organization, Applications & SecurityGroups.
+        if (isset($data['users']) === true) {
+            $this->createUsers($data['users']);
         }
 
         // Lets see if we have things that we want to create cards for stuff (Since this might create cards for the stuff above this should always be last).
@@ -906,7 +938,7 @@ class InstallationService
     {
         $object = $repository->findOneBy(['reference' => $reference]);
         if ($object === null) {
-            $this->logger->error('No object found for '.$reference.' while trying to create an Endpoint.', ['type' => $type]);
+            $this->logger->error('No object found for '.$reference.' while trying to create an Endpoint or User.', ['type' => $type]);
 
             return null;
         }
@@ -982,10 +1014,18 @@ class InstallationService
         }
 
         $newEndpoint->setThrows($newEndpointData['throws']);
-        // Throws only trigger when an Endpoint has no entities.
-        $newEndpoint->setEntity(null); // Old way of setting Entity for Endpoints
-        foreach ($newEndpoint->getEntities() as $removeEntity) {
-            $newEndpoint->removeEntity($removeEntity);
+
+        // Check for reference to entity, if so, add entity to endpoint.
+        if (isset($newEndpointData['reference']) === true) {
+            $newEndpoint->setEntity(null); // Old way of setting Entity for Endpoints
+            foreach ($newEndpoint->getEntities() as $removeEntity) {
+                $newEndpoint->removeEntity($removeEntity);
+            }
+
+            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $newEndpointData['reference']]);
+            if ($entity !== null) {
+                $newEndpoint->addEntity($entity);
+            }
         }
 
         return $newEndpoint;
@@ -1098,7 +1138,15 @@ class InstallationService
             $actionHandler = $this->container->get($handlerData['actionHandler']);
 
             $action = $this->entityManager->getRepository('App:Action')->findOneBy(['class' => get_class($actionHandler)]);
-            if ($action !== null) {
+
+            $blockUpdate = true;
+            if ($action !== null && $action->getVersion() && isset($handlerData['version']) === true) {
+                $blockUpdate = version_compare($handlerData['version'], $action->getVersion()) <= 0;
+            } else if (isset($handlerData['version']) === true) {
+                $blockUpdate = false;
+            }
+
+            if ($action !== null && $blockUpdate === true) {
                 $this->logger->debug('Action found for '.$handlerData['actionHandler'].' with class '.get_class($actionHandler));
                 continue;
             }
@@ -1109,7 +1157,9 @@ class InstallationService
                 continue;
             }
 
-            $action = new Action($actionHandler);
+            if ($action === null) {
+                $action = new Action($actionHandler);
+            }
             array_key_exists('name', $handlerData) ? $action->setName($handlerData['name']) : '';
             array_key_exists('reference', $handlerData) ? $action->setReference($handlerData['reference']) : '';
             $action->setListens($handlerData['listens'] ?? []);
@@ -1119,8 +1169,12 @@ class InstallationService
             isset($handlerData['configuration']) && $defaultConfig = $this->overrideConfig($defaultConfig, $handlerData['configuration'] ?? []);
             $action->setConfiguration($defaultConfig);
 
+            if (isset($handlerData['version']) === true) {
+                $action->setVersion($handlerData['version']);
+            }
             $this->entityManager->persist($action);
             $actions[] = $action;
+
             $this->logger->debug('Action created for '.$handlerData['actionHandler'].' with class '.get_class($actionHandler));
         }
 
@@ -1265,7 +1319,7 @@ class InstallationService
      *
      * @param array $actions An array of references of actions for wih actions cronjobs be created
      *
-     * @return array An array of cronjobs
+     * @return array An array of cronjobs.
      */
     private function createCronjobs(array $actions = []): array
     {
@@ -1279,6 +1333,8 @@ class InstallationService
                 continue;
             }
 
+            //TODO: CHECK IF THIS CRONJOB ALREADY EXISTS ?!?
+
             $cronjob = new Cronjob($action);
             $this->entityManager->persist($cronjob);
             $cronjobs[] = $cronjob;
@@ -1289,6 +1345,154 @@ class InstallationService
 
         return $cronjobs;
     }//end createCronjobs()
+
+    /**
+     * This function creates applications with the given $applications data.
+     * Each application in this array should have an organization = reference.
+     *
+     * @param array $applicationsData An array of arrays describing the application objects we want to create or update.
+     *
+     * @return array An array of applications.
+     */
+    private function createApplications(array $applicationsData): array
+    {
+        $orgRepository = $this->entityManager->getRepository('App:Organization');
+
+        foreach ($applicationsData as $key => &$applicationData) {
+            if (isset($applicationData['$id']) === false) {
+                $this->logger->error("Can't create an Application without '\$id': 'reference'", ['applicationData' => $applicationData]);
+                unset($applicationsData[$key]);
+
+                continue;
+            }
+
+            $organization = $applicationData['organization'] ?? 'https://docs.commongateway.nl/organization/default.organization.json';
+            $applicationData['organization'] = $this->checkIfObjectExists($orgRepository, $organization, 'Organization');
+            if ($applicationData['organization'] instanceof Organization === false) {
+                unset($applicationsData[$key]);
+
+                continue;
+            }
+
+            if (isset($applicationData['title']) === false) {
+                $applicationData['title'] = $applicationData['name'] ?? '';
+            }
+        }//end foreach
+
+        $applications = $this->handleObjectType('https://docs.commongateway.nl/schemas/Application.schema.json', $applicationsData);
+
+        $this->logger->info(count($applications).' Applications Created');
+
+        return $applications;
+    }//end createApplications()
+
+    /**
+     * This function creates users with the given $users data.
+     * Each user in this array should have a securityGroups array with references to SecurityGroups.
+     *
+     * @param array $usersData An array of arrays describing the user objects we want to create or update.
+     *
+     * @return array An array of users.
+     */
+    private function createUsers(array $usersData): array
+    {
+        $orgRepository = $this->entityManager->getRepository('App:Organization');
+
+        foreach ($usersData as $key => &$userData) {
+            if (isset($userData['email']) === false || isset($userData['securityGroups']) === false || isset($userData['$id']) === false) {
+                $this->logger->error("Can't create an User without 'email': 'username', '\$id': 'reference' and 'securityGroups': [securityGroup-references]", ['userData' => $userData]);
+                unset($usersData[$key]);
+
+                continue;
+            }
+            $this->handleUserGroups($userData);
+            $this->handleUserApps($userData);
+
+            $organization = $userData['organization'] ?? 'https://docs.commongateway.nl/organization/default.organization.json';
+            $userData['organization'] = $this->checkIfObjectExists($orgRepository, $organization, 'Organization');
+            if ($userData['organization'] instanceof Organization === false) {
+                unset($usersData[$key]);
+
+                continue;
+            }
+
+            if (isset($userData['title']) === false) {
+                $userData['title'] = $userData['name'] ?? $userData['email'];
+            }
+        }
+
+        $users = $this->handleObjectType('https://docs.commongateway.nl/schemas/User.schema.json', $usersData);
+
+        $this->logger->info(count($users).' Users Created');
+
+        return $users;
+    }//end createUsers()
+
+    /**
+     * Replaces $userData['securityGroups'] references with real SecurityGroups objects,
+     * so the fromSchema function for User can create a user with this.
+     * Will also check if someone is trying to add admin scopes through this method.
+     *
+     * @param array $userData An array describing the user object we want to create or update.
+     *
+     * @return array The updated $userData array.
+     */
+    private function handleUserGroups(array &$userData): array
+    {
+        $repository = $this->entityManager->getRepository('App:SecurityGroup');
+
+        $securityGroups = $userData['securityGroups'];
+        unset($userData['securityGroups']);
+
+        foreach ($securityGroups as $reference) {
+            $securityGroup = $this->checkIfObjectExists($repository, $reference, 'SecurityGroup');
+            if ($securityGroup instanceof SecurityGroup === false) {
+                continue;
+            }
+            foreach ($securityGroup->getScopes() as $scope) {
+                // todo: this works, we should go to php 8.0 later
+                if (str_contains(strtolower($scope), 'admin')) {
+                    $this->logger->error('It is forbidden to change or add users with admin scopes!', ['securityGroup' => $reference, 'userData' => $userData]);
+                    continue 2;
+                }
+            }
+
+            $userData['securityGroups'][] = $securityGroup;
+        }
+
+        return $userData;
+    }//end handleUserGroups()
+
+    /**
+     * Replaces $userData['applications'] references with real Application objects,
+     * so the fromSchema function for User can create a user with this.
+     *
+     * @param array $userData An array describing the user object we want to create or update.
+     *
+     * @return array The updated $userData array.
+     */
+    private function handleUserApps(array &$userData): array
+    {
+        $repository = $this->entityManager->getRepository('App:Application');
+
+        if (isset($userData['applications']) === false) {
+            $userData['applications'] = ['https://docs.commongateway.nl/application/default.application.json'];
+        }
+
+        $applications = $userData['applications'];
+        unset($userData['applications']);
+
+        foreach ($applications as $reference) {
+            $application = $this->checkIfObjectExists($repository, $reference, 'Application');
+            if ($application instanceof Application === false) {
+                continue;
+            }
+
+            $userData['applications'][] = $application;
+        }
+
+        return $userData;
+    }//end handleUserGroups()
 
     /**
      * This functions creates dashboard cars for an array of endpoints, sources, schema's or objects.

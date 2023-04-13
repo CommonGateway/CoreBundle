@@ -5,6 +5,7 @@ namespace CommonGateway\CoreBundle\Service;
 use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\ObjectEntity;
+use App\Entity\User;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
@@ -171,9 +172,9 @@ class CacheService
     {
         $endpoints = $collection->find()->toArray();
         foreach ($endpoints as $endpoint) {
-            if (!$this->entityManager->find($type, $endpoint['id'])) {
-                isset($this->io) ?? $this->io->writeln("removing {$endpoint['id']} from cache");
-                $collection->findOneAndDelete(['id' => $endpoint['id']]);
+            if (!$this->entityManager->find($type, $endpoint['_id'])) {
+                    isset($this->io) ?? $this->io->writeln("removing {$endpoint['_id']} from cache");
+                $collection->findOneAndDelete(['id' => $endpoint['_id']]);
             }
         }
     }
@@ -226,7 +227,7 @@ class CacheService
         $collection = $this->client->objects->json;
 
         // Lets not cash the entire schema
-        $array = $objectEntity->toArray(['embedded' => true]);
+        $array = $objectEntity->toArray(['embedded' => true, 'user' => $this->getObjectUser($objectEntity)]);
 
         //(isset($array['_schema']['$id'])?$array['_schema'] = $array['_schema']['$id']:'');
 
@@ -247,9 +248,9 @@ class CacheService
         }
 
         if ($collection->findOneAndReplace(
-            ['_id'=>$id],
+            ['_id' => $id],
             $array,
-            ['upsert'=> true]
+            ['upsert' => true]
         )) {
             isset($this->io) ? $this->io->writeln('Updated object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache') : '';
         } else {
@@ -257,6 +258,24 @@ class CacheService
         }
 
         return $objectEntity;
+    }
+
+    /**
+     * Gets the User object of an ObjectEntity.
+     *
+     * @param ObjectEntity $objectEntity
+     *
+     * @return User|null
+     */
+    private function getObjectUser(ObjectEntity $objectEntity): ?User
+    {
+        $user = $this->entityManager->getRepository('App:User')->findOneBy(['id' => $objectEntity->getOwner()]);
+
+        if ($user === null) {
+            //todo monolog?
+        }
+
+        return $user;
     }
 
     /**
@@ -726,7 +745,7 @@ class CacheService
      *
      * @return array the result with pagination.
      */
-    private function handleResultPagination(array $filter, array $results, int $total = 0): array
+    public function handleResultPagination(array $filter, array $results, int $total = 0): array
     {
         $start = isset($filter['_start']) && is_numeric($filter['_start']) ? (int) $filter['_start'] : 0;
         $limit = isset($filter['_limit']) && is_numeric($filter['_limit']) ? (int) $filter['_limit'] : 30;
@@ -778,6 +797,7 @@ class CacheService
         $collection = $this->client->endpoints->json;
 
         $endpointArray = $this->serializer->normalize($endpoint);
+        $endpointArray['_id'] = $endpointArray['id'];
 
         if ($collection->findOneAndReplace(
             ['id' => $endpoint->getId()->toString()],

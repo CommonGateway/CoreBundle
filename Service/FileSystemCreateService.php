@@ -12,6 +12,7 @@
  *
  * @category Service
  */
+
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;

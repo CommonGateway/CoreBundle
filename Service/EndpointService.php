@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -136,7 +137,7 @@ class EndpointService
             $this->logger->info('Handling event endpoint');
 
             if (isset($parameters['response']) === false) {
-                $parameters['response'] = new Response('Object is not supported by this endpoint', '200');
+                $parameters['response'] = new Response('Object is not supported by this endpoint', '501', ['Content-type' => $endpoint->getDefaultContentType()]);
             }
 
             foreach ($endpoint->getThrows() as $throw) {
@@ -261,7 +262,7 @@ class EndpointService
             return $endpoint;
         }//end if
 
-        throw new Exception('No proper endpoint could be detirmend');
+        throw new NotFoundHttpException('No proper endpoint could be determined');
     }//end getEndpoint()
 
     /**
