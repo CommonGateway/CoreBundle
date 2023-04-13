@@ -536,12 +536,16 @@ class RequestService
                         $this->entityManager->flush();
                         $this->session->set('object', $this->object->getId()->toString());
                         $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
+                    } else {
+                        $this->entityManager->persist($this->object);
+                        $this->session->set('object', $this->object->getId()->toString());
+                        $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
                     }
                 } else {
                     // Use validation to throw an error
                 }
 
-                $result = $this->cacheService->getObject($this->object->getId());
+                $result = $this->cacheService->getObject($this->object->getId()->toString());
                 break;
             case 'PUT':
                 $eventType = 'commongateway.object.update';
