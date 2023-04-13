@@ -3,6 +3,7 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Endpoint;
+use App\Entity\Entity;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
@@ -32,8 +33,9 @@ class OasService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        ParameterBagInterface $parameters
-    ) {
+        ParameterBagInterface  $parameters
+    )
+    {
         $this->entityManager = $entityManager;
         $this->parameters = $parameters;
     }//end __construct()
@@ -48,21 +50,21 @@ class OasService
         // Setup the basic oas array.
         $oas = [
             'openapi' => '3.0.0',
-            'info'    => [
-                'title'       => 'Common Gateway',
+            'info' => [
+                'title' => 'Common Gateway',
                 'description' => 'The Common Gateway is a further Dutch development of the European API Platform. API Platform is a project of Les Tilleus and, in itself, an extension of the Symfony framework. API Platform is a tool for delivering APIs based on standardized documentation and is used for various French and German government projects. Including Digital state, a precursor to Xroute, GOV.UK and Common Ground. The project is now part of joinup.eu (the European equivalent of Common Ground).',
-                'version'     => '1.0.3',
+                'version' => '1.0.3',
             ],
             'servers' => [
                 [
-                    'url'         => $this->parameters->get('app_url', 'https://localhost'),
+                    'url' => $this->parameters->get('app_url', 'https://localhost'),
                     'description' => 'The kubernetes server',
                 ],
             ],
-            'paths'      => [],
+            'paths' => [],
             'components' => [],
-            'security'   => [],
-            'tags'       => [],
+            'security' => [],
+            'tags' => [],
         ];
 
         // Add the endpoints.
@@ -77,6 +79,53 @@ class OasService
     /**
      * Adds the endpoints to an OAS Array.
      *
+     * @param array $oas The OAS array where security should be added.
+     * @param Endpoint $endpoint The endpoint.
+     *
+     * @return array The OAS array including parameters for paths with id.
+     */
+    private function addParametersForPathWithId(array $oas, Endpoint $endpoint, array $pathArray): array
+    {
+        if (in_array('GET', $endpoint->getMethods()) === true
+            || in_array('PUT', $endpoint->getMethods()) === true
+            || in_array('PATCH', $endpoint->getMethods()) === true
+            || in_array('DELETE', $endpoint->getMethods()) === true
+        ) {
+            $oas['paths']['/' . implode('/', $pathArray) . '/{id}']['parameters'][] = [
+                'name' => 'id',
+                'in' => 'path',
+                'description' => 'Unieke resource identifier (UUID4)',
+                'required' => true,
+                'schema' => [
+                    'type' => 'string',
+                    'format' => 'uuid'
+                ],
+            ];
+        }//end if
+
+        return $oas;
+    }
+
+    /**
+     * Adds the endpoints to an OAS Array.
+     *
+     * @param Endpoint $endpoint The endpoint.
+     *
+     * @return array The path array
+     */
+    private function getPathArray(Endpoint $endpoint): array
+    {
+        $pathArray = $endpoint->getPath();
+        if (end($pathArray) === 'id') {
+            array_pop($pathArray);
+        }
+        
+        return $pathArray;
+    }
+
+    /**
+     * Adds the endpoints to an OAS Array.
+     *
      * @param array $oas The OAS array where security should be added
      *
      * @return array The OAS array including security
@@ -87,30 +136,100 @@ class OasService
         $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
 
         $oas['components']['schemas'] = [];
+        $oas['components']['requestBodies'] = [];
         // Add the endpoints to the OAS.
         foreach ($endpoints as $endpoint) {
             // TODO: endpoint without entities do exist...
             if (count($endpoint->getEntities()) === 0) {
                 continue;
-            }
+            }//end if
 
             // Add the path to the paths.
-            $pathArray = [];
-            foreach ($endpoint->getPath() as $path) {
-                if ($path === 'id') {
-                    $pathArray[] = '{'.$path.'}';
-                    continue;
-                }
-                $pathArray[] = $path;
-            }
-            $oas['paths']['/'.implode('/', $pathArray)] = $this->getEndpointOperations($endpoint);
+            $pathArray = $this->getPathArray($endpoint);
+
+            // Add parameters for paths with an id.
+            $oas = $this->addParametersForPathWithId($oas, $endpoint, $pathArray);
+
+            foreach ($endpoint->getMethods() as $method) {
+
+                if ($method === 'GET'
+                    || $method === 'PUT'
+                    || $method === 'PATCH'
+                    || $method === 'DELETE'
+                ) {
+                    $oas['paths']['/' . implode('/', $pathArray) . '/{id}'][strtolower($method)] = $this->getEndpointOperations($endpoint, $method, 'item');
+                }//end if
+
+                if ($method === 'GET'
+                    || $method === 'POST'
+                ) {
+
+                    if ($method === 'GET') {
+                        $operationId = 'collection';
+                    }//end if
+
+                    if ($method === 'POST') {
+                        $operationId = 'item';
+                    }//end if
+
+                    unset($oas['paths']['/' . implode('/', $pathArray) . '/{id}']['parameters']);
+                    $oas['paths']['/' . implode('/', $pathArray)][strtolower($method)] = $this->getEndpointOperations($endpoint, $method, $operationId);
+                }//end if
+            }//end foreach
 
             // Add the schemas.
             $oas['components']['schemas'] = array_merge($oas['components']['schemas'], $this->getEndpointSchemas($endpoint));
-        }
+
+        }//end foreach
 
         return $oas;
     }//end addEndpoints()
+
+    /**
+     * Gets the operations for a given endpoint.
+     *
+     * @param Entity $entity The entity to create parameters for.
+     *
+     * @return array The operations for the given endpoint
+     */
+    private function addParameters(Entity $entity): array
+    {
+        $parameters = [];
+        $index = 0;
+        foreach ($entity->getAttributes() as $attribute) {
+            if ($attribute->getType() === 'object') {
+                $schema = $attribute->getObject()->toSchema();
+
+                $properties = $schema['properties'];
+            }
+
+            $parameters[] = [
+                'name' => $attribute->getName(),
+                'in' => 'query',
+                'description' => $attribute->getDescription() !== null ? $attribute->getDescription() : '',
+                'required' => $attribute->getRequired() === true ? true : false,
+                'schema' => [
+                    'type' => $attribute->getType(),
+                    'properties' => isset($properties) ? $properties : null,
+                    'items' => [
+                        'type' => 'string'
+                    ]
+                ],
+            ];
+
+            if ($attribute->getType() !== 'array') {
+                unset($parameters[$index]['schema']['items']);
+            }
+
+            if ($parameters[$index]['schema']['properties'] === null) {
+                unset($parameters[$index]['schema']['properties']);
+            }
+
+            $index++;
+        }
+
+        return $parameters;
+    }
 
     /**
      * Gets the operations for a given endpoint.
@@ -119,100 +238,165 @@ class OasService
      *
      * @return array The operations for the given endpoint
      */
-    private function getEndpointOperations(Endpoint $endpoint): array
+    private function setCollectionResponse(Endpoint $endpoint): array
+    {
+        return [
+            'schema' => [
+                'required' => ['count', 'results'],
+                'type' => 'object',
+                'properties' => [
+                    'count' => [
+                        'type' => 'integer',
+                        'example' => 1
+                    ],
+                    'next' => [
+                        'type' => 'string',
+                        'format' => 'uri',
+                        'nullable' => true
+                    ],
+                    'previous' => [
+                        'type' => 'string',
+                        'format' => 'uri',
+                        'nullable' => true
+                    ],
+                    'results' => [
+                        'type' => 'array',
+                        'items' => [
+                            '$ref' => '#/components/schemas/' . $endpoint->getEntities()->first()->getName(),
+                        ]
+                    ]
+                ],
+            ]
+        ];
+    }
+
+    /**
+     * Gets the operations for a given endpoint.
+     *
+     * @param Endpoint $endpoint The endpoint to create operations for
+     *
+     * @return array The operations for the given endpoint
+     */
+    private function getEndpointOperations(Endpoint $endpoint, string $method = null, string $operationId): array
     {
         $operations = [];
 
-        // Lets take a look at the methods.
-        foreach ($endpoint->getMethods() as $method) {
-            // We dont do a request body on GET, DELETE and UPDATE requests.
-            if (in_array($method, ['DELETE']) === true) {
-                $operations[strtolower($method)] = [
-                    'operationId' => strtolower($endpoint->getName().'-'.$method),
-                    'summary'     => $endpoint->getName(),
-                    'tags'        => [strtolower($endpoint->getName())],
-                    'description' => $endpoint->getDescription(),
-                    'responses'   => [
-                        '200' => [
-                            'description' => $endpoint->getDescription(),
-                            'content'     => [
-                                'application/json' => [
-                                    'schema' => [
-                                        'type'    => 'string',
-                                        'example' => 'Object is successfully deleted',
-                                    ],
-                                ],
-                                'application/xml' => [
-                                    'schema' => [
-                                        'type'    => 'string',
-                                        'example' => 'Object is successfully deleted',
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                ];
-                continue;
-            }
-
-            // In all other cases we want include a schema.
-            $operations[strtolower($method)] = [
-                'operationId' => strtolower($endpoint->getName().'-'.$method),
-                'summary'     => $endpoint->getName(),
-                'tags'        => [strtolower($endpoint->getName())],
+        // We dont do a request body on GET and DELETE requests.
+        if ($method === 'DELETE') {
+            $operations = [
+                'operationId' => strtolower($endpoint->getName() . '-' . $method . '-' . $operationId),
+                'summary' => $endpoint->getName(),
+                'tags' => [strtolower($endpoint->getName())],
                 'description' => $endpoint->getDescription(),
-                'parameters'  => [
-                    ['name'           => 'id',
-                        'in'          => 'path',
+                'parameters' => [
+                    ['name' => 'id',
+                        'in' => 'path',
                         'description' => '',
-                        'required'    => true,
-                        'schema'      => [
+                        'required' => true,
+                        'schema' => [
                             'type' => 'string',
-                        ],
-                    ],
-                ],
-                'requestBody' => [
-                    'description' => $endpoint->getDescription(),
-                    //'required' =>// Todo: figure out what we want to do here
-                    'content' => [
-                        'application/json' => [
-                            'schema' => [
-                                '$ref' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
-                            ],
-                        ],
-                        'application/xml' => [
-                            'schema' => [
-                                '$ref' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
-                            ],
                         ],
                     ],
                 ],
                 'responses' => [
                     '200' => [
                         'description' => $endpoint->getDescription(),
-                        'content'     => [
+                        'content' => [
                             'application/json' => [
                                 'schema' => [
-                                    '$ref' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
+                                    'type' => 'string',
+                                    'example' => 'Object is successfully deleted',
                                 ],
                             ],
                             'application/xml' => [
                                 'schema' => [
-                                    '$ref' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
+                                    'type' => 'string',
+                                    'example' => 'Object is successfully deleted',
                                 ],
                             ],
                         ],
                     ],
                 ],
             ];
+            return $operations;
+        }//end if
 
-            // We dont do a request body on GET, DELETE and UPDATE requests.
-            if ($method === 'GET' || $method === 'PUT') {
-                unset($operations[strtolower($method)]['requestBody']);
-            }
+        // In all other cases we want include a schema.
+        $operations = [
+            'operationId' => strtolower($endpoint->getName() . '-' . $method . '-' . $operationId),
+            'summary' => $endpoint->getName(),
+            'tags' => [strtolower($endpoint->getName())],
+            'description' => $endpoint->getDescription(),
+            'parameters' => [
+                ['name' => 'id',
+                    'in' => 'path',
+                    'description' => '',
+                    'required' => true,
+                    'schema' => [
+                        'type' => 'string',
+                    ],
+                ],
+            ],
+            'requestBody' => [
+                'content' => [
+                    'application/json' => [
+                        'schema' => [
+                            '$ref' => '#/components/schemas/' . $endpoint->getEntities()->first()->getName(),
+                        ],
+                    ],
+                    'application/xml' => [
+                        'schema' => [
+                            '$ref' => '#/components/schemas/' . $endpoint->getEntities()->first()->getName(),
+                        ],
+                    ],
+                ],
+            ],
+            'responses' => [
+                '200' => [
+                    'description' => $endpoint->getDescription(),
+                    'content' => [
+                        'application/json' => [
+                            'schema' => [
+                                '$ref' => '#/components/schemas/' . $endpoint->getEntities()->first()->getName(),
+                            ],
+                        ],
+                        'application/xml' => [
+                            'schema' => [
+                                '$ref' => '#/components/schemas/' . $endpoint->getEntities()->first()->getName(),
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
 
-            // TODO: Collection endpoints
-        }//end foreach
+        $collectionResponse = $this->setCollectionResponse($endpoint);
+
+        // Don't set the parameters with a GET collection request
+        if ($method === 'GET' && $operationId === 'collection') {
+            unset($operations['responses']['200']);
+            unset($operations['parameters']);
+            $operations['parameters'] = $this->addParameters($endpoint->getEntities()->first());
+            $operations['responses'] = [
+                '200' => [
+                    'description' => 'OK',
+                    'content' => [
+                        'application/json' => $collectionResponse,
+                        'application/xml' =>  $collectionResponse,
+                    ],
+                ]
+            ];
+        }//end if
+
+        // Don't set the parameters with a POST request
+        if ($method === 'POST') {
+            unset($operations['parameters']);
+        }
+
+        // We dont do a request body on GET and DELETE requests.
+        if ($method === 'GET') {
+            unset($operations['requestBody']);
+        }
 
         return $operations;
     }//end getEndpointOperations()
