@@ -96,7 +96,7 @@ Creating the response object.
 
 **Return Values**
 
-`\CommonGateway\CoreBundle\Service\Response`
+`\Response`
 
 
 
