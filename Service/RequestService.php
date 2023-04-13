@@ -269,7 +269,7 @@ class RequestService
                 return new Response(
                     json_encode(['Message' => $message]),
                     Response::HTTP_NOT_FOUND,
-                    ['content-type' => 'application/json']
+                    ['Content-type' => isset($this->data['endpoint']) ? $this->data['endpoint']->getDefaultContentType() : 'application/json']
                 );
             }
 
@@ -277,7 +277,7 @@ class RequestService
                 return new Response(
                     json_encode(['Message' => "This Source is not enabled: {$proxy->getName()}"]),
                     Response::HTTP_OK, // This should be ok, so we can disable Sources without creating error responses?
-                    ['content-type' => 'application/json']
+                    ['Content-type' => isset($this->data['endpoint']) ? $this->data['endpoint']->getDefaultContentType() : 'application/json']
                 );
             }
         }//end if
@@ -483,7 +483,7 @@ class RequestService
 
                     // Lets see if the found result is allowed for this endpoint
                     if (isset($this->data['endpoint']) && !in_array($result['_self']['schema']['id'], $allowedSchemas['id'])) {
-                        return new Response('Object is not supported by this endpoint', '406', ['Content-type' => 'application/json']);
+                        return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                     }
 
                     // create log
@@ -507,21 +507,21 @@ class RequestService
                     $this->session->set('object', $this->id);
                     $this->logger->error('You can not POST to an (existing) id, consider using PUT or PATCH instead');
 
-                    return new Response('You can not POST to an (existing) id, consider using PUT or PATCH instead', '400', ['Content-type' => 'application/json']);
+                    return new Response('You can not POST to an (existing) id, consider using PUT or PATCH instead', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
                 // We need to know the type of object that the user is trying to post, so lets look that up
                 if ($this->schema instanceof Entity === false) {
                     $this->logger->error('No schema could be established for your request');
 
-                    return new Response('No schema could be established for your request', '400', ['Content-type' => 'application/json']);
+                    return new Response('No schema could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
                 // Lets see if the found result is allowed for this endpoint
                 if (isset($this->data['endpoint']) === true && in_array($this->schema->getId(), $allowedSchemas['id']) === false) {
                     $this->logger->error('Object is not supported by this endpoint');
 
-                    return new Response('Object is not supported by this endpoint', '406', ['Content-type' => 'application/json']);
+                    return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
                 $this->object = new ObjectEntity($this->schema);
@@ -554,7 +554,7 @@ class RequestService
                 if (!isset($this->id)) {
                     $this->logger->error('No id could be established for your request');
 
-                    return new Response('No id could be established for your request', '400', ['Content-type' => 'application/json']);
+                    return new Response('No id could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
                 $this->session->set('object', $this->id);
 
@@ -562,14 +562,14 @@ class RequestService
                 if ($this->schema instanceof Entity === false) {
                     $this->logger->error('No schema could be established for your request');
 
-                    return new Response('No schema could be established for your request', '400', ['Content-type' => 'application/json']);
+                    return new Response('No schema could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
                 // Lets see if the found result is allowd for this endpoint
                 if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     $this->logger->error('Object is not supported by this endpoint');
 
-                    return new Response('Object is not supported by this endpoint', '406', ['Content-type' => 'application/json']);
+                    return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
                 $this->object = $this->entityManager->find('App:ObjectEntity', $this->id);
@@ -606,7 +606,7 @@ class RequestService
                 if (!isset($this->id)) {
                     $this->logger->error('No id could be established for your request');
 
-                    return new Response('No id could be established for your request', '400', ['Content-type' => 'application/json']);
+                    return new Response('No id could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
                 $this->session->set('object', $this->id);
 
@@ -614,14 +614,14 @@ class RequestService
                 if ($this->schema instanceof Entity === false) {
                     $this->logger->error('No schema could be established for your request');
 
-                    return new Response('No schema could be established for your request', '400', ['Content-type' => 'application/json']);
+                    return new Response('No schema could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
                 // Lets see if the found result is allowd for this endpoint
                 if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     $this->logger->error('Object is not supported by this endpoint');
 
-                    return new Response('Object is not supported by this endpoint', '406', ['Content-type' => 'application/json']);
+                    return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
                 $this->object = $this->entityManager->find('App:ObjectEntity', $this->id);
@@ -657,7 +657,7 @@ class RequestService
                 if (!isset($this->id)) {
                     $this->logger->error('No id could be established for your request');
 
-                    return new Response('No id could be established for your request', '400', ['Content-type' => 'application/json']);
+                    return new Response('No id could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
                 $this->session->set('object', $this->id);
 
@@ -665,25 +665,25 @@ class RequestService
                 if ($this->schema instanceof Entity === false) {
                     $this->logger->error('No schema could be established for your request');
 
-                    return new Response('No schema could be established for your request', '400', ['Content-type' => 'application/json']);
+                    return new Response('No schema could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
                 // Lets see if the found result is allowd for this endpoint
                 if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     $this->logger->error('Object is not supported by this endpoint');
 
-                    return new Response('Object is not supported by this endpoint', '406', ['Content-type' => 'application/json']);
+                    return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
                 $this->entityManager->remove($this->object);
                 $this->entityManager->flush();
                 $this->logger->info('Succesfully deleted object');
 
-                return new Response('Succesfully deleted object', '202', ['Content-type' => 'application/json']);
+                return new Response('Succesfully deleted object', '202', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             default:
                 $this->logger->error('Unkown method'.$this->data['method']);
 
-                return new Response('Unkown method'.$this->data['method'], '404', ['Content-type' => 'application/json']);
+                return new Response('Unkown method'.$this->data['method'], '404', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
         }
 
         $this->entityManager->flush();
@@ -703,7 +703,7 @@ class RequestService
 
             // If we have a response return that
             if ($event->getData()['response']) {
-                return new Response(json_encode($event->getData()['response']), $code, ['content-type' => 'application/json']);
+                return new Response(json_encode($event->getData()['response']), $code, ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             }
         }
 
@@ -956,7 +956,7 @@ class RequestService
         $this->data['response'] = $response = new Response(
             json_encode($response),
             200,
-            ['content-type' => 'application/json']
+            ['Content-type' => isset($this->data['endpoint']) ? $this->data['endpoint']->getDefaultContentType() : 'application/json']
         );
 
         return $this->data;
@@ -997,7 +997,7 @@ class RequestService
         return new Response(
             json_encode($data),
             200,
-            ['content-type' => 'application/json']
+            ['Content-type' => isset($this->data['endpoint']) ? $this->data['endpoint']->getDefaultContentType() : 'application/json']
         );
     }
 }
