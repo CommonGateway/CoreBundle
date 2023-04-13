@@ -115,14 +115,11 @@ class OasService
      */
     private function getPathArray(Endpoint $endpoint): array
     {
-        $pathArray = [];
-        foreach ($endpoint->getPath() as $path) {
-            if ($path === 'id') {
-                continue;
-            }
-            $pathArray[] = $path;
-        }//end foreach
-
+        $pathArray = $endpoint->getPath();
+        if (end($pathArray) === 'id') {
+            array_pop($pathArray);
+        }
+        
         return $pathArray;
     }
 
