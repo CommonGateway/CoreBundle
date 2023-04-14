@@ -103,10 +103,12 @@ class InstallationService
     /**
      * @codeCoverageIgnore We do not need to test constructors
      *
-     * @param ComposerService        $composerService The Composer service
-     * @param EntityManagerInterface $entityManager   The entity manager
-     * @param Kernel                 $kernel          The kernel
-     * @param SchemaService          $schemaService   The schema service
+     * @param ComposerService        $composerService    The Composer service
+     * @param EntityManagerInterface $entityManager      The entity manager
+     * @param Kernel                 $kernel             The kernel
+     * @param LoggerInterface        $installationLogger The logger for the installation channel.
+     * @param SchemaService          $schemaService      The schema service
+     * @param CacheService           $cacheService       The cache service
      */
     public function __construct(
         ComposerService $composerService,
@@ -1142,7 +1144,7 @@ class InstallationService
             $blockUpdate = true;
             if ($action !== null && $action->getVersion() && isset($handlerData['version']) === true) {
                 $blockUpdate = version_compare($handlerData['version'], $action->getVersion()) <= 0;
-            } else if (isset($handlerData['version']) === true) {
+            } elseif (isset($handlerData['version']) === true) {
                 $blockUpdate = false;
             }
 

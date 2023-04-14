@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use MongoDB\Client;
+use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 use Symfony\Component\Console\Command\Command;
@@ -33,26 +34,58 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class CacheService
 {
+    /**
+     * @var Client
+     */
     private Client $client;
+
+    /**
+     * @var EntityManagerInterface
+     */
     private EntityManagerInterface $entityManager;
+
+    /**
+     * @var CacheInterface
+     */
     private CacheInterface $cache;
+
+    /**
+     * @var LoggerInterface
+     */
+    private LoggerInterface $logger;
+
+    /**
+     * @var SymfonyStyle
+     */
     private SymfonyStyle $io;
+
+    /**
+     * @var ParameterBagInterface
+     */
     private ParameterBagInterface $parameters;
+
+    /**
+     * @var SerializerInterface
+     */
     private SerializerInterface $serializer;
 
     /**
-     * @param AuthenticationService  $authenticationService
-     * @param EntityManagerInterface $entityManager
-     * @param FileService            $fileService
+     * @param EntityManagerInterface $entityManager The entity manager
+     * @param CacheInterface         $cache         The cache interface
+     * @param LoggerInterface        $cacheLogger   The logger for the cache channel.
+     * @param ParameterBagInterface  $parameters    The Parameter bag
+     * @param SerializerInterface    $serializer    The serializer
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         CacheInterface $cache,
+        LoggerInterface $cacheLogger,
         ParameterBagInterface $parameters,
         SerializerInterface $serializer
     ) {
         $this->entityManager = $entityManager;
         $this->cache = $cache;
+        $this->logger = $cacheLogger;
         $this->parameters = $parameters;
         $this->serializer = $serializer;
         if ($this->parameters->get('cache_url', false)) {
@@ -75,7 +108,7 @@ class CacheService
     }
 
     /**
-     * Remov non-exisitng items from the cashe.
+     * Remove non-existing items from the cache.
      */
     public function cleanup()
     {
@@ -173,7 +206,7 @@ class CacheService
         $endpoints = $collection->find()->toArray();
         foreach ($endpoints as $endpoint) {
             if (!$this->entityManager->find($type, $endpoint['_id'])) {
-                    isset($this->io) ?? $this->io->writeln("removing {$endpoint['_id']} from cache");
+                isset($this->io) ?? $this->io->writeln("removing {$endpoint['_id']} from cache");
                 $collection->findOneAndDelete(['id' => $endpoint['_id']]);
             }
         }
@@ -188,6 +221,7 @@ class CacheService
      */
     private function ioCatchException(Exception $exception)
     {
+        $this->logger->error($exception->getMessage());
         isset($this->io) ?? $this->io->warning($exception->getMessage());
         isset($this->io) ?? $this->io->block("File: {$exception->getFile()}, Line: {$exception->getLine()}");
         isset($this->io) ?? $this->io->block("Trace: {$exception->getTraceAsString()}");
@@ -272,7 +306,7 @@ class CacheService
         $user = $this->entityManager->getRepository('App:User')->findOneBy(['id' => $objectEntity->getOwner()]);
 
         if ($user === null) {
-            //todo monolog?
+            $this->logger->warning("Could not find a User with id = {$objectEntity->getOwner()} for Object: {$objectEntity->getId()->toString()}");
         }
 
         return $user;
@@ -330,9 +364,9 @@ class CacheService
     /**
      * Searches the object store for objects containing the search string.
      *
-     * @param string $search   a string to search for within the given context
-     * @param array  $filter   an array of dot.notation filters for wich to search with
-     * @param array  $entities schemas to limit te search to
+     * @param string|null $search   a string to search for within the given context
+     * @param array       $filter   an array of dot.notation filters for wich to search with
+     * @param array       $entities schemas to limit te search to
      *
      * @throws Exception
      *
@@ -361,25 +395,10 @@ class CacheService
         }
 
         // Search for the correct entity / entities
-        // todo: make this if into a function?
         if (!empty($entities)) {
-            foreach ($entities as $entity) {
-                // todo: disable this for now, put back later!
-//                $orderError = $this->handleOrderCheck($entity, $completeFilter['_order'] ?? null);
-//                $filterError = $this->handleFilterCheck($entity, $filter ?? null);
-//                if (!empty($orderError) || !empty($filterError)) {
-//                    !empty($orderError) && $errorData['order'] = $orderError;
-//                    !empty($filterError) && $errorData['filter'] = $filterError;
-//                    return [
-//                        'message' => 'There are some errors in your query parameters',
-//                        'type'    => 'error',
-//                        'path'    => $entity->getName(),
-//                        'data'    => $errorData,
-//                    ];
-//                }
-
-                //$filter['_self.schema.ref']='https://larping.nl/character.schema.json';
-                $filter['_self.schema.id']['$in'][] = $entity;
+            $queryError = $this->handleEntities($filter, $completeFilter, $entities);
+            if ($queryError !== null) {
+                return $queryError;
             }
         }
 
@@ -598,6 +617,61 @@ class CacheService
     }
 
     /**
+     * Will add entity filters to the filters array.
+     * Will also check if we are allowed to filter & order with the given filters and order query params.
+     *
+     * @param array $filter         The filter array
+     * @param array $completeFilter The complete filter array, contains order & pagination queries/filters as well.
+     * @param array $entities       An array with one or more entities we are searching objects for.
+     *
+     * @return array|null Will return an array if any query parameters are used that are not allowed.
+     */
+    private function handleEntities(array &$filter, array $completeFilter, array $entities): ?array
+    {
+        $filterCheck = $filter;
+        $errorData = [];
+        foreach ($entities as $entity) {
+            if (Uuid::isValid($entity) === true) {
+                //$filter['_self.schema.id']='b92a3a39-3639-4bf5-b2af-c404bc2cb005';
+                $filter['_self.schema.id']['$in'][] = $entity;
+                $entityObject = $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $entity]);
+            } else {
+                //$filter['_self.schema.ref']='https://larping.nl/schema/example.schema.json';
+                $filter['_self.schema.ref']['$in'][] = $entity;
+                $entityObject = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $entity]);
+            }
+
+            if ($entityObject === null) {
+                $this->logger->warning("Could not find an Entity with id or reference = $entity during searchObjects()");
+                continue;
+            }
+
+            // Only allow ordering & filtering on attributes with sortable = true & searchable = true (respectively).
+            $orderError = $this->handleOrderCheck($entityObject, $completeFilter['_order'] ?? null);
+            $filterError = $this->handleFilterCheck($entityObject, $filterCheck ?? null);
+            if (empty($orderError) === true && empty($filterError) === true) {
+                continue;
+            }
+
+            $errorData[$entityObject->getName()]['order'] = $orderError ?? null;
+            $errorData[$entityObject->getName()]['filter'] = $filterError ?? null;
+        }
+
+        if (empty($errorData) === false) {
+            $this->logger->warning('There are some errors in your query parameters', $errorData);
+
+            return [
+                'message' => 'There are some errors in your query parameters',
+                'type'    => 'error',
+                'path'    => 'searchObjects', // todo get path from session?
+                'data'    => $errorData,
+            ];
+        }
+
+        return null;
+    }
+
+    /**
      * Will check if we are allowed to order with the given $order query param.
      * Uses ObjectEntityRepository->getOrderParameters() to check if we are allowed to order, see eavService->handleSearch() $orderCheck.
      *
@@ -612,6 +686,7 @@ class CacheService
             return null;
         }
 
+        // This checks for each attribute of the given Entity if $attribute->getSortable() is true.
         $orderCheck = $this->entityManager->getRepository('App:ObjectEntity')->getOrderParameters($entity, '', 1, true);
 
         if (!is_array($order)) {
@@ -650,6 +725,7 @@ class CacheService
             return null;
         }
 
+        // This checks for each attribute of the given Entity if $attribute->getSearchable() is true.
         $filterCheck = $this->entityManager->getRepository('App:ObjectEntity')->getFilterParameters($entity, '', 1, true);
 
         foreach ($filters as $param => $value) {

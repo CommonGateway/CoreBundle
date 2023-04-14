@@ -679,7 +679,7 @@ class RequestService
                 $this->entityManager->flush();
                 $this->logger->info('Succesfully deleted object');
 
-                return new Response('Succesfully deleted object', '202', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
+                return new Response('', '204');
             default:
                 $this->logger->error('Unkown method'.$this->data['method']);
 
@@ -978,7 +978,7 @@ class RequestService
 
         return $data;
     }//end proxyRequestHandler()
-    
+
     /**
      * Creating the response object.
      *
