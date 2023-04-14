@@ -103,10 +103,12 @@ class InstallationService
     /**
      * @codeCoverageIgnore We do not need to test constructors
      *
-     * @param ComposerService        $composerService The Composer service
-     * @param EntityManagerInterface $entityManager   The entity manager
-     * @param Kernel                 $kernel          The kernel
-     * @param SchemaService          $schemaService   The schema service
+     * @param ComposerService        $composerService    The Composer service
+     * @param EntityManagerInterface $entityManager      The entity manager
+     * @param Kernel                 $kernel             The kernel
+     * @param LoggerInterface        $installationLogger The logger for the installation channel.
+     * @param SchemaService          $schemaService      The schema service
+     * @param CacheService           $cacheService       The cache service
      */
     public function __construct(
         ComposerService $composerService,
