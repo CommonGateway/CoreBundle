@@ -631,7 +631,7 @@ class CacheService
         $filterCheck = $filter;
         $errorData = [];
         foreach ($entities as $entity) {
-            if (Uuid::isValid($entity)) {
+            if (Uuid::isValid($entity) === true) {
                 //$filter['_self.schema.id']='b92a3a39-3639-4bf5-b2af-c404bc2cb005';
                 $filter['_self.schema.id']['$in'][] = $entity;
                 $entityObject = $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $entity]);
