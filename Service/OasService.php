@@ -79,36 +79,6 @@ class OasService
     /**
      * Adds the endpoints to an OAS Array.
      *
-     * @param array $oas The OAS array where security should be added.
-     * @param Endpoint $endpoint The endpoint.
-     *
-     * @return array The OAS array including parameters for paths with id.
-     */
-    private function addParametersForPathWithId(array $oas, Endpoint $endpoint, array $pathArray): array
-    {
-        if (in_array('GET', $endpoint->getMethods()) === true
-            || in_array('PUT', $endpoint->getMethods()) === true
-            || in_array('PATCH', $endpoint->getMethods()) === true
-            || in_array('DELETE', $endpoint->getMethods()) === true
-        ) {
-            $oas['paths']['/' . implode('/', $pathArray) . '/{id}']['parameters'][] = [
-                'name' => 'id',
-                'in' => 'path',
-                'description' => 'Unieke resource identifier (UUID4)',
-                'required' => true,
-                'schema' => [
-                    'type' => 'string',
-                    'format' => 'uuid'
-                ],
-            ];
-        }//end if
-
-        return $oas;
-    }
-
-    /**
-     * Adds the endpoints to an OAS Array.
-     *
      * @param Endpoint $endpoint The endpoint.
      *
      * @return array The path array
@@ -119,7 +89,7 @@ class OasService
         if (end($pathArray) === 'id') {
             array_pop($pathArray);
         }
-        
+
         return $pathArray;
     }
 
@@ -136,7 +106,6 @@ class OasService
         $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
 
         $oas['components']['schemas'] = [];
-        $oas['components']['requestBodies'] = [];
         // Add the endpoints to the OAS.
         foreach ($endpoints as $endpoint) {
             // TODO: endpoint without entities do exist...
@@ -146,9 +115,6 @@ class OasService
 
             // Add the path to the paths.
             $pathArray = $this->getPathArray($endpoint);
-
-            // Add parameters for paths with an id.
-            $oas = $this->addParametersForPathWithId($oas, $endpoint, $pathArray);
 
             foreach ($endpoint->getMethods() as $method) {
 
@@ -210,12 +176,20 @@ class OasService
                 'required' => $attribute->getRequired() === true ? true : false,
                 'schema' => [
                     'type' => $attribute->getType(),
+                    'format' => $attribute->getFormat(),
                     'properties' => isset($properties) ? $properties : null,
                     'items' => [
                         'type' => 'string'
                     ]
-                ],
+                ]
             ];
+
+            if ($parameters[$index]['schema']['type'] === 'datetime'
+                || $parameters[$index]['schema']['type'] === 'date') {
+
+                $parameters[$index]['schema']['type'] = 'string';
+                $parameters[$index]['schema']['format'] = $attribute->getType();
+            }
 
             if ($attribute->getType() !== 'array') {
                 unset($parameters[$index]['schema']['items']);
@@ -223,6 +197,10 @@ class OasService
 
             if ($parameters[$index]['schema']['properties'] === null) {
                 unset($parameters[$index]['schema']['properties']);
+            }
+
+            if ($parameters[$index]['schema']['format'] === null) {
+                unset($parameters[$index]['schema']['format']);
             }
 
             $index++;
