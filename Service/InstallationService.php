@@ -1144,7 +1144,7 @@ class InstallationService
             $blockUpdate = true;
             if ($action !== null && $action->getVersion() && isset($handlerData['version']) === true) {
                 $blockUpdate = version_compare($handlerData['version'], $action->getVersion()) <= 0;
-            } else if (isset($handlerData['version']) === true) {
+            } elseif (isset($handlerData['version']) === true) {
                 $blockUpdate = false;
             }
 

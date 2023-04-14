@@ -34,48 +34,47 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class CacheService
 {
-    
     /**
      * @var Client
      */
     private Client $client;
-    
+
     /**
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
-    
+
     /**
      * @var CacheInterface
      */
     private CacheInterface $cache;
-    
+
     /**
      * @var LoggerInterface
      */
     private LoggerInterface $logger;
-    
+
     /**
      * @var SymfonyStyle
      */
     private SymfonyStyle $io;
-    
+
     /**
      * @var ParameterBagInterface
      */
     private ParameterBagInterface $parameters;
-    
+
     /**
      * @var SerializerInterface
      */
     private SerializerInterface $serializer;
-    
+
     /**
      * @param EntityManagerInterface $entityManager The entity manager
-     * @param CacheInterface $cache The cache interface
-     * @param LoggerInterface $cacheLogger The logger for the cache channel.
-     * @param ParameterBagInterface $parameters The Parameter bag
-     * @param SerializerInterface $serializer The serializer
+     * @param CacheInterface         $cache         The cache interface
+     * @param LoggerInterface        $cacheLogger   The logger for the cache channel.
+     * @param ParameterBagInterface  $parameters    The Parameter bag
+     * @param SerializerInterface    $serializer    The serializer
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -207,7 +206,7 @@ class CacheService
         $endpoints = $collection->find()->toArray();
         foreach ($endpoints as $endpoint) {
             if (!$this->entityManager->find($type, $endpoint['_id'])) {
-                    isset($this->io) ?? $this->io->writeln("removing {$endpoint['_id']} from cache");
+                isset($this->io) ?? $this->io->writeln("removing {$endpoint['_id']} from cache");
                 $collection->findOneAndDelete(['id' => $endpoint['_id']]);
             }
         }
@@ -616,14 +615,14 @@ class CacheService
 
         return false;
     }
-    
+
     /**
      * Will add entity filters to the filters array.
      * Will also check if we are allowed to filter & order with the given filters and order query params.
      *
-     * @param array $filter The filter array
+     * @param array $filter         The filter array
      * @param array $completeFilter The complete filter array, contains order & pagination queries/filters as well.
-     * @param array $entities An array with one or more entities we are searching objects for.
+     * @param array $entities       An array with one or more entities we are searching objects for.
      *
      * @return array|null Will return an array if any query parameters are used that are not allowed.
      */
@@ -641,25 +640,26 @@ class CacheService
                 $filter['_self.schema.ref']['$in'][] = $entity;
                 $entityObject = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $entity]);
             }
-        
+
             if ($entityObject === null) {
                 $this->logger->warning("Could not find an Entity with id or reference = $entity during searchObjects()");
                 continue;
             }
-        
+
             // Only allow ordering & filtering on attributes with sortable = true & searchable = true (respectively).
             $orderError = $this->handleOrderCheck($entityObject, $completeFilter['_order'] ?? null);
             $filterError = $this->handleFilterCheck($entityObject, $filterCheck ?? null);
             if (empty($orderError) === true && empty($filterError) === true) {
                 continue;
             }
-        
+
             $errorData[$entityObject->getName()]['order'] = $orderError ?? null;
             $errorData[$entityObject->getName()]['filter'] = $filterError ?? null;
         }
-        
+
         if (empty($errorData) === false) {
             $this->logger->warning('There are some errors in your query parameters', $errorData);
+
             return [
                 'message' => 'There are some errors in your query parameters',
                 'type'    => 'error',
@@ -667,7 +667,7 @@ class CacheService
                 'data'    => $errorData,
             ];
         }
-        
+
         return null;
     }
 
@@ -685,7 +685,7 @@ class CacheService
         if (empty($order)) {
             return null;
         }
-    
+
         // This checks for each attribute of the given Entity if $attribute->getSortable() is true.
         $orderCheck = $this->entityManager->getRepository('App:ObjectEntity')->getOrderParameters($entity, '', 1, true);
 
