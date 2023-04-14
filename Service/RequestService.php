@@ -978,7 +978,7 @@ class RequestService
 
         return $data;
     }//end proxyRequestHandler()
-    
+
     /**
      * Creating the response object.
      *

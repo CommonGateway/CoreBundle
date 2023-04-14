@@ -33,9 +33,8 @@ class OasService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        ParameterBagInterface  $parameters
-    )
-    {
+        ParameterBagInterface $parameters
+    ) {
         $this->entityManager = $entityManager;
         $this->parameters = $parameters;
     }//end __construct()
@@ -50,21 +49,21 @@ class OasService
         // Setup the basic oas array.
         $oas = [
             'openapi' => '3.0.0',
-            'info' => [
-                'title' => 'Common Gateway',
+            'info'    => [
+                'title'       => 'Common Gateway',
                 'description' => 'The Common Gateway is a further Dutch development of the European API Platform. API Platform is a project of Les Tilleus and, in itself, an extension of the Symfony framework. API Platform is a tool for delivering APIs based on standardized documentation and is used for various French and German government projects. Including Digital state, a precursor to Xroute, GOV.UK and Common Ground. The project is now part of joinup.eu (the European equivalent of Common Ground).',
-                'version' => '1.0.3',
+                'version'     => '1.0.3',
             ],
             'servers' => [
                 [
-                    'url' => $this->parameters->get('app_url', 'https://localhost'),
+                    'url'         => $this->parameters->get('app_url', 'https://localhost'),
                     'description' => 'The kubernetes server',
                 ],
             ],
-            'paths' => [],
+            'paths'      => [],
             'components' => [],
-            'security' => [],
-            'tags' => [],
+            'security'   => [],
+            'tags'       => [],
         ];
 
         // Add the endpoints.
@@ -79,7 +78,7 @@ class OasService
     /**
      * Adds the endpoints to an OAS Array.
      *
-     * @param array $oas The OAS array where security should be added.
+     * @param array    $oas      The OAS array where security should be added.
      * @param Endpoint $endpoint The endpoint.
      *
      * @return array The OAS array including parameters for paths with id.
@@ -91,14 +90,14 @@ class OasService
             || in_array('PATCH', $endpoint->getMethods()) === true
             || in_array('DELETE', $endpoint->getMethods()) === true
         ) {
-            $oas['paths']['/' . implode('/', $pathArray) . '/{id}']['parameters'][] = [
-                'name' => 'id',
-                'in' => 'path',
+            $oas['paths']['/'.implode('/', $pathArray).'/{id}']['parameters'][] = [
+                'name'        => 'id',
+                'in'          => 'path',
                 'description' => 'Unieke resource identifier (UUID4)',
-                'required' => true,
-                'schema' => [
-                    'type' => 'string',
-                    'format' => 'uuid'
+                'required'    => true,
+                'schema'      => [
+                    'type'   => 'string',
+                    'format' => 'uuid',
                 ],
             ];
         }//end if
@@ -119,7 +118,7 @@ class OasService
         if (end($pathArray) === 'id') {
             array_pop($pathArray);
         }
-        
+
         return $pathArray;
     }
 
@@ -151,19 +150,17 @@ class OasService
             $oas = $this->addParametersForPathWithId($oas, $endpoint, $pathArray);
 
             foreach ($endpoint->getMethods() as $method) {
-
                 if ($method === 'GET'
                     || $method === 'PUT'
                     || $method === 'PATCH'
                     || $method === 'DELETE'
                 ) {
-                    $oas['paths']['/' . implode('/', $pathArray) . '/{id}'][strtolower($method)] = $this->getEndpointOperations($endpoint, $method, 'item');
+                    $oas['paths']['/'.implode('/', $pathArray).'/{id}'][strtolower($method)] = $this->getEndpointOperations($endpoint, $method, 'item');
                 }//end if
 
                 if ($method === 'GET'
                     || $method === 'POST'
                 ) {
-
                     if ($method === 'GET') {
                         $operationId = 'collection';
                     }//end if
@@ -172,14 +169,13 @@ class OasService
                         $operationId = 'item';
                     }//end if
 
-                    unset($oas['paths']['/' . implode('/', $pathArray) . '/{id}']['parameters']);
-                    $oas['paths']['/' . implode('/', $pathArray)][strtolower($method)] = $this->getEndpointOperations($endpoint, $method, $operationId);
+                    unset($oas['paths']['/'.implode('/', $pathArray).'/{id}']['parameters']);
+                    $oas['paths']['/'.implode('/', $pathArray)][strtolower($method)] = $this->getEndpointOperations($endpoint, $method, $operationId);
                 }//end if
             }//end foreach
 
             // Add the schemas.
             $oas['components']['schemas'] = array_merge($oas['components']['schemas'], $this->getEndpointSchemas($endpoint));
-
         }//end foreach
 
         return $oas;
@@ -204,16 +200,16 @@ class OasService
             }
 
             $parameters[] = [
-                'name' => $attribute->getName(),
-                'in' => 'query',
+                'name'        => $attribute->getName(),
+                'in'          => 'query',
                 'description' => $attribute->getDescription() !== null ? $attribute->getDescription() : '',
-                'required' => $attribute->getRequired() === true ? true : false,
-                'schema' => [
-                    'type' => $attribute->getType(),
+                'required'    => $attribute->getRequired() === true ? true : false,
+                'schema'      => [
+                    'type'       => $attribute->getType(),
                     'properties' => isset($properties) ? $properties : null,
-                    'items' => [
-                        'type' => 'string'
-                    ]
+                    'items'      => [
+                        'type' => 'string',
+                    ],
                 ],
             ];
 
@@ -242,31 +238,31 @@ class OasService
     {
         return [
             'schema' => [
-                'required' => ['count', 'results'],
-                'type' => 'object',
+                'required'   => ['count', 'results'],
+                'type'       => 'object',
                 'properties' => [
                     'count' => [
-                        'type' => 'integer',
-                        'example' => 1
+                        'type'    => 'integer',
+                        'example' => 1,
                     ],
                     'next' => [
-                        'type' => 'string',
-                        'format' => 'uri',
-                        'nullable' => true
+                        'type'     => 'string',
+                        'format'   => 'uri',
+                        'nullable' => true,
                     ],
                     'previous' => [
-                        'type' => 'string',
-                        'format' => 'uri',
-                        'nullable' => true
+                        'type'     => 'string',
+                        'format'   => 'uri',
+                        'nullable' => true,
                     ],
                     'results' => [
-                        'type' => 'array',
+                        'type'  => 'array',
                         'items' => [
-                            '$ref' => '#/components/schemas/' . $endpoint->getEntities()->first()->getName(),
-                        ]
-                    ]
+                            '$ref' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
+                        ],
+                    ],
                 ],
-            ]
+            ],
         ];
     }
 
@@ -284,16 +280,16 @@ class OasService
         // We dont do a request body on GET and DELETE requests.
         if ($method === 'DELETE') {
             $operations = [
-                'operationId' => strtolower($endpoint->getName() . '-' . $method . '-' . $operationId),
-                'summary' => $endpoint->getName(),
-                'tags' => [strtolower($endpoint->getName())],
+                'operationId' => strtolower($endpoint->getName().'-'.$method.'-'.$operationId),
+                'summary'     => $endpoint->getName(),
+                'tags'        => [strtolower($endpoint->getName())],
                 'description' => $endpoint->getDescription(),
-                'parameters' => [
-                    ['name' => 'id',
-                        'in' => 'path',
+                'parameters'  => [
+                    ['name'           => 'id',
+                        'in'          => 'path',
                         'description' => '',
-                        'required' => true,
-                        'schema' => [
+                        'required'    => true,
+                        'schema'      => [
                             'type' => 'string',
                         ],
                     ],
@@ -301,16 +297,16 @@ class OasService
                 'responses' => [
                     '200' => [
                         'description' => $endpoint->getDescription(),
-                        'content' => [
+                        'content'     => [
                             'application/json' => [
                                 'schema' => [
-                                    'type' => 'string',
+                                    'type'    => 'string',
                                     'example' => 'Object is successfully deleted',
                                 ],
                             ],
                             'application/xml' => [
                                 'schema' => [
-                                    'type' => 'string',
+                                    'type'    => 'string',
                                     'example' => 'Object is successfully deleted',
                                 ],
                             ],
@@ -318,21 +314,22 @@ class OasService
                     ],
                 ],
             ];
+
             return $operations;
         }//end if
 
         // In all other cases we want include a schema.
         $operations = [
-            'operationId' => strtolower($endpoint->getName() . '-' . $method . '-' . $operationId),
-            'summary' => $endpoint->getName(),
-            'tags' => [strtolower($endpoint->getName())],
+            'operationId' => strtolower($endpoint->getName().'-'.$method.'-'.$operationId),
+            'summary'     => $endpoint->getName(),
+            'tags'        => [strtolower($endpoint->getName())],
             'description' => $endpoint->getDescription(),
-            'parameters' => [
-                ['name' => 'id',
-                    'in' => 'path',
+            'parameters'  => [
+                ['name'           => 'id',
+                    'in'          => 'path',
                     'description' => '',
-                    'required' => true,
-                    'schema' => [
+                    'required'    => true,
+                    'schema'      => [
                         'type' => 'string',
                     ],
                 ],
@@ -341,12 +338,12 @@ class OasService
                 'content' => [
                     'application/json' => [
                         'schema' => [
-                            '$ref' => '#/components/schemas/' . $endpoint->getEntities()->first()->getName(),
+                            '$ref' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
                         ],
                     ],
                     'application/xml' => [
                         'schema' => [
-                            '$ref' => '#/components/schemas/' . $endpoint->getEntities()->first()->getName(),
+                            '$ref' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
                         ],
                     ],
                 ],
@@ -354,15 +351,15 @@ class OasService
             'responses' => [
                 '200' => [
                     'description' => $endpoint->getDescription(),
-                    'content' => [
+                    'content'     => [
                         'application/json' => [
                             'schema' => [
-                                '$ref' => '#/components/schemas/' . $endpoint->getEntities()->first()->getName(),
+                                '$ref' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
                             ],
                         ],
                         'application/xml' => [
                             'schema' => [
-                                '$ref' => '#/components/schemas/' . $endpoint->getEntities()->first()->getName(),
+                                '$ref' => '#/components/schemas/'.$endpoint->getEntities()->first()->getName(),
                             ],
                         ],
                     ],
@@ -380,11 +377,11 @@ class OasService
             $operations['responses'] = [
                 '200' => [
                     'description' => 'OK',
-                    'content' => [
+                    'content'     => [
                         'application/json' => $collectionResponse,
-                        'application/xml' =>  $collectionResponse,
+                        'application/xml'  => $collectionResponse,
                     ],
-                ]
+                ],
             ];
         }//end if
 

@@ -8,8 +8,6 @@
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
- * @package commongateway/corebundle
- *
  * @category Service
  */
 
