@@ -16,7 +16,7 @@ This service provides a guzzle wrapper to work with sources in the common gatewa
 |[cacheEndpoint](#cacheservicecacheendpoint)|Put a single endpoint into the cache.|
 |[cacheObject](#cacheservicecacheobject)|Put a single object into the cache.|
 |[cacheShema](#cacheservicecacheshema)|Put a single schema into the cache.|
-|[cleanup](#cacheservicecleanup)|Remov non-exisitng items from the cashe.|
+|[cleanup](#cacheservicecleanup)|Remove non-existing items from the cache.|
 |[getEndpoint](#cacheservicegetendpoint)|Get a single endpoint from the cache.|
 |[getEndpoints](#cacheservicegetendpoints)||
 |[getObject](#cacheservicegetobject)|Get a single object from the cache.|
@@ -143,7 +143,7 @@ Put a single schema into the cache.
 public cleanup (void)
 ```
 
-Remov non-exisitng items from the cashe. 
+Remove non-existing items from the cache. 
 
  
 
@@ -372,7 +372,7 @@ Removes an Schema from the cache.
 **Description**
 
 ```php
-public searchObjects (string $search, array $filter, array $entities)
+public searchObjects (string|null $search, array $filter, array $entities)
 ```
 
 Searches the object store for objects containing the search string. 
@@ -381,7 +381,7 @@ Searches the object store for objects containing the search string.
 
 **Parameters**
 
-* `(string) $search`
+* `(string|null) $search`
 : a string to search for within the given context  
 * `(array) $filter`
 : an array of dot.notation filters for wich to search with  
