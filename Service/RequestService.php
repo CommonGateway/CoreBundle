@@ -686,8 +686,6 @@ class RequestService
                 return new Response('Unkown method'.$this->data['method'], '404', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
         }
 
-        $this->entityManager->flush();
-
         if (isset($eventType) === true && isset($result) === true) {
             $event = new ActionEvent($eventType, ['response' => $result, 'entity' => $this->object->getEntity()->getReference() ?? $this->object->getEntity()->getId()->toString(), 'parameters' => $this->data]);
             $this->eventDispatcher->dispatch($event, $event->getType());
