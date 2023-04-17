@@ -175,20 +175,19 @@ class OasService
                 'name'        => $parameterName,
                 'in'          => 'query',
                 'description' => $attribute->getDescription() !== null ? $attribute->getDescription() : '',
-                'required' => $attribute->getRequired() === true ? true : false,
-                'schema' => [
-                    'type' => $attribute->getType(),
-                    'format' => $attribute->getFormat(),
+                'required'    => $attribute->getRequired() === true ? true : false,
+                'schema'      => [
+                    'type'       => $attribute->getType(),
+                    'format'     => $attribute->getFormat(),
                     'properties' => isset($properties) ? $properties : null,
-                    'items' => [
-                        'type' => 'string'
-                    ]
-                ]
+                    'items'      => [
+                        'type' => 'string',
+                    ],
+                ],
             ];
 
             if ($parameters[$index]['schema']['type'] === 'datetime'
                 || $parameters[$index]['schema']['type'] === 'date') {
-
                 $parameters[$index]['schema']['type'] = 'string';
                 $parameters[$index]['schema']['format'] = $attribute->getType();
             }
