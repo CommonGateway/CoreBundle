@@ -3,7 +3,17 @@
 Mapping is the process of changing the structure of an object. It's used to transform data when the source doesn't match the desired data model. Mapping is done by a series of mapping rules in a To <- From style. In simple mapping, the position of a value within an object is changed.
 
 **Index**
-1.
+1. [Defining a mapping](#defining-a-mapping)
+2. [Usage](#usage)
+3. [Advanced (Twig) mapping and/or adding key's](#advanced-twig-mapping-andor-adding-keys)
+4. [Pass Through and/or dropping key's](#pass-through-andor-dropping-keys)
+5. [Working with conditional data](#working-with-conditional-data)
+6. [Sub mappings ](#sub-mappings)
+7. [Casting (Forcing) the type/format of values](#casting-forcing-the-typeformat-of-values)
+8. [Translating values](#translating-values)
+9. [Renaming Keys](#renaming-keys)
+10. [Order of mapping](#order-of-mappingv)
+11. [What if I can't map?](#what-if-i-cant-map)
 
 ## Defining a mapping
 
@@ -372,7 +382,7 @@ or to check for specific values in our mapping
 }
 ```
 
-## Sub mappings [ in beta]
+## Sub mappings
 
 In some cases you might want to make use of mappings that you have created before with the mapping you are currently defining. Common cases include mapping an array of sub objects or dividing your mapping into smaller files for stability and maintanance purposes.
 
