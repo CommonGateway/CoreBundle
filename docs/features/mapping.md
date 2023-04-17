@@ -12,7 +12,7 @@ The mapping service supports the process of changing the structure of an object.
 7. [Casting (Forcing) the type/format of values](#casting-forcing-the-typeformat-of-values)
 8. [Translating values](#translating-values)
 9. [Renaming Keys](#renaming-keys)
-10. [Order of mapping](#order-of-mapping)
+10. [Order of mapping](#order-of-mappingv)
 11. [What if I can't map?](#what-if-i-cant-map)
 
 ## Defining a mapping
@@ -403,10 +403,6 @@ The mapping service takes three arguments:
 id [required]: Either the UUID or reference of the mapping that you want to use
 array [required]: The actual data that you want to map
 list [optional, defaults to false]: Whether you want to be mapped in its entirety (as an object) or as an list (of objects)
-
-
-> **Warning**
-> - This functionality is in public betá and should not be used on production environments
 
 ## Casting (Forcing) the type/format of values
 In some cases you might want to change the properties variable type or if you a ussing twig rendering, mapping output will always change all the values to `string`. For internal gateway traffic, this isn’t problematic, as the data layer will cast values to the appropriate outputs. When sending data to an external source, having all Booleans cast to strings might be bothersome. To avoid this predicament, we can force the datatype of your values by ‘casting’ them.
