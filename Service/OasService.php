@@ -165,8 +165,14 @@ class OasService
                 $properties = $schema['properties'];
             }
 
+            if ($attribute->getType() === 'array') {
+                $parameterName = $attribute->getName().'[]';
+            } else {
+                $parameterName = $attribute->getName();
+            }
+
             $parameters[] = [
-                'name'        => $attribute->getName(),
+                'name'        => $parameterName,
                 'in'          => 'query',
                 'description' => $attribute->getDescription() !== null ? $attribute->getDescription() : '',
                 'required' => $attribute->getRequired() === true ? true : false,
