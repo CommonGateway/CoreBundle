@@ -1,6 +1,6 @@
-# Mapping
+# Mapping Service
 
-Mapping is the process of changing the structure of an object. It's used to transform data when the source doesn't match the desired data model. Mapping is done by a series of mapping rules in a To <- From style. In simple mapping, the position of a value within an object is changed.
+The mapping service supports the process of changing the structure of an object. It's used to transform data when the source doesn't match the desired data model. Mapping is done by a series of mapping rules in a To <- From style. In simple mapping, the position of a value within an object is changed.
 
 **Index**
 1. [Defining a mapping](#defining-a-mapping)
@@ -92,11 +92,11 @@ So what happened under the hood? How is de status moved? Lets take a look at the
 
 ```json
 {
-   "mapping": {
-       "id": "id",
-       "name": "name",
-       "metadata.status": "status"
-   }
+  "mapping": {
+    "id": "id",
+    "name": "name",
+    "metadata.status": "status"
+  }
 }
 ```
 
@@ -124,13 +124,13 @@ Could be mapped like:
 
 ```json
 {
-   "title": "A simple mapping",
-   "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
-   "mapping": {
-       "id": "id",
-       "name": "name",
-       "metadata.status.name": "status"
-   }
+  "title": "A simple mapping",
+  "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
+  "mapping": {
+    "id": "id",
+    "name": "name",
+    "metadata.status.name": "status"
+  }
 }
 ```
 
@@ -158,14 +158,14 @@ Another means of mapping is Twig mapping. Let's look at a more complex mapping e
 
 ```json
 {
-   "name": "A simple mapping",
-   "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
-   "mapping": {
-     "id": "id",
-     "name": "name",
-     "status": "status",
-     "aisle": "{{ random([green, blue , red]) }}"
-   }
+  "name": "A simple mapping",
+  "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
+  "mapping": {
+    "id": "id",
+    "name": "name",
+    "status": "status",
+    "aisle": "{{ random([green, blue , red]) }}"
+  }
 }
 ```
 
@@ -200,13 +200,13 @@ In the above examples we are mapping a lot of properties into our new object tha
 
 ```json
 {
-   "name": "A simple mapping",
-   "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
-   "mapping": {
-     "id": "id",
-     "name": "name",
-     "status": "status"
-   }
+  "name": "A simple mapping",
+  "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
+  "mapping": {
+    "id": "id",
+    "name": "name",
+    "status": "status"
+  }
 }
 ```
 
@@ -224,12 +224,12 @@ Now thats just going to give us exactly the same object, so let's add a simple b
 
 ```json
 {
-   "title": "A simple mapping",
-   "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
-   "passthrough": true,
-   "mapping": {
-       "metadata.status.name": "status"
-   }
+  "title": "A simple mapping",
+  "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
+  "passthrough": true,
+  "mapping": {
+    "metadata.status.name": "status"
+  }
 }
 ```
 
@@ -262,12 +262,12 @@ Okey, so we now have a double `status` that is becouse the mapper always copies 
 
 ```json
 {
-   "title": "A simple mapping",
-   "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
-   "passthrough": true,
-   "mapping": {
-       "metadata.status.name": "status"
-   },
+  "title": "A simple mapping",
+  "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
+  "passthrough": true,
+  "mapping": {
+    "metadata.status.name": "status"
+  },
   "unset":["status"]
 }
 ```
@@ -309,12 +309,12 @@ strings like {{ 'string 1' ~ 'string 2' }} which can be used as the source data 
 
 ```json
 {
-   "title": "A simple mapping",
-   "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
-   "passthrough": true,
-   "mapping": {
-       "metadata.color": "{{ \"The color is \" ~ color }}"
-   },
+  "title": "A simple mapping",
+  "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
+  "passthrough": true,
+  "mapping": {
+    "metadata.color": "{{ \"The color is \" ~ color }}"
+  },
   "unset": ["color"]
 }
 ```
@@ -326,10 +326,10 @@ The same is achieved with [string interpolation](https://twig.symfony.com/doc/1.
   "title": "A simple mapping",
   "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
   "passthrough": true,
-   "mapping": {
-       "metadata.color": "{{ \"The color is #{color}\" }}"
-   },
-   "unset": ["color"]
+  "mapping": {
+    "metadata.color": "{{ \"The color is #{color}\" }}"
+  },
+  "unset": ["color"]
 }
 ```
 
@@ -361,9 +361,9 @@ Another useful twig take is the if statement. This can be used to check if a val
   "title": "A simple mapping",
   "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
   "passthrough": true,
-   "mapping": {
-       "metadata.color": "{% if color %} {{color}} {% else %} unknown {% endif %}"
-   },
+  "mapping": {
+    "metadata.color": "{% if color %} {{color}} {% else %} unknown {% endif %}"
+  },
   "unset": ["color"]
 }
 ```
@@ -376,8 +376,8 @@ or to check for specific values in our mapping
   "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
   "passthrough": true,
   "mapping": {
-       "metadata.color": "{% if color == \"violet\" %} pink {% endif %}"
-   },
+    "metadata.color": "{% if color == \"violet\" %} pink {% endif %}"
+  },
   "unset": ["color"]
 }
 ```
@@ -394,8 +394,8 @@ To do this you can access the mapping service from within a mapping trough twig 
   "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
   "passthrough": true,
   "mapping": {
-       "color": "{{ color|mappingService(‘{id or ref}’, {array}) }}"
-   }
+    "color": "{{ color|mappingService(‘{id or ref}’, {array}) }}"
+  }
 }
 ```
 
@@ -407,7 +407,7 @@ The mapping service takes two arguments:
 > **Warning**
 > - This functionality is in public betá and should not be used on production environments
 
-### Casting (Forcing) the type/format of values
+## Casting (Forcing) the type/format of values
 In some cases you might want to change the properties variable type or if you a ussing twig rendering, mapping output will always change all the values to `string`. For internal gateway traffic, this isn’t problematic, as the data layer will cast values to the appropriate outputs. When sending data to an external source, having all Booleans cast to strings might be bothersome. To avoid this predicament, we can force the datatype of your values by ‘casting’ them.
 
 We can cast values by including a cast property in our mapping, the following casts are currently available:
@@ -548,7 +548,7 @@ For example we could write a mapping like:
     "title":"name"
   },
   "unset": [
-      "name"
+    "name"
   ]
 }
 ```
@@ -585,10 +585,56 @@ The mapping service always handles all mappings in the following order
 
 Even with all the above options, it might be possible that the objects you are looking at are too different to map. In that case, don't look for mapping solutions. If the old and new object are to differend, add them to the data layer and write a [plugin]() to keep them in sync based on actions.
 
+## Using ChatGDP
+Mappings are mostly bassed on comparing the original object you have and the new object you require the actual, or in other word comparing statuses and writing something to get from original to new. In practice this is a pretty straight forward process that can easily be left to online AI's (like ChatGDP) to write the firts version for you. Simply head over to [https://chat.openai.com/](https://chat.openai.com/) and start a prompt to let chat GDP know what you want to do.
+
+We generally ask it to ``Can you provide an new example based on the mapping service?  [copy past this readme from start to passTrough]``, like:
+
+![chat1.png](chat1.png)
 
 
+ChatGDP should now explain to you how it would create mappings.
+
+![chat2.png](chat2.png)
+
+Oke so now we have ChatGDP setup, we can as it to create mappings for us. Lets ask it te create a simple mapping for us
+
+Normally we would ask something like this:
+
+Can you create a mapping from this original object
+```json
+{
+  "id":"0d671e30-04af-479a-926a-5e7044484171",
+  "name":"doggie",
+  "color": "blue"
+}
+```
+
+Into the following new object
+```json
+{
+  "id":"0d671e30-04af-479a-926a-5e7044484171",
+  "name":"doggie",
+  "metadata":{
+    "color": "blue",
+    "dateCreated":"use twig to create a time stamp"
+  }
+}
+```
+based on the mapping service
+
+[copy past this readme from start to passTrough]
+
+![chat3.png](chat3.png)
 
 
+And, presto! ChatGDP writes a basic mapping for us
 
+![chat4.png](chat4.png)
+
+> **Note**
+> - Conveniently ChatGDP provides a copy code button in the right top of the codding example that allows us to simply download the provided mapping an import it into the gateway.
+> - We cut the above screenshots short for layout reasons but be sure to include as much from the mapping readme as you can
+> - Always check the code that ChatGDP provided! It is known to make errors ;)
 
 
