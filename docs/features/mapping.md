@@ -12,7 +12,7 @@ The mapping service supports the process of changing the structure of an object.
 7. [Casting (Forcing) the type/format of values](#casting-forcing-the-typeformat-of-values)
 8. [Translating values](#translating-values)
 9. [Renaming Keys](#renaming-keys)
-10. [Order of mapping](#order-of-mappingv)
+10. [Order of mapping](#order-of-mapping)
 11. [What if I can't map?](#what-if-i-cant-map)
 
 ## Defining a mapping
@@ -384,7 +384,7 @@ or to check for specific values in our mapping
 
 ## Sub mappings
 
-In some cases you might want to make use of mappings that you have created before with the mapping you are currently defining. Common cases include mapping an array of sub objects or dividing your mapping into smaller files for stability and maintanance purposes.
+In some cases you might want to make use of mappings that you have created before with the mapping you are currently defining. Common cases include mapping an array of sub objects or dividing your mapping into smaller files for stability and maintenance purposes.
 
 To do this you can access the mapping service from within a mapping trough twig like:
 
@@ -394,14 +394,15 @@ To do this you can access the mapping service from within a mapping trough twig 
   "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
   "passthrough": true,
   "mapping": {
-    "color": "{{ color|mappingService(‘{id or ref}’, {array}) }}"
+    "color": "{{ color|map(‘{id or ref}’, {array}) }}"
   }
 }
 ```
 
-The mapping service takes two arguments:
-[required]: Either the UUID or reference of the mapping that you want to use
-[optional, defaults to false]: Whether you want to be mapped in its entirety (as an object) or as an array (of objects)
+The mapping service takes three arguments:
+id [required]: Either the UUID or reference of the mapping that you want to use
+array [required]: The actual data that you want to map
+list [optional, defaults to false]: Whether you want to be mapped in its entirety (as an object) or as an list (of objects)
 
 
 > **Warning**
@@ -636,5 +637,7 @@ And, presto! ChatGDP writes a basic mapping for us
 > - Conveniently ChatGDP provides a copy code button in the right top of the codding example that allows us to simply download the provided mapping an import it into the gateway.
 > - We cut the above screenshots short for layout reasons but be sure to include as much from the mapping readme as you can
 > - Always check the code that ChatGDP provided! It is known to make errors ;)
+
+
 
 
