@@ -1,0 +1,27 @@
+site_name: CoreBundle documentation
+site_url: https://test-koor-bundle.readthedocs.io/en/latest/
+repo_url: https://github.com/CommonGateway/CoreBundle
+docs_dir: docs
+theme:
+  name: readthedocs
+nav:
+  - Home: index.md
+  - Commands: "./classes/Commands.md"
+  # - Schema : "./classes/Schema.md"
+  #  - Controller: "./classes/Controller.md"
+  # - Data: "./classes/Data.md"
+  # - DependencyInjection: "./classes/DependencyInjection.md"
+  # - Entity: "./classes/Entity.md"
+  # - Installer: "./classes/Installer.md"
+  # - Resources: "./classes/Resources.md"
+  - Services:
+    - AuthenticationService: "./classes/Service/AuthenticationService.md"
+    - CacheService: "./classes/Service/CacheService.md"
+    - CallService: "./classes/Service/CallService.md"
+    - ComposerService: "./classes/Service/ComposerService.md"
+    - EavService: "./classes/Service/EavService.md"
+    - FileService: "./classes/Service/FileService.md"
+    - InstallationService: "./classes/Service/InstallationService.md"
+    - RequestService: "./classes/Service/RequestService.md"
+  
+  # Subscriber: "./classes/Subscriber.md"
