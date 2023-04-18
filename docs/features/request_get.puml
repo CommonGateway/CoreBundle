@@ -1,9 +1,9 @@
 @startuml
 title: Handling GET requests
 Requester -> Gateway: Request
-Gateway -> Authentication  : Authentication
-Authentication --> Gateway  : Authentication
-Gateway -> Datalayer : Search object('s)
-Datalayer --> Gateway: Object('s)
-Gateway --> Requester: Reponse
+Endpoint -> Authorization  : Authorization
+Authorization --> Endpoint  : Authorization
+Endpoint -> Datalayer : Search object('s)
+Datalayer --> Endpoint: Object('s)
+Endpoint --> Requester: Reponse
 @enduml

@@ -1,13 +1,13 @@
 @startuml
 title: Handling PATCH requests
-Requester -> Gateway: Request
-Gateway -> Authentication  : Authentication
-Authentication --> Gateway  : Authentication
-Gateway -> Datalayer : Search object('s)
-Datalayer --> Gateway: Object('s)
-Gateway -> Validation : Validate Request
-Validation --> Gateway: Validation Result
-Gateway -> Datalayer : Update object('s)
-Datalayer --> Gateway: Object('s)
-Gateway --> Requester: Reponse
+Requester -> Endpoint: Request
+Endpoint -> Authorization  : Authorization
+Authorization --> Endpoint  : Authorization
+Endpoint -> Datalayer : Search object('s)
+Datalayer --> Endpoint: Object('s)
+Endpoint -> Validation : Validate Request
+Validation --> Endpoint: Validation Result
+Endpoint -> Datalayer : Update object('s)
+Datalayer --> Endpoint: Object('s)
+Endpoint --> Requester: Reponse
 @enduml
