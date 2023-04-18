@@ -1,5 +1,15 @@
 @startuml
 title: Handling PUT requests
+footer: Common Gateway | Endpoints
+header: PUT Request
+autonumber
+
+actor       Requester        as Requester
+boundary    Endpoint         as Endpoint
+control     Authorization    as Authorization
+control     Validation       as Validation
+database    Datalayer        as Datalayer
+
 Requester -> Endpoint: Request
 Endpoint -> Authorization  : Authorization
 Authorization --> Endpoint  : Authorization
@@ -7,5 +17,5 @@ Endpoint -> Validation : Validate Request
 Validation --> Endpoint : Validation Result
 Endpoint -> Datalayer: Update object('s)
 Datalayer --> Endpoint : Object('s)
-Endpoint --> Requester: Reponse
+Endpoint --> Requester: Response
 @enduml

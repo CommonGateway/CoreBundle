@@ -1,9 +1,18 @@
 @startuml
 title: Handling DELETE requests
+footer: Common Gateway | Endpoints
+header: DELETE Request
+autonumber
+
+actor       Requester        as Requester
+boundary    Endpoint         as Endpoint
+control     Authorization    as Authorization
+database    Datalayer        as Datalayer
+
 Requester -> Endpoint: Request
 Endpoint -> Authorization  : Authorization
 Authorization -> Endpoint  : Authorization
 Endpoint -> Datalayer : Delete object('s)
 Datalayer -> Endpoint : Object('s)
-Endpoint --> Requester: Reponse
+Endpoint --> Requester: Response
 @enduml

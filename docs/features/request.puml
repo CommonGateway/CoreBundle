@@ -1,0 +1,28 @@
+@startuml
+title: Handling incoming requests
+footer: Common Gateway | Endpoints
+header: Requests
+autonumber
+
+actor       Requester        as Requester
+boundary    Endpoint         as Endpoint
+control     Authorization    as Authorization
+entity      Source           as Source
+collections RequestService   as RequestService
+queue       Events           as Events
+
+Requester -> Endpoint: Request
+Endpoint -> Authorization  : Authorization
+Authorization -> Endpoint  : Authorization
+alt proxy
+
+Endpoint -> Source  : Pass Request
+Source --> Endpoint : Pass Response
+else schema's
+Endpoint -> RequestService  : Pass Request
+RequestService  --> Endpoint : Get Request
+end
+
+Endpoint -> Events: Throw events
+Endpoint --> Requester: Response
+@enduml

@@ -44,10 +44,7 @@ Endpoint objects MUST follow the bellow specifications
 
 Once an endpoint is called by an external application  calls an endpoint(or user, a browser is also an application), the endpoint will handle the following actions in the following order. 
 
-1. Proxy
-2. Schema's
-3. Throwing Events
-4. Returning an error
+![request.svg](request.svg)
 
 ## Proxy
 
