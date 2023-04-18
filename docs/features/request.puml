@@ -6,21 +6,23 @@ autonumber
 
 actor       Requester        as Requester
 boundary    Endpoint         as Endpoint
-control     Authorization    as Authorization
+control     Authentication   as Authentication
 entity      Source           as Source
 collections RequestService   as RequestService
 queue       Events           as Events
 
 Requester -> Endpoint: Request
-Endpoint -> Authorization  : Authorization
-Authorization -> Endpoint  : Authorization
+Endpoint -> Authentication  : Require authentication
+Authentication -> Endpoint  : Is authenticated
 alt proxy
 
 Endpoint -> Source  : Pass Request
 Source --> Endpoint : Pass Response
-else schema's
+else schema('s)
 Endpoint -> RequestService  : Pass Request
 RequestService  --> Endpoint : Get Request
+else no proxy or schema('s)
+note over Endpoint: Do nothing.
 end
 
 Endpoint -> Events: Throw events

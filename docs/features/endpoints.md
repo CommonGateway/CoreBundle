@@ -46,6 +46,16 @@ Once an endpoint is called by an external application  calls an endpoint(or user
 
 ![request.svg](request.svg)
 
+As you can see can see there are three basic alternatives
+1. An endpoint is linked to a source (becoming a proxy for that source)
+2. An endpoint is linked to one or more schema's
+3. An endpoint is not linked to sources or schema's
+
+> **Note**
+> - When a proxy (source) is set on an endpoint the schema fase wil be skipped
+> - Events are always thrown (in all three cases)
+> - If an endpoint is not linked to a source, schema's AND dosn't contain event it wil always return an error
+
 ## Proxy
 
 An endpoint MAY be a proxy for another (external) source. In this case, the endpoint will forward all traffic to the external source (and attach authorisation if required by that source). It will also pass along:
