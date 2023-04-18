@@ -103,11 +103,12 @@ Put request are handled roughly the same as an PUT request, with two exception.
 ![request_delete.svg](request_delete.svg)
 
 ## Throwing Events
-As a final step the endpoint will ALWAYS fire any events that are defined under throws.
+As a final step the endpoint will ALWAYS fire any events that are defined under throws. You can read more about events under [events](events.md).
 
 ![request_throws.svg](request_throws.svg)
 
 When the endpoint throws events, it generates a response in the call cache. After handling all the throws ,are handled it will return the response to the user. The response starts as a `200 OK` “your request has been processed”, but may be altered by any action that subscribed to a thrown event may alter it.
+
 > **Note**
 > - Any action can subscribe to an event thrown by an endpoint, but common examples are proxy en request actions. These fulfill the same functionality as the direct proxy or event link but allow additional configuration, such as mapping.
 > - It recomended to ALWAYS fire event asynchronysly

@@ -7,10 +7,10 @@ autonumber
 
 actor       Requester        as Requester
 boundary    Endpoint         as Endpoint
+collections RequestService   as RequestService
 control     Authorization    as Authorization
 database    Datalayer        as Datalayer
 entity      Source           as Source
-collections RequestService   as RequestService
 
 Endpoint -> RequestService: Request
 RequestService -> Authorization  : Authorization

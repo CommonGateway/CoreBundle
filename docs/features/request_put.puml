@@ -5,10 +5,10 @@ header: PUT Request
 autonumber
 
 boundary    Endpoint         as Endpoint
+collections RequestService   as RequestService
 control     Authorization    as Authorization
 control     Validation       as Validation
 database    Datalayer        as Datalayer
-collections RequestService   as RequestService
 
 Endpoint -> RequestService: Request
 RequestService -> Authorization  : Authorization
