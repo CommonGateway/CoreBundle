@@ -1,5 +1,8 @@
 # Mapping Service
 
+> **Warning**
+> This file is maintained at the Conduction [Google Drive](https://docs.google.com/document/d/1BCrL4u2Ov_815QyH4tQH_roQGM0_Ia4QUyqMtXjlV1g/edit). Please make any suggestions or alterations there.
+
 The mapping service supports the process of changing the structure of an object. It's used to transform data when the source doesn't match the desired data model. Mapping is done by a series of mapping rules in a To <- From style. In simple mapping, the position of a value within an object is changed.
 
 **Index**

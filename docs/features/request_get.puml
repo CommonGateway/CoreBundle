@@ -1,0 +1,8 @@
+@startuml
+Requester -> Gateway: Request
+Gateway -> Authentication  : Authentication
+Authentication --> Gateway  : Authentication
+Gateway -> Datalayer : Search object('s)
+Datalayer --> Gateway: Object('s)
+Gateway --> Requester: Reponse
+@enduml
