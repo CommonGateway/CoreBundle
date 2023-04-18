@@ -83,8 +83,10 @@ class MappingService
      * Maps (transforms) an array (input) to a different array (output).
      *
      * @param Mapping $mappingObject The mapping object that forms the recipe for the mapping
-     * @param array $input The array that need to be mapped (transformed) otherwise known as input
-     * @param bool $list Wheter we want a list instead of a sngle item
+     * @param array   $input         The array that need to be mapped (transformed) otherwise known as input
+     * @param bool    $list          Wheter we want a list instead of a sngle item
+     *
+     * @throws LoaderError|SyntaxError Twig Exceptions
      *
      * @return array The result (output) of the mapping process
      */
