@@ -84,7 +84,7 @@ class InstallationService
      * @var array The Objects acquired during an installation
      */
     private array $objects = [];
-    
+
     /**
      * Some values used for creating test data.
      * Note that owner => reference is replaces with an uuid of that User object.
@@ -92,7 +92,7 @@ class InstallationService
      * @var array|string[]
      */
     private array $testDataDefault = [
-        'owner' => 'https://docs.commongateway.nl/user/default.user.json'
+        'owner' => 'https://docs.commongateway.nl/user/default.user.json',
     ];
 
     private const ALLOWED_CORE_SCHEMAS = [
@@ -241,7 +241,7 @@ class InstallationService
 
         // Save the entities to the database.
         $this->entityManager->flush();
-    
+
         // Make sure we set default data for creating testdata before we start creating ObjectEntities.
         if (Uuid::isValid($this->testDataDefault['owner']) === false) {
             $testDataUser = $this->entityManager->getRepository('App:User')->findOneBy(['reference' => $this->testDataDefault['owner']]);
