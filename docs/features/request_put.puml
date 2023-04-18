@@ -1,4 +1,5 @@
 @startuml
+title: Handling PUT requests
 Requester -> Gateway: Request
 Gateway -> Authentication  : Authentication
 Authentication --> Gateway  : Authentication
