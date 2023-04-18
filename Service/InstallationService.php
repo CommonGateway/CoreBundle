@@ -84,6 +84,16 @@ class InstallationService
      * @var array The Objects acquired during an installation
      */
     private array $objects = [];
+    
+    /**
+     * Some values used for creating test data.
+     * Note that owner => reference is replaces with an uuid of that User object.
+     *
+     * @var array|string[]
+     */
+    private array $testDataDefault = [
+        'owner' => 'https://docs.commongateway.nl/user/default.user.json'
+    ];
 
     private const ALLOWED_CORE_SCHEMAS = [
         'https://docs.commongateway.nl/schemas/Action.schema.json',
@@ -231,6 +241,12 @@ class InstallationService
 
         // Save the entities to the database.
         $this->entityManager->flush();
+    
+        // Make sure we set default data for creating testdata before we start creating ObjectEntities.
+        if (Uuid::isValid($this->testDataDefault['owner']) === false) {
+            $testDataUser = $this->entityManager->getRepository('App:User')->findOneBy(['reference' => $this->testDataDefault['owner']]);
+            $this->testDataDefault['owner'] = $testDataUser ? $testDataUser->getId()->toString() : $testDataUser;
+        }
 
         // Handle all the other objects.
         foreach ($this->objects as $ref => $schemas) {
@@ -651,6 +667,7 @@ class InstallationService
         // Create it if we don't.
         if (isset($object) === false || $object === null) {
             $object = new ObjectEntity($entity);
+            $object->setOwner($this->testDataDefault['owner']);
         }
 
         // TODO: testdata objects seem to have twice as much subobjects as they should have. Duplicates... (example: kiss->klanten->telefoonnummers)
