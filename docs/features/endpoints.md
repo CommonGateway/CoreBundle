@@ -42,7 +42,12 @@ Endpoint objects MUST follow the bellow specifications
 
 ## Handling incoming traffic
 
-Once an endpoint is called by an an external application  calls an endpoint(or user, a browser is also an application), the endpoint will handle the following actions in the following order. Keep in mind that all extensions break the flow further. e.g., if an endpoint has a proxy, it will return the proxy result and never get to the schema point
+Once an endpoint is called by an external application  calls an endpoint(or user, a browser is also an application), the endpoint will handle the following actions in the following order. 
+
+1. Proxy
+2. Schema's
+3. Throwing Events
+4. Returning an error
 
 ## Proxy
 
@@ -57,18 +62,38 @@ Suppose the endpoint path contains an endpoint parameter in the path regex e.g. 
 
 AKeep in mind that a proxy does not transform or translate data, it simply forwards the received request to a source and thenthan returns the response of that source. If you require more functionality (e.g. data transformation or translations) you should set upsetup a schema.
 
-### Schema's
+## Schema's
 
 If an endpoint connects is connected to one or more schemas, it will try to handle the traffic based on the requested service. The endpoint will continue in its handling order if no schema’s are defined.
 
 
 If an endpoint is hooked to schema(‘s) it will automatically create an API and appropriate Redoc based on its settings. See API for more information on the API.
-
 It is possible to hook an endpoint to multiple schemas. When hooked to multiple schemas, the endpoint can still handle POST requests, BUT a POST request must include a valid _self.scheme.id or _self. scheme.ref that refers to the appropriate schema so that the endpoint understands what schema you are trying to create.
-
 If an endpoint is hooked to more than one entity, it will render search results from all linked entities based on supplied queries.
 
-### Event-driven
+### GET
+![request_get.svg](request_get.svg)
+
+### POST
+![request_post.svg](request_post.svg)
+
+### PUT
+Put request are handled roughly  the same as an POST request, with one exception. 
+1. On a PUT request an exisiting object wil be entirely replaced by the new object. Values that where present in the original object but are not present in the new object wil be DELETED.
+
+![request_put.svg](request_put.svg)
+
+### PATCH
+Put request are handled roughly the same as an PUT request, with two exception. 
+1. On a PATCH request an exisiting object wil be updated  by the new object. Values that where present in the original object but are not present in the new object wil be KEPT.
+2. Validity will of the request will be determend afther merging the original and new object. e.g. a required value dosn't need to be pressent in an patch request if it was already present in the original object. Assuming that the orignal object already had al required values (or else it could note have been created) a patch requests only required value should be it's id (excpetion being that the object definition could have been changed afther the original object was created)
+
+![request_patch.svg](request_patch.svg)
+
+### DELETE
+![request_delete.svg](request_delete.svg)
+
+## Throwing Events
 
 If no proxy or entity(s) are provided, the endpoint will throw events(such as listen) as listen under throws. The endpoint will continue in its handling order if no throws are defined.
 
@@ -76,7 +101,7 @@ When the endpoint throws events, it generates a response in the call cache. Afte
 
 Any action can subscribe to an event thrown by an endpoint, but common examples are proxy en request actions. These fulfill the same functionality as the direct proxy or event link but allow additional configuration, such as mapping.
 
-### Return an error
+## Return an error
 
 The endpoint will return an error if no proxy, entities, or throws are defined.
 

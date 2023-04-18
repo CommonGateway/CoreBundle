@@ -1,11 +1,9 @@
 @startuml
-title: Handling POST requests
+title: Handling DELETE requests
 Requester -> Gateway: Request
 Gateway -> Authentication  : Authentication
 Authentication -> Gateway  : Authentication
-Gateway -> Validation : Validate Request
-Validation -> Gateway : Validation Result
-Gateway -> Datalayer : Create object('s)
+Gateway -> Datalayer : Delete object('s)
 Datalayer -> Gateway : Object('s)
 Gateway --> Requester: Reponse
 @enduml

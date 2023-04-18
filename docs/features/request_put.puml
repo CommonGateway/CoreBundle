@@ -3,7 +3,7 @@ title: Handling PUT requests
 Requester -> Gateway: Request
 Gateway -> Authentication  : Authentication
 Authentication --> Gateway  : Authentication
-Gateway -> Validation : Validate Post
+Gateway -> Validation : Validate Request
 Validation --> Gateway : Validation Result
 Gateway -> Datalayer: Update object('s)
 Datalayer --> Gateway : Object('s)
