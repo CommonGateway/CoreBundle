@@ -25,6 +25,9 @@ else no proxy or schema('s)
 note over Endpoint: Do nothing..........
 end
 
+Endpoint -> Endpoint: Create Responce
 Endpoint -> Events: Throw events
+Events --> Endpoint: Update responce
+Endpoint -> Endpoint: Serialize Responce
 Endpoint --> Requester: Response
 @enduml

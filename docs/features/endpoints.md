@@ -114,6 +114,8 @@ When the endpoint throws events, it generates a response in the call cache. Afte
 > - It recomended to ALWAYS fire event asynchronysly
 
 
+## Serialization
+
 ## Return an error
 The endpoint will return an error if no proxy, entities, or throws are defined.
 

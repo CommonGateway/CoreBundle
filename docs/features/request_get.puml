@@ -14,5 +14,5 @@ RequestService -> Authorization  : Authorization
 Authorization --> RequestService  : Authorization
 RequestService -> Datalayer : Search object('s)
 Datalayer --> RequestService: Object('s)
-Endpoint --> Requester: Response
+RequestService --> Endpoint: Response
 @enduml
