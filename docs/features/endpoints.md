@@ -67,16 +67,18 @@ sent to the endpoint. Keep in mind that it will only do so if the method used is
 
 Suppose the endpoint path contains an endpoint parameter in the path regex e.g. `example`. In that case, it will also forward that message to that specific endpoint on the external source. So `gateway.com/api/petstore/pets` would be forwarded to   `petstore.com/pets`.
 
-AKeep in mind that a proxy does not transform or translate data, it simply forwards the received request to a source and thenthan returns the response of that source. If you require more functionality (e.g. data transformation or translations) you should set upsetup a schema.
+![request_proxy.svg](request_proxy.svg)
+
+Keep in mind that a proxy does not transform or translate data, it simply forwards the received request to a source and then returns the response of that source. If you require more functionality (e.g. data transformation or translations) you should setup a schema.
 
 ## Schema's
 
-If an endpoint connects is connected to one or more schemas, it will try to handle the traffic based on the requested service. The endpoint will continue in its handling order if no schema’s are defined.
+If an endpoint connects is connected to one or more schemas, it will try to handle the traffic based on the requested service. 
 
-
-If an endpoint is hooked to schema(‘s) it will automatically create an API and appropriate Redoc based on its settings. See API for more information on the API.
-It is possible to hook an endpoint to multiple schemas. When hooked to multiple schemas, the endpoint can still handle POST requests, BUT a POST request must include a valid _self.scheme.id or _self. scheme.ref that refers to the appropriate schema so that the endpoint understands what schema you are trying to create.
-If an endpoint is hooked to more than one entity, it will render search results from all linked entities based on supplied queries.
+> **Note**
+> - If an endpoint is hooked to schema(‘s) it will automatically create an API and appropriate Redoc based on its settings. See API for more information on the API.
+> - It is possible to hook an endpoint to multiple schemas. When hooked to multiple schemas, the endpoint can still handle POST requests, BUT a POST request must include a valid _self.scheme.id or _self. scheme.ref that refers to the appropriate schema so that the endpoint understands what schema you are trying to create.
+> - If an endpoint is hooked to more than one entity, it will render search results from all linked entities based on supplied queries.
 
 ### GET
 ![request_get.svg](request_get.svg)
@@ -101,8 +103,7 @@ Put request are handled roughly the same as an PUT request, with two exception.
 ![request_delete.svg](request_delete.svg)
 
 ## Throwing Events
-
-If no proxy or entity(s) are provided, the endpoint will throw events(such as listen) as listen under throws. The endpoint will continue in its handling order if no throws are defined.
+As a final step the endpoint will ALWAYS fire any events that are defined under throws. 
 
 When the endpoint throws events, it generates a response in the call cache. After handling all the throws ,are handled it will return the response to the user. The response starts as a `200 OK` “your request has been processed”, but may be altered by any action that subscribed to a thrown event may alter it.
 

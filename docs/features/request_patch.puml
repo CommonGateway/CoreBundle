@@ -4,20 +4,20 @@ footer: Common Gateway | Endpoints
 header: PATCH Request
 autonumber
 
-actor       Requester        as Requester
 boundary    Endpoint         as Endpoint
 control     Authorization    as Authorization
 control     Validation       as Validation
 database    Datalayer        as Datalayer
+collections RequestService   as RequestService
 
-Requester -> Endpoint: Request
-Endpoint -> Authorization  : Authorization
-Authorization --> Endpoint  : Authorization
-Endpoint -> Datalayer : Search object('s)
-Datalayer --> Endpoint: Object('s)
-Endpoint -> Validation : Validate Request
-Validation --> Endpoint: Validation Result
-Endpoint -> Datalayer : Update object('s)
-Datalayer --> Endpoint: Object('s)
-Endpoint --> Requester: Response
+Endpoint -> RequestService: Request
+RequestService -> Authorization  : Authorization
+Authorization --> RequestService  : Authorization
+RequestService -> Datalayer : Search object('s)
+Datalayer --> RequestService: Object('s)
+RequestService -> Validation : Validate Request
+Validation --> RequestService: Validation Result
+RequestService -> Datalayer : Update object('s)
+Datalayer --> RequestService: Object('s)
+RequestService --> Endpoint: Response
 @enduml

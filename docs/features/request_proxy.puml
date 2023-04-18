@@ -1,21 +1,22 @@
 @startuml
-title: Handling PUT requests
+title: Handling Proxy
 footer: Common Gateway | Endpoints
-header: PUT Request
+header: Proxy
+
 autonumber
 
+actor       Requester        as Requester
 boundary    Endpoint         as Endpoint
 control     Authorization    as Authorization
-control     Validation       as Validation
 database    Datalayer        as Datalayer
+entity      Source           as Source
 collections RequestService   as RequestService
 
 Endpoint -> RequestService: Request
 RequestService -> Authorization  : Authorization
 Authorization --> RequestService  : Authorization
-RequestService -> Validation : Validate Request
-Validation --> RequestService : Validation Result
-RequestService -> Datalayer: Update object('s)
-Datalayer --> RequestService : Object('s)
+RequestService -> RequestService : Set authorization for source
+RequestService -> Source : Pass Request
+Source --> RequestService: Pass Response
 RequestService --> Endpoint: Response
 @enduml

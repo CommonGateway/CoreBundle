@@ -22,7 +22,7 @@ else schema('s)
 Endpoint -> RequestService  : Pass Request
 RequestService  --> Endpoint : Get Request
 else no proxy or schema('s)
-note over Endpoint: Do nothing.
+note over Endpoint: Do nothing..........
 end
 
 Endpoint -> Events: Throw events

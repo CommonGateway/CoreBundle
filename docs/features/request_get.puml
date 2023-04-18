@@ -2,18 +2,17 @@
 title: Handling GET requests
 footer: Common Gateway | Endpoints
 header: GET Request
-
 autonumber
 
-actor       Requester        as Requester
 boundary    Endpoint         as Endpoint
 control     Authorization    as Authorization
 database    Datalayer        as Datalayer
+collections RequestService   as RequestService
 
-Requester -> Gateway: Request
-Endpoint -> Authorization  : Authorization
-Authorization --> Endpoint  : Authorization
-Endpoint -> Datalayer : Search object('s)
-Datalayer --> Endpoint: Object('s)
+Endpoint -> RequestService: Request
+RequestService -> Authorization  : Authorization
+Authorization --> RequestService  : Authorization
+RequestService -> Datalayer : Search object('s)
+Datalayer --> RequestService: Object('s)
 Endpoint --> Requester: Response
 @enduml
