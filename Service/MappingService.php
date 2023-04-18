@@ -78,13 +78,13 @@ class MappingService
 
         return $result;
     }//end encodeArrayKeys()
-
+    
     /**
      * Maps (transforms) an array (input) to a different array (output).
      *
      * @param Mapping $mappingObject The mapping object that forms the recipe for the mapping
      * @param array   $input         The array that need to be mapped (transformed) otherwise known as input
-     * @param boolean $list          Wheter we want a list instead of a sngle item
+     * @param bool    $list          Wheter we want a list instead of a sngle item
      *
      * @throws LoaderError|SyntaxError Twig Exceptions
      *
@@ -101,9 +101,10 @@ class MappingService
                 }
                 $list[$key] = $this->mapping($mappingObject, $value);
             }
+
             return $list;
         }
-        
+
         $input = $this->encodeArrayKeys($input, '.', '&#46;');
 
         isset($this->io) ?? $this->io->debug('Mapping array based on mapping object '.$mappingObject->getName().' (id:'.$mappingObject->getId()->toString().' / ref:'.$mappingObject->getReference().') v:'.$mappingObject->getversion());
