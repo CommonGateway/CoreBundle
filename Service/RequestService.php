@@ -536,6 +536,7 @@ class RequestService
                         $this->entityManager->flush();
                         $this->session->set('object', $this->object->getId()->toString());
                         $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
+                        $this->entityManager->flush();
                     } else {
                         $this->entityManager->persist($this->object);
                         $this->session->set('object', $this->object->getId()->toString());
@@ -591,6 +592,7 @@ class RequestService
                             $this->entityManager->persist($this->object);
                             $this->entityManager->flush();
                             $this->cacheService->cacheObject($this->object);
+                            $this->entityManager->flush();
                         }
                     } else {
                         // Use validation to throw an error
@@ -643,6 +645,7 @@ class RequestService
                             $this->entityManager->persist($this->object);
                             $this->entityManager->flush();
                             $this->cacheService->cacheObject($this->object);
+                            $this->entityManager->flush();
                         }
                     } else {
                         // Use validation to throw an error
