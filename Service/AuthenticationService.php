@@ -263,7 +263,7 @@ class AuthenticationService
         }
     }//end removeFiles()
 
-    public function getTokenFromUrl(Source $source): string
+    private function getVrijbrpToken(Source $source): string
     {
         $guzzleConfig = array_merge($source->getConfiguration(), [
             'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
@@ -278,7 +278,30 @@ class AuthenticationService
         $this->removeFiles($guzzleConfig);
 
         return $body['access_token'];
-    }
+
+    }//end getVrijbrpToken
+
+    private function getPinkToken(Source $source): string
+    {
+        $guzzleConfig = $source->getConfiguration();
+
+        $client = new Client($guzzleConfig);
+
+        $response = $client->post($source->getLocation().'/v1/auth/token', ['form_params' => ['client_id' => $source->getUsername(), 'client_secret' => $source->getPassword()]]);
+        return json_decode($response->getBody()->getContents(), true)['accessToken'];
+
+    }//end getVrijbrpToken
+
+    public function getTokenFromUrl(Source $source, string $authType): string
+    {
+        switch ($authType) {
+            case 'vrijbrp-jwt':
+                return $this->getVrijbrpToken($source);
+            case 'pink-jwt':
+                return $this->getPinkToken($source);
+        }//end switch
+
+    }//end getTokenFromUrl
 
     public function getHmacToken(array $requestOptions, Source $source): string
     {
@@ -321,7 +344,8 @@ class AuthenticationService
                 $requestOptions['auth'] = [$source->getUsername(), $source->getPassword()];
                 break;
             case 'vrijbrp-jwt':
-                $requestOptions['headers']['Authorization'] = "Bearer {$this->getTokenFromUrl($source)}";
+            case 'pink-jwt':
+                $requestOptions['headers']['Authorization'] = "Bearer {$this->getTokenFromUrl($source, $source->getAuth())}";
                 break;
             case 'hmac':
                 $requestOptions['headers']['Authorization'] = $this->getHmacToken($requestOptions, $source);
