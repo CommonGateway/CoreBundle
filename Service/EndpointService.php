@@ -143,6 +143,7 @@ class EndpointService
             foreach ($endpoint->getThrows() as $throw) {
                 $event = new ActionEvent('commongateway.action.event', $parameters, $throw);
                 $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
+                $parameters['response'] = $event->getData()['response'];
             }
 
             $parameters['response'] = $event->getData()['response'];
