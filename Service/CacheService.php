@@ -647,8 +647,8 @@ class CacheService
             }
 
             // Only allow ordering & filtering on attributes with sortable = true & searchable = true (respectively).
-            $orderError = $this->handleOrderCheck($entityObject, $completeFilter['_order'] ?? null);
-            $filterError = $this->handleFilterCheck($entityObject, $filterCheck ?? null);
+            $orderError = null;
+            $filterError = null;
             if (empty($orderError) === true && empty($filterError) === true) {
                 continue;
             }
