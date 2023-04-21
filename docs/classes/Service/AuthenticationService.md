@@ -26,7 +26,7 @@
 |[getJWK](#authenticationservicegetjwk)|Gets a JWK for a source based on the algorithm of the source.|
 |[getJwtPayload](#authenticationservicegetjwtpayload)|Creates the JWT payload to identify at an external source.|
 |[getJwtToken](#authenticationservicegetjwttoken)|Create a JWT token from Component settings.|
-|[getTokenFromUrl](#authenticationservicegettokenfromurl)||
+|[getTokenFromUrl](#authenticationservicegettokenfromurl)|Checks from which type of auth we need to fetch a token from.|
 |[removeFiles](#authenticationserviceremovefiles)|Removes certificates and private keys from disk if they are not necessary anymore.|
 |[serializeUser](#authenticationserviceserializeuser)|Serializes a user to be used by the token authenticator.|
 |[verifyJWTToken](#authenticationserviceverifyjwttoken)|Verifies the JWT token and returns the payload if the JWT token is valid.|
@@ -465,20 +465,23 @@ Create a JWT token from Component settings.
 **Description**
 
 ```php
- getTokenFromUrl (void)
+public getTokenFromUrl (\Source $source, string $authType)
 ```
 
- 
+Checks from which type of auth we need to fetch a token from. 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(\Source) $source`
+* `(string) $authType`
 
 **Return Values**
 
-`void`
+`string`
+
+> Fetched JWT token.
 
 
 <hr />
