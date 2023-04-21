@@ -263,6 +263,13 @@ class AuthenticationService
         }
     }//end removeFiles()
 
+    /**
+     * Sends a post with auth info and certificate(s) to fetch a jwt token.
+     *
+     * @param  Source $source
+     * 
+     * @return string $body['access_token'] JWT token.
+     */
     private function getVrijbrpToken(Source $source): string
     {
         $guzzleConfig = array_merge($source->getConfiguration(), [
@@ -281,17 +288,31 @@ class AuthenticationService
 
     }//end getVrijbrpToken
 
+    /**
+     * Sends a post with auth info to fetch a jwt token.
+     *
+     * @param  Source $source
+     * 
+     * @return string accessToken which is a JWT token.
+     */
     private function getPinkToken(Source $source): string
     {
         $guzzleConfig = $source->getConfiguration();
-
         $client = new Client($guzzleConfig);
-
         $response = $client->post($source->getLocation().'/v1/auth/token', ['form_params' => ['client_id' => $source->getUsername(), 'client_secret' => $source->getPassword()]]);
+
         return json_decode($response->getBody()->getContents(), true)['accessToken'];
 
-    }//end getVrijbrpToken
+    }//end getPinkToken
 
+    /**
+     * Checks from which type of auth we need to fetch a token from.
+     *
+     * @param  Source $source
+     * @param  string $authType
+     * 
+     * @return string Fetched JWT token.
+     */
     public function getTokenFromUrl(Source $source, string $authType): string
     {
         switch ($authType) {
