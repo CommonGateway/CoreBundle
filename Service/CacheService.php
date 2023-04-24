@@ -647,6 +647,9 @@ class CacheService
             }
 
             // Only allow ordering & filtering on attributes with sortable = true & searchable = true (respectively).
+//            $orderError = $this->handleOrderCheck($entityObject, $completeFilter['_order'] ?? null);
+//            $filterError = $this->handleFilterCheck($entityObject, $filterCheck ?? null);
+            // todo: for now we do not check for allowed filters and ordering, because this breaks things.
             $orderError = null;
             $filterError = null;
             if (empty($orderError) === true && empty($filterError) === true) {
@@ -663,7 +666,7 @@ class CacheService
             return [
                 'message' => 'There are some errors in your query parameters',
                 'type'    => 'error',
-                'path'    => 'searchObjects', // todo get path from session?
+                'path'    => 'searchObjects', // todo: get path from session?
                 'data'    => $errorData,
             ];
         }
