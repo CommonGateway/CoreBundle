@@ -18,14 +18,25 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class PluginController extends AbstractController
 {
+    /**
+     * @var ComposerService
+     */
     private ComposerService $composerService;
 
+    /**
+     * The constructor sets al needed variables
+     *
+     * @codeCoverageIgnore We do not need to test constructors
+     *
+     * @param ComposerService $composerService
+     */
     public function __construct(ComposerService $composerService)
     {
         $this->composerService = $composerService;
     }
 
     /**
+     * The constructor sets al needed variables
      * @Route("/installed", methods={"GET"})
      */
     public function installedAction(Request $request)
