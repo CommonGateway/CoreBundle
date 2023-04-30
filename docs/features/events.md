@@ -1,8 +1,7 @@
-# Endpoints
-
+# Events
 
 > **Warning**
-> This file is maintained at the Conduction [Google Drive](https://docs.google.com/document/d/1b0yGB1Q_IR27ik8XUurdFq9VUFqTWC62P-ZhZZF62EI/edit). Please make any suggestions or alterations there.
+> This file is maintained at the Conduction [Google Drive](https://docs.google.com/document/d/1aeNZ9I8H4iq2XigByu96lJSe3Cw-lMcWx8bcuJBHxcE/edit). Please make any suggestions or alterations there.
 
 Endpoints are locations (with addresses)  where applications can send and receive messages. The generally consist of a domain and path part together forming an URL. For example in case of  the `demo.commongateway.nl/api/pets` url, the `/api/pets` would be the path and and `demo.commongateway.nl/` the domain.
 
