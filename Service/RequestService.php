@@ -364,6 +364,11 @@ class RequestService
         $this->configuration = $configuration;
 
         $filters = [];
+    
+        // Get application configuration in and out for current endpoint/global if this is set on current application.
+        if ($this->session->get('application') !== null) {
+            $appEndpointConfig = $this->getAppEndpointConfig();
+        }
 
         // haat aan de de _
         if (isset($this->data['querystring'])) {
@@ -376,6 +381,7 @@ class RequestService
             //            }
             $filters = $this->realRequestQueryAll($this->data['method']);
 
+            // todo: replace this foreach with a function that uses $appEndpointConfig to check for ['in']['query']['mapping'] and use that instead.
             foreach ($filters as $key=>$value) {
                 if ($value === 'all' || $value === 'alles' || $value === '*') {
                     unset($filters[$key]);
@@ -457,12 +463,6 @@ class RequestService
             if (!isset($scopes[$schema][$this->data['method']])) {
                 // THROW SECURITY ERROR AND EXIT
             }
-        }
-
-        // Get application configuration in and out for current endpoint/global if this is set on current application.
-        // Note: we might want to do this earlier in this function if we want to use this configuration there...
-        if ($this->session->get('application') !== null) {
-            $appEndpointConfig = $this->getAppEndpointConfig();
         }
 
         // All prepped so lets go
@@ -739,6 +739,7 @@ class RequestService
             return [];
         }
 
+        $endpointRef = isset($this->data['endpoint']) === true ? $this->data['endpoint']->getReference() : '/';
         $endpoint = $this->getCurrentEndpoint();
 
         $applicationConfig = $application->getConfiguration();
@@ -746,9 +747,12 @@ class RequestService
         // Check if there is 'in' and/or 'out' configuration for the current $endpoint or 'global'.
         $appEndpointConfig = [];
         foreach (['in', 'out'] as $type) {
-            if (array_key_exists($endpoint, $applicationConfig) === true && array_key_exists($type, $applicationConfig[$endpoint])) {
+            if (array_key_exists($endpointRef, $applicationConfig) === true && array_key_exists($type, $applicationConfig[$endpointRef])) {
+                $appEndpointConfig[$type] = $applicationConfig[$endpointRef][$type];
+            } elseif (array_key_exists($endpoint, $applicationConfig) === true && array_key_exists($type, $applicationConfig[$endpoint])) {
                 $appEndpointConfig[$type] = $applicationConfig[$endpoint][$type];
             } elseif (array_key_exists('global', $applicationConfig) === true && array_key_exists($type, $applicationConfig['global'])) {
+                // Do global last, so that we allow overwriting the global options for specific endpoints ^.
                 $appEndpointConfig[$type] = $applicationConfig['global'][$type];
             }
         }
@@ -763,10 +767,10 @@ class RequestService
      */
     private function getCurrentEndpoint(): string
     {
-        $pathArray = [];
-        if (isset($this->data['endpoint'])) {
-            $pathArray = $this->data['endpoint']->getPath();
+        if (isset($this->data['endpoint']) === false) {
+            return '/';
         }
+        $pathArray = $this->data['endpoint']->getPath();
 
         // Remove ending id from path to get the core/main endpoint.
         // This way /endpoint without /id can be used in Application Configuration for all CRUD calls.
