@@ -375,6 +375,12 @@ class RequestService
             //                $filters[$key] = $value;
             //            }
             $filters = $this->realRequestQueryAll($this->data['method']);
+
+            foreach($filters as $key=>$value) {
+                if($value === 'all' || $value === 'alles' || $value === '*') {
+                    unset($filters[$key]);
+                }
+            }
         }
 
         // Get the ID
