@@ -95,13 +95,22 @@ class MappingService
         // Check for list
         if ($list === true) {
             $list = [];
+            $extraValues = [];
+            
+            // Allow extra(input)values to be passed down for mapping while dealing with a list
+            if (array_key_exists('listInput', $input) === true) {
+                $extraValues = $input;
+                $input = $input['listInput'];
+                unset($extraValues['listInput'], $extraValues['value']);
+            }
             foreach ($input as $key => $value) {
-                if (is_array($value) === false) {
-                    $value = ['value' => $value];
+                // Mapping function expects an array for $input, make sure we always pass an array to this function.
+                if (is_array($value) === false || empty($extraValues) === false) {
+                    $value = array_merge(['value' => $value], $extraValues);
                 }
                 $list[$key] = $this->mapping($mappingObject, $value);
             }
-
+        
             return $list;
         }
 
