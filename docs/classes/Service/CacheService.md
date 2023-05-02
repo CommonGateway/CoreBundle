@@ -25,6 +25,7 @@ This service provides a guzzle wrapper to work with sources in the common gatewa
 |[removeEndpoint](#cacheserviceremoveendpoint)|Removes an endpoint from the cache.|
 |[removeObject](#cacheserviceremoveobject)|Removes an object from the cache.|
 |[removeSchema](#cacheserviceremoveschema)|Removes an Schema from the cache.|
+|[retrieveObjectsFromCache](#cacheserviceretrieveobjectsfromcache)||
 |[searchObjects](#cacheservicesearchobjects)|Searches the object store for objects containing the search string.|
 |[setPagination](#cacheservicesetpagination)|Decides the pagination values.|
 |[setStyle](#cacheservicesetstyle)|Set symfony style in order to output to the console.|
@@ -362,6 +363,30 @@ Removes an Schema from the cache.
 `void`
 
 
+
+
+<hr />
+
+
+### CacheService::retrieveObjectsFromCache  
+
+**Description**
+
+```php
+ retrieveObjectsFromCache (void)
+```
+
+ 
+
+ 
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`void`
 
 
 <hr />
