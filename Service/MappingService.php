@@ -158,57 +158,14 @@ class MappingService
                 continue;
             }
 
-            $value = $dotArray->get($key);
-
-            // todo: this works, we should go to php 8.0 later
-            if (str_starts_with($cast, 'unsetIfValue==')) {
-                $unsetIfValue = substr($cast, 14);
-                $cast = 'unsetIfValue';
+            if (is_array($cast)) {
+                foreach ($cast as $singleCast) {
+                    $this->handleCast($dotArray, $key, $singleCast);
+                }
+                continue;
             }
-
-            // Todo: Add more casts
-            switch ($cast) {
-                case 'int':
-                case 'integer':
-                    $value = intval($value);
-                    break;
-                case 'bool':
-                case 'boolean':
-                    if ((int) $value === 1 || $value === 'true' || $value === 'True' || $value === 'TRUE') {
-                        $value = true;
-                        break;
-                    }
-                    $value = false;
-                    break;
-                case 'string':
-                    echo 'i equals 2';
-                    break;
-                case 'keyCantBeValue':
-                    if ($key == $value) {
-                        $dotArray->delete($key);
-                    }
-                    break;
-                case 'unsetIfValue':
-                    if (isset($unsetIfValue) === true && $value == $unsetIfValue) {
-                        $dotArray->delete($key);
-                    }
-                    break;
-                case 'jsonToArray':
-                    $value = str_replace(['&quot;', '&amp;quot;'], '"', $value);
-                    $value = json_decode($value, true);
-                    break;
-                case 'coordinateStringToArray':
-                    $value = $this->coordinateStringToArray($value);
-                    break;
-                default:
-                    isset($this->io) ?? $this->io->debug('Trying to cast to an unsupported cast type: '.$cast);
-                    break;
-            }
-
-            // dont reset key that was deleted on purpose
-            if ($dotArray->has($key)) {
-                $dotArray->set($key, $value);
-            }
+            
+            $this->handleCast($dotArray, $key, $cast);
         }
 
         // Back to array
@@ -230,6 +187,70 @@ class MappingService
 
         return $output;
     }
+    
+    /**
+     * Handles a single cast.
+     *
+     * @param Dot $dotArray The dotArray of the array we are mapping.
+     * @param string $key The key of the field we want to cast.
+     * @param string $cast The type of cast we want to do.
+     *
+     * @return void
+     */
+    private function handleCast(Dot $dotArray, string $key, string $cast)
+    {
+        $value = $dotArray->get($key);
+    
+        // todo: this works, we should go to php 8.0 later
+        if (str_starts_with($cast, 'unsetIfValue==')) {
+            $unsetIfValue = substr($cast, 14);
+            $cast = 'unsetIfValue';
+        }
+    
+        // Todo: Add more casts
+        switch ($cast) {
+            case 'int':
+            case 'integer':
+                $value = intval($value);
+                break;
+            case 'bool':
+            case 'boolean':
+                if ((int) $value === 1 || $value === 'true' || $value === 'True' || $value === 'TRUE') {
+                    $value = true;
+                    break;
+                }
+                $value = false;
+                break;
+            case 'string':
+                echo 'i equals 2';
+                break;
+            case 'keyCantBeValue':
+                if ($key == $value) {
+                    $dotArray->delete($key);
+                }
+                break;
+            case 'unsetIfValue':
+                if (isset($unsetIfValue) === true && $value == $unsetIfValue) {
+                    $dotArray->delete($key);
+                }
+                break;
+            case 'jsonToArray':
+                $value = str_replace(['&quot;', '&amp;quot;'], '"', $value);
+                $value = json_decode($value, true);
+                break;
+            case 'coordinateStringToArray':
+                $value = $this->coordinateStringToArray($value);
+                break;
+            default:
+                isset($this->io) ?? $this->io->debug('Trying to cast to an unsupported cast type: '.$cast);
+                break;
+        }
+    
+        // Don't reset key that was deleted on purpose
+        if ($dotArray->has($key)) {
+            $dotArray->set($key, $value);
+        }
+    }//end handleCast()
 
     /**
      * Converts a coordinate string to an array of coordinates.
