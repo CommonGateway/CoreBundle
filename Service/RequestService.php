@@ -122,6 +122,39 @@ class RequestService
 
         return $vars;
     }
+    
+    /**
+     * This function adds a single query param to the given $vars array. ?$name=$value
+     * Will check if request query $name has [...] inside the parameter, like this: ?queryParam[$nameKey]=$value.
+     * Works recursive, so in case we have ?queryParam[$nameKey][$anotherNameKey][etc][etc]=$value.
+     * Also checks for queryParams ending on [] like: ?queryParam[$nameKey][] (or just ?queryParam[]), if this is the case
+     * this function will add given value to an array of [queryParam][$nameKey][] = $value or [queryParam][] = $value.
+     * If none of the above this function will just add [queryParam] = $value to $vars.
+     *
+     * @param array  $vars    The vars array we are going to store the query parameter in
+     * @param string $name    The full $name of the query param, like this: ?$name=$value
+     * @param string $nameKey The full $name of the query param, unless it contains [] like: ?queryParam[$nameKey]=$value
+     * @param string $value   The full $value of the query param, like this: ?$name=$value
+     *
+     * @return void
+     */
+    private function recursiveRequestQueryKey(array &$vars, string $name, string $nameKey, string $value)
+    {
+        $matchesCount = preg_match('/(\[[^[\]]*])/', $name, $matches);
+        if ($matchesCount > 0) {
+            $key = $matches[0];
+            $name = str_replace($key, '', $name);
+            $key = trim($key, '[]');
+            if (!empty($key)) {
+                $vars[$nameKey] = $vars[$nameKey] ?? [];
+                $this->recursiveRequestQueryKey($vars[$nameKey], $name, $key, $value);
+            } else {
+                $vars[$nameKey][] = $value;
+            }
+        } else {
+            $vars[$nameKey] = $value;
+        }
+    }
 
     /**
      * Get the ID from given parameters.
@@ -211,39 +244,6 @@ class RequestService
         // There is no way to establish an schema so
         else {
             return false;
-        }
-    }
-
-    /**
-     * This function adds a single query param to the given $vars array. ?$name=$value
-     * Will check if request query $name has [...] inside the parameter, like this: ?queryParam[$nameKey]=$value.
-     * Works recursive, so in case we have ?queryParam[$nameKey][$anotherNameKey][etc][etc]=$value.
-     * Also checks for queryParams ending on [] like: ?queryParam[$nameKey][] (or just ?queryParam[]), if this is the case
-     * this function will add given value to an array of [queryParam][$nameKey][] = $value or [queryParam][] = $value.
-     * If none of the above this function will just add [queryParam] = $value to $vars.
-     *
-     * @param array  $vars    The vars array we are going to store the query parameter in
-     * @param string $name    The full $name of the query param, like this: ?$name=$value
-     * @param string $nameKey The full $name of the query param, unless it contains [] like: ?queryParam[$nameKey]=$value
-     * @param string $value   The full $value of the query param, like this: ?$name=$value
-     *
-     * @return void
-     */
-    private function recursiveRequestQueryKey(array &$vars, string $name, string $nameKey, string $value)
-    {
-        $matchesCount = preg_match('/(\[[^[\]]*])/', $name, $matches);
-        if ($matchesCount > 0) {
-            $key = $matches[0];
-            $name = str_replace($key, '', $name);
-            $key = trim($key, '[]');
-            if (!empty($key)) {
-                $vars[$nameKey] = $vars[$nameKey] ?? [];
-                $this->recursiveRequestQueryKey($vars[$nameKey], $name, $key, $value);
-            } else {
-                $vars[$nameKey][] = $value;
-            }
-        } else {
-            $vars[$nameKey] = $value;
         }
     }
 
@@ -379,14 +379,19 @@ class RequestService
             //                $value = $row[1];
             //                $filters[$key] = $value;
             //            }
+            
             $filters = $this->realRequestQueryAll($this->data['method']);
-
-            // todo: replace this foreach with a function that uses $appEndpointConfig to check for ['in']['query']['mapping'] and use that instead.
-            foreach ($filters as $key=>$value) {
-                if ($value === 'all' || $value === 'alles' || $value === '*') {
-                    unset($filters[$key]);
-                }
+            
+            if (isset($appEndpointConfig['in']['query']) === true) {
+                $filters = $this->queryAppEndpointConfig($filters, $appEndpointConfig['in']['query']);
             }
+
+//            // todo: replace this foreach with a function that uses $appEndpointConfig to check for ['in']['query']['mapping'] and use that instead.
+//            foreach ($filters as $key=>$value) {
+//                if ($value === 'all' || $value === 'alles' || $value === '*') {
+//                    unset($filters[$key]);
+//                }
+//            }
         }
 
         // Get the ID
@@ -780,16 +785,31 @@ class RequestService
 
         return '/'.implode('/', $pathArray);
     }
+    
+    /**
+     * Handle the Application Endpoint configuration for query params. If filters/query should be changed in any way.
+     *
+     * @param array $filters The filters/query used for the current api-call.
+     * @param array $queryConfig Application configuration ['in']['query']
+     *
+     * @return array The updated filters/query used for the current api-call.
+     */
+    private function queryAppEndpointConfig(array $filters, array $queryConfig): array
+    {
+        // todo
+        
+        return $filters;
+    }
 
     /**
-     * If embedded should be shown or not.
+     * Handle the Application Endpoint Configuration for embedded. If embedded should be shown or not.
      * Configuration Example: ['global']['out']['embedded']['unset'] = true
      * Configuration Example 2: ['global']['out']['embedded']['unset']['except'] = ['application/json+ld', 'application/ld+json'].
      *
      * @param object|array $result         fetched result
      * @param array        $embeddedConfig Application configuration ['out']['embedded']
      *
-     * @return array|null
+     * @return array|null The updated result.
      */
     public function shouldWeUnsetEmbedded($result, array $embeddedConfig)
     {
