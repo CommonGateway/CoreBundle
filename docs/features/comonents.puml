@@ -1,0 +1,61 @@
+@startuml
+title: Components
+footer: Common Gateway | Components
+header: Components
+
+
+cloud "Kubernetes"{
+
+boundary "ingress" as ingress
+
+package "Layer 5 (interaction)" {
+package "React Container 1" {
+ [User Interface]  as ui
+}
+
+package "React Container 2" {
+ [Admin Interface]  as admin
+}
+}
+
+
+package "Layer 4 (Logic)" {
+package "NGINX Container" {
+ boundary "Nginx" as Nginx
+}
+
+package "Gateway Container" {
+ [Plugins] as Plugins
+ [Gateway] as Gateway
+ [ORM] as ORM
+}
+
+package "RedisContainer" {
+ [Redis] as Redis
+}
+
+
+package "MongoDB Container" {
+ database  "MongoDB " as MognoDB
+}
+}
+
+}
+
+
+package "Layer 1 (data)" {
+cloud "Database Service"{
+ database  "Postgress/MsSQL/MySql/Oracle" as db
+}
+}
+
+ingress <..> ui: Exposes
+ingress <..> admin: Exposes
+ingress <..> Nginx: Exposes
+Nginx  <..> Gateway: Runs
+Gateway <..> Plugins: Implements
+Gateway ..> MognoDB: Index
+Gateway ..> Redis: Cache
+Gateway ..> ORM: Store
+ORM  ..> db: Persist
+@enduml
