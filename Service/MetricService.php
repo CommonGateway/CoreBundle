@@ -60,7 +60,7 @@ class MetricService
         // @todo the below should come out of the db
         $users= 1;
         $applications = 1;
-        $organisatoins = 1;
+        $organizations = 1;
 
         // @todo the below should come out of mango
         $requests = 1;
@@ -70,49 +70,49 @@ class MetricService
         $metrics = [
             [
                 "name"=>"app_version",
-                "type"=>"gauge",
+                "type"=>"gauge", // todo: 3 types, we mostly use gauge and counter
                 "help"=>"The current version of the application.",
-                "value"=>"1.2.3"
+                "value"=>"1.2.3" // todo: corebundle version, can get from composerService
             ],
             [
-                "name"=>"app_name",
+                "name"=>"app_name", // todo: Get name from corebundle
                 "type"=>"gauge",
                 "help"=>"The current version of the application.",
                 "value"=>"Common Gateway"
             ],
             [
-                "name"=>"app_description",
+                "name"=>"app_description", // todo: desc corebundle
                 "type"=>"gauge",
                 "help"=>"The current version of the application.",
                 "value"=>""
             ],
             [
-                "name"=>"app_users",
+                "name"=>"app_users", // todo: amount of user objects
                 "type"=>"gauge",
                 "help"=>"The current amount of users",
                 "value"=>$users
             ],
             [
-                "name"=>"app_organisations",
+                "name"=>"app_organisations", // todo: amount of orgs
                 "type"=>"gauge",
                 "help"=>"The current amount of organisations",
-                "value"=>$organisatoins
+                "value"=>$organizations
             ],
             [
-                "name"=>"app_applications",
+                "name"=>"app_applications", // todo: amount of apps
                 "type"=>"gauge",
                 "help"=>"The current amount of applications",
                 "value"=>$applications
             ],
             [
-                "name"=>"app_requests",
-                "type"=>"counter",
+                "name"=>"app_requests", // todo: count requestlogs with unique request id
+                "type"=>"counter", // todo: should never get lower
                 "help"=>"The total amount of incomming requests handled by this gateway",
                 "value"=>$requests
             ],
             [
-                "name"=>"app_calls",
-                "type"=>"counts",
+                "name"=>"app_calls", // todo: count calllogs with unique call id
+                "type"=>"counter",
                 "help"=>"The total amount of outgoing calls handled by this gateway",
                 "value"=>$calls
             ],
@@ -154,7 +154,7 @@ class MetricService
                     "type"=>"counter",
                     "help"=>"The list of installed plugins.",
                     "labels"=>[
-                        "error_name"=>$errorType["name"],
+                        "error_name"=>$errorType["name"], // todo: this = error.level name (warning, error, critical)
                     ],
                     "value"=>$errorType["count"]
                 ]
@@ -194,6 +194,7 @@ class MetricService
                     "labels"=>[
                         "plugin_name"=>$plugin["name"],
                         "plugin_description"=>$plugin["description"],
+                        "plugin_version"=>$plugin["version"],
                     ],
                     "value"=>1
                 ]
@@ -242,7 +243,7 @@ class MetricService
                         "schema_name"=>$schema["name"],
                         "schema_reference"=>$schema["ref"],
                     ],
-                    "value"=>$schema->getCount()
+                    "value"=>$schema->getCount() // todo: amount of objects for this schema
                 ]
             ];
         }
