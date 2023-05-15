@@ -5,6 +5,7 @@ namespace CommonGateway\CoreBundle\Service;
 //use App\Entity\CallLog;
 use App\Entity\Gateway as Source;
 use Doctrine\ORM\EntityManagerInterface;
+use Dompdf\Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
@@ -222,14 +223,18 @@ class CallService
 //            $this->entityManager->persist($log);
 //            $this->entityManager->flush();
 
-            $responseContent = method_exists(get_class($exception), 'getResponse') === true ? $exception->getResponse()->getBody()->getContents() : '';
-            $this->callLogger->error('Request failed with error '.$exception->getMessage().' and body '.$responseContent);
+            if (method_exists(get_class($exception), 'getResponse') === true
+                && $exception->getResponse() !== null
+            ) {
+                $responseContent = $exception->getResponse()->getBody()->getContents();
+            }
+            $this->callLogger->error('Request failed with error '.$exception->getMessage().' and body '.$responseContent ?? null);
 
-            throw $exception;
+            return $this->handleEndpointsConfigIn($source, $endpoint, null, $exception, $responseContent ?? null);
         } catch (GuzzleException $exception) {
             $this->callLogger->error('Request failed with error '.$exception);
 
-            throw $exception;
+            return $this->handleEndpointsConfigIn($source, $endpoint, null, $exception, null);
         }
 //        $stopTimer = microtime(true);
 //
@@ -247,7 +252,7 @@ class CallService
 
         $createCertificates && $this->removeFiles($config);
 
-        return $this->handleEndpointsConfigIn($source, $endpoint, $response);
+        return $this->handleEndpointsConfigIn($source, $endpoint, $response, null, null);
     }
 
     /**
@@ -324,11 +329,13 @@ class CallService
      *
      * @param Source   $source   The source.
      * @param string   $endpoint The endpoint used to do an api-call on the source.
-     * @param Response $response The response of an api-call we might want to change.
+     * @param ?Response $response The response of an api-call we might want to change.
+     * @param ?\Exception $exception The exception of an api-call we might want to change.
+     * @param ?string $responseContent The response content of the exception of the api-call we might want to change.
      *
      * @return Response The response.
      */
-    private function handleEndpointsConfigIn(Source $source, string $endpoint, Response $response): Response
+    private function handleEndpointsConfigIn(Source $source, string $endpoint, ?Response $response, ?\Exception $exception = null, ?string $responseContent = null): Response
     {
         $this->callLogger->info('Handling incoming configuration for endpoints');
         $endpointsConfig = $source->getEndpointsConfig();
@@ -341,6 +348,39 @@ class CallService
             $endpointConfigIn = $endpointsConfig[$endpoint]['in'];
         } elseif (array_key_exists('global', $endpointsConfig) === true && array_key_exists('in', $endpointsConfig['global'])) {
             $endpointConfigIn = $endpointsConfig['global']['in'];
+        }
+
+        if (isset($endpointConfigIn) === true
+            && $response === null
+            && $exception !== null
+        ) {
+            // Check if error is set otherwise throw exception
+            if (array_key_exists('error', $endpointConfigIn) === false
+                && array_key_exists('error', $endpointConfigIn['global']) === false
+            ) {
+                throw $exception;
+            }
+
+            $body = json_decode($responseContent, true);
+
+            // Create exception array
+            $exceptionArray = [
+                'statusCode' => $exception->getResponse()->getStatusCode(),
+                'headers'    => $exception->getResponse()->getHeaders(),
+                'body'       => $body ?? $exception->getResponse()->getBody()->getContents(),
+                'message'    => $exception->getMessage()
+            ];
+
+            $headers = $this->handleEndpointConfigIn($exception->getResponse()->getHeaders(), $endpointConfigIn, 'headers');
+            $error = $this->handleEndpointConfigIn($exceptionArray, $endpointConfigIn, 'error');
+
+            if (is_array($error) === true) {
+                $statusCode = $error['statusCode'];
+                unset($error['statusCode']);
+                $error = json_encode($error);
+            }
+
+            return new Response($statusCode ?? $exception->getCode(), $headers, $error, $exception->getResponse()->getProtocolVersion());
         }
 
         if (isset($endpointConfigIn) === true) {
@@ -373,14 +413,17 @@ class CallService
             return $responseData;
         }
 
-        if (array_key_exists('mapping', $endpointConfigIn[$responseProperty])) {
+        if (array_key_exists('mapping', $endpointConfigIn[$responseProperty]) === true) {
             $mapping = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $endpointConfigIn[$responseProperty]['mapping']]);
             if ($mapping === null) {
                 $this->callLogger->error("Could not find mapping with reference {$endpointConfigIn[$responseProperty]['mapping']} while handling $responseProperty EndpointConfigIn for a Source.");
 
                 return $responseData;
             }
-            $responseData = json_decode($responseData->getContents(), true);
+
+            if (is_array($responseData) === false) {
+                $responseData = json_decode($responseData->getContents(), true);
+            }
 
             try {
                 $responseData = $this->mappingService->mapping($mapping, $responseData);
@@ -388,6 +431,7 @@ class CallService
                 $this->callLogger->error("Could not map with mapping {$endpointConfigIn[$responseProperty]['mapping']} while handling $responseProperty EndpointConfigIn for a Source. ".$exception->getMessage());
             }
         }
+
 
         return $responseData;
     }//end handleEndpointConfigIn()
