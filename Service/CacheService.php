@@ -303,6 +303,12 @@ class CacheService
      */
     private function getObjectUser(ObjectEntity $objectEntity): ?User
     {
+        if (Uuid::isValid($objectEntity->getOwner()) === false) {
+            $this->logger->warning("User {$objectEntity->getOwner()} is not a user object but an external user.");
+            
+            return null;
+        }
+
         $user = $this->entityManager->getRepository('App:User')->findOneBy(['id' => $objectEntity->getOwner()]);
 
         if ($user === null) {
@@ -379,13 +385,12 @@ class CacheService
             return [];
         }
 
-        $collection = $this->client->objects->json;
-
         // Backwards compatibility
         $this->queryBackwardsCompatibility($filter);
 
         // Make sure we also have all filters stored in $completeFilter before unsetting
         $completeFilter = $filter;
+
         unset($filter['_start'], $filter['_offset'], $filter['_limit'], $filter['_page'],
             $filter['_extend'], $filter['_search'], $filter['_order'], $filter['_fields']);
 
@@ -410,13 +415,19 @@ class CacheService
 
         // Order
         $order = isset($completeFilter['_order']) ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
-        !empty($order) && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
+        !empty($order) && $order[array_keys($order)[0]] = (int)$order[array_keys($order)[0]];
 
         // Find / Search
-        $results = $collection->find($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order])->toArray();
+        return $this->retrieveObjectsFromCache($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order], $completeFilter);
+    }
+
+    public function retrieveObjectsFromCache (array $filter, array $options, array $completeFilter = []): ?array
+    {
+        $collection = $this->client->objects->json;
+
+        $results = $collection->find($filter, $options)->toArray();
         $total = $collection->count($filter);
 
-        // Make sure to add the pagination properties in response
         return $this->handleResultPagination($completeFilter, $results, $total);
     }
 
@@ -769,9 +780,9 @@ class CacheService
         if (is_string($search)) {
             $filter['$text']
                 = [
-                    '$search'       => $search,
-                    '$caseSensitive'=> false,
-                ];
+                '$search'       => $search,
+                '$caseSensitive'=> false,
+            ];
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value
         elseif (is_array($search)) {
