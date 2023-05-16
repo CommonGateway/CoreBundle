@@ -16,7 +16,7 @@ use Doctrine\ORM\EntityManagerInterface;
  *
  * See https://prometheus.io/docs/concepts/metric_types/ for mor information about metric types
  */
-class MetricService
+class MetricsService
 {
     /**
      * @var ComposerService

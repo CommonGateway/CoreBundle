@@ -1,6 +1,6 @@
 <?php
 
-// src/Controller/MetricController.php
+// src/Controller/MetricsController.php
 
 namespace CommonGateway\CoreBundle\Controller;
 
@@ -20,7 +20,7 @@ use Symfony\Component\Routing\Annotation\Route;
  * @category Controller
  *
  */
-class MetricController extends AbstractController
+class MetricsController extends AbstractController
 {
     /**
      * @var MetricsService The metrics service
