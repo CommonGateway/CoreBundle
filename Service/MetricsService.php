@@ -173,7 +173,7 @@ class MetricsService
     public function getPlugins(): array
     {
         // Get all the plugins
-        $plugins = $this->composerService->getAll(['--installed'])['installed'];
+        $plugins = $this->composerService->getAll(['--installed']);
 
         $metrics = [
             [
