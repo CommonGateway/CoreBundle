@@ -4,6 +4,8 @@ namespace CommonGateway\CoreBundle\Service;
 
 use CommonGateway\CoreBundle\Service\ComposerService;
 use Doctrine\ORM\EntityManagerInterface;
+use MongoDB\Client;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 /**
  * creates arrays for prometheus
@@ -19,6 +21,11 @@ use Doctrine\ORM\EntityManagerInterface;
 class MetricsService
 {
     /**
+     * @var Client
+     */
+    private Client $client;
+    
+    /**
      * @var ComposerService
      */
     private ComposerService $composerService;
@@ -27,6 +34,11 @@ class MetricsService
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
+    
+    /**
+     * @var ParameterBagInterface
+     */
+    private ParameterBagInterface $parameters;
 
     /**
      * The constructor sets al needed variables
@@ -35,14 +47,21 @@ class MetricsService
      *
      * @param ComposerService        $composerService    The Composer service
      * @param EntityManagerInterface $entityManager      The entity manager
+     * @param ParameterBagInterface  $parameters    The Parameter bag
      */
     public function __construct(
         ComposerService $composerService,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        ParameterBagInterface $parameters
     )
     {
         $this->composerService = $composerService;
         $this->entityManager = $entityManager;
+        $this->parameters = $parameters;
+        
+        if ($this->parameters->get('cache_url', false)) {
+            $this->client = new Client($this->parameters->get('cache_url'));
+        }
     }
 
     /**
@@ -133,21 +152,28 @@ class MetricsService
      */
     public function getErrors(): array
     {
-        //@todo get below data from mangoDB trough a query
-        $errors = 1;
+        $collection = $this->client->logs->logs;
+        // todo: do we need to add more possible level_names to this query?
+        // todo: do we need to add more to this filter than just level_name ?
+        $filter = ['level_name' => ['$in' => ['CRITICAL', 'ERROR']]];
+        // todo: we need to do toArray() in order to do a count(), is there a query for counting instead of this?
+        $errors = $collection->find($filter)->toArray();
+        
+        $errorCount = count($errors);
+        //@todo get $errorTypes from mangoDB... do a count query for each level_name ?
         $errorTypes = [];
 
         $metrics = [
             [
-                "name"=>"app_error_count",
-                "type"=>"counter",
-                "help"=>"The amount of errors",
-                "value"=>$errors
+                "name"  => "app_error_count",
+                "type"  => "counter",
+                "help"  => "The amount of errors",
+                "value" => $errorCount
             ]
         ];
 
         //create a list
-        foreach($errorTypes as $errorType){
+        foreach ($errorTypes as $errorType) {
             $metrics[] = [
                 [
                     "name"=>"app_error_list",
