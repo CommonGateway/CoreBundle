@@ -141,7 +141,7 @@ class MetricService
             [
                 "name"=>"app_error_count",
                 "type"=>"counter",
-                "help"=>"The amount of installed plugins",
+                "help"=>"The amount of errors",
                 "value"=>$errors
             ]
         ];
@@ -152,8 +152,9 @@ class MetricService
                 [
                     "name"=>"app_error_list",
                     "type"=>"counter",
-                    "help"=>"The list of installed plugins.",
+                    "help"=>"The list of errors and their error level/type.",
                     "labels"=>[
+                        // todo: change this into error_level?
                         "error_name"=>$errorType["name"], // todo: this = error.level name (warning, error, critical)
                     ],
                     "value"=>$errorType["count"]
