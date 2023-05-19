@@ -318,13 +318,3 @@ class EndpointService
         return $parameters;
     }//end getParametersFromRequest()
 }//end class
-
-// Lets get all the headers.
-        $parameters['headers'] = $this->request->headers->all();
-
-        // Lets get all the post variables.
-        $parameters['post'] = $this->request->request->all();
-
-        return $parameters;
-    }//end getParametersFromRequest()
-}//end class
