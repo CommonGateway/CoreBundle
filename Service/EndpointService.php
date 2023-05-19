@@ -226,6 +226,10 @@ class EndpointService
      */
     public function decodeBody(): ?array
     {
+        if(empty($this->request->getContent()) === true) {
+            return [];
+        }
+
         // Get the content type.
         $this->logger->info('Decoding body');
         $contentType = $this->request->getContentType();
@@ -306,6 +310,16 @@ class EndpointService
         $parameters['query'] = $this->request->query->all();
 
         // Lets get all the headers.
+        $parameters['headers'] = $this->request->headers->all();
+
+        // Lets get all the post variables.
+        $parameters['post'] = $this->request->request->all();
+
+        return $parameters;
+    }//end getParametersFromRequest()
+}//end class
+
+// Lets get all the headers.
         $parameters['headers'] = $this->request->headers->all();
 
         // Lets get all the post variables.
