@@ -94,18 +94,26 @@ class RequestService
         $this->logger = $requestLogger;
     }
 
+    /**
+     * Determines the right content type and serializes the data accordingly.
+     *
+     * @param array $data        The data to serialize.
+     * @param mixed $contentType The content type to determine.
+     *
+     * @return string The serialized data.
+     */
     public function serializeData(array $data, &$contentType): string
     {
 
         $accept   = 'application/json';
 
-        if(isset($this->data['endpoint'])) {
+        if (isset($this->data['endpoint']) === true) {
             $endpoint = $this->data['endpoint'];
         }
 
-        if(isset($this->data['headers']['accept'])) {
+        if (isset($this->data['headers']['accept']) === true) {
             $accept = $this->data['headers']['accept'][0];
-        } else if ($endpoint instanceof Endpoint && $endpoint->getDefaultContentType() !== null) {
+        } elseif ($endpoint instanceof Endpoint && $endpoint->getDefaultContentType() !== null) {
             $accept = $endpoint->getDefaultContentType();
         }
 
