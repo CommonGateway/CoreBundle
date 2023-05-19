@@ -22,6 +22,7 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 |[realRequestQueryAll](#requestservicerealrequestqueryall)|A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.|
 |[requestHandler](#requestservicerequesthandler)|Handles incomming requests and is responsible for generating a response.|
 |[searchRequestHandler](#requestservicesearchrequesthandler)|This function searches all the objectEntities and formats the data.|
+|[serializeData](#requestserviceserializedata)||
 |[shouldWeUnsetEmbedded](#requestserviceshouldweunsetembedded)|If embedded should be shown or not.|
 
 
@@ -347,6 +348,30 @@ This function searches all the objectEntities and formats the data.
 `array`
 
 > The modified data
+
+
+<hr />
+
+
+### RequestService::serializeData  
+
+**Description**
+
+```php
+ serializeData (void)
+```
+
+ 
+
+ 
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`void`
 
 
 <hr />
