@@ -88,8 +88,10 @@ class InstallationService
     /**
      * Some values used for creating test data.
      * Note that owner => reference is replaces with an uuid of that User object.
+     *
+     * @var array|string[]
      */
-    private const TEST_DATA_DEFAULT = [
+    private array $testDataDefault = [
         'owner' => 'https://docs.commongateway.nl/user/default.user.json',
     ];
 
@@ -243,9 +245,9 @@ class InstallationService
         $this->entityManager->flush();
 
         // Make sure we set default data for creating testdata before we start creating ObjectEntities.
-        if (Uuid::isValid($this::TEST_DATA_DEFAULT['owner']) === false) {
-            $testDataUser = $this->entityManager->getRepository('App:User')->findOneBy(['reference' => $this::TEST_DATA_DEFAULT['owner']]);
-            $this::TEST_DATA_DEFAULT['owner'] = $testDataUser ? $testDataUser->getId()->toString() : $testDataUser;
+        if (Uuid::isValid($this->testDataDefault['owner']) === false) {
+            $testDataUser = $this->entityManager->getRepository('App:User')->findOneBy(['reference' => $this->testDataDefault['owner']]);
+            $this->testDataDefault['owner'] = $testDataUser ? $testDataUser->getId()->toString() : $testDataUser;
         }
 
         // Handle all the other objects.
@@ -667,7 +669,7 @@ class InstallationService
         // Create it if we don't.
         if (isset($object) === false || $object === null) {
             $object = new ObjectEntity($entity);
-            $object->setOwner($this::TEST_DATA_DEFAULT['owner']);
+            $object->setOwner($this->testDataDefault['owner']);
         }
 
         // TODO: testdata objects seem to have twice as much subobjects as they should have. Duplicates... (example: kiss->klanten->telefoonnummers)
