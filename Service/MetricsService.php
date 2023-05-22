@@ -212,9 +212,9 @@ class MetricsService
                 "value" => count($plugins)
             ]
         ];
-
-
-        //create a list
+    
+    
+        // Create a list
         foreach ($plugins as $plugin) {
             $metrics[] = [
                 [
@@ -224,6 +224,7 @@ class MetricsService
                     "labels" => [
                         "plugin_name"        => $plugin["name"],
                         "plugin_description" => $plugin["description"],
+                        "plugin_repository"  => $plugin["repository"],
                         "plugin_version"     => $plugin["version"],
                     ],
                     "value"  => 1
