@@ -153,41 +153,44 @@ class MetricsService
     public function getErrors(): array
     {
         $collection = $this->client->logs->logs;
-        // todo: do we need to add more possible level_names to this query?
-        // todo: do we need to add more to this filter than just level_name ?
-        $filter = ['level_name' => ['$in' => ['CRITICAL', 'ERROR']]];
-        // todo: we need to do toArray() in order to do a count(), is there a query for counting instead of this?
-        $errors = $collection->find($filter)->toArray();
-        
-        $errorCount = count($errors);
-        //@todo get $errorTypes from mangoDB... do a count query for each level_name ?
-        $errorTypes = [];
-
+    
+        // Count all error logs with one of these level_names
+        $errorTypes = [
+            "EMERGENCY" => $collection->count(['level_name' => ['$in' => ['EMERGENCY']]]),
+            "ALERT" => $collection->count(['level_name' => ['$in' => ['ALERT']]]),
+            "CRITICAL" => $collection->count(['level_name' => ['$in' => ['CRITICAL']]]),
+            "ERROR" => $collection->count(['level_name' => ['$in' => ['ERROR']]]),
+//            "WARNING" => $collection->count(['level_name' => ['$in' => ['WARNING']]]),
+        ];
+    
         $metrics = [
             [
                 "name"  => "app_error_count",
                 "type"  => "counter",
                 "help"  => "The amount of errors",
-                "value" => $errorCount
+                "value" => (int) $errorTypes['EMERGENCY']
+                    + $errorTypes['ALERT']
+                    + $errorTypes['CRITICAL']
+                    + $errorTypes['ERROR']
+//                    + $errorTypes['WARNING']
             ]
         ];
-
-        //create a list
-        foreach ($errorTypes as $errorType) {
+    
+        // Create a list
+        foreach ($errorTypes as $name => $count) {
             $metrics[] = [
                 [
-                    "name"=>"app_error_list",
-                    "type"=>"counter",
-                    "help"=>"The list of errors and their error level/type.",
-                    "labels"=>[
-                        // todo: change this into error_level?
-                        "error_name"=>$errorType["name"], // todo: this = error.level name (warning, error, critical)
+                    "name"   => "app_error_list",
+                    "type"   => "counter",
+                    "help"   => "The list of errors and their error level/type.",
+                    "labels" => [
+                        "error_level" => $name,
                     ],
-                    "value"=>$errorType["count"]
+                    "value"  => (int) $count
                 ]
             ];
         }
-
+    
         return $metrics;
     }// getErrors()
 
