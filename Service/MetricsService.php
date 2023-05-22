@@ -117,13 +117,13 @@ class MetricsService
                 "value" => $this->entityManager->getRepository('App:Application')->count([])
             ],
             [
-                "name"  => "app_requests", // todo: count requestlogs with unique request id
+                "name"  => "app_requests", // todo: count (request) monologs with unique request id
                 "type"  => "counter", // todo: should never get lower
                 "help"  => "The total amount of incomming requests handled by this gateway",
                 "value" => $requests
             ],
             [
-                "name"  => "app_calls", // todo: count calllogs with unique call id
+                "name"  => "app_calls", // todo: count (call) monologs with unique call id
                 "type"  => "counter",
                 "help"  => "The total amount of outgoing calls handled by this gateway",
                 "value" => $calls
@@ -151,18 +151,20 @@ class MetricsService
             "ALERT"     => $collection->count(['level_name' => ['$in' => ['ALERT']]]),
             "CRITICAL"  => $collection->count(['level_name' => ['$in' => ['CRITICAL']]]),
             "ERROR"     => $collection->count(['level_name' => ['$in' => ['ERROR']]]),
-//            "WARNING"   => $collection->count(['level_name' => ['$in' => ['WARNING']]]),
+            
+            // NOTE: The following log types are not counted towards the total number of errors:
+            "WARNING"   => $collection->count(['level_name' => ['$in' => ['WARNING']]]),
+            "NOTICE"    => $collection->count(['level_name' => ['$in' => ['NOTICE']]]),
         ];
     
         $metrics[] = [
             "name"  => "app_error_count",
             "type"  => "counter",
-            "help"  => "The amount of errors",
+            "help"  => "The amount of errors, this only includes logs with level_name 'EMERGENCY', 'ALERT', 'CRITICAL' or 'ERROR'.",
             "value" => (int) $errorTypes['EMERGENCY']
                 + $errorTypes['ALERT']
                 + $errorTypes['CRITICAL']
                 + $errorTypes['ERROR']
-//                    + $errorTypes['WARNING']
         ];
     
         // Create a list
