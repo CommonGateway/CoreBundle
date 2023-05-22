@@ -157,10 +157,10 @@ class MetricsService
         // Count all error logs with one of these level_names
         $errorTypes = [
             "EMERGENCY" => $collection->count(['level_name' => ['$in' => ['EMERGENCY']]]),
-            "ALERT" => $collection->count(['level_name' => ['$in' => ['ALERT']]]),
-            "CRITICAL" => $collection->count(['level_name' => ['$in' => ['CRITICAL']]]),
-            "ERROR" => $collection->count(['level_name' => ['$in' => ['ERROR']]]),
-//            "WARNING" => $collection->count(['level_name' => ['$in' => ['WARNING']]]),
+            "ALERT"     => $collection->count(['level_name' => ['$in' => ['ALERT']]]),
+            "CRITICAL"  => $collection->count(['level_name' => ['$in' => ['CRITICAL']]]),
+            "ERROR"     => $collection->count(['level_name' => ['$in' => ['ERROR']]]),
+//            "WARNING"   => $collection->count(['level_name' => ['$in' => ['WARNING']]]),
         ];
     
         $metrics = [
@@ -206,27 +206,27 @@ class MetricsService
 
         $metrics = [
             [
-                "name"=>"app_plugins_count",
-                "type"=>"gauge",
-                "help"=>"The amount of installed plugins",
-                "value"=>count($plugins)
+                "name"  => "app_plugins_count",
+                "type"  => "gauge",
+                "help"  => "The amount of installed plugins",
+                "value" => count($plugins)
             ]
         ];
 
 
         //create a list
-        foreach($plugins as $plugin){
+        foreach ($plugins as $plugin) {
             $metrics[] = [
                 [
-                    "name"=>"app_installed_plugins",
-                    "type"=>"gauge",
-                    "help"=>"The list of installed plugins.",
-                    "labels"=>[
-                        "plugin_name"=>$plugin["name"],
-                        "plugin_description"=>$plugin["description"],
-                        "plugin_version"=>$plugin["version"],
+                    "name"   => "app_installed_plugins",
+                    "type"   => "gauge",
+                    "help"   => "The list of installed plugins.",
+                    "labels" => [
+                        "plugin_name"        => $plugin["name"],
+                        "plugin_description" => $plugin["description"],
+                        "plugin_version"     => $plugin["version"],
                     ],
-                    "value"=>1
+                    "value"  => 1
                 ]
             ];
         }
