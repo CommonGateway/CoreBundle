@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * The Metrics controller provides an metrics endpoint that can be used by promotheus
  *
- * @Author Conduction <info@conduction.nl>
+ * Authors: Conduction <info@conduction.nl>
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
