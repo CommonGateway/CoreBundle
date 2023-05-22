@@ -103,7 +103,7 @@ Gets all installed plugins from the lock file.
 **Description**
 
 ```php
-public getSingle (array $options)
+public getSingle (string $package, array $options)
 ```
 
 Show a single package installed trough composer. 
@@ -112,6 +112,7 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 
 **Parameters**
 
+* `(string) $package`
 * `(array) $options`
 
 **Return Values**
@@ -129,7 +130,7 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 **Description**
 
 ```php
-public remove (array $options)
+public remove (string $package, array $options)
 ```
 
 Show a single package installed trough composer. 
@@ -138,6 +139,7 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 
 **Parameters**
 
+* `(string) $package`
 * `(array) $options`
 
 **Return Values**
@@ -155,7 +157,7 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 **Description**
 
 ```php
-public require (array $options)
+public require (string $package, array $options)
 ```
 
 Show a single package installed trough composer. 
@@ -164,6 +166,7 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 
 **Parameters**
 
+* `(string) $package`
 * `(array) $options`
 
 **Return Values**
@@ -181,7 +184,7 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 **Description**
 
 ```php
-public search (array $options)
+public search (string|null $search, array $options)
 ```
 
 Search for a given term. 
@@ -190,6 +193,7 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 
 **Parameters**
 
+* `(string|null) $search`
 * `(array) $options`
 
 **Return Values**
@@ -207,7 +211,7 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 **Description**
 
 ```php
-public upgrade (array $options)
+public upgrade (string $package, array $options)
 ```
 
 Show a single package installed trough composer. 
@@ -216,6 +220,7 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 
 **Parameters**
 
+* `(string) $package`
 * `(array) $options`
 
 **Return Values**
