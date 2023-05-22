@@ -160,7 +160,7 @@ class MetricsService
         $metrics[] = [
             "name"  => "app_error_count",
             "type"  => "counter",
-            "help"  => "The amount of errors, this only includes logs with level_name 'EMERGENCY', 'ALERT', 'CRITICAL' or 'ERROR'.",
+            "help"  => "The amount of errors, this only counts logs with level_name 'EMERGENCY', 'ALERT', 'CRITICAL' or 'ERROR'.",
             "value" => (int) $errorTypes['EMERGENCY']
                 + $errorTypes['ALERT']
                 + $errorTypes['CRITICAL']
