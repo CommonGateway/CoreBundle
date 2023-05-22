@@ -227,15 +227,22 @@ class MetricsService
      */
     public function getObjects(): array
     {
-        //@todo get below data from database
-        $objects = 0;
-        $schemas = [];
-
+        $collection = $this->client->objects->json;
+        
+        $schemas = $this->entityManager->getRepository('App:Entity')
+            ->findAllSelect('e.id, e.name, e.description, e.reference, e.version');
+        
         $metrics[] = [
             "name"  => "app_objects_count",
             "type"  => "gauge",
             "help"  => "The amount objects in the data layer",
-            "value" => $objects
+            "value" => $this->entityManager->getRepository('App:ObjectEntity')->count([])
+        ];
+        $metrics[] = [
+            "name"  => "app_cached_objects_count",
+            "type"  => "gauge",
+            "help"  => "The amount objects in the data layer that are stored in the MongoDB cache",
+            "value" => $collection->count([])
         ];
         $metrics[] = [
             "name"  => "app_schemas_count",
@@ -243,22 +250,26 @@ class MetricsService
             "help"  => "The amount defined schemas",
             "value" => count($schemas)
         ];
-
-        //create a list
-        foreach ($schemas as $schema){
+        
+        // Create a list
+        foreach ($schemas as $schema) {
+            $filter = ['_self.schema.id' => $schema["id"]->toString()];
+            
             $metrics[] = [
                 "name"   => "app_schemas",
                 "type"   => "gauge",
                 "help"   => "The list of defined schemas and the amount of objects.",
                 "labels" => [
-                    "schema_name"       => $schema["name"],
-                    "schema_reference"  => $schema["ref"],
+                    "schema_name"        => $schema["name"],
+                    "schema_description" => $schema["description"],
+                    "schema_reference"   => $schema["reference"],
+                    "schema_version"     => $schema["version"],
                 ],
-                "value"  => $schema->getCount() // todo: amount of objects for this schema
+                "value"  => $collection->count($filter)
             ];
         }
-
+        
         return $metrics;
-
+        
     }//end getObjects()
 }//end class
