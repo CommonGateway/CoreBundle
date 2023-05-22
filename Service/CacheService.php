@@ -305,7 +305,7 @@ class CacheService
     {
         if (Uuid::isValid($objectEntity->getOwner()) === false) {
             $this->logger->warning("User {$objectEntity->getOwner()} is not a user object but an external user.");
-            
+
             return null;
         }
 
