@@ -79,9 +79,9 @@ class PluginController extends AbstractController
     {
         $status = 200;
 
-        $packadge = $request->query->get('plugin', 'commongateway/corebundle');
+        $package = $request->query->get('plugin', 'commongateway/corebundle');
 
-        $plugins = $this->composerService->getSingle($packadge);
+        $plugins = $this->composerService->getSingle($package);
 
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
     }
@@ -93,11 +93,11 @@ class PluginController extends AbstractController
     {
         $status = 200;
 
-        if (!$packadge = $request->query->get('plugin', false)) {
+        if (!$package = $request->query->get('plugin', false)) {
             return new Response('No plugin provided as query parameters', 400, ['Content-type' => 'application/json']);
         }
 
-        $plugins = $this->composerService->require($packadge);
+        $plugins = $this->composerService->require($package);
 
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
     }
@@ -109,11 +109,11 @@ class PluginController extends AbstractController
     {
         $status = 200;
 
-        if (!$packadge = $request->query->get('plugin', false)) {
+        if (!$package = $request->query->get('plugin', false)) {
             return new Response('No plugin provided as query parameters', 400, ['Content-type' => 'application/json']);
         }
 
-        $plugins = $this->composerService->upgrade($packadge);
+        $plugins = $this->composerService->upgrade($package);
 
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
     }
@@ -125,11 +125,11 @@ class PluginController extends AbstractController
     {
         $status = 200;
 
-        if (!$packadge = $request->query->get('plugin', false)) {
+        if (!$package = $request->query->get('plugin', false)) {
             return new Response('No plugin provided as query parameters', 400, ['Content-type' => 'application/json']);
         }
 
-        $plugins = $this->composerService->remove($packadge);
+        $plugins = $this->composerService->remove($package);
 
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
     }

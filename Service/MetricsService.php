@@ -63,90 +63,81 @@ class MetricsService
             $this->client = new Client($this->parameters->get('cache_url'));
         }
     }
-
+    
     /**
      * Search for a given term.
      *
      * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
      *
-     * @param array $options
-     *
      * @return array
      */
     public function getAll(): array
     {
-        // Lets tart with a bit of default info
-        // @todo the below should come out of the db
-        $users= 1;
-        $applications = 1;
-        $organizations = 1;
+        $coreBundle = $this->composerService->getSingle('commongateway/corebundle');
 
-        // @todo the below should come out of mango
-        $requests = 1;
-        $calls = 1;
+        // @todo the below should come out of mongoDB
+        $requests = 0;
+        $calls = 0;
 
-        // @todo get this from the core bundle plugin
         $metrics = [
             [
-                "name"=>"app_version",
-                "type"=>"gauge", // todo: 3 types, we mostly use gauge and counter
-                "help"=>"The current version of the application.",
-                "value"=>"1.2.3" // todo: corebundle version, can get from composerService
+                "name"  => "app_version",
+                "type"  => "gauge",
+                "help"  => "The current version of the application.",
+                "value" => $coreBundle['version']
             ],
             [
-                "name"=>"app_name", // todo: Get name from corebundle
-                "type"=>"gauge",
-                "help"=>"The current version of the application.",
-                "value"=>"Common Gateway"
+                "name"  => "app_name",
+                "type"  => "gauge",
+                "help"  => "The name of the current version of the application.",
+                "value" => $coreBundle['name']
             ],
             [
-                "name"=>"app_description", // todo: desc corebundle
-                "type"=>"gauge",
-                "help"=>"The current version of the application.",
-                "value"=>""
+                "name"  => "app_description",
+                "type"  => "gauge",
+                "help"  => "The description of the current version of the application.",
+                "value" => $coreBundle['description']
             ],
             [
-                "name"=>"app_users", // todo: amount of user objects
-                "type"=>"gauge",
-                "help"=>"The current amount of users",
-                "value"=>$users
+                "name"  => "app_users",
+                "type"  => "gauge",
+                "help"  => "The current amount of users",
+                "value" => $this->entityManager->getRepository('App:User')->count([])
             ],
             [
-                "name"=>"app_organisations", // todo: amount of orgs
-                "type"=>"gauge",
-                "help"=>"The current amount of organisations",
-                "value"=>$organizations
+                "name"  => "app_organisations",
+                "type"  => "gauge",
+                "help"  => "The current amount of organisations",
+                "value" => $this->entityManager->getRepository('App:Organization')->count([])
             ],
             [
-                "name"=>"app_applications", // todo: amount of apps
-                "type"=>"gauge",
-                "help"=>"The current amount of applications",
-                "value"=>$applications
+                "name"  => "app_applications",
+                "type"  => "gauge",
+                "help"  => "The current amount of applications",
+                "value" => $this->entityManager->getRepository('App:Application')->count([])
             ],
             [
-                "name"=>"app_requests", // todo: count requestlogs with unique request id
-                "type"=>"counter", // todo: should never get lower
-                "help"=>"The total amount of incomming requests handled by this gateway",
-                "value"=>$requests
+                "name"  => "app_requests", // todo: count requestlogs with unique request id
+                "type"  => "counter", // todo: should never get lower
+                "help"  => "The total amount of incomming requests handled by this gateway",
+                "value" => $requests
             ],
             [
-                "name"=>"app_calls", // todo: count calllogs with unique call id
-                "type"=>"counter",
-                "help"=>"The total amount of outgoing calls handled by this gateway",
-                "value"=>$calls
+                "name"  => "app_calls", // todo: count calllogs with unique call id
+                "type"  => "counter",
+                "help"  => "The total amount of outgoing calls handled by this gateway",
+                "value" => $calls
             ],
         ];
 
         // Let get the data from the providers
         $metrics = array_merge($metrics, $this->getErrors());
         $metrics = array_merge($metrics, $this->getPlugins());
-        $metrics = array_merge($metrics, $this->getObjects());
-
-        return $metrics;
+        return array_merge($metrics, $this->getObjects());
     }//end getAll();
 
     /**
-     * Get metrics conserning errors
+     * Get metrics concerning errors
      *
      * @return array
      */
@@ -163,31 +154,27 @@ class MetricsService
 //            "WARNING"   => $collection->count(['level_name' => ['$in' => ['WARNING']]]),
         ];
     
-        $metrics = [
-            [
-                "name"  => "app_error_count",
-                "type"  => "counter",
-                "help"  => "The amount of errors",
-                "value" => (int) $errorTypes['EMERGENCY']
-                    + $errorTypes['ALERT']
-                    + $errorTypes['CRITICAL']
-                    + $errorTypes['ERROR']
+        $metrics[] = [
+            "name"  => "app_error_count",
+            "type"  => "counter",
+            "help"  => "The amount of errors",
+            "value" => (int) $errorTypes['EMERGENCY']
+                + $errorTypes['ALERT']
+                + $errorTypes['CRITICAL']
+                + $errorTypes['ERROR']
 //                    + $errorTypes['WARNING']
-            ]
         ];
     
         // Create a list
         foreach ($errorTypes as $name => $count) {
             $metrics[] = [
-                [
-                    "name"   => "app_error_list",
-                    "type"   => "counter",
-                    "help"   => "The list of errors and their error level/type.",
-                    "labels" => [
-                        "error_level" => $name,
-                    ],
-                    "value"  => (int) $count
-                ]
+                "name"   => "app_error_list",
+                "type"   => "counter",
+                "help"   => "The list of errors and their error level/type.",
+                "labels" => [
+                    "error_level" => $name,
+                ],
+                "value"  => (int) $count
             ];
         }
     
@@ -195,7 +182,7 @@ class MetricsService
     }// getErrors()
 
     /**
-     * Get metrics conserning plugins
+     * Get metrics concerning plugins
      *
      * @return array
      */
@@ -204,31 +191,27 @@ class MetricsService
         // Get all the plugins
         $plugins = $this->composerService->getAll(['--installed']);
 
-        $metrics = [
-            [
-                "name"  => "app_plugins_count",
-                "type"  => "gauge",
-                "help"  => "The amount of installed plugins",
-                "value" => count($plugins)
-            ]
+        $metrics[] = [
+            "name"  => "app_plugins_count",
+            "type"  => "gauge",
+            "help"  => "The amount of installed plugins",
+            "value" => count($plugins)
         ];
     
     
         // Create a list
         foreach ($plugins as $plugin) {
             $metrics[] = [
-                [
-                    "name"   => "app_installed_plugins",
-                    "type"   => "gauge",
-                    "help"   => "The list of installed plugins.",
-                    "labels" => [
-                        "plugin_name"        => $plugin["name"],
-                        "plugin_description" => $plugin["description"],
-                        "plugin_repository"  => $plugin["repository"],
-                        "plugin_version"     => $plugin["version"],
-                    ],
-                    "value"  => 1
-                ]
+                "name"   => "app_installed_plugins",
+                "type"   => "gauge",
+                "help"   => "The list of installed plugins.",
+                "labels" => [
+                    "plugin_name"        => $plugin["name"],
+                    "plugin_description" => $plugin["description"],
+                    "plugin_repository"  => $plugin["repository"],
+                    "plugin_version"     => $plugin["version"],
+                ],
+                "value"  => 1
             ];
         }
 
@@ -238,44 +221,40 @@ class MetricsService
 
 
     /**
-     * Get metrics conserning objects
+     * Get metrics concerning objects
      *
      * @return array
      */
     public function getObjects(): array
     {
         //@todo get below data from database
-        $objects = 1;
+        $objects = 0;
         $schemas = [];
 
-        $metrics = [
-            [
-                "name"=>"app_objects_count",
-                "type"=>"gauge",
-                "help"=>"The amount objects in the data layer",
-                "value"=>$objects
-            ],
-            [
-                "name"=>"app_schemas_count",
-                "type"=>"gauge",
-                "help"=>"The amount defined schemas",
-                "value"=>count($schemas)
-            ]
+        $metrics[] = [
+            "name"  => "app_objects_count",
+            "type"  => "gauge",
+            "help"  => "The amount objects in the data layer",
+            "value" => $objects
+        ];
+        $metrics[] = [
+            "name"  => "app_schemas_count",
+            "type"  => "gauge",
+            "help"  => "The amount defined schemas",
+            "value" => count($schemas)
         ];
 
         //create a list
-        foreach($schemas as $schema){
+        foreach ($schemas as $schema){
             $metrics[] = [
-                [
-                    "name"=>"app_schemas",
-                    "type"=>"gauge",
-                    "help"=>"The list of defined schemas and the amount of objects.",
-                    "labels"=>[
-                        "schema_name"=>$schema["name"],
-                        "schema_reference"=>$schema["ref"],
-                    ],
-                    "value"=>$schema->getCount() // todo: amount of objects for this schema
-                ]
+                "name"   => "app_schemas",
+                "type"   => "gauge",
+                "help"   => "The list of defined schemas and the amount of objects.",
+                "labels" => [
+                    "schema_name"       => $schema["name"],
+                    "schema_reference"  => $schema["ref"],
+                ],
+                "value"  => $schema->getCount() // todo: amount of objects for this schema
             ];
         }
 
