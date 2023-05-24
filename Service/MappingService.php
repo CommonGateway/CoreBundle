@@ -171,6 +171,8 @@ class MappingService
         // Back to array
         $output = $dotArray->all();
 
+        $input = $this->encodeArrayKeys($input, '&#46;', '.');
+
         // If something has been defined to work on root level (i.e. the object lives on root level), we can use # to define writing the root object.
         $keys = array_keys($output);
         if (count($keys) === 1 && $keys[0] === '#') {
