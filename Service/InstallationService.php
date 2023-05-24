@@ -111,6 +111,8 @@ class InstallationService
     ];
 
     /**
+     * The constructor sets al needed variables
+     *
      * @codeCoverageIgnore We do not need to test constructors
      *
      * @param ComposerService        $composerService    The Composer service

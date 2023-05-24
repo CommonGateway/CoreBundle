@@ -226,6 +226,10 @@ class EndpointService
      */
     public function decodeBody(): ?array
     {
+        if(empty($this->request->getContent()) === true) {
+            return [];
+        }
+
         // Get the content type.
         $this->logger->info('Decoding body');
         $contentType = $this->request->getContentType();

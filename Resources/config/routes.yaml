@@ -1,0 +1,4 @@
+commongateway_core_metrics:
+    resource: "@CoreBundle/Controller/MetricsController.php"
+    prefix:   /
+    type:     annotation
