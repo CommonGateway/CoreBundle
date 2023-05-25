@@ -6,6 +6,7 @@ use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\ObjectEntity;
 use App\Entity\User;
+use App\Service\ObjectEntityService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
@@ -70,6 +71,8 @@ class CacheService
      */
     private SerializerInterface $serializer;
 
+    private ObjectEntityService $objectEntityService;
+
     /**
      * @param EntityManagerInterface $entityManager The entity manager
      * @param CacheInterface         $cache         The cache interface
@@ -82,13 +85,15 @@ class CacheService
         CacheInterface $cache,
         LoggerInterface $cacheLogger,
         ParameterBagInterface $parameters,
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        ObjectEntityService $objectEntityService
     ) {
         $this->entityManager = $entityManager;
         $this->cache = $cache;
         $this->logger = $cacheLogger;
         $this->parameters = $parameters;
         $this->serializer = $serializer;
+        $this->objectEntityService = $objectEntityService;
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }
@@ -207,7 +212,7 @@ class CacheService
         $endpoints = $collection->find()->toArray();
         foreach ($endpoints as $endpoint) {
             if (!$this->entityManager->find($type, $endpoint['_id'])) {
-                isset($this->io) ?? $this->io->writeln("removing {$endpoint['_id']} from cache");
+                    isset($this->io) ?? $this->io->writeln("removing {$endpoint['_id']} from cache");
                 $collection->findOneAndDelete(['id' => $endpoint['_id']]);
             }
         }
@@ -223,9 +228,9 @@ class CacheService
     private function ioCatchException(Exception $exception)
     {
         $this->logger->error($exception->getMessage());
-        isset($this->io) ?? $this->io->warning($exception->getMessage());
-        isset($this->io) ?? $this->io->block("File: {$exception->getFile()}, Line: {$exception->getLine()}");
-        isset($this->io) ?? $this->io->block("Trace: {$exception->getTraceAsString()}");
+            isset($this->io) ?? $this->io->warning($exception->getMessage());
+            isset($this->io) ?? $this->io->block("File: {$exception->getFile()}, Line: {$exception->getLine()}");
+            isset($this->io) ?? $this->io->block("Trace: {$exception->getTraceAsString()}");
     }
 
     /**
@@ -262,7 +267,7 @@ class CacheService
         $collection = $this->client->objects->json;
 
         // Lets not cash the entire schema
-        $array = $objectEntity->toArray(['embedded' => true, 'user' => $this->getObjectUser($objectEntity)]);
+        $array = $this->objectEntityService->toArray($objectEntity, ['embedded' => true, 'user' => $this->getObjectUser($objectEntity)]);
 
         //(isset($array['_schema']['$id'])?$array['_schema'] = $array['_schema']['$id']:'');
 
@@ -537,7 +542,7 @@ class CacheService
                     $after = array_key_exists('strictly_after', $value) ? 'strictly_after' : 'after';
                     $compareDate = new DateTime($value[$after]);
                     $compareKey = $after === 'strictly_after' ? '$gt' : '$gte';
-                    
+
                     // Todo: add in someway an option for comparing string datetime or mongoDB datetime.
                     // $newValue["$compareKey"] = new UTCDateTime($compareDate);
                     $newValue["$compareKey"] = "{$compareDate->format('c')}";
@@ -546,7 +551,7 @@ class CacheService
                     $before = array_key_exists('strictly_before', $value) ? 'strictly_before' : 'before';
                     $compareDate = new DateTime($value[$before]);
                     $compareKey = $before === 'strictly_before' ? '$lt' : '$lte';
-    
+
                     // Todo: add in someway an option for comparing string datetime or mongoDB datetime.
                     // $newValue["$compareKey"] = new UTCDateTime($compareDate);
                     $newValue["$compareKey"] = "{$compareDate->format('c')}";

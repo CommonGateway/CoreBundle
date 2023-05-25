@@ -1013,7 +1013,7 @@ class RequestService
         foreach ($objectEntities as $objectEntity) {
             $response[] = [
                 'entity'       => $objectEntity->getEntity()->toSchema(null),
-                'objectEntity' => $objectEntity->toArray(),
+                'objectEntity' => $objectEntityService->toArray($objectEntity),
             ];
         }
 
