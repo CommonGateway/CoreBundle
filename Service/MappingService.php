@@ -78,7 +78,7 @@ class MappingService
 
         return $result;
     }//end encodeArrayKeys()
-    
+
     /**
      * Maps (transforms) an array (input) to a different array (output).
      *
@@ -96,7 +96,7 @@ class MappingService
         if ($list === true) {
             $list = [];
             $extraValues = [];
-            
+
             // Allow extra(input)values to be passed down for mapping while dealing with a list
             if (array_key_exists('listInput', $input) === true) {
                 $extraValues = $input;
@@ -110,7 +110,7 @@ class MappingService
                 }
                 $list[$key] = $this->mapping($mappingObject, $value);
             }
-        
+
             return $list;
         }
 
@@ -164,7 +164,7 @@ class MappingService
                 }
                 continue;
             }
-            
+
             $this->handleCast($dotArray, $key, $cast);
         }
 
@@ -189,7 +189,7 @@ class MappingService
 
         return $output;
     }
-    
+
     /**
      * Handles a single cast.
      *
@@ -202,13 +202,13 @@ class MappingService
     private function handleCast(Dot $dotArray, string $key, string $cast)
     {
         $value = $dotArray->get($key);
-    
+
         // todo: this works, we should go to php 8.0 later
         if (str_starts_with($cast, 'unsetIfValue==')) {
             $unsetIfValue = substr($cast, 14);
             $cast = 'unsetIfValue';
         }
-    
+
         // Todo: Add more casts
         switch ($cast) {
             case 'int':
@@ -232,7 +232,10 @@ class MappingService
                 }
                 break;
             case 'unsetIfValue':
-                if (isset($unsetIfValue) === true && $value == $unsetIfValue) {
+                if (isset($unsetIfValue) === true
+                    && $value == $unsetIfValue
+                    || ($unsetIfValue === '' && empty($value))
+                ) {
                     $dotArray->delete($key);
                 }
                 break;
@@ -247,7 +250,7 @@ class MappingService
                 isset($this->io) ?? $this->io->debug('Trying to cast to an unsupported cast type: '.$cast);
                 break;
         }
-    
+
         // Don't reset key that was deleted on purpose
         if ($dotArray->has($key)) {
             $dotArray->set($key, $value);

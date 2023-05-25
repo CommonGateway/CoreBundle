@@ -585,7 +585,10 @@ class RequestService
                 }
 
                 $this->object = new ObjectEntity($this->schema);
-                $this->object->setOwner($this->security->getUser()->getUserIdentifier());
+
+                if($this->security->getUser() !== null) {
+                    $this->object->setOwner($this->security->getUser()->getUserIdentifier());
+                }
 
                 $this->logger->debug('Hydrating object');
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
