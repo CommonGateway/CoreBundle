@@ -78,7 +78,7 @@ class MappingService
 
         return $result;
     }//end encodeArrayKeys()
-    
+
     /**
      * Maps (transforms) an array (input) to a different array (output).
      *
@@ -96,7 +96,7 @@ class MappingService
         if ($list === true) {
             $list = [];
             $extraValues = [];
-            
+
             // Allow extra(input)values to be passed down for mapping while dealing with a list
             if (array_key_exists('listInput', $input) === true) {
                 $extraValues = $input;
@@ -110,22 +110,22 @@ class MappingService
                 }
                 $list[$key] = $this->mapping($mappingObject, $value);
             }
-        
+
             return $list;
         }
 
         $input = $this->encodeArrayKeys($input, '.', '&#46;');
 
-        isset($this->io) ?? $this->io->debug('Mapping array based on mapping object '.$mappingObject->getName().' (id:'.$mappingObject->getId()->toString().' / ref:'.$mappingObject->getReference().') v:'.$mappingObject->getversion());
+            isset($this->io) ?? $this->io->debug('Mapping array based on mapping object '.$mappingObject->getName().' (id:'.$mappingObject->getId()->toString().' / ref:'.$mappingObject->getReference().') v:'.$mappingObject->getversion());
 
         // Determine pass trough
         // Let's get the dot array based on https://github.com/adbario/php-dot-notation
         if ($mappingObject->getPassTrough()) {
             $dotArray = new Dot($input);
-            isset($this->io) ?? $this->io->debug('Mapping *with* pass trough');
+                isset($this->io) ?? $this->io->debug('Mapping *with* pass trough');
         } else {
             $dotArray = new Dot();
-            isset($this->io) ?? $this->io->debug('Mapping *without* pass trough');
+                isset($this->io) ?? $this->io->debug('Mapping *without* pass trough');
         }
 
         $dotInput = new Dot($input);
@@ -145,7 +145,7 @@ class MappingService
         // Unset unwanted key's
         foreach ($mappingObject->getUnset() as $unset) {
             if (!$dotArray->has($unset)) {
-                isset($this->io) ?? $this->io->debug("Trying to unset an property that doesn't exist during mapping");
+                    isset($this->io) ?? $this->io->debug("Trying to unset an property that doesn't exist during mapping");
                 continue;
             }
             $dotArray->delete($unset);
@@ -154,7 +154,7 @@ class MappingService
         // Cast values to a specific type
         foreach ($mappingObject->getCast() as $key => $cast) {
             if (!$dotArray->has($key)) {
-                isset($this->io) ?? $this->io->debug("Trying to cast an property that doesn't exist during mapping");
+                    isset($this->io) ?? $this->io->debug("Trying to cast an property that doesn't exist during mapping");
                 continue;
             }
 
@@ -164,7 +164,7 @@ class MappingService
                 }
                 continue;
             }
-            
+
             $this->handleCast($dotArray, $key, $cast);
         }
 
@@ -180,7 +180,7 @@ class MappingService
         }
 
         // Log the result
-        isset($this->io) ?? $this->io->debug('Mapped object', [
+            isset($this->io) ?? $this->io->debug('Mapped object', [
             'input'      => $input,
             'output'     => $output,
             'passTrough' => $mappingObject->getPassTrough(),
@@ -189,7 +189,7 @@ class MappingService
 
         return $output;
     }
-    
+
     /**
      * Handles a single cast.
      *
@@ -202,13 +202,13 @@ class MappingService
     private function handleCast(Dot $dotArray, string $key, string $cast)
     {
         $value = $dotArray->get($key);
-    
+
         // todo: this works, we should go to php 8.0 later
         if (str_starts_with($cast, 'unsetIfValue==')) {
             $unsetIfValue = substr($cast, 14);
             $cast = 'unsetIfValue';
         }
-    
+
         // Todo: Add more casts
         switch ($cast) {
             case 'int':
@@ -232,7 +232,10 @@ class MappingService
                 }
                 break;
             case 'unsetIfValue':
-                if (isset($unsetIfValue) === true && $value == $unsetIfValue) {
+                if (isset($unsetIfValue) === true
+                    && $value == $unsetIfValue
+                    || ($unsetIfValue === '' && empty($value))
+                ) {
                     $dotArray->delete($key);
                 }
                 break;
@@ -244,10 +247,10 @@ class MappingService
                 $value = $this->coordinateStringToArray($value);
                 break;
             default:
-                isset($this->io) ?? $this->io->debug('Trying to cast to an unsupported cast type: '.$cast);
+                    isset($this->io) ?? $this->io->debug('Trying to cast to an unsupported cast type: '.$cast);
                 break;
         }
-    
+
         // Don't reset key that was deleted on purpose
         if ($dotArray->has($key)) {
             $dotArray->set($key, $value);
