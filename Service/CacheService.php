@@ -10,6 +10,7 @@ use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
+use MongoDB\BSON\UTCDateTime;
 use MongoDB\Client;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
@@ -530,17 +531,27 @@ class CacheService
             }
             // after, before, strictly_after,strictly_before
             if (!empty(array_intersect_key($value, array_flip(['after', 'before', 'strictly_after', 'strictly_before'])))) {
+                $newValue = null;
                 // Compare datetime
                 if (!empty(array_intersect_key($value, array_flip(['after', 'strictly_after'])))) {
                     $after = array_key_exists('strictly_after', $value) ? 'strictly_after' : 'after';
                     $compareDate = new DateTime($value[$after]);
                     $compareKey = $after === 'strictly_after' ? '$gt' : '$gte';
-                } else {
+                    
+                    // Todo: add in someway an option for comparing string datetime or mongoDB datetime.
+                    // $newValue["$compareKey"] = new UTCDateTime($compareDate);
+                    $newValue["$compareKey"] = "{$compareDate->format('c')}";
+                }
+                if (!empty(array_intersect_key($value, array_flip(['before', 'strictly_before'])))) {
                     $before = array_key_exists('strictly_before', $value) ? 'strictly_before' : 'before';
                     $compareDate = new DateTime($value[$before]);
                     $compareKey = $before === 'strictly_before' ? '$lt' : '$lte';
+    
+                    // Todo: add in someway an option for comparing string datetime or mongoDB datetime.
+                    // $newValue["$compareKey"] = new UTCDateTime($compareDate);
+                    $newValue["$compareKey"] = "{$compareDate->format('c')}";
                 }
-                $value = ["$compareKey" => "{$compareDate->format('c')}"];
+                $value = $newValue;
 
                 return true;
             }
