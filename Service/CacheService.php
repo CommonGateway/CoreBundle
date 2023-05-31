@@ -18,6 +18,7 @@ use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -537,7 +538,7 @@ class CacheService
                     $after = array_key_exists('strictly_after', $value) ? 'strictly_after' : 'after';
                     $compareDate = new DateTime($value[$after]);
                     $compareKey = $after === 'strictly_after' ? '$gt' : '$gte';
-                    
+
                     // Todo: add in someway an option for comparing string datetime or mongoDB datetime.
                     // $newValue["$compareKey"] = new UTCDateTime($compareDate);
                     $newValue["$compareKey"] = "{$compareDate->format('c')}";
@@ -546,7 +547,7 @@ class CacheService
                     $before = array_key_exists('strictly_before', $value) ? 'strictly_before' : 'before';
                     $compareDate = new DateTime($value[$before]);
                     $compareKey = $before === 'strictly_before' ? '$lt' : '$lte';
-    
+
                     // Todo: add in someway an option for comparing string datetime or mongoDB datetime.
                     // $newValue["$compareKey"] = new UTCDateTime($compareDate);
                     $newValue["$compareKey"] = "{$compareDate->format('c')}";
@@ -897,7 +898,7 @@ class CacheService
 
         $collection = $this->client->endpoints->json;
 
-        $endpointArray = $this->serializer->normalize($endpoint);
+        $endpointArray = $this->serializer->normalize($endpoint, null, [AbstractNormalizer::IGNORED_ATTRIBUTES => ['object', 'inversedBy']]);
         $endpointArray['_id'] = $endpointArray['id'];
 
         if ($collection->findOneAndReplace(
