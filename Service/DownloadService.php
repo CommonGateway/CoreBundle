@@ -3,6 +3,7 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Template;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Dompdf;
@@ -24,13 +25,15 @@ class DownloadService
 
     public function render(array $data): string
     {
-        $criteria = Criteria::create()->where(Criteria::expr()->contains('supportedSchemas', $data['_self']['schema']['reference']));
-        $templates = $this->entityManager->getRepository('CoreBundle:Template')->matching($criteria);
+        $criteria = Criteria::create()->where(Criteria::expr()->memberOf("supportedSchemas", $data['_self']['schema']['ref']));
 
-        if(count($templates) === 0) {
+        $templates = new ArrayCollection($this->entityManager->getRepository('App:Template')->findAll());
+        $templates = $templates->matching($criteria);
+
+        if($templates->count() === 0) {
             $this->logger->error('There is no render template for this type of object.');
             throw new BadRequestException('There is no render template for this type of object.', 406);
-        } elseif (count($templates) > 1) {
+        } elseif ($templates->count() > 1) {
             $this->logger->warning('There are more than 1 templates for this object, resolving by rendering the first template found.');
         }
 
@@ -39,7 +42,10 @@ class DownloadService
             return '';
         }
 
-        return $this->twig->createTemplate($template->getContent())->render($data);
+        $twigTemplate = $this->twig->createTemplate($template->getContent());
+        $content = $twigTemplate->render(['object' => $data]);
+
+        return $content;
     }
 
     public function downloadPdf(array $data): string
@@ -51,6 +57,6 @@ class DownloadService
         $pdfWriter->loadHtml($raw);
         $pdfWriter->render();
 
-        return $pdfWriter->stream();
+        return $pdfWriter->output();
     }
 }
