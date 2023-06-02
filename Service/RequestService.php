@@ -54,6 +54,7 @@ class RequestService
     private SerializerInterface $serializer;
     private SessionInterface $session;
     private LoggerInterface $logger;
+    private DownloadService $downloadService;
 
     /**
      * @param EntityManagerInterface   $entityManager
@@ -79,7 +80,8 @@ class RequestService
         EventDispatcherInterface $eventDispatcher,
         SerializerInterface $serializer,
         SessionInterface $session,
-        LoggerInterface $requestLogger
+        LoggerInterface $requestLogger,
+        DownloadService $downloadService
     ) {
         $this->entityManager = $entityManager;
         $this->cacheService = $cacheService;
@@ -92,6 +94,7 @@ class RequestService
         $this->serializer = $serializer;
         $this->session = $session;
         $this->logger = $requestLogger;
+        $this->downloadService = $downloadService;
     }
 
     /**
@@ -115,9 +118,9 @@ class RequestService
 
 //        @TODO: Create hal and ld encoding
         switch ($accept) {
-//            case 'pdf':
-//                $content = $this->downloadService->download($data);
-//                break;
+            case 'pdf':
+                $content = $this->downloadService->downloadPdf($data);
+                break;
             case 'xml':
                 $content = $xmlEncoder->encode($data, 'xml');
                 break;
