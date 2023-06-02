@@ -179,6 +179,8 @@ class EndpointService
         // Determine the accept type.
         $this->logger->debug('Determine accept type from accept header');
         switch ($acceptHeader) {
+            case 'application/pdf':
+                return 'pdf';
             case 'application/json':
                 return 'json';
             case 'application/json+hal':

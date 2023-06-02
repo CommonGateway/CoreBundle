@@ -105,31 +105,25 @@ class RequestService
     public function serializeData(array $data, &$contentType): string
     {
 
-        $accept   = 'application/json';
+        $accept   = $this->data['accept'];
 
         if (isset($this->data['endpoint']) === true) {
             $endpoint = $this->data['endpoint'];
-        }
-
-        if (isset($this->data['headers']['accept']) === true) {
-            $accept = $this->data['headers']['accept'][0];
-        } elseif ($endpoint instanceof Endpoint && $endpoint->getDefaultContentType() !== null) {
-            $accept = $endpoint->getDefaultContentType();
         }
 
         $xmlEncoder = new XmlEncoder([]);
 
 //        @TODO: Create hal and ld encoding
         switch ($accept) {
-            case 'application/xml':
-            case 'text/xml':
+//            case 'pdf':
+//                $content = $this->downloadService->download($data);
+//                break;
+            case 'xml':
                 $content = $xmlEncoder->encode($data, 'xml');
                 break;
-            case 'application/json+ld':
-            case 'application/ld+json':
-            case 'application/json+hal':
-            case 'application/hal+json':
-            case 'application/json':
+            case 'jsonld':
+            case 'jsonhal':
+            case 'json':
             default:
                 $content = \Safe\json_encode($data);
         }
@@ -142,7 +136,14 @@ class RequestService
 //            throw new NotAcceptableHttpException('The content type is not accepted for this endpoint');
 //        }
 
-        $contentType = $accept;
+        if (isset($this->data['headers']['accept']) === true && $this->data['headers']['accept'][0] !== '*/*') {
+            $contentType = $this->data['headers']['accept'][0];
+        } elseif ($endpoint instanceof Endpoint && $endpoint->getDefaultContentType() !== null) {
+            $contentType = $endpoint->getDefaultContentType();
+        } elseif (isset($this->data['headers']['accept']) === true && $this->data['headers']['accept'][0] === '*/*') {
+            $contentType = 'application/json';
+        }
+
         return $content;
     }
 
