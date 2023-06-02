@@ -136,11 +136,11 @@ class RequestService
 //            throw new NotAcceptableHttpException('The content type is not accepted for this endpoint');
 //        }
 
-        if (isset($this->data['headers']['accept']) === true && $this->data['headers']['accept'] !== '*/*') {
+        if (isset($this->data['headers']['accept']) === true && $this->data['headers']['accept'][0] !== '*/*') {
             $contentType = $this->data['headers']['accept'][0];
         } elseif ($endpoint instanceof Endpoint && $endpoint->getDefaultContentType() !== null) {
             $contentType = $endpoint->getDefaultContentType();
-        } elseif (isset($this->data['headers']['accept']) === true && $this->data['headers']['accept'] === '*/*') {
+        } elseif (isset($this->data['headers']['accept']) === true && $this->data['headers']['accept'][0] === '*/*') {
             $contentType = 'application/json';
         }
 
