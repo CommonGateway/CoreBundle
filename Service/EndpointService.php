@@ -289,12 +289,7 @@ class EndpointService
         if ($this->endpoint->getProxy() !== null && in_array("{route}", $path) === true) {
             $parameters['path'] = $this->getProxyPath($parameters);
         } else {
-            try {
-                $parameters['path'] = array_combine($path, explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
-            } catch (Exception $exception) {
-                array_pop($path); // Todo: not sure why this is here, if someone does now, please add inline comments!
-                $parameters['path'] = array_combine($path, explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
-            }
+            $parameters['path'] = $this->getNormalPath($parameters);
         }
 
         $this->logger->debug('Get the query string');
@@ -323,6 +318,35 @@ class EndpointService
     }//end getParametersFromRequest()
     
     /**
+     * Gets and returns the correct path array for a normal endpoint.
+     *
+     * @param array $parameters An array of parameters containing at least the key pathRaw.
+     *
+     * @return array The path array for a normal endpoint.
+     */
+    private function getNormalPath(array $parameters): array
+    {
+        $path = $this->endpoint->getPath();
+        
+        try {
+            $combinedArray = array_combine($path, explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
+        } catch (Exception $exception) {
+            $this->logger->error("EndpointService->getNormalPath(): $exception");
+            
+            array_pop($path); // Todo: not sure why this is here, if someone does now, please add inline comments!
+            $combinedArray = array_combine($path, explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
+        }
+        
+        if ($combinedArray === false) {
+            $this->logger->error("EndpointService->getNormalPath(): Failed to construct the parameters path array for the current endpoint.");
+            
+            $combinedArray = [];
+        }
+        
+        return $combinedArray;
+    }//end getNormalPath()
+    
+    /**
      * Gets and returns the correct path array for a proxy endpoint.
      *
      * @param array $parameters An array of parameters containing at least the key pathRaw.
@@ -339,13 +363,16 @@ class EndpointService
         $matchesCount = preg_match($regex, $pathRaw, $matches);
         
         if ($matchesCount != 1) {
-            return array_combine($path, explode('/', str_replace('/api/', '', $pathRaw)));
+            $this->logger->error("EndpointService->getProxyPath(): Failed to find correct proxy endpoint in pathRaw string, trying to get normal endpoint path instead...");
+
+            return $this->getNormalPath($parameters);
         }
         $endpoint = $matches[1];
         
-        // Str_replace endpoint for proxy from the pathRaw, str_replace the default /api/ & explode what is left for $parametersPath.
+        // Ltrim the default /api/ & Str_replace endpoint for proxy from the pathRaw & explode what is left for $parametersPath.
+        $pathRaw = ltrim($pathRaw, '/api');
         $pathRaw = str_replace("/$endpoint", '', $pathRaw);
-        $explodedPathRaw = explode('/', str_replace('/api/', '', $pathRaw));
+        $explodedPathRaw = explode('/',  $pathRaw);
         
         // Add endpoint for proxy to $explodedPathRaw
         $explodedPathRaw[] = $endpoint;
