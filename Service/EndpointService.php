@@ -344,7 +344,7 @@ class EndpointService
         }
         
         return $combinedArray;
-    }
+    }//end getNormalPath()
     
     /**
      * Gets and returns the correct path array for a proxy endpoint.
