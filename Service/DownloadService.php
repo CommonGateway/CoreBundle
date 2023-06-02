@@ -18,7 +18,7 @@ class DownloadService
 
     public function __construct(EntityManagerInterface $entityManager, LoggerInterface $requestLogger, Environment $twig) {
         $this->entityManager = $entityManager;
-        $this->logger        = $logger;
+        $this->logger        = $requestLogger;
         $this->twig          = $twig;
     }
 
