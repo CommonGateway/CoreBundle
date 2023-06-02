@@ -286,7 +286,7 @@ class EndpointService
         $parameters['pathRaw'] = $this->request->getPathInfo();
 
         $this->logger->debug('Split the path into an array');
-    
+
         $path = $this->endpoint->getPath();
         if ($this->endpoint->getProxy() !== null && in_array("{route}", $path) === true) {
             $parameters['path'] = $this->getProxyPath($parameters);
@@ -323,7 +323,7 @@ class EndpointService
 
         return $parameters;
     }//end getParametersFromRequest()
-    
+
     /**
      * Gets and returns the correct path array for a proxy endpoint.
      *
@@ -335,23 +335,23 @@ class EndpointService
     {
         $path = $this->endpoint->getPath();
         $pathRaw = $parameters['pathRaw'];
-        
+
         // Use Path to create a regex and get endpoint for the proxy from the pathRaw.
         $regex = str_replace('{route}', '([^.*]*)', ("/\/api\/" . implode('\/', $path) . "/"));
         $matchesCount = preg_match($regex, $pathRaw, $matches);
-        
+
         if ($matchesCount != 1) {
             return array_combine($path, explode('/', str_replace('/api/', '', $pathRaw)));
         }
         $endpoint = $matches[1];
-        
+
         // Str_replace endpoint for proxy from the pathRaw, str_replace the default /api/ & explode what is left for $parametersPath.
         $pathRaw = str_replace("/$endpoint", '', $pathRaw);
         $explodedPathRaw = explode('/', str_replace('/api/', '', $pathRaw));
-        
+
         // Add endpoint for proxy to $explodedPathRaw
         $explodedPathRaw[] = $endpoint;
-        
+
         return array_combine($path, $explodedPathRaw);
     }//end getProxyPath()
 }//end class
