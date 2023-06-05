@@ -4,6 +4,7 @@ namespace CommonGateway\CoreBundle\Service;
 
 use App\Service\SynchronizationService;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Handles incoming notification api-calls by finding or creating a synchronization and synchronizing an object.
@@ -63,8 +64,8 @@ class NotificationService
     
         $this->logger->debug("NotificationService -> notificationHandler()");
         
-        $data['response'] = ["Message" => "OK"];
+        $data['response'] = new Response(json_encode(["Message" => "OK"]), 200, ['Content-type' => 'application/json']);
 
         return $data;
-    }//end proxyRequestHandler()
+    }//end notificationHandler()
 }
