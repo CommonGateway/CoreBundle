@@ -25,7 +25,6 @@ class DownloadService
 
     public function render(array $data): string
     {
-        var_dump($data['_self']['schema']['id']);
         $criteria = Criteria::create()->where(Criteria::expr()->memberOf("supportedSchemas", $data['_self']['schema']['id']));
 
         $templates = new ArrayCollection($this->entityManager->getRepository('App:Template')->findAll());
