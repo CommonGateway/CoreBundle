@@ -98,6 +98,33 @@ class GatewayResourceService
 
         return $source;
     }//end getSource()
+    
+    /**
+     * Find all sources that have a location that match the specified url.
+     *
+     * @param string $url  The url we are trying to find a matching source for.
+     * @param string $pluginName The name of the plugin that requests these resources.
+     *
+     * @return array|null
+     */
+    public function findSourcesForUrl(string $url, string $pluginName): ?array
+    {
+        $sources = [];
+        $allSources = $this->entityManager->getRepository('App:Gateway')->findAll();
+        
+        foreach ($allSources as $source) {
+            // todo: this works, we should go to php 8.0 later
+            if (empty($source->getLocation()) === false && str_contains($url, $source->getLocation())) {
+                $sources[] = $source;
+            }
+        }
+        
+        if (empty($sources) === true) {
+            $this->pluginLogger->error("No sources found for $url.", ['plugin'=>$pluginName]);
+        }//end if
+        
+        return $sources;
+    }//end getSource()
 
     /**
      * Get a endpoint by reference.
