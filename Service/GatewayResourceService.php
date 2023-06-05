@@ -125,7 +125,7 @@ class GatewayResourceService
         }//end if
         
         return $sources;
-    }//end getSource()
+    }//end findSourcesForUrl()
 
     /**
      * Get a endpoint by reference.
