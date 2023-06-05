@@ -582,6 +582,7 @@ class CallService
                     isset($decodedResponse['data']) && $decodedResponse['data'] === [] ||
                     isset($decodedResponse['results']) && $decodedResponse['results'] === [] ||
                     isset($decodedResponse['items']) && $decodedResponse['items'] == [] ||
+                    isset($decodedResponse['result']['instance']['rows']) && $decodedResponse['result']['instance']['rows'] == [] ||
                     isset($decodedResponse['page']) && $decodedResponse['page'] !== $pageCount - 1 ||
                     $decodedResponse == $previousResult
                 ) {
@@ -599,6 +600,8 @@ class CallService
                 $results = array_merge($decodedResponse['items'], $results);
             } elseif (isset($decodedResponse['data'])) {
                 $results = array_merge($decodedResponse['data'], $results);
+            } elseif (isset($decodedResponse['result']['instance']['rows'])) {
+                $results = array_merge($decodedResponse['result']['instance']['rows'], $results);
             } elseif (isset($decodedResponse[0])) {
                 $results = array_merge($decodedResponse, $results);
             }
