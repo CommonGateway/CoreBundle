@@ -86,7 +86,7 @@ class NotificationService
         $source = $sources[0];
         
         // todo: get correct entity from notification data
-        $entity = null;
+        $entity = null; // todo: get from configuration.
         
         // todo: get (source) id from notification data
         $id = null;
