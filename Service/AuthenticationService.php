@@ -323,18 +323,18 @@ class AuthenticationService
             'clientSecret' => $source->getPassword(),
         ];
 
-        if(isset($authenticationConfig['case']) === true && $authenticationConfig['case'] === 'snake_case') {
+        if (isset($authenticationConfig['case']) === true && $authenticationConfig['case'] === 'snake_case') {
             $credentials = [
                 'client_id'     => $source->getUsername(),
                 'client_secret' => $source->getPassword(),
             ];
         }
 
-        if(isset($authenticationConfig['additionalFields']) === true) {
+        if (isset($authenticationConfig['additionalFields']) === true) {
             $credentials = array_merge($credentials, $authenticationConfig['additionalFields']);
         }
 
-        switch($source->getAuthorizationPassthroughMethod()) {
+        switch ($source->getAuthorizationPassthroughMethod()) {
             case 'query':
                 $config['query'] = $credentials;
                 break;
