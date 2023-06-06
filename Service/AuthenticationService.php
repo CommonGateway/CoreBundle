@@ -305,18 +305,28 @@ class AuthenticationService
 
     }//end getPinkToken
 
+    /**
+     * Sends a post with authentication info to an OAuth Token Endpoint to fetch an authentication token.
+     *
+     * @param Source $source The source to authenticate for.
+     *
+     * @return string The authentication token.
+     *
+     * @throws \Safe\Exceptions\JsonException Thrown if the result can not be json decoded.
+     */
     private function getOauthToken(Source $source): string
     {
         $authenticationConfig = $source->getAuthenticationConfig();
-        if(isset($authenticationConfig['fieldCase']) === true && $authenticationConfig['fieldCase'] === 'snake_case') {
+
+        $credentials = [
+            'clientId'     => $source->getUsername(),
+            'clientSecret' => $source->getPassword(),
+        ];
+
+        if(isset($authenticationConfig['case']) === true && $authenticationConfig['case'] === 'snake_case') {
             $credentials = [
                 'client_id'     => $source->getUsername(),
                 'client_secret' => $source->getPassword(),
-            ];
-        } else {
-            $credentials = [
-                'clientId'     => $source->getUsername(),
-                'clientSecret' => $source->getPassword(),
             ];
         }
 
@@ -335,7 +345,7 @@ class AuthenticationService
             default:
                 $config['body'] = \Safe\json_encode($credentials);
                 break;
-        }
+        }//end switch
 
         $guzzleConfig = $source->getConfiguration();
         $client = new Client($guzzleConfig);
@@ -344,7 +354,7 @@ class AuthenticationService
         $result = \Safe\json_decode($response->getBody()->getContents(), true);
 
         return $result[$authenticationConfig['tokenField']];
-    }
+    }//end getOauthToken()
 
     /**
      * Checks from which type of auth we need to fetch a token from.
