@@ -2,6 +2,7 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use Adbar\Dot;
 use App\Service\SynchronizationService;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
@@ -74,7 +75,8 @@ class NotificationService
         $this->logger->debug("NotificationService -> notificationHandler()");
         
         // Find source by resource url from the notification
-        $url = $data[$configuration['urlLocation']];
+        $dot = new Dot($data);
+        $url = $dot->get($configuration['urlLocation']);
         $sources = $this->gatewayResourceService->findSourcesForUrl($url, 'commongateway/corebundle');
         if (count($sources) === 0) {
             $response = ["Message" => "Could not find a Source with this url: $url"];
@@ -88,9 +90,9 @@ class NotificationService
         $source = $sources[0];
         
         // Get the correct Entity
-        $entity = $this->gatewayResourceService->getSchema($data[$configuration['entity']], 'commongateway/corebundle');
+        $entity = $this->gatewayResourceService->getSchema($configuration['entity'], 'commongateway/corebundle');
         if ($entity === null) {
-            $response = ["Message" => "Could not find an Entity with this reference: ".$data[$configuration['entity']]];
+            $response = ["Message" => "Could not find an Entity with this reference: {$configuration['entity']}"];
             return ["response" => new Response(json_encode($response), 500, ['Content-type' => 'application/json'])];
         }
         
