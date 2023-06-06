@@ -110,7 +110,6 @@ class RequestService
 
         $accept   = $this->data['accept'];
 
-        $endpoint = null;
         if (isset($this->data['endpoint']) === true) {
             $endpoint = $this->data['endpoint'];
         }
