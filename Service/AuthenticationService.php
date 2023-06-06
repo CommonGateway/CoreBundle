@@ -349,7 +349,7 @@ class AuthenticationService
 
         $guzzleConfig = $source->getConfiguration();
         $client = new Client($guzzleConfig);
-        $response = $client->post($source->getLocation().$authenticationConfig['tokenPath'], $config);
+        $response = $client->post($authenticationConfig['tokenPath'], $config);
 
         $result = \Safe\json_decode($response->getBody()->getContents(), true);
 
