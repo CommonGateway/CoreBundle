@@ -69,6 +69,10 @@ class NotificationService
      */
     public function notificationHandler(array $data, array $configuration): array
     {
+        if ($data['method'] !== "POST") {
+            return $data;
+        }
+        
         $this->data          = $data;
         $this->configuration = $configuration;
     
