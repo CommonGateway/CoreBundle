@@ -86,14 +86,14 @@ class ObjectSyncService
         $synchronisation = $this->syncService->findSyncByObject($data['object'], $data['source'], $data['schema']);
 
         // @todo Syncing to the source must go through the synchronisationService.
-        $endpointsConfig = $data['source']->getEndpointsConfig();
-
-        if (key_exists('path', $endpointsConfig) === false) {
-            $this->logger->error('Path is not set in the endpointsConfig of the source');
-            return [];
-        }
 
         $configuration = $data['source']->getConfiguration();
+
+        if (key_exists('path', $configuration) === false) {
+            $this->logger->error('Path is not set in the configuration of the source');
+            return [];
+        }
+        
         $query = null;
         if (key_exists('query', $configuration) === true) {
             $query = $configuration['query'];
