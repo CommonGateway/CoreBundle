@@ -4,6 +4,7 @@ namespace CommonGateway\CoreBundle\Service;
 
 use App\Service\SynchronizationService;
 use Psr\Log\LoggerInterface;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -73,25 +74,30 @@ class NotificationService
         $this->logger->debug("NotificationService -> notificationHandler()");
         
         // Find source by resource url from the notification
-        $sources = $this->gatewayResourceService->findSourcesForUrl($data['body']['resourceUrl'], 'commongateway/corebundle');
+        $url = $data[$configuration['urlLocation']];
+        $sources = $this->gatewayResourceService->findSourcesForUrl($url, 'commongateway/corebundle');
         if (count($sources) === 0) {
-            $response = ["Message" => "Could not find a source with this resourceUrl: ".$data['body']['resourceUrl']];
+            $response = ["Message" => "Could not find a Source with this url: $url"];
             return ["response" => new Response(json_encode($response), 400, ['Content-type' => 'application/json'])];
         }
         if (count($sources) > 1) {
-            $response = ["Message" => "Found more than one source with this resourceUrl: ".$data['body']['resourceUrl']];
+            $response = ["Message" => "Found more than one Source (".count($sources).") with this url: $url"];
             // todo: maybe we want to just use the first one found or the one that matches the most, or just repeat for all sources?
             return ["response" => new Response(json_encode($response), 400, ['Content-type' => 'application/json'])];
         }
         $source = $sources[0];
         
-        // todo: get correct entity from notification data
-        $entity = null; // todo: get from configuration.
+        // Get the correct Entity
+        $entity = $this->gatewayResourceService->getSchema($data[$configuration['entity']], 'commongateway/corebundle');
+        if ($entity === null) {
+            $response = ["Message" => "Could not find an Entity with this reference: ".$data[$configuration['entity']]];
+            return ["response" => new Response(json_encode($response), 500, ['Content-type' => 'application/json'])];
+        }
         
-        // todo: get (source) id from notification data
-        $id = null;
+        // Get (source) id from notification data
+        $explodedUrl = explode('/', $url);
+        $id = end($explodedUrl);
         
-        // todo: find/create synchronization and synchronize
         $synchronization = $this->synchronizationService->findSyncBySource($source, $entity, $id);
         $this->synchronizationService->synchronize($synchronization);
         

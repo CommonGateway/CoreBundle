@@ -30,8 +30,24 @@ class NotificationHandler implements ActionHandlerInterface
             '$id'        => 'https://commongateway.nl/ActionHandler/NotificationHandler.ActionHandler.json',
             '$schema'    => 'https://docs.commongateway.nl/schemas/ActionHandler.schema.json',
             'title'      => 'NotificationHandler',
-            'required'   => [],
-            'properties' => [],
+            'required'   => [
+                "urlLocation",
+                "entity"
+            ],
+            'properties' => [
+                'urlLocation' => [
+                    'type'        => 'string',
+                    'description' => 'The name/location of the field (or query or header) in the notification api-call. That contains the full url, of the object that the notification is for, incl. full location (url) of the source itself.',
+                    'example'     => 'body.resourceUrl',
+                    'required'    => true,
+                ],
+                'entity' => [
+                    'type'        => 'string',
+                    'description' => 'The reference of an Entity/Schema these notifications will be for. Used for creating a synchronization and synchronizing.',
+                    'example'     => 'https://vng.opencatalogi.nl/schemas/zrc.zaak.schema.json',
+                    'required'    => true,
+                ],
+            ],
         ];
     }//end getConfiguration()
 
