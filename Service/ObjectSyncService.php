@@ -93,7 +93,7 @@ class ObjectSyncService
             $this->logger->error('Path is not set in the configuration of the source');
             return [];
         }
-        
+
         $query = null;
         if (key_exists('query', $configuration) === true) {
             $query = $configuration['query'];
@@ -111,7 +111,7 @@ class ObjectSyncService
         try {
             $result = $this->callService->call(
                 $data['source'],
-                $endpointsConfig['path'], // @todo Check if this is the right way to do this
+                $configuration['path'], // @todo Check if this is the right way to do this
                 'POST',
                 [
                     'body'    => json_encode($data['object']->toArray()),
@@ -120,7 +120,7 @@ class ObjectSyncService
                 ]
             );
         } catch (Exception|GuzzleException $exception) {
-            $this->logger->error($exception->getMessage(), $exception->getFile());
+            $this->logger->error($exception->getMessage(), [$exception->getFile()]);
             return [];
         }
 
