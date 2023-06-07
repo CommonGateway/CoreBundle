@@ -51,27 +51,27 @@ class ObjectSyncService
     /**
      * @var LoggerInterface
      */
-    private LoggerInterface $logger;
+    private LoggerInterface $objectSyncLogger;
 
     /**
      * @param EntityManagerInterface   $entityManager   The enitymanger
      * @param SynchronizationService $syncService      The synchronisation service
      * @param CallService $callService The call service
      * @param GatewayResourceService $resourceService  The resource service
-     * @param LoggerInterface $logger The logger interface
+     * @param LoggerInterface $objectSyncLogger The logger interface
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         SynchronizationService $syncService,
         CallService $callService,
         GatewayResourceService $resourceService,
-        LoggerInterface $logger
+        LoggerInterface $objectSyncLogger
     ) {
         $this->entityManager = $entityManager;
         $this->syncService = $syncService;
         $this->callService = $callService;
         $this->resourceService = $resourceService;
-        $this->logger = $logger;
+        $this->objectSyncLogger = $objectSyncLogger;
     }//end __construct()
 
     /**
@@ -90,7 +90,7 @@ class ObjectSyncService
         $configuration = $data['source']->getConfiguration();
 
         if (key_exists('path', $configuration) === false) {
-            $this->logger->error('Path is not set in the configuration of the source');
+            $this->objectSyncLogger->error('Path is not set in the configuration of the source');
             return [];
         }
 
@@ -99,33 +99,25 @@ class ObjectSyncService
             $query = $configuration['query'];
         }
 
-        $headers = [];
-        if (key_exists('headers', $configuration) === true) {
-            $headers = $configuration['headers'];
-        }
-
-        if ($data['source']->getHeaders() !== null) {
-            $headers = array_merge($headers, $data['source']->getHeaders());
-        }
-
+        $objectArray = $data['object']->toArray();
         try {
             $result = $this->callService->call(
                 $data['source'],
                 $configuration['path'], // @todo Check if this is the right way to do this
                 'POST',
                 [
-                    'body'    => json_encode($data['object']->toArray()),
+                    'body'    => json_encode($objectArray),
                     'query'   => $query,
-                    'headers' => $headers,
+                    'headers' => $configuration,
                 ]
             );
         } catch (Exception|GuzzleException $exception) {
-            $this->logger->error($exception->getMessage(), [$exception->getFile()]);
+            $this->objectSyncLogger->error($exception->getMessage(), [$exception->getFile()]);
             return [];
         }
 
         $body = $this->callService->decodeResponse($data['source'], $result);
-
+        
         $data['object']->hydrate($body);
         $data['object']->addSynchronization($synchronisation);
         $this->entityManager->persist($data['object']);
