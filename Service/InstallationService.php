@@ -754,7 +754,7 @@ class InstallationService
 
         // Set the default source for a schema.
         if (isset($data['schemas']) === true) {
-            $this->addDefaultSource($data['schemas']);
+            $this->editSchemaProperties($data['schemas']);
         }
 
         if (isset($data['installationService']) === false || empty($data['installationService']) === true) {
@@ -796,14 +796,22 @@ class InstallationService
      *
      * @return void
      */
-    private function addDefaultSource(array $schemasData = []): void
+    private function editSchemaProperties(array $schemasData = []): void
     {
         foreach ($schemasData as $schemaData) {
             // Get the schema and source from the schemadata.
             $schema = $this->resourceService->getSchema($schemaData['reference'], 'commongateway/corebundle');
-            $source = $this->resourceService->getSource($schemaData['defaultSource'], 'commongateway/corebundle');
-            // Set the source as defaultSource to the schema.
-            $schema->setDefaultSource($source);
+            
+            if (key_exists('defaultSource', $schemaData) === true) {
+                $source = $this->resourceService->getSource($schemaData['defaultSource'], 'commongateway/corebundle');
+                // Set the source as defaultSource to the schema.
+                $schema->setDefaultSource($source);
+            }
+            
+            if (key_exists('createAuditTrails', $schemaData) === true) {
+                $schema->setCreateAuditTrails($schemaData['createAuditTrails']);
+            }
+          
             $this->entityManager->persist($schema);
         }
     }
