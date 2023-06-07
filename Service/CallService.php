@@ -301,6 +301,7 @@ class CallService
     private function handleEndpointConfigOut(array $config, array $endpointConfigOut, string $configKey): array
     {
         $this->callLogger->info('Handling outgoing configuration for endpoint');
+
         if (array_key_exists($configKey, $config) === false || array_key_exists($configKey, $endpointConfigOut) === false) {
             return $config;
         }
@@ -313,16 +314,28 @@ class CallService
                 return $config;
             }
 
-            try {
-                $config[$configKey] = $this->mappingService->mapping($mapping, $config[$configKey]);
-            } catch (Exception|LoaderError|SyntaxError $exception) {
-                $this->callLogger->error("Could not map with mapping {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source. ".$exception->getMessage());
+            if (is_string($config[$configKey]) === true) {
+                try {
+                    $body = $this->mappingService->mapping($mapping, \Safe\json_decode($config[$configKey], true));
+                    $config[$configKey] = \Safe\json_encode($body);
+                } catch (Exception|LoaderError|SyntaxError $exception) {
+                    $this->callLogger->error("Could not map with mapping {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source. ".$exception->getMessage());
+                }
             }
+
+            if (is_array($config[$configKey]) === true) {
+                try {
+                    $config[$configKey] = $this->mappingService->mapping($mapping, $config[$configKey]);
+                } catch (Exception|LoaderError|SyntaxError $exception) {
+                    $this->callLogger->error("Could not map with mapping {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source. ".$exception->getMessage());
+                }
+            }
+
         }
 
         return $config;
     }//end handleEndpointConfigOut()
-    
+
     /**
      * Handles the endpointsConfig of a Source after we did an api-call.
      * See FileSystemService->handleEndpointsConfigIn() for how we handle this on FileSystem sources.
@@ -341,6 +354,19 @@ class CallService
         $this->callLogger->info('Handling incoming configuration for endpoints');
         $endpointsConfig = $source->getEndpointsConfig();
         if (empty($endpointsConfig)) {
+            if ($response !== null) {
+                return $response;
+            }
+            if ($exception !== null) {
+                throw $exception;
+            }
+        }
+
+        if (array_key_exists($endpoint, $endpointsConfig) === true
+            && array_key_exists('in', $endpointsConfig[$endpoint]) === false
+            || array_key_exists('global', $endpointsConfig) === true
+            && array_key_exists('in', $endpointsConfig['global'] === false)
+        ) {
             if ($response !== null) {
                 return $response;
             }
@@ -373,8 +399,8 @@ class CallService
 
         return $response;
     }//end handleEndpointsConfigIn()
-    
-    
+
+
     /**
      * Will check if we have to handle EndpointConfigIn on an Exception response.
      *
@@ -395,9 +421,9 @@ class CallService
         ) {
             throw $exception;
         }
-        
+
         $body = json_decode($responseContent, true);
-        
+
         // Create exception array
         $exceptionArray = [
             'statusCode' => $exception->getResponse()->getStatusCode(),
@@ -405,20 +431,20 @@ class CallService
             'body'       => $body ?? $exception->getResponse()->getBody()->getContents(),
             'message'    => $exception->getMessage()
         ];
-        
+
         $headers = $this->handleEndpointConfigIn($exception->getResponse()->getHeaders(), $endpointConfigIn, 'headers');
         $error = $this->handleEndpointConfigIn($exceptionArray, $endpointConfigIn, 'error');
-        
+
         if (array_key_exists('statusCode', $error)) {
             $statusCode = $error['statusCode'];
             unset($error['statusCode']);
         }
         $error = json_encode($error);
-        
+
         return new Response($statusCode ?? $exception->getCode(), $headers, $error, $exception->getResponse()->getProtocolVersion());
     }//end handleEndpointConfigEx()
-    
-    
+
+
     /**
      * Handles endpointConfig for a specific endpoint on a source and a specific response property like: 'headers' or 'body'.
      * After we did an api-call.
@@ -460,7 +486,7 @@ class CallService
         return $responseData;
     }//end handleEndpointConfigIn()
 
-    
+
     /**
      * Determine the content type of a response.
      *
