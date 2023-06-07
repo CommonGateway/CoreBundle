@@ -316,8 +316,8 @@ class CallService
 
             if (is_string($config[$configKey]) === true) {
                 try {
-                    $body = $this->mappingService->mapping($mapping, json_decode($config[$configKey], true));
-                    $config[$configKey] = json_encode($body);
+                    $body = $this->mappingService->mapping($mapping, \Safe\json_decode($config[$configKey], true));
+                    $config[$configKey] = \Safe\json_encode($body);
                 } catch (Exception|LoaderError|SyntaxError $exception) {
                     $this->callLogger->error("Could not map with mapping {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source. ".$exception->getMessage());
                 }
