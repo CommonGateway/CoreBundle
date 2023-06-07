@@ -804,6 +804,7 @@ class InstallationService
             $source = $this->resourceService->getSource($schemaData['defaultSource'], 'commongateway/corebundle');
             // Set the source as defaultSource to the schema.
             $schema->setDefaultSource($source);
+            $this->entityManager->persist($schema);
         }
     }
 
