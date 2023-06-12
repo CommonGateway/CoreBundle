@@ -26,7 +26,7 @@ This class breaks complexity, methods and coupling rules. This could be solved b
 **Description**
 
 ```php
-public __construct (\ComposerService $composerService, \EntityManagerInterface $entityManager, \Kernel $kernel, \LoggerInterface $installationLogger, \SchemaService $schemaService, \CacheService $cacheService)
+public __construct (\ComposerService $composerService, \EntityManagerInterface $entityManager, \GatewayResourceService $resourceService, \Kernel $kernel, \LoggerInterface $installationLogger, \SchemaService $schemaService, \CacheService $cacheService)
 ```
 
 The constructor sets al needed variables 
@@ -39,6 +39,8 @@ The constructor sets al needed variables
 : The Composer service  
 * `(\EntityManagerInterface) $entityManager`
 : The entity manager  
+* `(\GatewayResourceService) $resourceService`
+: The resource service  
 * `(\Kernel) $kernel`
 : The kernel  
 * `(\LoggerInterface) $installationLogger`

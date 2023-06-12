@@ -267,7 +267,7 @@ class AuthenticationService
      * Sends a post with auth info and certificate(s) to fetch a jwt token.
      *
      * @param  Source $source
-     * 
+     *
      * @return string $body['access_token'] JWT token.
      */
     private function getVrijbrpToken(Source $source): string
@@ -292,7 +292,7 @@ class AuthenticationService
      * Sends a post with auth info to fetch a jwt token.
      *
      * @param  Source $source
-     * 
+     *
      * @return string accessToken which is a JWT token.
      */
     private function getPinkToken(Source $source): string
@@ -306,11 +306,62 @@ class AuthenticationService
     }//end getPinkToken
 
     /**
+     * Sends a post with authentication info to an OAuth Token Endpoint to fetch an authentication token.
+     *
+     * @param Source $source The source to authenticate for.
+     *
+     * @return string The authentication token.
+     *
+     * @throws \Safe\Exceptions\JsonException Thrown if the result can not be json decoded.
+     */
+    private function getOauthToken(Source $source): string
+    {
+        $authenticationConfig = $source->getAuthenticationConfig();
+
+        $credentials = [
+            'clientId'     => $source->getUsername(),
+            'clientSecret' => $source->getPassword(),
+        ];
+
+        if (isset($authenticationConfig['case']) === true && $authenticationConfig['case'] === 'snake_case') {
+            $credentials = [
+                'client_id'     => $source->getUsername(),
+                'client_secret' => $source->getPassword(),
+            ];
+        }
+
+        if (isset($authenticationConfig['additionalFields']) === true) {
+            $credentials = array_merge($credentials, $authenticationConfig['additionalFields']);
+        }
+
+        switch ($source->getAuthorizationPassthroughMethod()) {
+            case 'query':
+                $config['query'] = $credentials;
+                break;
+            case 'form_params':
+                $config['form_params'] = $credentials;
+                break;
+            case 'json':
+            default:
+                $config['body'] = \Safe\json_encode($credentials);
+                break;
+        }//end switch
+
+        $guzzleConfig = $source->getConfiguration();
+        $client = new Client($guzzleConfig);
+        $response = $client->post($authenticationConfig['tokenUrl'], $config);
+
+        $result = \Safe\json_decode($response->getBody()->getContents(), true);
+
+        return $result[$authenticationConfig['tokenField']];
+    }//end getOauthToken()
+
+    /**
      * Checks from which type of auth we need to fetch a token from.
      *
      * @param  Source $source
      * @param  string $authType
-     * 
+     *
      * @return string Fetched JWT token.
      */
     public function getTokenFromUrl(Source $source, string $authType): string
@@ -320,6 +371,8 @@ class AuthenticationService
                 return $this->getVrijbrpToken($source);
             case 'pink-jwt':
                 return $this->getPinkToken($source);
+            case 'oauth':
+                return $this->getOauthToken($source);
         }//end switch
 
     }//end getTokenFromUrl
@@ -366,6 +419,7 @@ class AuthenticationService
                 break;
             case 'vrijbrp-jwt':
             case 'pink-jwt':
+            case 'oauth':
                 $requestOptions['headers']['Authorization'] = "Bearer {$this->getTokenFromUrl($source, $source->getAuth())}";
                 break;
             case 'hmac':
