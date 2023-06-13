@@ -21,7 +21,7 @@ return (object)[
         '\CommonGateway\CoreBundle\Service\NotificationService',
         '\CommonGateway\CoreBundle\Service\OasService',
         '\CommonGateway\CoreBundle\Service\ObjectSyncService',
-        '\CommonGateway\CoreBundle\Service\RequestService'
+        '\CommonGateway\CoreBundle\Service\RequestService',
         '\CommonGateway\CoreBundle\Service\SchemaService'
     ],
 ];
