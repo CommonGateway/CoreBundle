@@ -57,7 +57,7 @@ class GatewayResourceService
     {
         $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference]);
         if ($entity === null) {
-            $this->pluginLogger->error("No entity found for $reference.", ['plugin'=>$pluginName]);
+            $this->pluginLogger->error("No entity found for $reference.", ['plugin' => $pluginName]);
         }//end if
 
         return $entity;
@@ -75,7 +75,7 @@ class GatewayResourceService
     {
         $mapping = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $reference]);
         if ($mapping === null) {
-            $this->pluginLogger->error("No mapping found for $reference.", ['plugin'=>$pluginName]);
+            $this->pluginLogger->error("No mapping found for $reference.", ['plugin' => $pluginName]);
         }//end if
 
         return $mapping;
@@ -93,17 +93,17 @@ class GatewayResourceService
     {
         $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $reference]);
         if ($source === null) {
-            $this->pluginLogger->error("No source found for $reference.", ['plugin'=>$pluginName]);
+            $this->pluginLogger->error("No source found for $reference.", ['plugin' => $pluginName]);
         }//end if
 
         return $source;
     }//end getSource()
-    
+
     /**
      * Find all sources that have a location that match the specified url.
      * // Todo: we should use a mongoDB filter instead of this, sources should exist in MongoDB
      *
-     * @param string $url  The url we are trying to find a matching source for.
+     * @param string $url        The url we are trying to find a matching source for.
      * @param string $pluginName The name of the plugin that requests these resources.
      *
      * @return array|null
@@ -114,14 +114,14 @@ class GatewayResourceService
         $allSources = $this->entityManager->getRepository('App:Gateway')->findAll();
         
         foreach ($allSources as $source) {
-            // todo: this works, we should go to php 8.0 later
-            if (empty($source->getLocation()) === false && str_contains($url, $source->getLocation())) {
+            // Todo: This works, we should go to php 8.0 later.
+            if (empty($source->getLocation()) === false && str_contains($url, $source->getLocation()) === true) {
                 $sources[] = $source;
             }
         }
         
         if (empty($sources) === true) {
-            $this->pluginLogger->error("No sources found for $url.", ['plugin'=>$pluginName]);
+            $this->pluginLogger->error("No sources found for $url.", ['plugin' => $pluginName]);
         }//end if
         
         return $sources;
@@ -139,7 +139,7 @@ class GatewayResourceService
     {
         $endpoint = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $reference]);
         if ($endpoint === null) {
-            $this->pluginLogger->error("No endpoint found for $reference.", ['plugin'=>$pluginName]);
+            $this->pluginLogger->error("No endpoint found for $reference.", ['plugin' => $pluginName]);
         }//end if
 
         return $endpoint;
@@ -157,7 +157,7 @@ class GatewayResourceService
     {
         $action = $this->entityManager->getRepository('App:Action')->findOneBy(['reference' => $reference]);
         if ($action === null) {
-            $this->logger->error("No action found for $reference.", ['plugin'=>$pluginName]);
+            $this->logger->error("No action found for $reference.", ['plugin' => $pluginName]);
         }//end if
 
         return $action;

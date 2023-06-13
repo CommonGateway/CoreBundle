@@ -396,7 +396,7 @@ class RequestService
         if ($user = $this->security->getUser()) {
             return $user->getScopes();
         } else {
-            $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous'=>true]);
+            $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous' => true]);
             if ($anonymousSecurityGroup) {
                 return $anonymousSecurityGroup->getScopes();
             }
@@ -434,7 +434,7 @@ class RequestService
             //            }
             $filters = $this->realRequestQueryAll($this->data['method']);
 
-            foreach ($filters as $key=>$value) {
+            foreach ($filters as $key => $value) {
                 if ($value === 'all' || $value === 'alles' || $value === '*') {
                     unset($filters[$key]);
                 }

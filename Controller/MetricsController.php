@@ -50,7 +50,7 @@ class MetricsController extends AbstractController
         $status = 200;
         $metrics = $this->metricsService->getAll();
 
-        return new Response(json_encode(["metrics"=>$metrics]), $status, ['Content-type' => 'application/json']);
+        return new Response(json_encode(["metrics" => $metrics]), $status, ['Content-type' => 'application/json']);
     }//end metrics()
 
 }//end Class

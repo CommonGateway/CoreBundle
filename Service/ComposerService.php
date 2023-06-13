@@ -441,7 +441,7 @@ class ComposerService
     public function search(string $search = null, array $options = []): array
     {
         $url = 'https://packagist.org/search.json';
-        $query = ['tags'=>'common-gateway-plugin'];
+        $query = ['tags' => 'common-gateway-plugin'];
         if ($search) {
             $query['q'] = $search;
         }

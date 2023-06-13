@@ -27,50 +27,50 @@ class NotificationService
      * @var array
      */
     private array $configuration;
-    
+
     /**
      * @var array
      */
     private array $data;
-    
+
     /**
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
-    
+
     /**
      * @var LoggerInterface
      */
     private LoggerInterface $logger;
-    
+
     /**
      * @var SynchronizationService
      */
-    private SynchronizationService $synchronizationService;
-    
+    private SynchronizationService $syncService;
+
     /**
      * @var GatewayResourceService
      */
-    private GatewayResourceService $gatewayResourceService;
+    private GatewayResourceService $resourceService;
 
     /**
-     * @param EntityManagerInterface $entityManager          The EntityManager.
-     * @param LoggerInterface        $notificationLogger     The notification logger.
-     * @param SynchronizationService $synchronizationService The SynchronizationService.
-     * @param GatewayResourceService $gatewayResourceService The GatewayResourceService.
+     * @param EntityManagerInterface $entityManager      The EntityManager.
+     * @param LoggerInterface        $notificationLogger The notification logger.
+     * @param SynchronizationService $syncService        The SynchronizationService.
+     * @param GatewayResourceService $resourceService    The GatewayResourceService.
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        LoggerInterface $notificationLogger,
-        SynchronizationService $synchronizationService,
-        GatewayResourceService $gatewayResourceService
+        LoggerInterface        $notificationLogger,
+        SynchronizationService $syncService,
+        GatewayResourceService $resourceService
     ) {
         $this->entityManager = $entityManager;
         $this->logger = $notificationLogger;
-        $this->synchronizationService = $synchronizationService;
-        $this->gatewayResourceService = $gatewayResourceService;
-    }
-    
+        $this->syncService = $syncService;
+        $this->resourceService = $resourceService;
+    }//end __construct()
+
     /**
      * Handles incoming notification api-call and is responsible for generating a response.
      *
@@ -101,7 +101,7 @@ class NotificationService
             return ["response" => new Response($response, $exception->getCode(), ['Content-type' => 'application/json'])];
         }
         
-        $this->synchronizationService->synchronize($synchronization);
+        $this->syncService->synchronize($synchronization);
         
         $this->entityManager->flush();
         
@@ -110,7 +110,7 @@ class NotificationService
 
         return $data;
     }//end notificationHandler()
-    
+
     /**
      * Tries to find a synchronisation with the data from the notification and action->configuration.
      *
@@ -123,26 +123,26 @@ class NotificationService
         $dot = new Dot($this->data);
         $url = $dot->get($this->configuration['urlLocation']);
     
-        // Find source by resource url from the notification
+        // Find source by resource url from the notification.
         $source = $this->findSource($url);
     
-        // Get the correct Entity
-        $entity = $this->gatewayResourceService->getSchema($this->configuration['entity'], 'commongateway/corebundle');
+        // Get the correct Entity.
+        $entity = $this->resourceService->getSchema($this->configuration['entity'], 'commongateway/corebundle');
         if ($entity === null) {
             throw new Exception("Could not find an Entity with this reference: {$this->configuration['entity']}", 500);
         }
     
-        // Get (source) id from notification data
+        // Get (source) id from notification data.
         $explodedUrl = explode('/', $url);
-        $id = end($explodedUrl);
+        $sourceId = end($explodedUrl);
     
-        $synchronization = $this->synchronizationService->findSyncBySource($source, $entity, $id);
+        $synchronization = $this->syncService->findSyncBySource($source, $entity, $sourceId);
         $synchronization->setEndpoint(str_replace($source->getLocation(), '', $url));
         $this->entityManager->persist($synchronization);
         
         return $synchronization;
-    }
-    
+    }//end findSync()
+
     /**
      * Tries to find a source using the url of the object a notification was created for.
      *
@@ -154,14 +154,14 @@ class NotificationService
      */
     private function findSource(string $url): Source
     {
-        $sources = $this->gatewayResourceService->findSourcesForUrl($url, 'commongateway/corebundle');
+        $sources = $this->resourceService->findSourcesForUrl($url, 'commongateway/corebundle');
         
         if (count($sources) === 0) {
             throw new Exception("Could not find a Source with this url: $url", 400);
         }
         
         if (count($sources) > 1) {
-            // todo: maybe we want to just use the first one found or the one that matches the most, or just repeat for all sources?
+            // Todo: Maybe we want to just use the first one found or the one that matches the most, or just repeat for all sources?
             throw new Exception("Found more than one Source (".count($sources).") with this url: $url", 400);
         }
         

@@ -940,7 +940,7 @@ class InstallationService
             $object = $this->checkIfObjectExists($repository, $endpointData['reference'], $type);
         }
 
-        // todo: this works, we should go to php 8.0 later
+        // Todo: this works, we should go to php 8.0 later.
         if (isset($endpointData['$id']) === false || str_contains($endpointData['$id'], '.endpoint.json') === false) {
             $endpointData['$id'] = $this->createEndpointReference($object ?? null, $type);
             if ($endpointData['$id'] === null) {
@@ -1513,7 +1513,7 @@ class InstallationService
                 continue;
             }
             foreach ($securityGroup->getScopes() as $scope) {
-                // todo: this works, we should go to php 8.0 later
+                // Todo: This works, we should go to php 8.0 later.
                 if (str_contains(strtolower($scope), 'admin')) {
                     $this->logger->error('It is forbidden to change or add users with admin scopes!', ['securityGroup' => $reference, 'userData' => $userData]);
                     continue 2;
