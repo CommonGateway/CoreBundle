@@ -10,7 +10,7 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 
 | Name | Description |
 |------|-------------|
-|[__construct](#requestservice__construct)||
+|[__construct](#requestservice__construct)|The constructor sets al needed variables.|
 |[checkEmbedded](#requestservicecheckembedded)|If embedded should be shown or not.|
 |[createResponse](#requestservicecreateresponse)|Creating the response object.|
 |[getId](#requestservicegetid)|Get the ID from given parameters.|
@@ -33,16 +33,27 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 **Description**
 
 ```php
- __construct (void)
+public __construct (\EntityManagerInterface $entityManager, \CacheService $cacheService, \ResponseService $responseService, \ObjectEntityService $objectEntityService, \LogService $logService, \CallService $callService, \Security $security, \EventDispatcherInterface $eventDispatcher, \SerializerInterface $serializer, \SessionInterface $session, \LoggerInterface $requestLogger, \DownloadService $downloadService)
 ```
 
- 
+The constructor sets al needed variables. 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(\EntityManagerInterface) $entityManager`
+* `(\CacheService) $cacheService`
+* `(\ResponseService) $responseService`
+* `(\ObjectEntityService) $objectEntityService`
+* `(\LogService) $logService`
+* `(\CallService) $callService`
+* `(\Security) $security`
+* `(\EventDispatcherInterface) $eventDispatcher`
+* `(\SerializerInterface) $serializer`
+* `(\SessionInterface) $session`
+* `(\LoggerInterface) $requestLogger`
+* `(\DownloadService) $downloadService`
 
 **Return Values**
 
