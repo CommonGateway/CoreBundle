@@ -193,9 +193,9 @@ class MappingService
     /**
      * Handles a single cast.
      *
-     * @param Dot $dotArray The dotArray of the array we are mapping.
-     * @param string $key The key of the field we want to cast.
-     * @param string $cast The type of cast we want to do.
+     * @param Dot    $dotArray The dotArray of the array we are mapping.
+     * @param string $key      The key of the field we want to cast.
+     * @param string $cast     The type of cast we want to do.
      *
      * @return void
      */

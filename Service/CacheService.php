@@ -417,13 +417,13 @@ class CacheService
 
         // Order
         $order = isset($completeFilter['_order']) ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
-        !empty($order) && $order[array_keys($order)[0]] = (int)$order[array_keys($order)[0]];
+        !empty($order) && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
 
         // Find / Search
         return $this->retrieveObjectsFromCache($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order], $completeFilter);
     }
 
-    public function retrieveObjectsFromCache (array $filter, array $options, array $completeFilter = []): ?array
+    public function retrieveObjectsFromCache(array $filter, array $options, array $completeFilter = []): ?array
     {
         $collection = $this->client->objects->json;
 
@@ -792,9 +792,9 @@ class CacheService
         if (is_string($search)) {
             $filter['$text']
                 = [
-                '$search'        => $search,
-                '$caseSensitive' => false,
-            ];
+                    '$search'        => $search,
+                    '$caseSensitive' => false,
+                ];
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value
         elseif (is_array($search)) {

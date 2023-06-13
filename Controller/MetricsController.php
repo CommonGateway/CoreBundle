@@ -11,14 +11,13 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * The Metrics controller provides an metrics endpoint that can be used by promotheus
+ * The Metrics controller provides a metrics endpoint that can be used by prometheus.
  *
  * Authors: Conduction <info@conduction.nl>
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
  * @category Controller
- *
  */
 class MetricsController extends AbstractController
 {
@@ -28,7 +27,7 @@ class MetricsController extends AbstractController
     private MetricsService $metricsService;
 
     /**
-     * The constructor sets al needed variables
+     * The constructor sets al needed variables.
      *
      * @param MetricsService $metricsService The metrics service
      */
@@ -38,9 +37,10 @@ class MetricsController extends AbstractController
     }//end __construct()
 
     /**
-     * Provides a metrics endpoint for prometheus to crawl
+     * Provides a metrics endpoint for prometheus to crawl.
      *
      * @param Request $request The symfony request object
+     *
      * @return Response
      *
      * @Route("/metrics", methods={"GET"})
@@ -50,7 +50,6 @@ class MetricsController extends AbstractController
         $status = 200;
         $metrics = $this->metricsService->getAll();
 
-        return new Response(json_encode(["metrics" => $metrics]), $status, ['Content-type' => 'application/json']);
+        return new Response(json_encode(['metrics' => $metrics]), $status, ['Content-type' => 'application/json']);
     }//end metrics()
-
 }//end Class

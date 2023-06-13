@@ -2,20 +2,10 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
-use App\Entity\Endpoint;
-use App\Event\ActionEvent;
 use App\Service\SynchronizationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Serializer\Encoder\XmlEncoder;
-use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * This service handles calls on the ZZ endpoint (or in other words abstract routing).
@@ -54,11 +44,13 @@ class ObjectSyncService
     private LoggerInterface $objectSyncLogger;
 
     /**
-     * @param EntityManagerInterface   $entityManager   The enitymanger
+     * The constructor sets al needed variables.
+     *
+     * @param EntityManagerInterface $entityManager    The enitymanger
      * @param SynchronizationService $syncService      The synchronisation service
-     * @param CallService $callService The call service
+     * @param CallService            $callService      The call service
      * @param GatewayResourceService $resourceService  The resource service
-     * @param LoggerInterface $objectSyncLogger The logger interface
+     * @param LoggerInterface        $objectSyncLogger The logger interface
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -73,11 +65,13 @@ class ObjectSyncService
         $this->resourceService = $resourceService;
         $this->objectSyncLogger = $objectSyncLogger;
     }//end __construct()
-
+    
     /**
-     * Synchronise the object to the source
+     * Synchronise the object to the source.
      *
      * @param array $data A data arry containing a source, a schema and an object.
+     *
+     * @throws Exception
      *
      * @return array The path array for a proxy endpoint.
      */
@@ -91,6 +85,7 @@ class ObjectSyncService
 
         if (key_exists('path', $configuration) === false) {
             $this->objectSyncLogger->error('Path is not set in the configuration of the source');
+
             return [];
         }
 
@@ -100,6 +95,7 @@ class ObjectSyncService
         }
 
         $objectArray = $data['object']->toArray();
+
         try {
             $result = $this->callService->call(
                 $data['source'],
@@ -113,11 +109,12 @@ class ObjectSyncService
             );
         } catch (Exception|GuzzleException $exception) {
             $this->objectSyncLogger->error($exception->getMessage(), [$exception->getFile()]);
+
             return [];
         }
 
         $body = $this->callService->decodeResponse($data['source'], $result);
-        
+
         $data['object']->hydrate($body);
         $data['object']->addSynchronization($synchronisation);
         $this->entityManager->persist($data['object']);
@@ -125,5 +122,4 @@ class ObjectSyncService
 
         return $synchronisation->getObject()->toArray();
     }//end getProxyPath()
-
 }//end class

@@ -4,7 +4,6 @@
 
 namespace CommonGateway\CoreBundle\Subscriber;
 
-use App\Entity\Entity;
 use App\Entity\ObjectEntity;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\Events;

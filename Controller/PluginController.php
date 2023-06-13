@@ -24,7 +24,7 @@ class PluginController extends AbstractController
     private ComposerService $composerService;
 
     /**
-     * The constructor sets al needed variables
+     * The constructor sets al needed variables.
      *
      * @codeCoverageIgnore We do not need to test constructors
      *
@@ -36,7 +36,6 @@ class PluginController extends AbstractController
     }
 
     /**
-     * The constructor sets al needed variables
      * @Route("/installed", methods={"GET"})
      */
     public function installedAction(Request $request)

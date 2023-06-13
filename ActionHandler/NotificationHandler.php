@@ -31,8 +31,8 @@ class NotificationHandler implements ActionHandlerInterface
             '$schema'    => 'https://docs.commongateway.nl/schemas/ActionHandler.schema.json',
             'title'      => 'NotificationHandler',
             'required'   => [
-                "urlLocation",
-                "entity"
+                'urlLocation',
+                'entity'
             ],
             'properties' => [
                 'urlLocation' => [

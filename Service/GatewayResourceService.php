@@ -4,7 +4,7 @@
  *
  * This service provides methods to find resources from the gateway by their reference.
  *
- * @Author Robert Zondervan <robert@conduction.nl>
+ * @Author Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
@@ -36,6 +36,8 @@ class GatewayResourceService
     private LoggerInterface $pluginLogger;
 
     /**
+     * The constructor sets al needed variables.
+     *
      * @param EntityManagerInterface $entityManager
      * @param LoggerInterface        $pluginLogger
      */
@@ -101,7 +103,7 @@ class GatewayResourceService
 
     /**
      * Find all sources that have a location that match the specified url.
-     * // Todo: we should use a mongoDB filter instead of this, sources should exist in MongoDB
+     * Todo: we should use a mongoDB filter instead of this, sources should exist in MongoDB.
      *
      * @param string $url        The url we are trying to find a matching source for.
      * @param string $pluginName The name of the plugin that requests these resources.
@@ -112,18 +114,18 @@ class GatewayResourceService
     {
         $sources = [];
         $allSources = $this->entityManager->getRepository('App:Gateway')->findAll();
-        
+
         foreach ($allSources as $source) {
             // Todo: This works, we should go to php 8.0 later.
             if (empty($source->getLocation()) === false && str_contains($url, $source->getLocation()) === true) {
                 $sources[] = $source;
             }
         }
-        
+
         if (empty($sources) === true) {
             $this->pluginLogger->error("No sources found for $url.", ['plugin' => $pluginName]);
         }//end if
-        
+
         return $sources;
     }//end findSourcesForUrl()
 
