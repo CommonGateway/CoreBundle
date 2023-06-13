@@ -65,6 +65,8 @@ class EndpointService
     private ?Endpoint $endpoint = null;
 
     /**
+     * The constructor sets al needed variables.
+     *
      * @param EntityManagerInterface   $entityManager   The enitymanger
      * @param SerializerInterface      $serializer      The serializer
      * @param RequestService           $requestService  The request service
@@ -85,13 +87,15 @@ class EndpointService
         $this->session = $session;
         $this->logger = $endpointLogger;
     }//end __construct()
-
+    
     /**
      * Handle the request afther it commes in through the ZZ controller.
      *
      * @param Request $request The inbound request
      *
      * @return Response
+     *
+     * @throws Exception
      */
     public function handleRequest(Request $request): Response
     {
@@ -228,7 +232,7 @@ class EndpointService
      */
     public function decodeBody(): ?array
     {
-        if(empty($this->request->getContent()) === true) {
+        if (empty($this->request->getContent()) === true) {
             return [];
         }
 
@@ -288,7 +292,7 @@ class EndpointService
         $this->logger->debug('Split the path into an array');
 
         $path = $this->endpoint->getPath();
-        if ($this->endpoint->getProxy() !== null && in_array("{route}", $path) === true) {
+        if ($this->endpoint->getProxy() !== null && in_array('{route}', $path) === true) {
             $parameters['path'] = $this->getProxyPath($parameters);
         } else {
             $parameters['path'] = $this->getNormalPath($parameters);
@@ -329,25 +333,25 @@ class EndpointService
     private function getNormalPath(array $parameters): array
     {
         $path = $this->endpoint->getPath();
-        
+
         try {
             $combinedArray = array_combine($path, explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
         } catch (Exception $exception) {
-            $this->logger->error("EndpointService->getNormalPath(): $exception");
-            
+            $this->logger->error('EndpointService->getNormalPath(): $exception');
+
             array_pop($path); // Todo: not sure why this is here, if someone does now, please add inline comments!
             $combinedArray = array_combine($path, explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
         }
-        
+
         if ($combinedArray === false) {
-            $this->logger->error("EndpointService->getNormalPath(): Failed to construct the parameters path array for the current endpoint.");
-            
+            $this->logger->error('EndpointService->getNormalPath(): Failed to construct the parameters path array for the current endpoint.');
+
             $combinedArray = [];
         }
-        
+
         return $combinedArray;
     }//end getNormalPath()
-    
+
     /**
      * Gets and returns the correct path array for a proxy endpoint.
      *
@@ -361,21 +365,21 @@ class EndpointService
         $pathRaw = $parameters['pathRaw'];
 
         // Use Path to create a regex and get endpoint for the proxy from the pathRaw.
-        $regex = str_replace('{route}', '([^.*]*)', ("/\/api\/" . implode('\/', $path) . "/"));
+        $regex = str_replace('{route}', '([^.*]*)', "/\/api\/".implode('\/', $path).'/');
         $matchesCount = preg_match($regex, $pathRaw, $matches);
 
         if ($matchesCount != 1) {
-            $this->logger->error("EndpointService->getProxyPath(): Failed to find correct proxy endpoint in pathRaw string, trying to get normal endpoint path instead...");
+            $this->logger->error('EndpointService->getProxyPath(): Failed to find correct proxy endpoint in pathRaw string, trying to get normal endpoint path instead...');
 
             return $this->getNormalPath($parameters);
         }
         $endpoint = $matches[1];
-        
+
         // Ltrim the default /api/ & Str_replace endpoint for proxy from the pathRaw & explode what is left for $parametersPath.
         $pathRaw = ltrim($pathRaw, '/api');
         $pathRaw = str_replace("/$endpoint", '', $pathRaw);
-        $explodedPathRaw = explode('/',  $pathRaw);
-        
+        $explodedPathRaw = explode('/', $pathRaw);
+
         // Add endpoint for proxy to $explodedPathRaw
         $explodedPathRaw[] = $endpoint;
 

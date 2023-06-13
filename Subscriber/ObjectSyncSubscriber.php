@@ -2,23 +2,25 @@
 
 namespace CommonGateway\CoreBundle\Subscriber;
 
-use App\Entity\Action;
-use App\Entity\AuditTrail;
 use App\Entity\ObjectEntity;
-use App\Message\ActionMessage;
 use App\Service\ObjectEntityService;
 use App\Service\SynchronizationService;
-use CommonGateway\CoreBundle\Service\CacheService;
 use CommonGateway\CoreBundle\Service\GatewayResourceService;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\Security\Core\Security;
 
+/**
+ * Todo: @Sarai
+ *
+ * @Author Sarai Misidjan <sarai@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Subscriber
+ */
 class ObjectSyncSubscriber implements EventSubscriberInterface
 {
     /**
@@ -47,10 +49,12 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
     private LoggerInterface $pluginLogger;
 
     /**
+     * The constructor sets al needed variables.
+     *
      * @param EntityManagerInterface $entityManager
      * @param SynchronizationService $syncService
-     * @param  GatewayResourceService $resourceService
-     * @param ObjectEntityService $objectEntityService
+     * @param GatewayResourceService $resourceService
+     * @param ObjectEntityService    $objectEntityService
      * @param LoggerInterface        $pluginLogger
      */
     public function __construct(
@@ -75,7 +79,7 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
     public function getSubscribedEvents(): array
     {
         return [
-            Events::postPersist
+            Events::postPersist,
         ];
     }//end getSubscribedEvents()
 
@@ -90,6 +94,7 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
 
         // Check if object is an instance of an ObjectEntity.
         if ($object instanceof ObjectEntity === false) {
+
             return;
         }
 
@@ -98,24 +103,26 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
             && $object->getSynchronizations()->first() !== false
         ) {
             $this->pluginLogger->info('There is already a synchronisation for this object.');
+
             return;
         }
 
         // Check if the default source of the entity of the object is null.
         if (($defaultSource = $object->getEntity()->getDefaultSource()) === null) {
             $this->pluginLogger->info('There is no default source set to the entity of this object.');
+
             return;
         }
         
         $data = [
             'object' => $object,
             'schema' => $object->getEntity(),
-            'source' => $defaultSource
+            'source' => $defaultSource,
         ];
 
         $this->pluginLogger->info('Dispatch event with subtype: \'commongateway.object.sync\'');
-        
-        // dispatch event
+
+        // Dispatch event.
         $this->objectEntityService->dispatchEvent('commongateway.action.event', $data, 'commongateway.object.sync');
     }//end prePersist()
 }//end class

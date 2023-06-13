@@ -4,7 +4,6 @@
 
 namespace CommonGateway\CoreBundle\Subscriber;
 
-use App\Entity\Entity;
 use App\Entity\ObjectEntity;
 use App\Event\ActionEvent;
 use CommonGateway\CoreBundle\Service\CacheService;
@@ -15,7 +14,6 @@ use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Monolog\Logger;
-use PhpCsFixer\Event\Event;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 

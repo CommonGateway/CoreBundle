@@ -42,6 +42,8 @@ class CallService
     private LoggerInterface $callLogger;
 
     /**
+     * The constructor sets al needed variables.
+     *
      * @param AuthenticationService  $authenticationService The authentication service
      * @param EntityManagerInterface $entityManager         The entity manager
      * @param FileService            $fileService           The file service
@@ -340,14 +342,15 @@ class CallService
      * Handles the endpointsConfig of a Source after we did an api-call.
      * See FileSystemService->handleEndpointsConfigIn() for how we handle this on FileSystem sources.
      *
-     * @param Source $source The source.
-     * @param string $endpoint The endpoint used to do an api-call on the source.
-     * @param Response|null $response The response of an api-call we might want to change.
-     * @param \Exception|null $exception The Exception thrown as response of an api-call that we might want to change.
-     * @param string|null $responseContent The response content of an api-call that threw an Exception that we might want to change.
+     * @param Source          $source           The source.
+     * @param string          $endpoint         The endpoint used to do an api-call on the source.
+     * @param Response|null   $response         The response of an api-call we might want to change.
+     * @param \Exception|null $exception        The Exception thrown as response of an api-call that we might want to change.
+     * @param string|null     $responseContent  The response content of an api-call that threw an Exception that we might want to change.
+     *
+     * @throws \Exception
      *
      * @return Response The response.
-     * @throws \Exception
      */
     private function handleEndpointsConfigIn(Source $source, string $endpoint, ?Response $response, ?\Exception $exception = null, ?string $responseContent = null): Response
     {
@@ -404,13 +407,13 @@ class CallService
     /**
      * Will check if we have to handle EndpointConfigIn on an Exception response.
      *
-     * @param array $endpointConfigIn The endpointConfig 'in' of a specific endpoint and source.
-     * @param \Exception $exception The Exception thrown as response of an api-call that we might want to change.
-     * @param string|null $responseContent The response content of an api-call that threw an Exception that we might want to change.
-     *
-     * @return Response The Response.
+     * @param array       $endpointConfigIn The endpointConfig 'in' of a specific endpoint and source.
+     * @param \Exception  $exception        The Exception thrown as response of an api-call that we might want to change.
+     * @param string|null $responseContent  The response content of an api-call that threw an Exception that we might want to change.
      *
      * @throws \Exception
+     *
+     * @return Response The Response.
      */
     private function handleEndpointConfigInEx(array $endpointConfigIn, \Exception $exception, ?string $responseContent): Response
     {
@@ -429,7 +432,7 @@ class CallService
             'statusCode' => $exception->getResponse()->getStatusCode(),
             'headers'    => $exception->getResponse()->getHeaders(),
             'body'       => $body ?? $exception->getResponse()->getBody()->getContents(),
-            'message'    => $exception->getMessage()
+            'message'    => $exception->getMessage(),
         ];
 
         $headers = $this->handleEndpointConfigIn($exception->getResponse()->getHeaders(), $endpointConfigIn, 'headers');

@@ -3,7 +3,6 @@
 namespace CommonGateway\CoreBundle\ActionHandler;
 
 use CommonGateway\CoreBundle\Service\ObjectSyncService;
-use CommonGateway\CoreBundle\Service\RequestService;
 
 class ObjectSyncHandler implements ActionHandlerInterface
 {
@@ -22,12 +21,12 @@ class ObjectSyncHandler implements ActionHandlerInterface
     public function getConfiguration(): array
     {
         return [
-            '$id'        => 'https://commongateway.nl/schemas/ObjectSyncHandler/ActionHandler.schema.json',
-            '$schema'    => 'https://docs.commongateway.nl/schemas/ActionHandler.schema.json',
-            'title'      => 'ObjectSyncHandler',
+            '$id'         => 'https://commongateway.nl/schemas/ObjectSyncHandler/ActionHandler.schema.json',
+            '$schema'     => 'https://docs.commongateway.nl/schemas/ActionHandler.schema.json',
+            'title'       => 'ObjectSyncHandler',
             'description' => 'This action handlers synchronise an object to the default source. Note: This actionHandler will only fire when the listens of the action is set to \'commongateway.object.sync\'',
-            'required'   => [],
-            'properties' => [],
+            'required'    => [],
+            'properties'  => [],
         ];
     }
 

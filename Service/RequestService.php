@@ -6,7 +6,6 @@ use Adbar\Dot;
 use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\Gateway as Source;
-use App\Entity\Log;
 use App\Entity\ObjectEntity;
 use App\Event\ActionEvent;
 use App\Service\LogService;
@@ -55,8 +54,10 @@ class RequestService
     private SessionInterface $session;
     private LoggerInterface $logger;
     private DownloadService $downloadService;
-
+    
     /**
+     * The constructor sets al needed variables.
+     *
      * @param EntityManagerInterface   $entityManager
      * @param CacheService             $cacheService
      * @param ResponseService          $responseService
@@ -68,6 +69,7 @@ class RequestService
      * @param SerializerInterface      $serializer
      * @param SessionInterface         $session
      * @param LoggerInterface          $requestLogger
+     * @param DownloadService          $downloadService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -107,7 +109,6 @@ class RequestService
      */
     public function serializeData(array $data, &$contentType): string
     {
-
         $accept   = $this->data['accept'];
 
         if (isset($this->data['endpoint']) === true) {
@@ -396,7 +397,7 @@ class RequestService
         if ($user = $this->security->getUser()) {
             return $user->getScopes();
         } else {
-            $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous'=>true]);
+            $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous' => true]);
             if ($anonymousSecurityGroup) {
                 return $anonymousSecurityGroup->getScopes();
             }
@@ -434,7 +435,7 @@ class RequestService
             //            }
             $filters = $this->realRequestQueryAll($this->data['method']);
 
-            foreach ($filters as $key=>$value) {
+            foreach ($filters as $key => $value) {
                 if ($value === 'all' || $value === 'alles' || $value === '*') {
                     unset($filters[$key]);
                 }
@@ -590,7 +591,7 @@ class RequestService
 
                 $this->object = new ObjectEntity($this->schema);
 
-                if($this->security->getUser() !== null) {
+                if ($this->security->getUser() !== null) {
                     $this->object->setOwner($this->security->getUser()->getUserIdentifier());
                 }
 

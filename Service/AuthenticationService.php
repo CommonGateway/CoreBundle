@@ -22,6 +22,7 @@ use Jose\Component\Signature\JWSTokenSupport;
 use Jose\Component\Signature\JWSVerifier;
 use Jose\Component\Signature\Serializer\CompactSerializer;
 use Jose\Component\Signature\Serializer\JWSSerializerManager;
+use Safe\Exceptions\JsonException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -68,7 +69,7 @@ class AuthenticationService
      *
      * @TODO: This can be merged with the function above by getting the key from the source earlier
      *
-     * @param Source $source
+     * @param  Source $source
      *
      * @return JWK The resulting Json Web Key
      */
@@ -95,7 +96,7 @@ class AuthenticationService
     /**
      * Determines the algorithm for the JWT token to create from the source.
      *
-     * @param Source $source The source to determine the algorithm for
+     * @param  Source $source The source to determine the algorithm for
      *
      * @return string The algorithm to use
      */
@@ -310,9 +311,9 @@ class AuthenticationService
      *
      * @param Source $source The source to authenticate for.
      *
-     * @return string The authentication token.
+     * @throws JsonException Thrown if the result can not be json decoded.
      *
-     * @throws \Safe\Exceptions\JsonException Thrown if the result can not be json decoded.
+     * @return string The authentication token.
      */
     private function getOauthToken(Source $source): string
     {
@@ -359,12 +360,12 @@ class AuthenticationService
     /**
      * Checks from which type of auth we need to fetch a token from.
      *
-     * @param  Source $source
-     * @param  string $authType
+     * @param Source $source
+     * @param string $authType
      *
-     * @return string Fetched JWT token.
+     * @return string|null Fetched JWT token.
      */
-    public function getTokenFromUrl(Source $source, string $authType): string
+    public function getTokenFromUrl(Source $source, string $authType): ?string
     {
         switch ($authType) {
             case 'vrijbrp-jwt':
@@ -374,7 +375,8 @@ class AuthenticationService
             case 'oauth':
                 return $this->getOauthToken($source);
         }//end switch
-
+        
+        return null;
     }//end getTokenFromUrl
 
     public function getHmacToken(array $requestOptions, Source $source): string

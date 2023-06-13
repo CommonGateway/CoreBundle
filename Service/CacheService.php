@@ -190,9 +190,9 @@ class CacheService
         }
 
         // Created indexes
-        $collection = $this->client->objects->json->createIndex(['$**'=>'text']);
-        $collection = $this->client->schemas->json->createIndex(['$**'=>'text']);
-        $collection = $this->client->endpoints->json->createIndex(['$**'=>'text']);
+        $collection = $this->client->objects->json->createIndex(['$**' => 'text']);
+        $collection = $this->client->schemas->json->createIndex(['$**' => 'text']);
+        $collection = $this->client->endpoints->json->createIndex(['$**' => 'text']);
 
         isset($this->io) ? $this->io->writeln(['Removing deleted endpoints', '============']) : '';
         $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
@@ -337,7 +337,7 @@ class CacheService
         $id = $object->getId()->toString();
         $collection = $this->client->objects->json;
 
-        $collection->findOneAndDelete(['_id'=>$id]);
+        $collection->findOneAndDelete(['_id' => $id]);
     }
 
     /**
@@ -357,12 +357,12 @@ class CacheService
         $collection = $this->client->objects->json;
 
         // Check if object is in the cache ????
-        if ($object = $collection->findOne(['_id'=>$id])) {
+        if ($object = $collection->findOne(['_id' => $id])) {
             return json_decode(json_encode($object), true);
         }
 
         // Fall back tot the entity manager
-        if ($object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id'=>$id])) {
+        if ($object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $id])) {
             return $this->cacheObject($object)->toArray(['embedded' => true]);
         }
 
@@ -417,13 +417,13 @@ class CacheService
 
         // Order
         $order = isset($completeFilter['_order']) ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
-        !empty($order) && $order[array_keys($order)[0]] = (int)$order[array_keys($order)[0]];
+        !empty($order) && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
 
         // Find / Search
         return $this->retrieveObjectsFromCache($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order], $completeFilter);
     }
 
-    public function retrieveObjectsFromCache (array $filter, array $options, array $completeFilter = []): ?array
+    public function retrieveObjectsFromCache(array $filter, array $options, array $completeFilter = []): ?array
     {
         $collection = $this->client->objects->json;
 
@@ -476,7 +476,7 @@ class CacheService
             return;
         }
 
-        // todo: this works, we should go to php 8.0 later
+        // Todo: This works, we should go to php 8.0 later.
         if (str_contains($value, '%')) {
             $regex = str_replace('%', '', $value);
             $regex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $regex);
@@ -569,7 +569,7 @@ class CacheService
             if (array_key_exists('regex', $value) && is_array($value['regex'])) {
                 //$value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('regex', $value)) {
-                $value = ['$regex'=> $value['regex']];
+                $value = ['$regex' => $value['regex']];
 
                 return true;
             }
@@ -577,7 +577,7 @@ class CacheService
             if (array_key_exists('>=', $value) && is_array($value['>='])) {
                 //$value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('>=', $value)) {
-                $value = ['$gte'=> (int) $value['>=']];
+                $value = ['$gte' => (int) $value['>=']];
 
                 return true;
             }
@@ -585,7 +585,7 @@ class CacheService
             if (array_key_exists('>', $value) && is_array($value['>'])) {
                 //$value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('>', $value)) {
-                $value = ['$gt'=> (int) $value['>']];
+                $value = ['$gt' => (int) $value['>']];
 
                 return true;
             }
@@ -593,7 +593,7 @@ class CacheService
             if (array_key_exists('<=', $value) && is_array($value['<='])) {
                 //$value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('<=', $value)) {
-                $value = ['$lte'=> (int) $value['<=']];
+                $value = ['$lte' => (int) $value['<=']];
 
                 return true;
             }
@@ -601,7 +601,7 @@ class CacheService
             if (array_key_exists('<', $value) && is_array($value['<'])) {
                 //$value = array_map('like', $value['like']); @todo
             } elseif (array_key_exists('<', $value)) {
-                $value = ['$lt'=> (int) $value['<']];
+                $value = ['$lt' => (int) $value['<']];
 
                 return true;
             }
@@ -792,9 +792,9 @@ class CacheService
         if (is_string($search)) {
             $filter['$text']
                 = [
-                '$search'       => $search,
-                '$caseSensitive'=> false,
-            ];
+                    '$search'        => $search,
+                    '$caseSensitive' => false,
+                ];
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value
         elseif (is_array($search)) {
@@ -904,7 +904,7 @@ class CacheService
         if ($collection->findOneAndReplace(
             ['id' => $endpoint->getId()->toString()],
             $endpointArray,
-            ['upsert'=> true]
+            ['upsert' => true]
         )) {
             isset($this->io) ? $this->io->writeln('Updated endpoint '.$endpoint->getId()->toString().' to cache') : '';
         } else {
@@ -1019,9 +1019,9 @@ class CacheService
 
 
         if ($collection->findOneAndReplace(
-            ['_id'=>$entity->getID()],
+            ['_id' => $entity->getID()],
             $entity->toSchema(null),
-            ['upsert'=>true]
+            ['upsert' => true]
         )) {
             $this->io->writeln('Updated object '.$entity->getId().' to cache');
         } else {

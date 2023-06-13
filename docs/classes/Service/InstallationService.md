@@ -12,7 +12,7 @@ This class breaks complexity, methods and coupling rules. This could be solved b
 
 | Name | Description |
 |------|-------------|
-|[__construct](#installationservice__construct)|The constructor sets al needed variables|
+|[__construct](#installationservice__construct)|The constructor sets al needed variables.|
 |[addActionConfiguration](#installationserviceaddactionconfiguration)|This function creates default configuration for the action.|
 |[install](#installationserviceinstall)|Installs the files from a bundle.|
 |[overrideConfig](#installationserviceoverrideconfig)|Overrides the default configuration of an Action. Will also set entity and source to id if a reference is given.|
@@ -29,7 +29,7 @@ This class breaks complexity, methods and coupling rules. This could be solved b
 public __construct (\ComposerService $composerService, \EntityManagerInterface $entityManager, \GatewayResourceService $resourceService, \Kernel $kernel, \LoggerInterface $installationLogger, \SchemaService $schemaService, \CacheService $cacheService)
 ```
 
-The constructor sets al needed variables 
+The constructor sets al needed variables. 
 
  
 

@@ -193,9 +193,9 @@ class MappingService
     /**
      * Handles a single cast.
      *
-     * @param Dot $dotArray The dotArray of the array we are mapping.
-     * @param string $key The key of the field we want to cast.
-     * @param string $cast The type of cast we want to do.
+     * @param Dot    $dotArray The dotArray of the array we are mapping.
+     * @param string $key      The key of the field we want to cast.
+     * @param string $cast     The type of cast we want to do.
      *
      * @return void
      */
@@ -203,7 +203,7 @@ class MappingService
     {
         $value = $dotArray->get($key);
 
-        // todo: this works, we should go to php 8.0 later
+        // Todo: This works, we should go to php 8.0 later.
         if (str_starts_with($cast, 'unsetIfValue==')) {
             $unsetIfValue = substr($cast, 14);
             $cast = 'unsetIfValue';
