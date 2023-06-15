@@ -15,12 +15,19 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 class EavService
 {
+
     private EntityManagerInterface $entityManager;
+
     private CacheService $cacheService;
+
     private array $configuration;
+
     private array $data;
+
     private ObjectEntity $object;
+
     private string $id;
+
 
     /**
      * @param EntityManagerInterface $entityManager
@@ -30,8 +37,10 @@ class EavService
         CacheService $cacheService
     ) {
         $this->entityManager = $entityManager;
-        $this->cacheService = $cacheService;
-    }
+        $this->cacheService  = $cacheService;
+
+    }//end __construct()
+
 
     /**
      * Checks an entity to see if there are anny atributtes waiting for it.
@@ -46,6 +55,7 @@ class EavService
         if (!$entity->getReference()) {
             return $entity;
         }
+
         // Find the atribbutes
         $attributes = $this->entityManager->getRepository('App:Attribute')->findBy(['reference' => $entity->getReference(), 'object' => null]);
 
@@ -55,7 +65,9 @@ class EavService
         }
 
         return $entity;
-    }
+
+    }//end checkEntityforAttribute()
+
 
     /**
      * Checks an atribute to see if a schema for its reference has becomme available.
@@ -77,7 +89,9 @@ class EavService
         }
 
         return $attribute;
-    }
+
+    }//end checkAttributeforEntity()
+
 
     /**
      * Removes all object entities from the database (should obviusly not be used in production).
@@ -105,5 +119,8 @@ class EavService
         }
 
         return true;
-    }
-}
+
+    }//end deleteAllObjects()
+
+
+}//end class

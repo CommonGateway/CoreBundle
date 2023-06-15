@@ -66,11 +66,12 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
         ObjectEntityService $objectEntityService,
         LoggerInterface $pluginLogger
     ) {
-        $this->entityManager = $entityManager;
-        $this->syncService = $syncService;
-        $this->resourceService = $resourceService;
+        $this->entityManager       = $entityManager;
+        $this->syncService         = $syncService;
+        $this->resourceService     = $resourceService;
         $this->objectEntityService = $objectEntityService;
-        $this->pluginLogger = $pluginLogger;
+        $this->pluginLogger        = $pluginLogger;
+
     }//end __construct()
 
 
@@ -84,6 +85,7 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
         return [
             Events::postPersist,
         ];
+
     }//end getSubscribedEvents()
 
 
@@ -98,7 +100,6 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
 
         // Check if object is an instance of an ObjectEntity.
         if ($object instanceof ObjectEntity === false) {
-
             return;
         }
 
@@ -117,7 +118,7 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
 
             return;
         }
-        
+
         $data = [
             'object' => $object,
             'schema' => $object->getEntity(),

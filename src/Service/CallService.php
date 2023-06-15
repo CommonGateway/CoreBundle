@@ -2,7 +2,7 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
-//use App\Entity\CallLog;
+// use App\Entity\CallLog;
 use App\Entity\Gateway as Source;
 use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Exception;
@@ -33,12 +33,19 @@ use Symfony\Component\Serializer\Encoder\YamlEncoder;
  */
 class CallService
 {
+
     private AuthenticationService $authenticationService;
+
     private Client $client;
+
     private EntityManagerInterface $entityManager;
+
     private FileService $fileService;
+
     private MappingService $mappingService;
+
     private SessionInterface $session;
+
     private LoggerInterface $callLogger;
 
 
@@ -61,13 +68,14 @@ class CallService
         LoggerInterface $callLogger
     ) {
         $this->authenticationService = $authenticationService;
-        $this->client = new Client([]);
-        $this->entityManager = $entityManager;
-        $this->fileService = $fileService;
-        $this->mappingService = $mappingService;
-        $this->session = $session;
-        $this->callLogger = $callLogger;
-    }
+        $this->client                = new Client([]);
+        $this->entityManager         = $entityManager;
+        $this->fileService           = $fileService;
+        $this->mappingService        = $mappingService;
+        $this->session               = $session;
+        $this->callLogger            = $callLogger;
+
+    }//end __construct()
 
 
     /**
@@ -82,20 +90,23 @@ class CallService
         if (isset($config['cert']) === true) {
             if (is_array($config['cert'])) {
                 $config['cert'][0] = $this->fileService->writeFile('certificate', $config['cert'][0]);
-            } elseif (is_string($config['cert'])) {
+            } else if (is_string($config['cert'])) {
                 $config['cert'] = $this->fileService->writeFile('certificate', $config['cert']);
             }
         }
+
         if (isset($config['ssl_key']) === true) {
             if (is_array($config['ssl_key'])) {
                 $config['ssl_key'][0] = $this->fileService->writeFile('privateKey', $config['ssl_key'][0]);
-            } elseif (is_string($config['ssl_key'])) {
+            } else if (is_string($config['ssl_key'])) {
                 $config['ssl_key'] = $this->fileService->writeFile('privateKey', $config['ssl_key']);
             }
         }
+
         if (isset($config['verify']) === true && is_string($config['verify']) === true) {
             $config['verify'] = $this->fileService->writeFile('verify', $config['verify']);
         }
+
     }//end getCertificate()
 
 
@@ -112,13 +123,16 @@ class CallService
             $filename = is_array($config['cert']) ? $config['cert'][0] : $config['cert'];
             $this->fileService->removeFile($filename);
         }
+
         if (isset($config['ssl_key']) === true) {
             $filename = is_array($config['ssl_key']) ? $config['ssl_key'][0] : $config['ssl_key'];
             $this->fileService->removeFile($filename);
         }
+
         if (isset($config['verify']) === true && is_string($config['verify']) === true) {
             $this->fileService->removeFile($config['verify']);
         }
+
     }//end removeFiles()
 
 
@@ -137,6 +151,7 @@ class CallService
                     $headers[$key] = $header[0];
                     continue;
                 }
+
                 unset($headers[$key]);
             }
         }//end foreach
@@ -145,15 +160,15 @@ class CallService
 
     }//end removeEmptyHeaders()
 
-    
+
     /**
      * Creates a default CallLog with given info.
-     * 
+     *
      * @param Source $source
      * @param string $endpoint
      * @param string $method
      * @param array  $config
-     * 
+     *
      * @return CallLog $log
      */
     private function createDefaultLog(Source $source, string $endpoint, string $method, array $config): CallLog
@@ -169,14 +184,14 @@ class CallService
 
     }//end createDefaultLog()
 
-    
+
     /**
      * Updates the CallLog after a successfull call.
-     * 
+     *
      * @param CallLog      $log
      * @param Response     $responseClone
      * @param float|string $startTimer    Timestamp when request started.
-     * 
+     *
      * @return void Nothing
      */
     private function updateLog(CallLog $log, Response $responseClone, $startTimer): void
@@ -193,17 +208,17 @@ class CallService
         $this->entityManager->persist($log);
         $this->entityManager->flush();
 
-    }//end createDefaultLog()
+    }//end updateLog()
 
-    
+
     /**
      * Handles the exception if the call triggered one.
-     * 
+     *
      * @param ServerException|ClientException|RequestException|Exception $exception
      * @param Source                                                     $source
      * @param string                                                     $method
      * @param array                                                      $config
-     * 
+     *
      * @return Response $this->handleEndpointsConfigIn()
      */
     private function handleCallException($exception, Source $source, string $endpoint): Response
@@ -211,22 +226,22 @@ class CallService
         // $stopTimer = microtime(true);
         // $log->setResponseStatus('');
         // if ($e->getResponse()) {
-        //     $log->setResponseStatusCode($e->getResponse()->getStatusCode());
-        //     $log->setResponseBody($e->getResponse()->getBody()->getContents());
-        //     $log->setResponseHeaders($e->getResponse()->getHeaders());
+        // $log->setResponseStatusCode($e->getResponse()->getStatusCode());
+        // $log->setResponseBody($e->getResponse()->getBody()->getContents());
+        // $log->setResponseHeaders($e->getResponse()->getHeaders());
         // } else {
-        //     $log->setResponseStatusCode(0);
-        //     $log->setResponseBody($e->getMessage());
+        // $log->setResponseStatusCode(0);
+        // $log->setResponseBody($e->getMessage());
         // }
         // $log->setResponseTime($stopTimer - $startTimer);
         // $this->entityManager->persist($log);
         // $this->entityManager->flush();
-        
         if (method_exists(get_class($exception), 'getResponse') === true
             && $exception->getResponse() !== null
         ) {
             $responseContent = $exception->getResponse()->getBody()->getContents();
         }
+
         $this->callLogger->error('Request failed with error '.$exception->getMessage().' and body '.$responseContent ?? null);
 
         return $this->handleEndpointsConfigIn($source, $endpoint, null, $exception, $responseContent ?? null);
@@ -248,11 +263,11 @@ class CallService
      */
     public function call(
         Source $source,
-        string $endpoint = '',
-        string $method = 'GET',
-        array $config = [],
-        bool $asynchronous = false,
-        bool $createCertificates = true
+        string $endpoint='',
+        string $method='GET',
+        array $config=[],
+        bool $asynchronous=false,
+        bool $createCertificates=true
     ): Response {
         $this->session->set('source', $source->getId()->toString());
         $this->callLogger->info('Calling source '.$source->getName());
@@ -260,15 +275,16 @@ class CallService
         if (!$source->getIsEnabled()) {
             throw new HttpException('409', "This source is not enabled: {$source->getName()}");
         }
+
         if ($source->getConfiguration()) {
             $config = array_merge_recursive($config, $source->getConfiguration());
         }
 
         // $log = $this->createDefaultLog($source, $endpoint, $method, $config);
-
         if (empty($source->getLocation())) {
             throw new HttpException('409', "This source has no location: {$source->getName()}");
         }
+
         if (isset($config['headers']) === false) {
             $config['headers'] = [];
         }
@@ -278,11 +294,11 @@ class CallService
         // Set authentication if needed
         $config = array_merge_recursive($this->getAuthentication($source), $config);
         $createCertificates && $this->getCertificate($config);
-        $config['headers'] = array_merge($source->getHeaders() ?? [], $config['headers']); // Backwards compatible, $source->getHeaders = deprecated
+        $config['headers'] = array_merge(($source->getHeaders() ?? []), $config['headers']);
+        // Backwards compatible, $source->getHeaders = deprecated
         $config['headers']['host'] = $parsedUrl['host'];
-        $config['headers'] = $this->removeEmptyHeaders($config['headers']);
-//        $log->setRequestHeaders($config['headers'] ?? null);
-
+        $config['headers']         = $this->removeEmptyHeaders($config['headers']);
+        // $log->setRequestHeaders($config['headers'] ?? null);
         $url = $source->getLocation().$endpoint;
         $this->callLogger->info('Calling url '.$url);
 
@@ -298,21 +314,18 @@ class CallService
             } else {
                 $response = $this->client->requestAsync($method, $url, $config);
             }
+
             $this->callLogger->info("Request to $url succesful");
-        } catch (ServerException|ClientException|RequestException|Exception $exception) {
-
+        } catch (ServerException | ClientException | RequestException | Exception $exception) {
             return $this->handleCallException($exception, $source, $endpoint);
-
         } catch (GuzzleException $exception) {
             $this->callLogger->error('Request failed with error '.$exception);
 
             return $this->handleEndpointsConfigIn($source, $endpoint, null, $exception, null);
-            
         }//end try
 
         // $responseClone = clone $response;
         // $this->updateLog($log, $responseClone, $startTimer);
-
         $createCertificates && $this->removeFiles($config);
 
         return $this->handleEndpointsConfigIn($source, $endpoint, $response, null, null);
@@ -340,7 +353,7 @@ class CallService
         // Let's check if the endpoint used on this source has "out" configuration in the EndpointsConfig of the source.
         if (array_key_exists($endpoint, $endpointsConfig) === true && array_key_exists('out', $endpointsConfig[$endpoint])) {
             $endpointConfigOut = $endpointsConfig[$endpoint]['out'];
-        } elseif (array_key_exists('global', $endpointsConfig) === true && array_key_exists('out', $endpointsConfig['global'])) {
+        } else if (array_key_exists('global', $endpointsConfig) === true && array_key_exists('out', $endpointsConfig['global'])) {
             $endpointConfigOut = $endpointsConfig['global']['out'];
         }
 
@@ -379,14 +392,13 @@ class CallService
                 $this->callLogger->error("Could not find mapping with reference {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source");
 
                 return $config;
-
             }//end if
 
             if (is_string($config[$configKey]) === true) {
                 try {
-                    $body = $this->mappingService->mapping($mapping, \Safe\json_decode($config[$configKey], true));
+                    $body               = $this->mappingService->mapping($mapping, \Safe\json_decode($config[$configKey], true));
                     $config[$configKey] = \Safe\json_encode($body);
-                } catch (Exception|LoaderError|SyntaxError $exception) {
+                } catch (Exception | LoaderError | SyntaxError $exception) {
                     $this->callLogger->error("Could not map with mapping {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source. ".$exception->getMessage());
                 }
             }//end if
@@ -394,11 +406,10 @@ class CallService
             if (is_array($config[$configKey]) === true) {
                 try {
                     $config[$configKey] = $this->mappingService->mapping($mapping, $config[$configKey]);
-                } catch (Exception|LoaderError|SyntaxError $exception) {
+                } catch (Exception | LoaderError | SyntaxError $exception) {
                     $this->callLogger->error("Could not map with mapping {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source. ".$exception->getMessage());
                 }
             }//end if
-
         }//end if
 
         return $config;
@@ -410,17 +421,17 @@ class CallService
      * Handles the endpointsConfig of a Source after we did an api-call.
      * See FileSystemService->handleEndpointsConfigIn() for how we handle this on FileSystem sources.
      *
-     * @param Source          $source           The source.
-     * @param string          $endpoint         The endpoint used to do an api-call on the source.
-     * @param Response|null   $response         The response of an api-call we might want to change.
-     * @param \Exception|null $exception        The Exception thrown as response of an api-call that we might want to change.
-     * @param string|null     $responseContent  The response content of an api-call that threw an Exception that we might want to change.
+     * @param Source          $source          The source.
+     * @param string          $endpoint        The endpoint used to do an api-call on the source.
+     * @param Response|null   $response        The response of an api-call we might want to change.
+     * @param \Exception|null $exception       The Exception thrown as response of an api-call that we might want to change.
+     * @param string|null     $responseContent The response content of an api-call that threw an Exception that we might want to change.
      *
      * @throws \Exception
      *
      * @return Response The response.
      */
-    private function handleEndpointsConfigIn(Source $source, string $endpoint, ?Response $response, ?\Exception $exception = null, ?string $responseContent = null): Response
+    private function handleEndpointsConfigIn(Source $source, string $endpoint, ?Response $response, ?\Exception $exception=null, ?string $responseContent=null): Response
     {
         $this->callLogger->info('Handling incoming configuration for endpoints');
         $endpointsConfig = $source->getEndpointsConfig();
@@ -428,6 +439,7 @@ class CallService
             if ($response !== null) {
                 return $response;
             }
+
             if ($exception !== null) {
                 throw $exception;
             }
@@ -441,6 +453,7 @@ class CallService
             if ($response !== null) {
                 return $response;
             }
+
             if ($exception !== null) {
                 throw $exception;
             }
@@ -449,7 +462,7 @@ class CallService
         // Let's check if the endpoint used on this source has "in" configuration in the EndpointsConfig of the source.
         if (array_key_exists($endpoint, $endpointsConfig) === true && array_key_exists('in', $endpointsConfig[$endpoint])) {
             $endpointConfigIn = $endpointsConfig[$endpoint]['in'];
-        } elseif (array_key_exists('global', $endpointsConfig) === true && array_key_exists('in', $endpointsConfig['global'])) {
+        } else if (array_key_exists('global', $endpointsConfig) === true && array_key_exists('in', $endpointsConfig['global'])) {
             $endpointConfigIn = $endpointsConfig['global']['in'];
         }
 
@@ -461,7 +474,7 @@ class CallService
         // Handle endpointConfigIn for a Response
         if (isset($endpointConfigIn) === true && $response !== null) {
             $headers = $this->handleEndpointConfigIn($response->getHeaders(), $endpointConfigIn, 'headers');
-            $body = $this->handleEndpointConfigIn($response->getBody(), $endpointConfigIn, 'body');
+            $body    = $this->handleEndpointConfigIn($response->getBody(), $endpointConfigIn, 'body');
 
             is_array($body) && $body = json_encode($body);
 
@@ -500,22 +513,23 @@ class CallService
         $exceptionArray = [
             'statusCode' => $exception->getResponse()->getStatusCode(),
             'headers'    => $exception->getResponse()->getHeaders(),
-            'body'       => $body ?? $exception->getResponse()->getBody()->getContents(),
+            'body'       => ($body ?? $exception->getResponse()->getBody()->getContents()),
             'message'    => $exception->getMessage(),
         ];
 
         $headers = $this->handleEndpointConfigIn($exception->getResponse()->getHeaders(), $endpointConfigIn, 'headers');
-        $error = $this->handleEndpointConfigIn($exceptionArray, $endpointConfigIn, 'error');
+        $error   = $this->handleEndpointConfigIn($exceptionArray, $endpointConfigIn, 'error');
 
         if (array_key_exists('statusCode', $error)) {
             $statusCode = $error['statusCode'];
             unset($error['statusCode']);
         }
+
         $error = json_encode($error);
 
-        return new Response($statusCode ?? $exception->getCode(), $headers, $error, $exception->getResponse()->getProtocolVersion());
+        return new Response(($statusCode ?? $exception->getCode()), $headers, $error, $exception->getResponse()->getProtocolVersion());
 
-    }//end handleEndpointConfigEx()
+    }//end handleEndpointConfigInEx()
 
 
     /**
@@ -550,7 +564,7 @@ class CallService
 
             try {
                 $responseData = $this->mappingService->mapping($mapping, $responseData);
-            } catch (Exception|LoaderError|SyntaxError $exception) {
+            } catch (Exception | LoaderError | SyntaxError $exception) {
                 $this->callLogger->error("Could not map with mapping {$endpointConfigIn[$responseProperty]['mapping']} while handling $responseProperty EndpointConfigIn for a Source. ".$exception->getMessage());
             }
         }//end if
@@ -597,32 +611,32 @@ class CallService
     public function decodeResponse(
         Source $source,
         Response $response,
-        ?string $contentType = 'application/json'
+        ?string $contentType='application/json'
     ): array {
         $this->callLogger->info('Decoding response content');
         // resultaat omzetten
-
         // als geen content-type header dan content-type header is accept header
         $responseBody = $response->getBody()->getContents();
         if (!$responseBody) {
             return [];
         }
+
         $this->callLogger->debug('Response content: '.$responseBody);
 
-        $xmlEncoder = new XmlEncoder(['xml_root_node_name' => $this->configuration['apiSource']['location']['xmlRootNodeName'] ?? 'response']);
+        $xmlEncoder  = new XmlEncoder(['xml_root_node_name' => ($this->configuration['apiSource']['location']['xmlRootNodeName'] ?? 'response')]);
         $yamlEncoder = new YamlEncoder();
-        $contentType = $this->getContentType($response, $source) ?? $contentType;
+        $contentType = ($this->getContentType($response, $source) ?? $contentType);
         switch ($contentType) {
-            case 'text/yaml':
-            case 'text/x-yaml':
-                return $yamlEncoder->decode($responseBody, 'yaml');
-            case 'text/xml':
-            case 'text/xml; charset=utf-8':
-            case 'application/xml':
-                return $xmlEncoder->decode($responseBody, 'xml');
-            case 'application/json':
-            default:
-                $result = json_decode($responseBody, true);
+        case 'text/yaml':
+        case 'text/x-yaml':
+            return $yamlEncoder->decode($responseBody, 'yaml');
+        case 'text/xml':
+        case 'text/xml; charset=utf-8':
+        case 'application/xml':
+            return $xmlEncoder->decode($responseBody, 'xml');
+        case 'application/json':
+        default:
+            $result = json_decode($responseBody, true);
         }//end switch
 
         if (isset($result)) {
@@ -639,6 +653,7 @@ class CallService
 
             throw new \Exception('Could not decode body, content type could not be determined');
         }//end try
+
     }//end decodeResponse()
 
 
@@ -667,12 +682,12 @@ class CallService
      *
      * @return array The array of results
      */
-    public function getAllResults(Source $source, string $endpoint = '', array $config = []): array
+    public function getAllResults(Source $source, string $endpoint='', array $config=[]): array
     {
         $this->callLogger->info('Fetch all data from source and combine the results into one array');
-        $errorCount = 0;
-        $pageCount = 1;
-        $results = [];
+        $errorCount     = 0;
+        $pageCount      = 1;
+        $results        = [];
         $previousResult = [];
         while ($errorCount < 5) {
             try {
@@ -681,19 +696,19 @@ class CallService
                 $response = $this->call($source, $endpoint, 'GET', $config);
 
                 $decodedResponse = $this->decodeResponse($source, $response);
-                if (
-                    $decodedResponse === [] ||
-                    isset($decodedResponse['data']) === true                       && $decodedResponse['data'] === [] ||
-                    isset($decodedResponse['results']) === true                    && $decodedResponse['results'] === [] ||
-                    isset($decodedResponse['items']) === true                      && $decodedResponse['items'] == [] ||
-                    isset($decodedResponse['result']['instance']['rows']) === true && $decodedResponse['result']['instance']['rows'] == [] ||
-                    isset($decodedResponse['page']) === true                       && $decodedResponse['page'] !== $pageCount - 1 ||
-                    $decodedResponse == $previousResult
+                if ($decodedResponse === []
+                    || isset($decodedResponse['data']) === true                       && $decodedResponse['data'] === []
+                    || isset($decodedResponse['results']) === true                    && $decodedResponse['results'] === []
+                    || isset($decodedResponse['items']) === true                      && $decodedResponse['items'] == []
+                    || isset($decodedResponse['result']['instance']['rows']) === true && $decodedResponse['result']['instance']['rows'] == []
+                    || isset($decodedResponse['page']) === true                       && $decodedResponse['page'] !== ($pageCount - 1)
+                    || $decodedResponse == $previousResult
                 ) {
                     break;
                 }
+
                 $decodedResponses[] = $decodedResponse;
-                $previousResult = $decodedResponse;
+                $previousResult     = $decodedResponse;
             } catch (\Exception $exception) {
                 $errorCount++;
                 $this->callLogger->error($exception->getMessage());
@@ -701,13 +716,13 @@ class CallService
 
             if (isset($decodedResponse['results']) === true) {
                 $results = array_merge($decodedResponse['results'], $results);
-            } elseif (isset($decodedResponse['items']) === true) {
+            } else if (isset($decodedResponse['items']) === true) {
                 $results = array_merge($decodedResponse['items'], $results);
-            } elseif (isset($decodedResponse['data']) === true) {
+            } else if (isset($decodedResponse['data']) === true) {
                 $results = array_merge($decodedResponse['data'], $results);
-            } elseif (isset($decodedResponse['result']['instance']['rows']) === true) {
+            } else if (isset($decodedResponse['result']['instance']['rows']) === true) {
                 $results = array_merge($decodedResponse['result']['instance']['rows'], $results);
-            } elseif (isset($decodedResponse[0]) === true) {
+            } else if (isset($decodedResponse[0]) === true) {
                 $results = array_merge($decodedResponse, $results);
             }
         }//end while
@@ -715,4 +730,6 @@ class CallService
         return $results;
 
     }//end getAllResults()
-}
+
+
+}//end class

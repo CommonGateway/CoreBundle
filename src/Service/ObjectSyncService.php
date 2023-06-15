@@ -18,6 +18,7 @@ use Psr\Log\LoggerInterface;
  */
 class ObjectSyncService
 {
+
     /**
      * @var EntityManagerInterface
      */
@@ -60,14 +61,15 @@ class ObjectSyncService
         GatewayResourceService $resourceService,
         LoggerInterface $objectSyncLogger
     ) {
-        $this->entityManager = $entityManager;
-        $this->syncService = $syncService;
-        $this->callService = $callService;
-        $this->resourceService = $resourceService;
+        $this->entityManager    = $entityManager;
+        $this->syncService      = $syncService;
+        $this->callService      = $callService;
+        $this->resourceService  = $resourceService;
         $this->objectSyncLogger = $objectSyncLogger;
+
     }//end __construct()
 
-    
+
     /**
      * Synchronise the object to the source.
      *
@@ -82,7 +84,6 @@ class ObjectSyncService
         $synchronisation = $this->syncService->findSyncByObject($data['object'], $data['source'], $data['schema']);
 
         // @todo Syncing to the source must go through the synchronisationService.
-
         $configuration = $data['source']->getConfiguration();
 
         if (key_exists('path', $configuration) === false) {
@@ -101,7 +102,8 @@ class ObjectSyncService
         try {
             $result = $this->callService->call(
                 $data['source'],
-                $configuration['path'], // @todo Check if this is the right way to do this
+                $configuration['path'],
+                // @todo Check if this is the right way to do this
                 'POST',
                 [
                     'body'    => json_encode($objectArray),
@@ -109,7 +111,7 @@ class ObjectSyncService
                     'headers' => $configuration,
                 ]
             );
-        } catch (Exception|GuzzleException $exception) {
+        } catch (Exception | GuzzleException $exception) {
             $this->objectSyncLogger->error($exception->getMessage(), [$exception->getFile()]);
 
             return [];
@@ -124,6 +126,7 @@ class ObjectSyncService
 
         return $synchronisation->getObject()->toArray();
 
-    }//end getProxyPath()
+    }//end objectSyncHandler()
+
 
 }//end class

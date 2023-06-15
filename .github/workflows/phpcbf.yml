@@ -23,4 +23,5 @@ jobs:
           git config user.email ""
           git add src
           git commit -m "Update src from PHP Codesniffer" || echo "No changes to commit"
+          git pull origin $(git rev-parse --abbrev-ref HEAD) --rebase --autostash
           git push

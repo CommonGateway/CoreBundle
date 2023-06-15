@@ -22,21 +22,23 @@ use Twig\Environment;
  */
 class DownloadService
 {
+
     /**
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
-    
+
     /**
      * @var LoggerInterface
      */
     private LoggerInterface $logger;
-    
+
     /**
      * @var Environment
      */
     private Environment $twig;
-    
+
+
     /**
      * The constructor sets al needed variables.
      *
@@ -50,10 +52,12 @@ class DownloadService
         Environment $twig
     ) {
         $this->entityManager = $entityManager;
-        $this->logger = $requestLogger;
-        $this->twig = $twig;
+        $this->logger        = $requestLogger;
+        $this->twig          = $twig;
+
     }//end __construct()
-    
+
+
     /**
      * Renders a pdf.
      *
@@ -71,7 +75,7 @@ class DownloadService
         if ($templates->count() === 0) {
             $this->logger->error('There is no render template for this type of object.');
             throw new BadRequestException('There is no render template for this type of object.', 406);
-        } elseif ($templates->count() > 1) {
+        } else if ($templates->count() > 1) {
             $this->logger->warning('There are more than 1 templates for this object, resolving by rendering the first template found.');
         }
 
@@ -81,11 +85,13 @@ class DownloadService
         }
 
         $twigTemplate = $this->twig->createTemplate($template->getContent());
-        $content = $twigTemplate->render(['object' => $data]);
+        $content      = $twigTemplate->render(['object' => $data]);
 
         return $content;
+
     }//end render()
-    
+
+
     /**
      * Downloads a pdf.
      *
@@ -103,5 +109,8 @@ class DownloadService
         $pdfWriter->render();
 
         return $pdfWriter->output();
+
     }//end downloadPdf()
-}
+
+
+}//end class

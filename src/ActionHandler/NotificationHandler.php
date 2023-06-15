@@ -6,10 +6,12 @@ use CommonGateway\CoreBundle\Service\NotificationService;
 
 class NotificationHandler implements ActionHandlerInterface
 {
+
     /**
      * @var NotificationService
      */
     private NotificationService $notificationService;
+
 
     /**
      * @param NotificationService $notificationService The RequestService.
@@ -17,7 +19,9 @@ class NotificationHandler implements ActionHandlerInterface
     public function __construct(NotificationService $notificationService)
     {
         $this->notificationService = $notificationService;
+
     }//end __construct()
+
 
     /**
      *  This function returns the required configuration as a [json-schema](https://json-schema.org/) array.
@@ -32,7 +36,7 @@ class NotificationHandler implements ActionHandlerInterface
             'title'      => 'NotificationHandler',
             'required'   => [
                 'urlLocation',
-                'entity'
+                'entity',
             ],
             'properties' => [
                 'urlLocation' => [
@@ -41,7 +45,7 @@ class NotificationHandler implements ActionHandlerInterface
                     'example'     => 'body.resourceUrl',
                     'required'    => true,
                 ],
-                'entity' => [
+                'entity'      => [
                     'type'        => 'string',
                     'description' => 'The reference of an Entity/Schema these notifications will be for. Used for creating a synchronization and synchronizing.',
                     'example'     => 'https://vng.opencatalogi.nl/schemas/zrc.zaak.schema.json',
@@ -49,7 +53,9 @@ class NotificationHandler implements ActionHandlerInterface
                 ],
             ],
         ];
+
     }//end getConfiguration()
+
 
     /**
      * This function runs the notification service.
@@ -62,5 +68,8 @@ class NotificationHandler implements ActionHandlerInterface
     public function run(array $data, array $configuration): array
     {
         return $this->notificationService->notificationHandler($data, $configuration);
+
     }//end run()
+
+
 }//end class

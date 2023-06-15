@@ -9,7 +9,7 @@
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
  * @package commongateway/corebundle
- * 
+ *
  * @category Service
  */
 
@@ -25,6 +25,7 @@ use Psr\Log\LoggerInterface;
 
 class GatewayResourceService
 {
+
     /**
      * @var EntityManagerInterface
      */
@@ -35,6 +36,7 @@ class GatewayResourceService
      */
     private LoggerInterface $pluginLogger;
 
+
     /**
      * The constructor sets al needed variables.
      *
@@ -44,8 +46,10 @@ class GatewayResourceService
     public function __construct(EntityManagerInterface $entityManager, LoggerInterface $pluginLogger)
     {
         $this->entityManager = $entityManager;
-        $this->pluginLogger = $pluginLogger;
-    }
+        $this->pluginLogger  = $pluginLogger;
+
+    }//end __construct()
+
 
     /**
      * Get a schema by reference.
@@ -63,7 +67,9 @@ class GatewayResourceService
         }//end if
 
         return $entity;
+
     }//end getSchema()
+
 
     /**
      * Get a mapping by reference.
@@ -81,7 +87,9 @@ class GatewayResourceService
         }//end if
 
         return $mapping;
+
     }//end getMapping()
+
 
     /**
      * Get a source by reference.
@@ -99,7 +107,9 @@ class GatewayResourceService
         }//end if
 
         return $source;
+
     }//end getSource()
+
 
     /**
      * Find all sources that have a location that match the specified url.
@@ -112,7 +122,7 @@ class GatewayResourceService
      */
     public function findSourcesForUrl(string $url, string $pluginName): ?array
     {
-        $sources = [];
+        $sources    = [];
         $allSources = $this->entityManager->getRepository('App:Gateway')->findAll();
 
         foreach ($allSources as $source) {
@@ -127,7 +137,9 @@ class GatewayResourceService
         }//end if
 
         return $sources;
+
     }//end findSourcesForUrl()
+
 
     /**
      * Get a endpoint by reference.
@@ -145,7 +157,9 @@ class GatewayResourceService
         }//end if
 
         return $endpoint;
+
     }//end getEndpoint()
+
 
     /**
      * Get an action by reference.
@@ -163,5 +177,8 @@ class GatewayResourceService
         }//end if
 
         return $action;
+
     }//end getAction()
-}
+
+
+}//end class

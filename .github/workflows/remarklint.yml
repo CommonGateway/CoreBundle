@@ -25,4 +25,5 @@ jobs:
           git reset package-lock.json
           git reset node_modules
           git commit -m "Update src from remark-lint" || echo "No changes to commit"
+          git pull origin $(git rev-parse --abbrev-ref HEAD) --rebase --autostash
           git push

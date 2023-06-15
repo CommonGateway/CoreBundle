@@ -19,6 +19,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  */
 class MetricsService
 {
+
     /**
      * @var Client
      */
@@ -39,6 +40,7 @@ class MetricsService
      */
     private ParameterBagInterface $parameters;
 
+
     /**
      * The constructor sets al needed variables.
      *
@@ -54,13 +56,15 @@ class MetricsService
         ParameterBagInterface $parameters
     ) {
         $this->composerService = $composerService;
-        $this->entityManager = $entityManager;
-        $this->parameters = $parameters;
+        $this->entityManager   = $entityManager;
+        $this->parameters      = $parameters;
 
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }
+
     }//end __construct()
+
 
     /**
      * Search for a given term.
@@ -75,56 +79,59 @@ class MetricsService
 
         // @todo the below should come out of mongoDB
         $requests = 0;
-        $calls = 0;
+        $calls    = 0;
 
         $metrics = [
             [
                 'name'  => 'app_version',
                 'type'  => 'gauge',
                 'help'  => 'The current version of the application.',
-                'value' => $coreBundle['version']
+                'value' => $coreBundle['version'],
             ],
             [
                 'name'  => 'app_name',
                 'type'  => 'gauge',
                 'help'  => 'The name of the current version of the application.',
-                'value' => $coreBundle['name']
+                'value' => $coreBundle['name'],
             ],
             [
                 'name'  => 'app_description',
                 'type'  => 'gauge',
                 'help'  => 'The description of the current version of the application.',
-                'value' => $coreBundle['description']
+                'value' => $coreBundle['description'],
             ],
             [
                 'name'  => 'app_users',
                 'type'  => 'gauge',
                 'help'  => 'The current amount of users',
-                'value' => $this->entityManager->getRepository('App:User')->count([])
+                'value' => $this->entityManager->getRepository('App:User')->count([]),
             ],
             [
                 'name'  => 'app_organisations',
                 'type'  => 'gauge',
                 'help'  => 'The current amount of organisations',
-                'value' => $this->entityManager->getRepository('App:Organization')->count([])
+                'value' => $this->entityManager->getRepository('App:Organization')->count([]),
             ],
             [
                 'name'  => 'app_applications',
                 'type'  => 'gauge',
                 'help'  => 'The current amount of applications',
-                'value' => $this->entityManager->getRepository('App:Application')->count([])
+                'value' => $this->entityManager->getRepository('App:Application')->count([]),
             ],
             [
-                'name'  => 'app_requests', // todo: count (request) monologs with unique request id
-                'type'  => 'counter', // todo: should never get lower
+                'name'  => 'app_requests',
+            // todo: count (request) monologs with unique request id
+                'type'  => 'counter',
+            // todo: should never get lower
                 'help'  => 'The total amount of incomming requests handled by this gateway',
-                'value' => $requests
+                'value' => $requests,
             ],
             [
-                'name'  => 'app_calls', // todo: count (call) monologs with unique call id
+                'name'  => 'app_calls',
+            // todo: count (call) monologs with unique call id
                 'type'  => 'counter',
                 'help'  => 'The total amount of outgoing calls handled by this gateway',
-                'value' => $calls
+                'value' => $calls,
             ],
         ];
 
@@ -133,7 +140,9 @@ class MetricsService
         $metrics = array_merge($metrics, $this->getPlugins());
 
         return array_merge($metrics, $this->getObjects());
-    }//end getAll();
+
+    }//end getAll()
+
 
     /**
      * Get metrics concerning errors.
@@ -150,7 +159,7 @@ class MetricsService
             'ALERT'     => $collection->count(['level_name' => ['$in' => ['ALERT']]]),
             'CRITICAL'  => $collection->count(['level_name' => ['$in' => ['CRITICAL']]]),
             'ERROR'     => $collection->count(['level_name' => ['$in' => ['ERROR']]]),
-            
+
             // NOTE: The following log types are not counted towards the total number of errors:
             'WARNING'   => $collection->count(['level_name' => ['$in' => ['WARNING']]]),
             'NOTICE'    => $collection->count(['level_name' => ['$in' => ['NOTICE']]]),
@@ -160,10 +169,7 @@ class MetricsService
             'name'  => 'app_error_count',
             'type'  => 'counter',
             'help'  => "The amount of errors, this only counts logs with level_name 'EMERGENCY', 'ALERT', 'CRITICAL' or 'ERROR'.",
-            'value' => (int) $errorTypes['EMERGENCY']
-                + $errorTypes['ALERT']
-                + $errorTypes['CRITICAL']
-                + $errorTypes['ERROR']
+            'value' => ((int) $errorTypes['EMERGENCY'] + $errorTypes['ALERT'] + $errorTypes['CRITICAL'] + $errorTypes['ERROR']),
         ];
 
         // Create a list
@@ -172,15 +178,15 @@ class MetricsService
                 'name'   => 'app_error_list',
                 'type'   => 'counter',
                 'help'   => 'The list of errors and their error level/type.',
-                'labels' => [
-                    'error_level' => $name,
-                ],
-                'value'  => (int) $count
+                'labels' => ['error_level' => $name],
+                'value'  => (int) $count,
             ];
         }
 
         return $metrics;
-    }// getErrors()
+
+    }//end getErrors()
+
 
     /**
      * Get metrics concerning plugins.
@@ -196,7 +202,7 @@ class MetricsService
             'name'  => 'app_plugins_count',
             'type'  => 'gauge',
             'help'  => 'The amount of installed plugins',
-            'value' => count($plugins)
+            'value' => count($plugins),
         ];
 
         // Create a list
@@ -211,12 +217,14 @@ class MetricsService
                     'plugin_repository'  => $plugin['repository'],
                     'plugin_version'     => $plugin['version'],
                 ],
-                'value'  => 1
+                'value'  => 1,
             ];
         }
 
         return $metrics;
-    }// getPlugins()
+
+    }//end getPlugins()
+
 
     /**
      * Get metrics concerning objects.
@@ -234,25 +242,25 @@ class MetricsService
             'name'  => 'app_objects_count',
             'type'  => 'gauge',
             'help'  => 'The amount objects in the data layer',
-            'value' => $this->entityManager->getRepository('App:ObjectEntity')->count([])
+            'value' => $this->entityManager->getRepository('App:ObjectEntity')->count([]),
         ];
         $metrics[] = [
             'name'  => 'app_cached_objects_count',
             'type'  => 'gauge',
             'help'  => 'The amount objects in the data layer that are stored in the MongoDB cache',
-            'value' => $collection->count([])
+            'value' => $collection->count([]),
         ];
         $metrics[] = [
             'name'  => 'app_schemas_count',
             'type'  => 'gauge',
             'help'  => 'The amount defined schemas',
-            'value' => count($schemas)
+            'value' => count($schemas),
         ];
 
         // Create a list
         foreach ($schemas as $schema) {
             $filter = ['_self.schema.id' => $schema['id']->toString()];
-            
+
             $metrics[] = [
                 'name'   => 'app_schemas',
                 'type'   => 'gauge',
@@ -263,10 +271,13 @@ class MetricsService
                     'schema_reference'   => $schema['reference'],
                     'schema_version'     => $schema['version'],
                 ],
-                'value'  => $collection->count($filter)
+                'value'  => $collection->count($filter),
             ];
         }
 
         return $metrics;
+
     }//end getObjects()
+
+
 }//end class

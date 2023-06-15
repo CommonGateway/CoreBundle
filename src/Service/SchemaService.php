@@ -20,6 +20,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
  */
 class SchemaService
 {
+
     /**
      * @var EntityManagerInterface
      */
@@ -35,6 +36,7 @@ class SchemaService
      */
     private SessionInterface $session;
 
+
     /**
      * @param EntityManagerInterface $entityManager The entity manager
      */
@@ -43,8 +45,10 @@ class SchemaService
         LoggerInterface $schemaLogger
     ) {
         $this->entityManager = $entityManager;
-        $this->logger = $schemaLogger;
+        $this->logger        = $schemaLogger;
+
     }//end __construct()
+
 
     /**
      * Validates the  objects in the EAV setup.
@@ -64,7 +68,9 @@ class SchemaService
                 // ToDo: Build.
             }
         }
+
     }//end validateObjects()
+
 
     /**
      * Validates the  objects in the EAV setup.
@@ -83,7 +89,9 @@ class SchemaService
                 $this->logger->error('Value '.$value->getStringValue().' ('.$value->getId().') that belongs to  '.$value->getAttribute()->getName().' ('.$value->getAttribute()->getId().') is orpahned');
             }
         }
+
     }//end validateValues()
+
 
     /**
      * Validates the schemas in the EAV setup.
@@ -103,7 +111,9 @@ class SchemaService
         }//end foreach
 
         return 1;
+
     }//end validateSchemas()
+
 
     /**
      * Validates a single schema.
@@ -151,12 +161,14 @@ class SchemaService
 
         if ($status === true) {
             $this->logger->info('Schema '.$schema->getName().' ('.$schema->getId().') has been checked and is fine');
-        } elseif ($status === false) {
+        } else if ($status === false) {
             $this->logger->error('Schema '.$schema->getName().' ('.$schema->getId().') has been checked and has an error');
         }
 
         return $status;
+
     }//end validateSchema()
+
 
     /**
      * Validates a single atribute.
@@ -196,7 +208,9 @@ class SchemaService
         }
 
         return $status;
+
     }//end validateAtribute()
+
 
     /**
      * Handles forced id's on object entities.
@@ -206,7 +220,7 @@ class SchemaService
      *
      * @return ObjectEntity The PERSISTED object entity on the forced id
      */
-    public function hydrate(ObjectEntity $objectEntity, array $hydrate = []): ObjectEntity
+    public function hydrate(ObjectEntity $objectEntity, array $hydrate=[]): ObjectEntity
     {
         // This savety dosn't make sense but we need it.
         if ($objectEntity->getEntity() === null) {
@@ -262,8 +276,9 @@ class SchemaService
                                     $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
                                     $newObject = $this->hydrate($newObject, $subvalue);
                                     $valueObject->addObject($newObject);
-                                } else { // Is not an array.
-                                    $idValue = $subvalue;
+                                } else {
+                                    // Is not an array.
+                                    $idValue  = $subvalue;
                                     $subvalue = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
                                     // Savety.
                                     if ($subvalue === null) {
@@ -276,7 +291,7 @@ class SchemaService
                         } else {
                             // The use of gettype is discoureged, but we don't use it as a bl here and only for logging text purposes. So a design decicion was made te allow it.
                             $this->logger->error($valueObject->getAttribute()->getName().' Is a multiple so should be filled with an array, but provided value was '.$value.'(type: '.gettype($value).')');
-                        }
+                        }//end if
 
                         continue;
                     }//end if
@@ -290,21 +305,22 @@ class SchemaService
                         }
 
                         $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
-                        $value = $this->hydrate($newObject, $value);
+                        $value     = $this->hydrate($newObject, $value);
                         $valueObject->setValue($value);
-                    } else { // Is not an array.
+                    } else {
+                        // Is not an array.
                         $idValue = $value;
-                        $value = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
+                        $value   = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
                         // Savety.
                         if ($value === null) {
                             $this->logger->error('Could not find an object for id '.$idValue.' (SchemaService->hydrate)');
                         } else {
                             $valueObject->setValue($value);
                         }
-                    }
+                    }//end if
                 } else {
                     $valueObject->setValue($value);
-                }
+                }//end if
 
                 // Do the normal stuf.
                 $objectEntity->addObjectValue($valueObject);
@@ -318,5 +334,8 @@ class SchemaService
         $this->entityManager->flush();
 
         return $objectEntity;
+
     }//end hydrate()
+
+
 }//end class

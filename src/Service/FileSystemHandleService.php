@@ -26,6 +26,7 @@ use Twig\Error\SyntaxError;
 
 class FileSystemHandleService
 {
+
     /**
      * The entity manager.
      *
@@ -54,6 +55,7 @@ class FileSystemHandleService
      */
     private FileSystemCreateService $fscService;
 
+
     /**
      * The class constructor.
      *
@@ -68,11 +70,13 @@ class FileSystemHandleService
         LoggerInterface $callLogger,
         FileSystemCreateService $fscService
     ) {
-        $this->entityManager = $entityManager;
+        $this->entityManager  = $entityManager;
         $this->mappingService = $mappingService;
-        $this->callLogger = $callLogger;
-        $this->fscService = $fscService;
+        $this->callLogger     = $callLogger;
+        $this->fscService     = $fscService;
+
     }//end __construct()
+
 
     /**
      * Gets the content of a file from a specific file on a filesystem.
@@ -91,7 +95,9 @@ class FileSystemHandleService
         }
 
         return null;
+
     }//end getFileContents()
+
 
     /**
      * Returns the contents of all files in a filesystem.
@@ -116,7 +122,9 @@ class FileSystemHandleService
         }
 
         return $contents;
+
     }//end getContentFromAllFiles()
+
 
     /**
      * Decodes a file content using a given format, default = json_decode.
@@ -129,7 +137,7 @@ class FileSystemHandleService
      *
      * @return array The decoded file content.
      */
-    public function decodeFile(?string $content, string $location, ?string $format = null): array
+    public function decodeFile(?string $content, string $location, ?string $format=null): array
     {
         /*
          * Increase memory, data read from file can get quite large.
@@ -140,34 +148,36 @@ class FileSystemHandleService
 
         if ($format === null) {
             $fileArray = explode('.', $location);
-            $format = end($fileArray);
+            $format    = end($fileArray);
         }
 
         switch ($format) {
-            case 'zip':
-                $zipFile = $this->fscService->createZipFileFromContent($content);
-                $filesystem = $this->fscService->openZipFilesystem($zipFile);
-                $content = $this->getContentFromAllFiles($filesystem);
-                $this->fscService->removeZipFile($zipFile);
+        case 'zip':
+            $zipFile    = $this->fscService->createZipFileFromContent($content);
+            $filesystem = $this->fscService->openZipFilesystem($zipFile);
+            $content    = $this->getContentFromAllFiles($filesystem);
+            $this->fscService->removeZipFile($zipFile);
 
-                return $content;
-            case 'yaml':
-                $yamlEncoder = new YamlEncoder();
+            return $content;
+        case 'yaml':
+            $yamlEncoder = new YamlEncoder();
 
-                return $yamlEncoder->decode($content, $format);
-            case 'xml':
-                $xmlEncoder = new XmlEncoder();
+            return $yamlEncoder->decode($content, $format);
+        case 'xml':
+            $xmlEncoder = new XmlEncoder();
 
-                return $xmlEncoder->decode($content, $format);
-            case 'json':
-            default:
-                try {
-                    return \Safe\json_decode($content, true);
-                } catch (\Exception $exception) {
-                    return [];
-                }
+            return $xmlEncoder->decode($content, $format);
+        case 'json':
+        default:
+            try {
+                return \Safe\json_decode($content, true);
+            } catch (\Exception $exception) {
+                return [];
+            }
         }//end switch
+
     }//end decodeFile()
+
 
     /**
      * Calls a Filesystem source according to given configuration.
@@ -178,7 +188,7 @@ class FileSystemHandleService
      *
      * @return array The decoded response array of the call.
      */
-    public function call(Source $source, string $location, array $config = []): array
+    public function call(Source $source, string $location, array $config=[]): array
     {
         // Todo: Also add handleEndpointsConfigOut?
         $fileSystem = $this->fscService->openFtpFilesystem($source);
@@ -187,12 +197,14 @@ class FileSystemHandleService
 
         if (isset($config['format']) === true) {
             $decodedFile = $this->decodeFile($content, $location, $config['format']);
-        } elseif (isset($config['format']) === false) {
+        } else if (isset($config['format']) === false) {
             $decodedFile = $this->decodeFile($content, $location);
         }
 
         return $this->handleEndpointsConfigIn($source, $location, $decodedFile);
+
     }//end call()
+
 
     /**
      * Handles the endpointsConfig of a Filesystem Source after we did a guzzle call.
@@ -217,7 +229,7 @@ class FileSystemHandleService
             && array_key_exists('in', $endpointsConfig[$location]) === true
         ) {
             $endpointConfigIn = $endpointsConfig[$location]['in'];
-        } elseif (array_key_exists('global', $endpointsConfig) === true
+        } else if (array_key_exists('global', $endpointsConfig) === true
             && array_key_exists('in', $endpointsConfig['global']) === true
         ) {
             $endpointConfigIn = $endpointsConfig['global']['in'];
@@ -228,7 +240,9 @@ class FileSystemHandleService
         }
 
         return $decodedFile;
+
     }//end handleEndpointsConfigIn()
+
 
     /**
      * Handles endpointConfig for a specific endpoint on a Filesystem source and a specific key like: 'root'.
@@ -265,11 +279,14 @@ class FileSystemHandleService
                 }
 
                 $decodedFile[$key] = $this->mappingService->mapping($mapping, $decodedFile[$key]);
-            } catch (Exception|LoaderError|SyntaxError $exception) {
+            } catch (Exception | LoaderError | SyntaxError $exception) {
                 $this->callLogger->error("Could not map with mapping {$endpointConfigIn[$key]['mapping']} while handling $key EndpointConfigIn for a Filesystem Source. ".$exception->getMessage());
             }
         }
 
         return $decodedFile;
+
     }//end handleEndpointConfigIn()
+
+
 }//end class
