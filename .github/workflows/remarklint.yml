@@ -16,7 +16,6 @@ jobs:
         shell: bash
       - name: run remark
         run: npx remark . --output --use remark-preset-lint-consistent --use remark-preset-lint-recommended --use remark-lint-list-item-indent
-      - uses: actions/checkout@v2
       - name: Git commit
         run: |
           git config user.name "GitHub Actions"

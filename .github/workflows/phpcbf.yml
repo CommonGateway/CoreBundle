@@ -17,7 +17,6 @@ jobs:
       - name: Run phpcbf
         run: phpcbf .
         continue-on-error: true
-      - uses: actions/checkout@v3
       - name: Git commit
         run: |
           git config user.name "GitHub Actions"
