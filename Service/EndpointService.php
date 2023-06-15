@@ -65,6 +65,8 @@ class EndpointService
     private ?Endpoint $endpoint = null;
 
     /**
+     * The constructor sets al needed variables.
+     *
      * @param EntityManagerInterface   $entityManager   The enitymanger
      * @param SerializerInterface      $serializer      The serializer
      * @param RequestService           $requestService  The request service
@@ -85,13 +87,15 @@ class EndpointService
         $this->session = $session;
         $this->logger = $endpointLogger;
     }//end __construct()
-
+    
     /**
      * Handle the request afther it commes in through the ZZ controller.
      *
      * @param Request $request The inbound request
      *
      * @return Response
+     *
+     * @throws Exception
      */
     public function handleRequest(Request $request): Response
     {
@@ -179,6 +183,8 @@ class EndpointService
         // Determine the accept type.
         $this->logger->debug('Determine accept type from accept header');
         switch ($acceptHeader) {
+            case 'application/pdf':
+                return 'pdf';
             case 'application/json':
                 return 'json';
             case 'application/json+hal':
@@ -226,6 +232,10 @@ class EndpointService
      */
     public function decodeBody(): ?array
     {
+        if (empty($this->request->getContent()) === true) {
+            return [];
+        }
+
         // Get the content type.
         $this->logger->info('Decoding body');
         $contentType = $this->request->getContentType();
@@ -271,7 +281,7 @@ class EndpointService
      *
      * @param ?array $parameters An optional starting array of parameters
      *
-     * @return array The parameter arrau
+     * @return array The parameter array
      */
     private function getParametersFromRequest(?array $parameters = []): array
     {
@@ -281,12 +291,11 @@ class EndpointService
 
         $this->logger->debug('Split the path into an array');
 
-        try {
-            $parameters['path'] = array_combine($this->endpoint->getPath(), explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
-        } catch (Exception $exception) {
-            $path = $this->endpoint->getPath();
-            array_pop($path);
-            $parameters['path'] = array_combine($path, explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
+        $path = $this->endpoint->getPath();
+        if ($this->endpoint->getProxy() !== null && in_array('{route}', $path) === true) {
+            $parameters['path'] = $this->getProxyPath($parameters);
+        } else {
+            $parameters['path'] = $this->getNormalPath($parameters);
         }
 
         $this->logger->debug('Get the query string');
@@ -313,4 +322,67 @@ class EndpointService
 
         return $parameters;
     }//end getParametersFromRequest()
+
+    /**
+     * Gets and returns the correct path array for a normal endpoint.
+     *
+     * @param array $parameters An array of parameters containing at least the key pathRaw.
+     *
+     * @return array The path array for a normal endpoint.
+     */
+    private function getNormalPath(array $parameters): array
+    {
+        $path = $this->endpoint->getPath();
+
+        try {
+            $combinedArray = array_combine($path, explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
+        } catch (Exception $exception) {
+            $this->logger->error('EndpointService->getNormalPath(): $exception');
+
+            array_pop($path); // Todo: not sure why this is here, if someone does now, please add inline comments!
+            $combinedArray = array_combine($path, explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
+        }
+
+        if ($combinedArray === false) {
+            $this->logger->error('EndpointService->getNormalPath(): Failed to construct the parameters path array for the current endpoint.');
+
+            $combinedArray = [];
+        }
+
+        return $combinedArray;
+    }//end getNormalPath()
+
+    /**
+     * Gets and returns the correct path array for a proxy endpoint.
+     *
+     * @param array $parameters An array of parameters containing at least the key pathRaw.
+     *
+     * @return array The path array for a proxy endpoint.
+     */
+    private function getProxyPath(array $parameters): array
+    {
+        $path = $this->endpoint->getPath();
+        $pathRaw = $parameters['pathRaw'];
+
+        // Use Path to create a regex and get endpoint for the proxy from the pathRaw.
+        $regex = str_replace('{route}', '([^.*]*)', "/\/api\/".implode('\/', $path).'/');
+        $matchesCount = preg_match($regex, $pathRaw, $matches);
+
+        if ($matchesCount != 1) {
+            $this->logger->error('EndpointService->getProxyPath(): Failed to find correct proxy endpoint in pathRaw string, trying to get normal endpoint path instead...');
+
+            return $this->getNormalPath($parameters);
+        }
+        $endpoint = $matches[1];
+
+        // Ltrim the default /api/ & Str_replace endpoint for proxy from the pathRaw & explode what is left for $parametersPath.
+        $pathRaw = ltrim($pathRaw, '/api');
+        $pathRaw = str_replace("/$endpoint", '', $pathRaw);
+        $explodedPathRaw = explode('/', $pathRaw);
+
+        // Add endpoint for proxy to $explodedPathRaw
+        $explodedPathRaw[] = $endpoint;
+
+        return array_combine($path, $explodedPathRaw);
+    }//end getProxyPath()
 }//end class

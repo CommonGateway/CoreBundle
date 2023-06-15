@@ -51,6 +51,11 @@ class InstallationService
     private EntityManagerInterface $entityManager;
 
     /**
+     * @var GatewayResourceService
+     */
+    private GatewayResourceService $resourceService;
+
+    /**
      * @var ContainerInterface
      */
     private ContainerInterface $container;
@@ -111,10 +116,13 @@ class InstallationService
     ];
 
     /**
+     * The constructor sets al needed variables.
+     *
      * @codeCoverageIgnore We do not need to test constructors
      *
      * @param ComposerService        $composerService    The Composer service
      * @param EntityManagerInterface $entityManager      The entity manager
+     * @param GatewayResourceService $resourceService    The resource service
      * @param Kernel                 $kernel             The kernel
      * @param LoggerInterface        $installationLogger The logger for the installation channel.
      * @param SchemaService          $schemaService      The schema service
@@ -123,6 +131,7 @@ class InstallationService
     public function __construct(
         ComposerService $composerService,
         EntityManagerInterface $entityManager,
+        GatewayResourceService $resourceService,
         Kernel $kernel,
         LoggerInterface $installationLogger,
         SchemaService $schemaService,
@@ -130,6 +139,7 @@ class InstallationService
     ) {
         $this->composerService = $composerService;
         $this->entityManager = $entityManager;
+        $this->resourceService = $resourceService;
         $this->container = $kernel->getContainer();
         $this->logger = $installationLogger;
         $this->schemaService = $schemaService;
@@ -742,6 +752,11 @@ class InstallationService
             $this->createCards($data['cards']);
         }
 
+        // Set the default source for a schema.
+        if (isset($data['schemas']) === true) {
+            $this->editSchemaProperties($data['schemas']);
+        }
+
         if (isset($data['installationService']) === false || empty($data['installationService']) === true) {
             $this->logger->error($file->getFilename().' Doesn\'t contain an installation service');
 
@@ -771,6 +786,35 @@ class InstallationService
             return false;
         }
     }//end handleInstaller()
+
+    /**
+     * This function adds a given default source to the schema.
+     *
+     * @param array $schemasData The array with data of the schemas
+     *
+     * @throws Exception
+     *
+     * @return void
+     */
+    private function editSchemaProperties(array $schemasData = []): void
+    {
+        foreach ($schemasData as $schemaData) {
+            // Get the schema and source from the schemadata.
+            $schema = $this->resourceService->getSchema($schemaData['reference'], 'commongateway/corebundle');
+
+            if (key_exists('defaultSource', $schemaData) === true) {
+                $source = $this->resourceService->getSource($schemaData['defaultSource'], 'commongateway/corebundle');
+                // Set the source as defaultSource to the schema.
+                $schema->setDefaultSource($source);
+            }
+
+            if (key_exists('createAuditTrails', $schemaData) === true) {
+                $schema->setCreateAuditTrails($schemaData['createAuditTrails']);
+            }
+
+            $this->entityManager->persist($schema);
+        }
+    }
 
     /**
      * This functions connects schema's with a reference containing the collection schemaPrefix to the given collection.
@@ -896,7 +940,7 @@ class InstallationService
             $object = $this->checkIfObjectExists($repository, $endpointData['reference'], $type);
         }
 
-        // todo: this works, we should go to php 8.0 later
+        // Todo: this works, we should go to php 8.0 later.
         if (isset($endpointData['$id']) === false || str_contains($endpointData['$id'], '.endpoint.json') === false) {
             $endpointData['$id'] = $this->createEndpointReference($object ?? null, $type);
             if ($endpointData['$id'] === null) {
@@ -1469,7 +1513,7 @@ class InstallationService
                 continue;
             }
             foreach ($securityGroup->getScopes() as $scope) {
-                // todo: this works, we should go to php 8.0 later
+                // Todo: This works, we should go to php 8.0 later.
                 if (str_contains(strtolower($scope), 'admin')) {
                     $this->logger->error('It is forbidden to change or add users with admin scopes!', ['securityGroup' => $reference, 'userData' => $userData]);
                     continue 2;

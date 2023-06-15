@@ -47,7 +47,7 @@ class EavService
             return $entity;
         }
         // Find the atribbutes
-        $attributes = $this->entityManager->getRepository('App:Attribute')->findBy(['reference'=>$entity->getReference(), 'object'=>null]);
+        $attributes = $this->entityManager->getRepository('App:Attribute')->findBy(['reference' => $entity->getReference(), 'object' => null]);
 
         // Add them to the entity
         foreach ($attributes as $attribute) {
@@ -71,7 +71,7 @@ class EavService
             return $attribute;
         }
 
-        $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference'=>$attribute->getReference()]);
+        $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $attribute->getReference()]);
         if ($entity !== null) {
             $attribute->setObject($entity);
         }

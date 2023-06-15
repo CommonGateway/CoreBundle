@@ -9,7 +9,7 @@ use Symfony\Component\Process\Process;
 use function PHPUnit\Framework\throwException;
 
 /**
- * @Author Ruben van der Linde <ruben@conduction.nl>, Barry Brands <barry@conduction.nl>
+ * @Author Ruben van der Linde <ruben@conduction.nl>, Barry Brands <barry@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
@@ -27,21 +27,21 @@ class ComposerService
         }
 
         return true;
-    }
+    }//end arrayEnum()
 
     /**
      * Make a call to composer.
      *
-     * @param string      $call     The call that you want to make to composer shoul be one of show, init, install
-     * @param string|null $packadge
+     * @param string      $call    The call that you want to make to composer shoul be one of show, init, install
+     * @param string|null $package
      * @param array       $options
      *
      * @return array|string
      */
-    private function composerCall(string $call, array $options = [], string $packadge = '')
+    private function composerCall(string $call, array $options = [], string $package = '')
     {
         $optionsList = [];
-        // Lets check for valid calls
+        // Let's check for valid calls.
         switch ($call) {
             case 'init':
                 $optionsList = [];
@@ -251,13 +251,13 @@ class ComposerService
             case 'audit ':
                 $optionsList = ['--format'];
                 break;
-        }
+        }//end switch
 
         // Prepare the comand
         $cmd = ['composer', $call];
 
-        if ($packadge != '') {
-            $cmd[] = strtolower($packadge);
+        if ($package != '') {
+            $cmd[] = strtolower($package);
         }
 
         // Check the enums
@@ -296,7 +296,7 @@ class ComposerService
         }
 
         return $content;
-    }
+    }//end composerCall()
 
     /**
      * Gets all installed plugins from the lock file.
@@ -312,13 +312,12 @@ class ComposerService
         }
 
         $plugins = json_decode($plugins, true);
-        $results = $plugins['packages'];
 
-        return $results;
-    }
+        return $plugins['packages'];
+    }//end getLockFile()
 
     /**
-     * Show al packadges installed trough composer.
+     * Show al packages installed trough composer.
      *
      * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
      *
@@ -328,9 +327,9 @@ class ComposerService
      */
     public function getAll(array $options = []): array
     {
-        $results = $this->getLockFile();
+        $lockFile = $this->getLockFile();
         $plugins = [];
-        foreach ($results as $key => $result) {
+        foreach ($lockFile as $result) {
             // Remove non gateway plugins from the result
             if (!isset($result['keywords']) || !in_array('common-gateway-plugin', $result['keywords'])) {
                 continue;
@@ -340,62 +339,66 @@ class ComposerService
         }
 
         return $plugins;
-    }
+    }//end getAll()
 
     /**
-     * Show a single packadge installed trough composer.
+     * Show a single package installed trough composer.
      *
      * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
      *
+     * @param string $package
      * @param array $options
      *
      * @return array
      */
-    public function require(string $packadge, array $options = []): array
+    public function require(string $package, array $options = []): array
     {
-        return $this->composerCall('require', $options, $packadge);
-    }
-
+        return $this->composerCall('require', $options, $package);
+    }//end require()
+    
     /**
-     * Show a single packadge installed trough composer.
+     * Show a single package installed trough composer.
      *
      * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
      *
-     * @param array $options
+     * @param string $package
+     * @param array  $options
      *
      * @return array
      */
-    public function upgrade(string $packadge, array $options = []): array
+    public function upgrade(string $package, array $options = []): array
     {
-        return $this->composerCall('upgrade', $options, $packadge);
-    }
+        return $this->composerCall('upgrade', $options, $package);
+    }//end upgrade()
 
     /**
-     * Show a single packadge installed trough composer.
+     * Show a single package installed trough composer.
      *
      * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
      *
-     * @param array $options
+     * @param string $package
+     * @param array  $options
      *
      * @return array
      */
-    public function remove(string $packadge, array $options = []): array
+    public function remove(string $package, array $options = []): array
     {
-        return $this->composerCall('remove', $options, $packadge);
-    }
+        return $this->composerCall('remove', $options, $package);
+    }//end remove()
 
     /**
-     * Show a single packadge installed trough composer.
+     * Show a single package installed trough composer.
      *
      * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
      *
-     * @param array $options
+     * @param string $package
+     * @param array  $options
      *
      * @return array
      */
-    public function getSingle(string $packadge, array $options = []): array
+    public function getSingle(string $package, array $options = []): array
     {
-        $url = 'https://packagist.org/packages/'.$packadge.'.json';
+        $url = 'https://packagist.org/packages/'.$package.'.json';
 
         $client = new \GuzzleHttp\Client();
         $response = $client->request('GET', $url);
@@ -423,21 +426,22 @@ class ComposerService
         }
 
         return $plugin;
-    }
+    }//end getSingle()
 
     /**
      * Search for a given term.
      *
      * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
      *
-     * @param array $options
+     * @param string|null $search
+     * @param array       $options
      *
      * @return array
      */
     public function search(string $search = null, array $options = []): array
     {
         $url = 'https://packagist.org/search.json';
-        $query = ['tags'=>'common-gateway-plugin'];
+        $query = ['tags' => 'common-gateway-plugin'];
         if ($search) {
             $query['q'] = $search;
         }
@@ -455,7 +459,7 @@ class ComposerService
         }
 
         return $plugins;
-    }
+    }//end search()
 
     /**
      * Search for a given term.
@@ -469,5 +473,5 @@ class ComposerService
     public function audit(array $options = []): array
     {
         return $this->composerCall('audit', $options);
-    }
-}
+    }//end audit()
+}//end class

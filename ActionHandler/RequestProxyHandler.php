@@ -27,8 +27,8 @@ class RequestProxyHandler implements ActionHandlerInterface
     public function getConfiguration(): array
     {
         return [
-            '$id'        => 'https://common-gateway.nl/proxy.actionhandler.json',
-            '$schema'    => 'https://json-schema.org/draft/2020-12/schema',
+            '$id'        => 'https://commongateway.nl/ActionHandler/RequestProxyHandler.ActionHandler.json',
+            '$schema'    => 'https://docs.commongateway.nl/schemas/ActionHandler.schema.json',
             'title'      => 'SearchRequestHandler',
             'required'   => [],
             'properties' => [

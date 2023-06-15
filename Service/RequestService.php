@@ -6,7 +6,6 @@ use Adbar\Dot;
 use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\Gateway as Source;
-use App\Entity\Log;
 use App\Entity\ObjectEntity;
 use App\Event\ActionEvent;
 use App\Service\LogService;
@@ -21,7 +20,9 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpKernel\Exception\NotAcceptableHttpException;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -52,8 +53,11 @@ class RequestService
     private SerializerInterface $serializer;
     private SessionInterface $session;
     private LoggerInterface $logger;
-
+    private DownloadService $downloadService;
+    
     /**
+     * The constructor sets al needed variables.
+     *
      * @param EntityManagerInterface   $entityManager
      * @param CacheService             $cacheService
      * @param ResponseService          $responseService
@@ -65,6 +69,7 @@ class RequestService
      * @param SerializerInterface      $serializer
      * @param SessionInterface         $session
      * @param LoggerInterface          $requestLogger
+     * @param DownloadService          $downloadService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -77,7 +82,8 @@ class RequestService
         EventDispatcherInterface $eventDispatcher,
         SerializerInterface $serializer,
         SessionInterface $session,
-        LoggerInterface $requestLogger
+        LoggerInterface $requestLogger,
+        DownloadService $downloadService
     ) {
         $this->entityManager = $entityManager;
         $this->cacheService = $cacheService;
@@ -90,6 +96,59 @@ class RequestService
         $this->serializer = $serializer;
         $this->session = $session;
         $this->logger = $requestLogger;
+        $this->downloadService = $downloadService;
+    }
+
+    /**
+     * Determines the right content type and serializes the data accordingly.
+     *
+     * @param array $data        The data to serialize.
+     * @param mixed $contentType The content type to determine.
+     *
+     * @return string The serialized data.
+     */
+    public function serializeData(array $data, &$contentType): string
+    {
+        $accept   = $this->data['accept'];
+
+        if (isset($this->data['endpoint']) === true) {
+            $endpoint = $this->data['endpoint'];
+        }
+
+        $xmlEncoder = new XmlEncoder([]);
+
+//        @TODO: Create hal and ld encoding
+        switch ($accept) {
+            case 'pdf':
+                $content = $this->downloadService->downloadPdf($data);
+                break;
+            case 'xml':
+                $content = $xmlEncoder->encode($data, 'xml');
+                break;
+            case 'jsonld':
+            case 'jsonhal':
+            case 'json':
+            default:
+                $content = \Safe\json_encode($data);
+        }
+
+//        @TODO: This is preparation for checking if the accept header is allowed by the endpoint
+//        if ($endpoint instanceof Endpoint
+//            && empty($endpoint->getContentTypes()) === false
+//            && in_array($accept, $endpoint->getContentTypes()) === false
+//        ) {
+//            throw new NotAcceptableHttpException('The content type is not accepted for this endpoint');
+//        }
+
+        if (isset($this->data['headers']['accept']) === true && $this->data['headers']['accept'][0] !== '*/*') {
+            $contentType = $this->data['headers']['accept'][0];
+        } elseif ($endpoint instanceof Endpoint && $endpoint->getDefaultContentType() !== null) {
+            $contentType = $endpoint->getDefaultContentType();
+        } elseif (isset($this->data['headers']['accept']) === true && $this->data['headers']['accept'][0] === '*/*') {
+            $contentType = 'application/json';
+        }
+
+        return $content;
     }
 
     /**
@@ -267,17 +326,17 @@ class RequestService
                     "This Endpoint has no Proxy: {$data['endpoint']->getName()}";
 
                 return new Response(
-                    json_encode(['Message' => $message]),
+                    $this->serializeData(['Message' => $message], $contentType),
                     Response::HTTP_NOT_FOUND,
-                    ['Content-type' => isset($this->data['endpoint']) ? $this->data['endpoint']->getDefaultContentType() : 'application/json']
+                    ['Content-type' => $contentType]
                 );
             }
 
             if ($proxy instanceof Source && !$proxy->getIsEnabled()) {
                 return new Response(
-                    json_encode(['Message' => "This Source is not enabled: {$proxy->getName()}"]),
+                    $this->serializeData(['Message' => "This Source is not enabled: {$proxy->getName()}", $contentType]),
                     Response::HTTP_OK, // This should be ok, so we can disable Sources without creating error responses?
-                    ['Content-type' => isset($this->data['endpoint']) ? $this->data['endpoint']->getDefaultContentType() : 'application/json']
+                    ['Content-type' => $contentType]
                 );
             }
         }//end if
@@ -317,11 +376,11 @@ class RequestService
                 $statusCode = $exception->getResponse()->getStatusCode();
                 $headers = $exception->getResponse()->getHeaders();
             }
-            $content = $this->serializer->serialize([
+            $content = $this->serializeData([
                 'Message' => $exception->getMessage(),
                 'Body'    => $body ?? "Can\'t get a response & body for this type of Exception: ".get_class($exception),
-            ], 'json');
-            $response = new Response($content, $statusCode, $headers ?? []);
+            ], $contentType);
+            $response = new Response($content, $statusCode, $headers ?? ['Content-Type' => $contentType]);
         }
 
         // And don so lets return what we have.
@@ -338,7 +397,7 @@ class RequestService
         if ($user = $this->security->getUser()) {
             return $user->getScopes();
         } else {
-            $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous'=>true]);
+            $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous' => true]);
             if ($anonymousSecurityGroup) {
                 return $anonymousSecurityGroup->getScopes();
             }
@@ -536,7 +595,10 @@ class RequestService
                 }
 
                 $this->object = new ObjectEntity($this->schema);
-                $this->object->setOwner($this->security->getUser()->getUserIdentifier());
+
+                if ($this->security->getUser() !== null) {
+                    $this->object->setOwner($this->security->getUser()->getUserIdentifier());
+                }
 
                 $this->logger->debug('Hydrating object');
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
@@ -566,7 +628,7 @@ class RequestService
                 if (!isset($this->id)) {
                     $this->logger->error('No id could be established for your request');
 
-                    return new Response('No id could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
+                    return new Response('No id could be established for your request', '400');
                 }
                 $this->session->set('object', $this->id);
 
@@ -574,14 +636,14 @@ class RequestService
                 if ($this->schema instanceof Entity === false) {
                     $this->logger->error('No schema could be established for your request');
 
-                    return new Response('No schema could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
+                    return new Response('No schema could be established for your request', '400');
                 }
 
                 // Lets see if the found result is allowd for this endpoint
                 if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     $this->logger->error('Object is not supported by this endpoint');
 
-                    return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
+                    return new Response('Object is not supported by this endpoint', '406');
                 }
 
                 $this->object = $this->entityManager->find('App:ObjectEntity', $this->id);
@@ -619,7 +681,7 @@ class RequestService
                 if (!isset($this->id)) {
                     $this->logger->error('No id could be established for your request');
 
-                    return new Response('No id could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
+                    return new Response('No id could be established for your request', '400');
                 }
                 $this->session->set('object', $this->id);
 
@@ -627,14 +689,14 @@ class RequestService
                 if ($this->schema instanceof Entity === false) {
                     $this->logger->error('No schema could be established for your request');
 
-                    return new Response('No schema could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
+                    return new Response('No schema could be established for your request', '400');
                 }
 
                 // Lets see if the found result is allowd for this endpoint
                 if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     $this->logger->error('Object is not supported by this endpoint');
 
-                    return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
+                    return new Response('Object is not supported by this endpoint', '406');
                 }
 
                 $this->object = $this->entityManager->find('App:ObjectEntity', $this->id);
@@ -671,7 +733,7 @@ class RequestService
                 if (!isset($this->id)) {
                     $this->logger->error('No id could be established for your request');
 
-                    return new Response('No id could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
+                    return new Response('No id could be established for your request', '400');
                 }
                 $this->session->set('object', $this->id);
 
@@ -679,14 +741,14 @@ class RequestService
                 if ($this->schema instanceof Entity === false) {
                     $this->logger->error('No schema could be established for your request');
 
-                    return new Response('No schema could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
+                    return new Response('No schema could be established for your request', '400');
                 }
 
                 // Lets see if the found result is allowd for this endpoint
                 if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
                     $this->logger->error('Object is not supported by this endpoint');
 
-                    return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
+                    return new Response('Object is not supported by this endpoint', '406');
                 }
 
                 $this->entityManager->remove($this->object);
@@ -697,7 +759,7 @@ class RequestService
             default:
                 $this->logger->error('Unkown method'.$this->data['method']);
 
-                return new Response('Unkown method'.$this->data['method'], '404', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
+                return new Response('Unkown method'.$this->data['method'], '404');
         }
 
         if (isset($eventType) === true && isset($result) === true) {
@@ -715,7 +777,7 @@ class RequestService
 
             // If we have a response return that
             if ($event->getData()['response']) {
-                return new Response(json_encode($event->getData()['response']), $code, ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
+                return new Response($this->serializeData($event->getData()['response'], $contentType), $code, ['Content-type' => $contentType]);
             }
         }
 
@@ -985,9 +1047,9 @@ class RequestService
         }
 
         $this->data['response'] = $response = new Response(
-            json_encode($response),
+            $this->serializeData($response, $contentType),
             200,
-            ['Content-type' => isset($this->data['endpoint']) ? $this->data['endpoint']->getDefaultContentType() : 'application/json']
+            ['Content-type' => $contentType]
         );
 
         return $this->data;
@@ -1025,10 +1087,12 @@ class RequestService
             //
         }
 
+        $content = $this->serializeData($data, $contentType);
+
         return new Response(
-            json_encode($data),
+            $content,
             200,
-            ['Content-type' => isset($this->data['endpoint']) ? $this->data['endpoint']->getDefaultContentType() : 'application/json']
+            ['Content-type' => $contentType]
         );
     }
 }

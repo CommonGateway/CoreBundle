@@ -21,8 +21,8 @@ class RequestSearchHandler implements ActionHandlerInterface
     public function getConfiguration(): array
     {
         return [
-            '$id'        => 'https://example.com/person.schema.json',
-            '$schema'    => 'https://json-schema.org/draft/2020-12/schema',
+            '$id'        => 'https://commongateway.nl/ActionHandler/RequestSearchHandler.ActionHandler.json',
+            '$schema'    => 'https://docs.commongateway.nl/schemas/ActionHandler.schema.json',
             'title'      => 'SearchRequestHandler',
             'required'   => [],
             'properties' => [

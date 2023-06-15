@@ -22,6 +22,7 @@ use Jose\Component\Signature\JWSTokenSupport;
 use Jose\Component\Signature\JWSVerifier;
 use Jose\Component\Signature\Serializer\CompactSerializer;
 use Jose\Component\Signature\Serializer\JWSSerializerManager;
+use Safe\Exceptions\JsonException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -68,7 +69,7 @@ class AuthenticationService
      *
      * @TODO: This can be merged with the function above by getting the key from the source earlier
      *
-     * @param Source $source
+     * @param  Source $source
      *
      * @return JWK The resulting Json Web Key
      */
@@ -95,7 +96,7 @@ class AuthenticationService
     /**
      * Determines the algorithm for the JWT token to create from the source.
      *
-     * @param Source $source The source to determine the algorithm for
+     * @param  Source $source The source to determine the algorithm for
      *
      * @return string The algorithm to use
      */
@@ -267,7 +268,7 @@ class AuthenticationService
      * Sends a post with auth info and certificate(s) to fetch a jwt token.
      *
      * @param  Source $source
-     * 
+     *
      * @return string $body['access_token'] JWT token.
      */
     private function getVrijbrpToken(Source $source): string
@@ -292,7 +293,7 @@ class AuthenticationService
      * Sends a post with auth info to fetch a jwt token.
      *
      * @param  Source $source
-     * 
+     *
      * @return string accessToken which is a JWT token.
      */
     private function getPinkToken(Source $source): string
@@ -306,22 +307,76 @@ class AuthenticationService
     }//end getPinkToken
 
     /**
+     * Sends a post with authentication info to an OAuth Token Endpoint to fetch an authentication token.
+     *
+     * @param Source $source The source to authenticate for.
+     *
+     * @throws JsonException Thrown if the result can not be json decoded.
+     *
+     * @return string The authentication token.
+     */
+    private function getOauthToken(Source $source): string
+    {
+        $authenticationConfig = $source->getAuthenticationConfig();
+
+        $credentials = [
+            'clientId'     => $source->getUsername(),
+            'clientSecret' => $source->getPassword(),
+        ];
+
+        if (isset($authenticationConfig['case']) === true && $authenticationConfig['case'] === 'snake_case') {
+            $credentials = [
+                'client_id'     => $source->getUsername(),
+                'client_secret' => $source->getPassword(),
+            ];
+        }
+
+        if (isset($authenticationConfig['additionalFields']) === true) {
+            $credentials = array_merge($credentials, $authenticationConfig['additionalFields']);
+        }
+
+        switch ($source->getAuthorizationPassthroughMethod()) {
+            case 'query':
+                $config['query'] = $credentials;
+                break;
+            case 'form_params':
+                $config['form_params'] = $credentials;
+                break;
+            case 'json':
+            default:
+                $config['body'] = \Safe\json_encode($credentials);
+                break;
+        }//end switch
+
+        $guzzleConfig = $source->getConfiguration();
+        $client = new Client($guzzleConfig);
+        $response = $client->post($authenticationConfig['tokenUrl'], $config);
+
+        $result = \Safe\json_decode($response->getBody()->getContents(), true);
+
+        return $result[$authenticationConfig['tokenField']];
+    }//end getOauthToken()
+
+    /**
      * Checks from which type of auth we need to fetch a token from.
      *
-     * @param  Source $source
-     * @param  string $authType
-     * 
-     * @return string Fetched JWT token.
+     * @param Source $source
+     * @param string $authType
+     *
+     * @return string|null Fetched JWT token.
      */
-    public function getTokenFromUrl(Source $source, string $authType): string
+    public function getTokenFromUrl(Source $source, string $authType): ?string
     {
         switch ($authType) {
             case 'vrijbrp-jwt':
                 return $this->getVrijbrpToken($source);
             case 'pink-jwt':
                 return $this->getPinkToken($source);
+            case 'oauth':
+                return $this->getOauthToken($source);
         }//end switch
-
+        
+        return null;
     }//end getTokenFromUrl
 
     public function getHmacToken(array $requestOptions, Source $source): string
@@ -366,6 +421,7 @@ class AuthenticationService
                 break;
             case 'vrijbrp-jwt':
             case 'pink-jwt':
+            case 'oauth':
                 $requestOptions['headers']['Authorization'] = "Bearer {$this->getTokenFromUrl($source, $source->getAuth())}";
                 break;
             case 'hmac':

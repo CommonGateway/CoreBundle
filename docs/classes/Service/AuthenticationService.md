@@ -479,7 +479,7 @@ Checks from which type of auth we need to fetch a token from.
 
 **Return Values**
 
-`string`
+`string|null`
 
 > Fetched JWT token.
 

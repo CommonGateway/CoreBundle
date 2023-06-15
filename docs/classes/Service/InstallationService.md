@@ -12,7 +12,7 @@ This class breaks complexity, methods and coupling rules. This could be solved b
 
 | Name | Description |
 |------|-------------|
-|[__construct](#installationservice__construct)||
+|[__construct](#installationservice__construct)|The constructor sets al needed variables.|
 |[addActionConfiguration](#installationserviceaddactionconfiguration)|This function creates default configuration for the action.|
 |[install](#installationserviceinstall)|Installs the files from a bundle.|
 |[overrideConfig](#installationserviceoverrideconfig)|Overrides the default configuration of an Action. Will also set entity and source to id if a reference is given.|
@@ -26,16 +26,29 @@ This class breaks complexity, methods and coupling rules. This could be solved b
 **Description**
 
 ```php
- __construct (void)
+public __construct (\ComposerService $composerService, \EntityManagerInterface $entityManager, \GatewayResourceService $resourceService, \Kernel $kernel, \LoggerInterface $installationLogger, \SchemaService $schemaService, \CacheService $cacheService)
 ```
 
- 
+The constructor sets al needed variables. 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(\ComposerService) $composerService`
+: The Composer service  
+* `(\EntityManagerInterface) $entityManager`
+: The entity manager  
+* `(\GatewayResourceService) $resourceService`
+: The resource service  
+* `(\Kernel) $kernel`
+: The kernel  
+* `(\LoggerInterface) $installationLogger`
+: The logger for the installation channel.  
+* `(\SchemaService) $schemaService`
+: The schema service  
+* `(\CacheService) $cacheService`
+: The cache service  
 
 **Return Values**
 
