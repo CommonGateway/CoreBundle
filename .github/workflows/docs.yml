@@ -16,11 +16,11 @@ jobs:
           command: require clean/phpdoc-md
       - name: Build the docs
         run: vendor/bin/phpdoc-md
+      - uses: actions/checkout@v3
       - name: Git commit
         run: |
           git config user.name "GitHub Actions"
           git config user.email ""
           git add docs/classes
           git commit -m "Update phpdoc" || echo "No changes to commit"
-          git pull  --ff-only
           git push

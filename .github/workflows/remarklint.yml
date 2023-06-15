@@ -16,6 +16,7 @@ jobs:
         shell: bash
       - name: run remark
         run: npx remark . --output --use remark-preset-lint-consistent --use remark-preset-lint-recommended --use remark-lint-list-item-indent
+      - uses: actions/checkout@v2
       - name: Git commit
         run: |
           git config user.name "GitHub Actions"
@@ -25,5 +26,4 @@ jobs:
           git reset package-lock.json
           git reset node_modules
           git commit -m "Update src from remark-lint" || echo "No changes to commit"
-          git pull --ff-only
           git push
