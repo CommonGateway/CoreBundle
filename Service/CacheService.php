@@ -267,11 +267,11 @@ class CacheService
 
         //(isset($array['_schema']['$id'])?$array['_schema'] = $array['_schema']['$id']:'');
 
-        $id = $objectEntity->getId()->toString();
+        $identification = $objectEntity->getId()->toString();
 
         // Add an id field to main object only if the object not already has an id field.
         if (key_exists('id', $array) === false) {
-            $array['id'] = $id;
+            $array['id'] = $identification;
         }
 
         // Add id field to level 1 subobjects for backwards compatibility reasons.
@@ -284,7 +284,7 @@ class CacheService
         }
 
         if ($collection->findOneAndReplace(
-            ['_id' => $id],
+            ['_id' => $identification],
             $array,
             ['upsert' => true]
         )) {
@@ -334,20 +334,20 @@ class CacheService
             return;
         }
 
-        $id = $object->getId()->toString();
+        $identification = $object->getId()->toString();
         $collection = $this->client->objects->json;
 
-        $collection->findOneAndDelete(['_id' => $id]);
+        $collection->findOneAndDelete(['_id' => $identification]);
     }
 
     /**
      * Get a single object from the cache.
      *
-     * @param string $id
+     * @param string $identification
      *
      * @return array|null
      */
-    public function getObject(string $id): ?array
+    public function getObject(string $identification): ?array
     {
         // Backwards compatablity
         if (!isset($this->client)) {
@@ -357,12 +357,12 @@ class CacheService
         $collection = $this->client->objects->json;
 
         // Check if object is in the cache ????
-        if ($object = $collection->findOne(['_id' => $id])) {
+        if ($object = $collection->findOne(['_id' => $identification])) {
             return json_decode(json_encode($object), true);
         }
 
         // Fall back tot the entity manager
-        if ($object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $id])) {
+        if ($object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $identification])) {
             return $this->cacheObject($object)->toArray(['embedded' => true]);
         }
 
@@ -936,11 +936,11 @@ class CacheService
     /**
      * Get a single endpoint from the cache.
      *
-     * @param Uuid $id
+     * @param Uuid $identification
      *
      * @return array|null
      */
-    public function getEndpoint(string $id): ?array
+    public function getEndpoint(string $identification): ?array
     {
         // Backwards compatablity
         if (!isset($this->client)) {
@@ -949,11 +949,11 @@ class CacheService
 
         $collection = $this->client->endpoints->json;
 
-        if ($object = $collection->findOne(['id' => $id])) {
+        if ($object = $collection->findOne(['id' => $identification])) {
             return $object;
         }
 
-        if ($object = $this->entityManager->getRepository('App:Endpoint')->find($id)) {
+        if ($object = $this->entityManager->getRepository('App:Endpoint')->find($identification)) {
             return $this->serializer->normalize($object);
         }
 
@@ -1052,11 +1052,11 @@ class CacheService
     /**
      * Get a single schema from the cache.
      *
-     * @param Uuid $id
+     * @param Uuid $identification
      *
      * @return array|null
      */
-    public function getSchema(Uuid $id): ?array
+    public function getSchema(Uuid $identification): ?array
     {
         // Backwards compatablity
         if (!isset($this->client)) {
