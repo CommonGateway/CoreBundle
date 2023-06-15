@@ -40,6 +40,7 @@ use Symfony\Component\Finder\SplFileInfo;
  */
 class InstallationService
 {
+
     /**
      * @var ComposerService
      */
@@ -115,6 +116,7 @@ class InstallationService
         'https://docs.commongateway.nl/schemas/User.schema.json',
     ];
 
+
     /**
      * The constructor sets al needed variables.
      *
@@ -147,19 +149,20 @@ class InstallationService
         $this->filesystem = new Filesystem();
     }//end __construct()
 
+
     /**
      * Updates all commonground bundles on the common gateway installation.
      *
      * This functions serves as the jump of point for the `commengateway:plugins:update` command
      *
-     * @param array             $config The (optional) configuration
-     * @param SymfonyStyle|null $io     In case we run update from the :initialize command and want cache:warmup to show IO messages.
+     * @param array             $config    The (optional) configuration
+     * @param SymfonyStyle|null $style     In case we run update from the :initialize command and want cache:warmup to show IO messages.
      *
      * @throws Exception
      *
      * @return int
      */
-    public function update(array $config = [], SymfonyStyle $io = null): int
+    public function update(array $config = [], SymfonyStyle $style = null): int
     {
         // Let's see if we are trying to update a single plugin.
         if (isset($config['plugin']) === true) {
@@ -174,19 +177,21 @@ class InstallationService
             foreach ($plugins as $plugin) {
                 $this->install($plugin['name'], $config);
             }
-        }
+        }//end if
 
         $this->logger->debug('Do a cache warmup after installer is done...');
 
-        if ($io !== null) {
-            $this->cacheService->setStyle($io);
-            $io->info('Done running installer...');
-            $io->section('Running cache warmup');
+        if ($style !== null) {
+            $this->cacheService->setStyle($style);
+            $style->info('Done running installer...');
+            $style->section('Running cache warmup');
         }
         $this->cacheService->warmup();
 
         return Command::SUCCESS;
+
     }//end update()
+
 
     /**
      * Installs the files from a bundle.
@@ -225,7 +230,9 @@ class InstallationService
         $this->logger->debug('All Done installing plugin '.$bundle, ['bundle' => $bundle]);
 
         return true;
+
     }//end install()
+
 
     /**
      * Will handle all files found in the plugin, creating new objects using the $this->objects array.
@@ -267,7 +274,7 @@ class InstallationService
                 $this->handleObjectType($ref, $schemas);
             }
             unset($this->objects[$ref]);
-        }
+        }//end foreach
 
         // Find and handle the data.json file, if it exists.
         $this->handleDataJson($bundle, $config);
@@ -278,6 +285,7 @@ class InstallationService
         // Find and handle the installation.json file, if it exists.
         $this->handleInstallationJson($bundle);
     }//end handlePluginFiles()
+
 
     /**
      * Handles default / required test data from the data.json file if we are not loading in ALL testdata.
@@ -303,6 +311,7 @@ class InstallationService
             }
         }
     }//end handleDataJson()
+
 
     /**
      * @param string $bundle The bundle.
@@ -331,6 +340,7 @@ class InstallationService
             $this->entityManager->flush();
         }
     }//end handleInstallationJson()
+
 
     /**
      * For backwards compatibility, support old core schema reference and translate them to the new ones.
@@ -364,6 +374,7 @@ class InstallationService
             unset($this->objects[$translateFrom]);
         }
     }//end translateCoreReferences()
+
 
     /**
      * This function reads a folder to find other folders or json objects.
@@ -402,12 +413,8 @@ class InstallationService
         }
 
         // Make sure to warn users if they have to many files in a folder. (36 is maximum)
-        if (count($hits->files()) > 34) {
-            $this->logger->critical('Found more than 34 files in directory, try limiting your files to 32 per directory. Or you won\'t be able to load in these schema\'s locally on a windows machine.', ['location' => $location, 'files' => count($hits->files())]);
-        } elseif (count($hits->files()) > 32) {
-            $this->logger->error('Found more than 32 files in directory, try limiting your files to 32 per directory. Or you won\'t be able to load in these schema\'s locally on a windows machine.', ['location' => $location, 'files' => count($hits->files())]);
-        } elseif (count($hits->files()) > 25) {
-            $this->logger->warning('Found more than 25 files in directory, try limiting your files to 32 per directory. Or you won\'t be able to load in these schema\'s locally on a windows machine.', ['location' => $location, 'files' => count($hits->files())]);
+        if (count($hits->files()) > 25) {
+            $this->logger->warning("Found {strval(count($hits->files()))} files in directory, try limiting your files to 32 per directory. Or you won\'t be able to load in these schema\'s locally on a windows machine.", ['location' => $location, 'files' => count($hits->files())]);
         }
 
         // Read all files in this folder.
@@ -419,7 +426,9 @@ class InstallationService
         }
 
         return true;
+
     }//end readDirectory()
+
 
     /**
      * This function read a folder to find other folders or json objects.
@@ -450,7 +459,9 @@ class InstallationService
 
         // Add the file to the object.
         return $this->addToObjects($mappingSchema);
+
     }//end readfile()
+
 
     /**
      * Adds an object to the objects stack if it is valid.
@@ -479,10 +490,12 @@ class InstallationService
 
             // The use of gettype is discouraged, but we don't use it as a bl here and only for logging text purposes. So a design decision was made te allow it.
             $this->logger->error('Expected to find array for schema type '.$key.' but found '.gettype($value).' instead', ['value' => $value, 'schema' => $key]);
-        }
+        }//end foreach
 
         return true;
+
     }//end addToObjects()
+
 
     /**
      * Handles schemas of a certain type.
@@ -505,9 +518,10 @@ class InstallationService
             // Save it to the database.
             $this->entityManager->persist($object);
             $objects[] = $object;
-        }
+        }//end foreach
 
         return $objects;
+
     }//end handleObjectType();
 
     /**
@@ -552,10 +566,12 @@ class InstallationService
                     // 'object' => method_exists(get_class($object), 'toSchema') === true ? $object->toSchema() : 'toSchema function does not exists.',
                 ]
             );
-        }
+        }//endif
 
         return $object;
+
     }//end handleObject()
+
 
     /**
      * This function loads a core schema.
@@ -590,7 +606,7 @@ class InstallationService
 
                 return null;
             }
-        }
+        }//end if
 
         // Make sure we have a fromSchema function for this type of object.
         if (method_exists(get_class($object), 'fromSchema') === false) {
@@ -602,16 +618,26 @@ class InstallationService
         // Load the data. Compare version to check if we need to update or not.
         if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) <= 0) {
             $this->logger->debug('The schema has a version number equal or lower then the already present version, the object is NOT updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
-        } elseif (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) > 0) {
+
+            return $object;
+        } 
+        if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) > 0) {
             $this->logger->debug('The schema has a version number higher then the already present version, the object data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
-        } elseif (array_key_exists('version', $schema) === false || $object->getVersion() === null) {
+
+            return $object;
+        }
+        if (array_key_exists('version', $schema) === false || $object->getVersion() === null) {
             $this->logger->debug('The new schema doesn\'t have a version number, the object data is created', ['schemaVersion' => $schema['version'] ?? null, 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
+
+            return $object;
         }
 
         return $object;
+
     }//end loadCoreSchema()
+
 
     /**
      * Creates a new object of the given type.
@@ -649,8 +675,9 @@ class InstallationService
                 return new User();
             default:
                 return null;
-        }
+        }//end switch
     }//end createNewObjectType()
+
 
     /**
      * This function loads an non-core schema.
@@ -690,7 +717,9 @@ class InstallationService
         $object->hydrate($schema);
 
         return $object;
+
     }//end loadSchema()
+
 
     /**
      * Specifically handles the installation file.
@@ -714,48 +743,31 @@ class InstallationService
         }
 
         // Collection prefixes for schema's.
-        if (isset($data['collections']) === true) {
-            $this->updateSchemasCollection($data['collections']);
-        }
+        $this->updateSchemasCollection($data['collections'] ?? []);
 
         // Endpoints for schema's and/or sources.
-        if (isset($data['endpoints']) === true) {
-            $this->createEndpoints($data['endpoints']);
-        }
+        $this->createEndpoints($data['endpoints'] ?? []);
 
         // Actions for action handlers.
-        if (isset($data['actions']['handlers']) === true) {
-            $this->createActions($data['actions']['handlers']);
-        }
+        $this->createActions($data['actions']['handlers'] ?? []);
+
         // Fix references in configuration of these actions.
-        if (isset($data['actions']['fixConfigRef']) === true) {
-            $this->fixConfigRef($data['actions']['fixConfigRef']);
-        }
+        $this->fixConfigRef($data['actions']['fixConfigRef'] ?? []);
 
         // Cronjobs for actions for action handlers.
-        if (isset($data['cronjobs']['actions']) === true) {
-            $this->createCronjobs($data['cronjobs']['actions']);
-        }
+        $this->createCronjobs($data['cronjobs']['actions'] ?? []);
 
         // Create users with given Organization, Applications & SecurityGroups.
-        if (isset($data['applications']) === true) {
-            $this->createApplications($data['applications']);
-        }
+        $this->createApplications($data['applications'] ?? []);
 
         // Create users with given Organization, Applications & SecurityGroups.
-        if (isset($data['users']) === true) {
-            $this->createUsers($data['users']);
-        }
+        $this->createUsers($data['users'] ?? []);
 
         // Lets see if we have things that we want to create cards for stuff (Since this might create cards for the stuff above this should always be last).
-        if (isset($data['cards']) === true) {
-            $this->createCards($data['cards']);
-        }
+        $this->createCards($data['cards'] ?? []);
 
         // Set the default source for a schema.
-        if (isset($data['schemas']) === true) {
-            $this->editSchemaProperties($data['schemas']);
-        }
+        $this->editSchemaProperties($data['schemas'] ?? []);
 
         if (isset($data['installationService']) === false || empty($data['installationService']) === true) {
             $this->logger->error($file->getFilename().' Doesn\'t contain an installation service');
@@ -770,6 +782,7 @@ class InstallationService
         } catch (Exception $exception) {
             $error = "{$file->getFilename()} Could not be loaded from container: {$exception->getMessage()}";
         }
+
         if (empty($installationService) === true || isset($error) === true) {
             $this->logger->error($error ?? "{$file->getFilename()} Could not be loaded from container");
 
@@ -786,6 +799,7 @@ class InstallationService
             return false;
         }
     }//end handleInstaller()
+
 
     /**
      * This function adds a given default source to the schema.
@@ -813,8 +827,9 @@ class InstallationService
             }
 
             $this->entityManager->persist($schema);
-        }
-    }
+        }//end foreach
+    }//end editSchemaProperties()
+
 
     /**
      * This functions connects schema's with a reference containing the collection schemaPrefix to the given collection.
@@ -903,12 +918,13 @@ class InstallationService
                 $endpointData['$id'] = $endpoint->getReference();
                 $endpoints = array_merge($endpoints, $this->handleSubEndpoints($endpointData, $subEndpoints));
                 $endpoints = array_merge($endpoints, $this->handleSubSchemaEndpoints($endpointData, $subSchemaEndpoints));
-            }
+            }//end foreach
         }//end foreach
 
         $this->logger->info(count($endpoints).' Endpoints Created');
 
         return $endpoints;
+
     }//end createEndpoints()
 
     /**
@@ -1205,7 +1221,9 @@ class InstallationService
             $blockUpdate = true;
             if ($action !== null && $action->getVersion() && isset($handlerData['version']) === true) {
                 $blockUpdate = version_compare($handlerData['version'], $action->getVersion()) <= 0;
-            } elseif (isset($handlerData['version']) === true) {
+            } else
+            
+            if ($action === null && isset($handlerData['version']) === true) {
                 $blockUpdate = false;
             }
 
@@ -1239,11 +1257,12 @@ class InstallationService
             $actions[] = $action;
 
             $this->logger->debug('Action created for '.$handlerData['actionHandler'].' with class '.get_class($actionHandler));
-        }
+        }//end foreach
 
         $this->logger->info(count($actions).' Actions Created');
 
         return $actions;
+
     }//end createActions()
 
     /**
@@ -1283,10 +1302,11 @@ class InstallationService
             $this->entityManager->persist($action);
 
             $actions++;
-        }
+        }//end foreach
 
         $this->logger->info($actions.' Actions configuration updated.');
     }//end fixConfigRef()
+
 
     /**
      * This function creates default configuration for the action.
@@ -1326,6 +1346,7 @@ class InstallationService
         return $defaultConfig;
     }//end addActionConfiguration()
 
+
     /**
      * Overrides the default configuration of an Action. Will also set entity and source to id if a reference is given.
      *
@@ -1339,27 +1360,38 @@ class InstallationService
         foreach ($overrides as $key => $override) {
             if (is_array($override) && $this->isAssociative($override)) {
                 $defaultConfig[$key] = $this->overrideConfig(isset($defaultConfig[$key]) ? $defaultConfig[$key] : [], $override);
-            } elseif ($key == 'entity' && is_string($override) && Uuid::isValid($override) === false) {
+
+                continue;
+            }//end if
+            
+            if ($key == 'entity' && is_string($override) && Uuid::isValid($override) === false) {
                 $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $override]);
                 if (!$entity) {
                     $this->logger->error("No entity found with reference {$override} (overrideConfig() for installation.json)");
                     continue;
                 }
                 $defaultConfig[$key] = $entity->getId()->toString();
-            } elseif ($key == 'source' && is_string($override) && Uuid::isValid($override) === false) {
+
+                continue;
+            }//end if
+            
+            if ($key == 'source' && is_string($override) && Uuid::isValid($override) === false) {
                 $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $override]);
                 if (!$source) {
                     $this->logger->error("No source found with reference {$override} (overrideConfig() for installation.json)");
                     continue;
                 }
                 $defaultConfig[$key] = $source->getId()->toString();
-            } else {
-                $defaultConfig[$key] = $override;
-            }
-        }
+
+                continue;
+            }//end if
+
+            $defaultConfig[$key] = $override;
+        }//end foreach
 
         return $defaultConfig;
     }//end overrideConfig()
+
 
     /**
      * Decides if an array is associative.
@@ -1376,6 +1408,7 @@ class InstallationService
 
         return array_keys($array) !== range(0, count($array) - 1);
     }//end isAssociative()
+
 
     /**
      * This function creates cronjobs for an array of action references.
@@ -1402,12 +1435,14 @@ class InstallationService
             $this->entityManager->persist($cronjob);
             $cronjobs[] = $cronjob;
             $this->logger->debug('Cronjob created for action '.$reference);
-        }
+        }//end foreach
 
         $this->logger->info(count($cronjobs).' Cronjobs Created');
 
         return $cronjobs;
+
     }//end createCronjobs()
+
 
     /**
      * This function creates applications with the given $applications data.
@@ -1442,12 +1477,16 @@ class InstallationService
             }
         }//end foreach
 
-        $applications = $this->handleObjectType('https://docs.commongateway.nl/schemas/Application.schema.json', $applicationsData);
+        if (empty($applicationsData) === false) {
+            $applications = $this->handleObjectType('https://docs.commongateway.nl/schemas/Application.schema.json', $applicationsData);
+        }
 
         $this->logger->info(count($applications).' Applications Created');
 
         return $applications;
+
     }//end createApplications()
+
 
     /**
      * This function creates users with the given $users data.
@@ -1457,7 +1496,7 @@ class InstallationService
      *
      * @return array An array of users.
      */
-    private function createUsers(array $usersData): array
+    private function createUsers(array $usersData = []): array
     {
         $orgRepository = $this->entityManager->getRepository('App:Organization');
 
@@ -1482,13 +1521,17 @@ class InstallationService
             if (isset($userData['title']) === false) {
                 $userData['title'] = $userData['name'] ?? $userData['email'];
             }
-        }
+        }//end foreach
 
-        $users = $this->handleObjectType('https://docs.commongateway.nl/schemas/User.schema.json', $usersData);
+
+        if (empty($userData) === false) {
+            $users = $this->handleObjectType('https://docs.commongateway.nl/schemas/User.schema.json', $usersData);
+        }
 
         $this->logger->info(count($users).' Users Created');
 
         return $users;
+
     }//end createUsers()
 
     /**
@@ -1636,11 +1679,13 @@ class InstallationService
                 $cards[] = $dashboardCard;
                 $this->entityManager->persist($dashboardCard);
                 $this->logger->debug('Dashboard Card created for '.$reference);
-            }
+            }//end foreach
         }//end foreach
 
         $this->logger->info(count($cards).' Cards Created');
 
         return $cards;
+
     }//end createCards()
+    
 }//end class
