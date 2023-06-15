@@ -94,7 +94,7 @@ class CallService
         if (isset($config['verify']) === true && is_string($config['verify']) === true) {
             $config['verify'] = $this->fileService->writeFile('verify', $config['verify']);
         }
-    }
+    }//end getCertificate()
 
     /**
      * Removes certificates and private keys from disk if they are not necessary anymore.
@@ -116,7 +116,7 @@ class CallService
         if (isset($config['verify']) === true && is_string($config['verify']) === true) {
             $this->fileService->removeFile($config['verify']);
         }
-    }
+    }//end removeFiles()
 
     /**
      * Removes empty headers and sets array to string values.
@@ -135,10 +135,100 @@ class CallService
                 }
                 unset($headers[$key]);
             }
-        }
+        }//end foreach
 
         return $headers;
-    }
+
+    }//end removeEmptyHeaders()
+
+    
+    /**
+     * Creates a default CallLog with given info.
+     * 
+     * @param Source $source
+     * @param string $endpoint
+     * @param string $method
+     * @param array  $config
+     * 
+     * @return CallLog $log
+     */
+    private function createDefaultLog(Source $source, string $endpoint, string $method, array $config): CallLog
+    {
+        $log = new CallLog();
+        $log->setSource($source);
+        $log->setEndpoint($source->getLocation().$endpoint);
+        $log->setMethod($method);
+        $log->setConfig($config);
+        $log->setRequestBody($config['body'] ?? null);
+
+        return $log;
+
+    }//end createDefaultLog()
+
+    
+    /**
+     * Updates the CallLog after a successfull call.
+     * 
+     * @param CallLog      $log
+     * @param Response     $responseClone
+     * @param float|string $startTimer    Timestamp when request started.
+     * 
+     * @return void Nothing
+     */
+    private function updateLog(CallLog $log, Response $responseClone, $startTimer): void
+    {
+
+        $stopTimer = microtime(true);
+        $log->setResponseHeaders($responseClone->getHeaders());
+        $log->setResponseStatus('');
+        $log->setResponseStatusCode($responseClone->getStatusCode());
+        // Disabled because you cannot getBody after passing it here
+        // $log->setResponseBody($responseClone->getBody()->getContents());
+        $log->setResponseBody('');
+        $log->setResponseTime($stopTimer - $startTimer);
+        $this->entityManager->persist($log);
+        $this->entityManager->flush();
+
+    }//end createDefaultLog()
+
+    
+    /**
+     * Handles the exception if the call triggered one.
+     * 
+     * @param ServerException|ClientException|RequestException|Exception $exception
+     * @param Source                                                     $source
+     * @param string                                                     $method
+     * @param array                                                      $config
+     * 
+     * @return Response $this->handleEndpointsConfigIn()
+     */
+    private function handleCallException($exception, Source $source, string $endpoint): Response
+    {
+        // $stopTimer = microtime(true);
+        // $log->setResponseStatus('');
+        // if ($e->getResponse()) {
+        //     $log->setResponseStatusCode($e->getResponse()->getStatusCode());
+        //     $log->setResponseBody($e->getResponse()->getBody()->getContents());
+        //     $log->setResponseHeaders($e->getResponse()->getHeaders());
+        // } else {
+        //     $log->setResponseStatusCode(0);
+        //     $log->setResponseBody($e->getMessage());
+        // }
+        // $log->setResponseTime($stopTimer - $startTimer);
+        // $this->entityManager->persist($log);
+        // $this->entityManager->flush();
+        
+        if (method_exists(get_class($exception), 'getResponse') === true
+            && $exception->getResponse() !== null
+        ) {
+            $responseContent = $exception->getResponse()->getBody()->getContents();
+        }
+        $this->callLogger->error('Request failed with error '.$exception->getMessage().' and body '.$responseContent ?? null);
+
+        return $this->handleEndpointsConfigIn($source, $endpoint, null, $exception, $responseContent ?? null);
+
+    }//end handleCallException()
+
 
     /**
      * Calls a source according to given configuration.
@@ -170,12 +260,7 @@ class CallService
             $config = array_merge_recursive($config, $source->getConfiguration());
         }
 
-//        $log = new CallLog();
-//        $log->setSource($source);
-//        $log->setEndpoint($source->getLocation().$endpoint);
-//        $log->setMethod($method);
-//        $log->setConfig($config);
-//        $log->setRequestBody($config['body'] ?? null);
+        // $log = $this->createDefaultLog($source, $endpoint, $method, $config);
 
         if (empty($source->getLocation())) {
             throw new HttpException('409', "This source has no location: {$source->getName()}");
@@ -211,51 +296,24 @@ class CallService
             }
             $this->callLogger->info("Request to $url succesful");
         } catch (ServerException|ClientException|RequestException|Exception $exception) {
-//            $stopTimer = microtime(true);
-//            $log->setResponseStatus('');
-//            if ($e->getResponse()) {
-//                $log->setResponseStatusCode($e->getResponse()->getStatusCode());
-//                $log->setResponseBody($e->getResponse()->getBody()->getContents());
-//                $log->setResponseHeaders($e->getResponse()->getHeaders());
-//            } else {
-//                $log->setResponseStatusCode(0);
-//                $log->setResponseBody($e->getMessage());
-//            }
-//            $log->setResponseTime($stopTimer - $startTimer);
-//            $this->entityManager->persist($log);
-//            $this->entityManager->flush();
 
-            if (method_exists(get_class($exception), 'getResponse') === true
-                && $exception->getResponse() !== null
-            ) {
-                $responseContent = $exception->getResponse()->getBody()->getContents();
-            }
-            $this->callLogger->error('Request failed with error '.$exception->getMessage().' and body '.$responseContent ?? null);
+            return $this->handleCallException($exception, $source, $endpoint);
 
-            return $this->handleEndpointsConfigIn($source, $endpoint, null, $exception, $responseContent ?? null);
         } catch (GuzzleException $exception) {
             $this->callLogger->error('Request failed with error '.$exception);
 
             return $this->handleEndpointsConfigIn($source, $endpoint, null, $exception, null);
-        }
-//        $stopTimer = microtime(true);
-//
-//        $responseClone = clone $response;
-//
-//        $log->setResponseHeaders($responseClone->getHeaders());
-//        $log->setResponseStatus('');
-//        $log->setResponseStatusCode($responseClone->getStatusCode());
-//        // Disabled because you cannot getBody after passing it here
-//        // $log->setResponseBody($responseClone->getBody()->getContents());
-//        $log->setResponseBody('');
-//        $log->setResponseTime($stopTimer - $startTimer);
-//        $this->entityManager->persist($log);
-//        $this->entityManager->flush();
+            
+        }//end try
+
+        // $responseClone = clone $response;
+        // $this->updateLog($log, $responseClone, $startTimer);
 
         $createCertificates && $this->removeFiles($config);
 
         return $this->handleEndpointsConfigIn($source, $endpoint, $response, null, null);
-    }
+
+    }//end call()
 
     /**
      * Handles the endpointsConfig of a Source before we do an api-call.
@@ -288,6 +346,7 @@ class CallService
         }
 
         return $config;
+
     }//end handleEndpointsConfigOut()
 
     /**
@@ -314,7 +373,8 @@ class CallService
                 $this->callLogger->error("Could not find mapping with reference {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source");
 
                 return $config;
-            }
+
+            }//end if
 
             if (is_string($config[$configKey]) === true) {
                 try {
@@ -323,7 +383,7 @@ class CallService
                 } catch (Exception|LoaderError|SyntaxError $exception) {
                     $this->callLogger->error("Could not map with mapping {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source. ".$exception->getMessage());
                 }
-            }
+            }//end if
 
             if (is_array($config[$configKey]) === true) {
                 try {
@@ -331,11 +391,12 @@ class CallService
                 } catch (Exception|LoaderError|SyntaxError $exception) {
                     $this->callLogger->error("Could not map with mapping {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source. ".$exception->getMessage());
                 }
-            }
+            }//end if
 
-        }
+        }//end if
 
         return $config;
+
     }//end handleEndpointConfigOut()
 
     /**
@@ -376,7 +437,7 @@ class CallService
             if ($exception !== null) {
                 throw $exception;
             }
-        }
+        }//end if
 
         // Let's check if the endpoint used on this source has "in" configuration in the EndpointsConfig of the source.
         if (array_key_exists($endpoint, $endpointsConfig) === true && array_key_exists('in', $endpointsConfig[$endpoint])) {
@@ -401,6 +462,7 @@ class CallService
         }
 
         return $response;
+
     }//end handleEndpointsConfigIn()
 
 
@@ -445,6 +507,7 @@ class CallService
         $error = json_encode($error);
 
         return new Response($statusCode ?? $exception->getCode(), $headers, $error, $exception->getResponse()->getProtocolVersion());
+
     }//end handleEndpointConfigEx()
 
 
@@ -483,10 +546,10 @@ class CallService
             } catch (Exception|LoaderError|SyntaxError $exception) {
                 $this->callLogger->error("Could not map with mapping {$endpointConfigIn[$responseProperty]['mapping']} while handling $responseProperty EndpointConfigIn for a Source. ".$exception->getMessage());
             }
-        }
-
+        }//end if
 
         return $responseData;
+
     }//end handleEndpointConfigIn()
 
 
@@ -510,7 +573,8 @@ class CallService
         }
 
         return $contentType;
-    }
+
+    }//end getContentType()
 
     /**
      * Decodes a response based on the source it belongs to.
@@ -551,7 +615,7 @@ class CallService
             case 'application/json':
             default:
                 $result = json_decode($responseBody, true);
-        }
+        }//end switch
 
         if (isset($result)) {
             return $result;
@@ -566,8 +630,8 @@ class CallService
             $this->callLogger->error('Could not decode body, content type could not be determined');
 
             throw new \Exception('Could not decode body, content type could not be determined');
-        }
-    }
+        }//end try
+    }//end decodeResponse()
 
     /**
      * Determines the authentication procedure based upon a source.
@@ -579,7 +643,8 @@ class CallService
     private function getAuthentication(Source $source): array
     {
         return $this->authenticationService->getAuthentication($source);
-    }
+
+    }//end getAuthentication()
 
     /**
      * Fetches all pages for a source and merges the result arrays to one array.
@@ -622,7 +687,8 @@ class CallService
             } catch (\Exception $exception) {
                 $errorCount++;
                 $this->callLogger->error($exception->getMessage());
-            }
+            }//end try
+
             if (isset($decodedResponse['results'])) {
                 $results = array_merge($decodedResponse['results'], $results);
             } elseif (isset($decodedResponse['items'])) {
@@ -634,8 +700,9 @@ class CallService
             } elseif (isset($decodedResponse[0])) {
                 $results = array_merge($decodedResponse, $results);
             }
-        }
+        }//end while
 
         return $results;
-    }
+
+    }//end getAllResults()
 }
