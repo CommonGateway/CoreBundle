@@ -823,14 +823,14 @@ class CacheService
     public function setPagination(&$limit, &$start, array $filters): array
     {
         if (isset($filters['_limit'])) {
-            $limit = intval($filters['_limit']);
+            $limit = (int) $filters['_limit'];
         } else {
             $limit = 30;
         }
         if (isset($filters['_start']) || isset($filters['_offset'])) {
-            $start = isset($filters['_start']) ? intval($filters['_start']) : intval($filters['_offset']);
+            $start = isset($filters['_start']) ? (int) $filters['_start'] : (int) $filters['_offset'];
         } elseif (isset($filters['_page'])) {
-            $start = (intval($filters['_page']) - 1) * $limit;
+            $start = ((int) $filters['_page'] - 1) * $limit;
         } else {
             $start = 0;
         }

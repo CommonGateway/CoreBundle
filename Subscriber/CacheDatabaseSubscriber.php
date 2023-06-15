@@ -83,7 +83,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * Remove objects from the cache afther they are removed from the database.
+     * Remove objects from the cache after they are removed from the database.
      *
      * @param LifecycleEventArgs $args
      *

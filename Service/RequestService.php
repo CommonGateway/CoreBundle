@@ -238,7 +238,7 @@ class RequestService
             $reference = $this->content['_self']['schema']['reference'];
         }
 
-        // In normal securmtances we expect a all to com form an endpoint so...
+        // In normal circumstances we expect a all to com form an endpoint so...
         if (isset($parameters['endpoint'])) {
             // The endpoint contains exactly one schema
             if (count($this->data['endpoint']->getEntities()) == 1) {
@@ -246,7 +246,7 @@ class RequestService
             }
             // The endpoint contains multiple schema's
             if (count($this->data['endpoint']->getEntities()) >= 1) {
-                // todo: so right now if we dont have an id or ref and multpile options we "guese" the first, it that smart?
+                // todo: so right now if we dont have an id or ref and multiple options we "guess" the first, it that smart?
                 $criteria = Criteria::create()->orderBy(['date_created' => Criteria::DESC]);
                 if (isset($id)) {
                     $criteria->where(['id' => $id]);
@@ -257,7 +257,7 @@ class RequestService
 
                 return $this->data['endpoint']->getEntities()->matching($criteria)->first();
             }
-            // The  endpoint contains no schema's so there is no limit we dont need to do anything
+            // The endpoint contains no schema's so there is no limit we don't need to do anything
         }
 
         // We only end up here if there is no endpoint or an unlimited endpoint

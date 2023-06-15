@@ -213,7 +213,7 @@ class MappingService
         switch ($cast) {
             case 'int':
             case 'integer':
-                $value = intval($value);
+                $value = (int) $value;
                 break;
             case 'bool':
             case 'boolean':
