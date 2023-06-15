@@ -27,7 +27,6 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Exception;
 
 /**
  * @Author Robert Zondervan <robert@conduction.nl>
@@ -49,7 +48,7 @@ class AuthenticationService
         $this->parameterBag = $parameterBag;
         $this->fileService  = new FileService();
 
-    }//end __construct()
+    }
 
 
     /**
@@ -73,7 +72,7 @@ class AuthenticationService
 
 
     /**
-     * Converts a RSA private key to a JWK.
+     * Converts an RSA private key to a JWK.
      *
      * @TODO: This can be merged with the function above by getting the key from the source earlier
      *
