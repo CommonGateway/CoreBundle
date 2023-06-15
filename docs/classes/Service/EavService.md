@@ -1,21 +1,34 @@
-# CommonGateway\CoreBundle\Service\EavService
+# CommonGateway\CoreBundle\Service\EavService  
+
+
+
+
+
+
 
 ## Methods
 
 | Name | Description |
 |------|-------------|
-|[\_\_construct](#eavservice__construct)||
+|[__construct](#eavservice__construct)||
 |[checkAttributeforEntity](#eavservicecheckattributeforentity)|Checks an atribute to see if a schema for its reference has becomme available.|
 |[checkEntityforAttribute](#eavservicecheckentityforattribute)|Checks an entity to see if there are anny atributtes waiting for it.|
 |[deleteAllObjects](#eavservicedeleteallobjects)|Removes all object entities from the database (should obviusly not be used in production).|
 
-### EavService::\_\_construct
+
+
+
+### EavService::__construct  
 
 **Description**
 
 ```php
  __construct (void)
 ```
+
+ 
+
+ 
 
 **Parameters**
 
@@ -25,9 +38,11 @@
 
 `void`
 
+
 <hr />
 
-### EavService::checkAttributeforEntity
+
+### EavService::checkAttributeforEntity  
 
 **Description**
 
@@ -35,19 +50,25 @@
 public checkAttributeforEntity (\Attribute $attribute)
 ```
 
-Checks an atribute to see if a schema for its reference has becomme available.
+Checks an atribute to see if a schema for its reference has becomme available. 
+
+ 
 
 **Parameters**
 
-*   `(\Attribute) $attribute`
+* `(\Attribute) $attribute`
 
 **Return Values**
 
 `\Attribute`
 
+
+
+
 <hr />
 
-### EavService::checkEntityforAttribute
+
+### EavService::checkEntityforAttribute  
 
 **Description**
 
@@ -55,19 +76,25 @@ Checks an atribute to see if a schema for its reference has becomme available.
 public checkEntityforAttribute (\Entity $entity)
 ```
 
-Checks an entity to see if there are anny atributtes waiting for it.
+Checks an entity to see if there are anny atributtes waiting for it. 
+
+ 
 
 **Parameters**
 
-*   `(\Entity) $entity`
+* `(\Entity) $entity`
 
 **Return Values**
 
 `\Entity`
 
+
+
+
 <hr />
 
-### EavService::deleteAllObjects
+
+### EavService::deleteAllObjects  
 
 **Description**
 
@@ -75,12 +102,14 @@ Checks an entity to see if there are anny atributtes waiting for it.
 public deleteAllObjects (\Entity|null $entity)
 ```
 
-Removes all object entities from the database (should obviusly not be used in production).
+Removes all object entities from the database (should obviusly not be used in production). 
+
+ 
 
 **Parameters**
 
-*   `(\Entity|null) $entity`
-    : An optionall entity to remove all the objects from
+* `(\Entity|null) $entity`
+: An optionall entity to remove all the objects from  
 
 **Return Values**
 
@@ -88,4 +117,6 @@ Removes all object entities from the database (should obviusly not be used in pr
 
 > True is succesfull or false otherwise
 
+
 <hr />
+
