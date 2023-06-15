@@ -41,9 +41,15 @@ function generatePubliccode($metadata) {
         'repoOwner' => $metadata['owner']['login']
     ];
 
-   // @todo pull this from the repro
-    // $publiccode['authorsFile' => null, // If there's an authors file, specify its path here
-    // 'roadmap' => 'https://github.com/' . $metadata['full_name'] . '/blob/main/ROADMAP.md',
+    // Check if files exist
+    if (file_exists('AUTHORS.md')) {
+        $publiccode['authorsFile'] = 'https://github.com/' . $metadata['full_name'] . '/blob/main/AUTHORS.md';
+
+    }
+    if (file_exists('ROADMAP.md')) {
+        $publiccode['roadmap'] = 'https://github.com/' . $metadata['full_name'] . '/blob/main/ROADMAP.md';
+
+    }
 
     // Lets set some defaults
     if(isset($publiccode['publiccode-yml-version']) === false){
@@ -86,7 +92,7 @@ function generatePubliccode($metadata) {
             'availableLanguages' => ['en']
         ];
     }
-    
+
     return $publiccode;
 }
 
