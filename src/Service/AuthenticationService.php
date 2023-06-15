@@ -48,8 +48,9 @@ class AuthenticationService
         $this->parameterBag = $parameterBag;
         $this->fileService  = new FileService();
 
-    }
-    
+    }//end __construct()
+
+
     /**
      * TODO: REMOVE ME!!!
      *
@@ -58,7 +59,8 @@ class AuthenticationService
     private function testRemoveMe()
     {
         return null;
-    }
+
+    }//end testRemoveMe()
 
 
     /**
