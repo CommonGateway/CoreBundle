@@ -131,9 +131,9 @@ class CallService
             if (is_array($header) && count($header) < 2) {
                 if (!empty($header[0])) {
                     $headers[$key] = $header[0];
-                } else {
-                    unset($headers[$key]);
+                    continue;
                 }
+                unset($headers[$key]);
             }
         }
 
