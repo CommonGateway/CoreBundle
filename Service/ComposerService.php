@@ -2,7 +2,7 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
-use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
@@ -309,15 +309,20 @@ class ComposerService
      */
     public function getLockFile(): array
     {
-        $filesystem = new Filesystem();
-
-        if (!$plugins = @file_get_contents('../composer.lock')) {
-            if (!$plugins = @file_get_contents('composer.lock')) {
-                return [];
-            }
+        $finder = new Finder();
+    
+        $files = $finder->in('..')->files()->name('composer.lock')->exclude('vendor');
+        if (count($files) === 0) {
+            return [];
+        }
+    
+        $lockFile = null;
+        foreach ($files as $file) {
+            $lockFile = $file;
+            break;
         }
 
-        $plugins = json_decode($plugins, true);
+        $plugins = json_decode($lockFile->getContents(), true);
 
         return $plugins['packages'];
 
