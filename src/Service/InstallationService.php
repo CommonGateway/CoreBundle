@@ -196,7 +196,7 @@ class InstallationService
     /**
      * Installs the files from a bundle.
      *
-     * Based on the default action handler so schould supoprt a config parrameter even if we do not use it
+     * Based on the default action handler so schould supoprt a config parrameter even if we do not use it.
      *
      * @param string $bundle The bundle.
      * @param array  $config Optional config.
@@ -212,10 +212,10 @@ class InstallationService
         // First we want to read all the files so that we have all the content we should install.
         $this->logger->debug('Installing plugin '.$bundle);
 
-        // Let's check the basic folders for legacy purposes. todo: remove these at some point
+        // Let's check the basic folders for legacy purposes. todo: remove these at some point.
         $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Action');
-        $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Schema'); // Entity
-        $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Source'); // Gateway
+        $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Schema'); // Entity.
+        $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Source'); // Gateway.
         $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Mapping');
         $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Data');
         // A function that translates old core schema references to the new ones. Only here for backwards compatibility.
@@ -447,15 +447,15 @@ class InstallationService
             return false;
         }
 
-        // Todo: validateJsonMapping does not exist
-//        // Check if it is a valid schema.
-//        $mappingSchema = $this->validateJsonMapping($mappingSchema);
-//
-//        if ($this->validateJsonMapping($mappingSchema) === true) {
-//            $this->logger->error($file->getFilename().' is not a valid json-mapping object');
-//
-//            return false;
-//        }
+        // // Todo: validateJsonMapping does not exist
+        // // Check if it is a valid schema.
+        // $mappingSchema = $this->validateJsonMapping($mappingSchema);
+
+        // if ($this->validateJsonMapping($mappingSchema) === true) {
+        //     $this->logger->error($file->getFilename().' is not a valid json-mapping object');
+
+        //     return false;
+        // }
 
         // Add the file to the object.
         return $this->addToObjects($mappingSchema);

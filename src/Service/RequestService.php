@@ -36,24 +36,93 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class RequestService
 {
+
+    /**
+     * EntityManagerInterface
+     */
     private EntityManagerInterface $entityManager;
+
+    /**
+     * CacheService
+     */
     private CacheService $cacheService;
+
+    /**
+     * array
+     */
     private array $configuration;
+
+    /**
+     * array
+     */
     private array $data;
+
+    /**
+     * ObjectEntity
+     */
     private ObjectEntity $object;
+
+    /**
+     * string
+     */
     private string $id;
-    private $schema; // todo: cast to Entity|Boolean in php 8
+
+    /**
+     * $schema
+     */
+    private $schema; // todo: cast to Entity|Boolean in php 8.
+
     // todo: we might want to move or rewrite code instead of using these services here:
+    /**
+     * ResponseService
+     */
     private ResponseService $responseService;
+
+    /**
+     * ObjectEntityService
+     */
     private ObjectEntityService $objectEntityService;
+    
+    /**
+     * LogService
+     */
     private LogService $logService;
+
+    /**
+     * CallService
+     */
     private CallService $callService;
+
+    /**
+     * Security
+     */
     private Security $security;
+
+    /**
+     * EventDispatcherInterface
+     */
     private EventDispatcherInterface $eventDispatcher;
+    
+    /**
+     * SerializerInterface
+     */
     private SerializerInterface $serializer;
+
+    /**
+     * SessionInterface
+     */
     private SessionInterface $session;
+
+    /**
+     * LoggerInterface
+     */
     private LoggerInterface $logger;
+
+    /**
+     * DownloadService
+     */
     private DownloadService $downloadService;
+
     
     /**
      * The constructor sets al needed variables.
@@ -98,6 +167,7 @@ class RequestService
         $this->logger = $requestLogger;
         $this->downloadService = $downloadService;
     }
+
 
     /**
      * Determines the right content type and serializes the data accordingly.
@@ -149,7 +219,9 @@ class RequestService
         }
 
         return $content;
-    }
+
+    }//end serializeData()
+
 
     /**
      * A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.
@@ -180,7 +252,9 @@ class RequestService
         }
 
         return $vars;
-    }
+        
+    }//end realRequestQueryAll()
+    
 
     /**
      * Get the ID from given parameters.
@@ -208,10 +282,12 @@ class RequestService
             return $this->content['id'];
         } elseif (isset($this->content['uuid'])) {
             return $this->content['uuid'];
-        }
+        }//end if
 
         return false;
-    }
+        
+    }//end getId()
+
 
     /**
      * Get the schema from given parameters returns false if no schema could be established.
@@ -222,12 +298,12 @@ class RequestService
      */
     public function getSchema(array $parameters)
     {
-        // If we have an object this is easy
+        // If we have an object this is easy.
         if (isset($this->object)) {
             return $this->object->getEntity();
         }
 
-        // Pull the id or reference from the content
+        // Pull the id or reference from the content.
         if (isset($this->content['_self']['schema']['id'])) {
             $id = $this->content['_self']['schema']['id'];
         }
@@ -256,22 +332,22 @@ class RequestService
                 }
 
                 return $this->data['endpoint']->getEntities()->matching($criteria)->first();
-            }
-            // The endpoint contains no schema's so there is no limit we don't need to do anything
-        }
+            }//end if
+            // The endpoint contains no schema's so there is no limit we don't need to do anything.
+        }//end if
 
-        // We only end up here if there is no endpoint or an unlimited endpoint
+        // We only end up here if there is no endpoint or an unlimited endpoint.
         if (isset($id)) {
             return $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $id]);
         }
         if (isset($reference)) {
             return $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference]);
         }
-        // There is no way to establish an schema so
-        else {
-            return false;
-        }
-    }
+
+        // There is no way to establish an schema so.
+        return false;
+
+    }//end getSchema()
 
     /**
      * This function adds a single query param to the given $vars array. ?$name=$value
@@ -304,7 +380,8 @@ class RequestService
         } else {
             $vars[$nameKey] = $value;
         }
-    }
+    }//end recursiveRequestQueryKey()
+
 
     /**
      * @param array $data          The data from the call
@@ -385,7 +462,9 @@ class RequestService
 
         // And don so lets return what we have.
         return $response;
+
     }//end proxyHandler()
+
 
     /**
      * Get a scopes array for the current user (or of the anonymus if no user s logged in).
@@ -405,7 +484,9 @@ class RequestService
 
         // Lets play it save
         return [];
-    }
+
+    }//end getScopes()
+
 
     /**
      * Handles incomming requests and is responsible for generating a response.
@@ -460,7 +541,7 @@ class RequestService
                     $filters['_search'] = $value;
                 }
             }
-        }
+        }//end foreach
 
         // We might have some content
         if (isset($this->data['body'])) {
@@ -495,7 +576,7 @@ class RequestService
             }
 
             $extend = $dot->all();
-        }
+        }//end if
         $metadataSelf = $extend['_self'] ?? [];
 
         // todo: controlleren of de gebruiker ingelogd is
@@ -755,7 +836,7 @@ class RequestService
                 $this->logger->error('Unkown method'.$this->data['method']);
 
                 return new Response('Unkown method'.$this->data['method'], '404');
-        }
+        }//end switch
 
         if (isset($eventType) === true && isset($result) === true) {
             $event = new ActionEvent($eventType, ['response' => $result, 'entity' => $this->object->getEntity()->getReference() ?? $this->object->getEntity()->getId()->toString(), 'parameters' => $this->data]);
@@ -774,7 +855,7 @@ class RequestService
             if ($event->getData()['response']) {
                 return new Response($this->serializeData($event->getData()['response'], $contentType), $code, ['Content-type' => $contentType]);
             }
-        }
+        }//end if
 
         $this->handleMetadataSelf($result, $metadataSelf);
 
@@ -784,7 +865,8 @@ class RequestService
         }
 
         return $this->createResponse($result);
-    }
+
+    }//end requestHandler()
 
     /**
      * Gets the application configuration 'in' and/or 'out' for the current endpoint.
@@ -816,7 +898,9 @@ class RequestService
         }
 
         return $appEndpointConfig;
-    }
+
+    }//end getAppEndpointConfig()
+
 
     /**
      * Gets the path (/endpoint) of the currently used Endpoint, using the path array of the current Endpoint.
@@ -837,7 +921,8 @@ class RequestService
         }
 
         return '/'.implode('/', $pathArray);
-    }
+
+    }//end getCurrentEndpoint()
 
     /**
      * If embedded should be shown or not.
@@ -852,27 +937,32 @@ class RequestService
     public function shouldWeUnsetEmbedded($result, array $embeddedConfig)
     {
         if (isset($embeddedConfig['unset']) === false) {
+
             return $result;
         }
 
         if (
-            isset($result)
+            isset($result) === true
             && (isset($embeddedConfig['unset']['except']) === true && isset($this->data['headers']['accept']) === true
                 && empty(array_intersect($embeddedConfig['unset']['except'], $this->data['headers']['accept'])) === true)
             || isset($this->data['headers']['accept']) === false
             || isset($embeddedConfig['unset']['except']) === false
         ) {
-            if (isset($result['results'])) {
+            if (isset($result['results']) === true) {
                 foreach ($result['results'] as $key => $item) {
                     $result['results'][$key] = $this->checkEmbedded($item);
                 }
-            } else {
+            } 
+
+            if (isset($result['results']) === false) {
                 $result = $this->checkEmbedded($result);
             }
-        }
+        }//end if
 
         return $result;
-    }
+
+    }//end shouldWeUnsetEmbedded()
+
 
     /**
      * If embedded should be shown or not.
@@ -890,7 +980,9 @@ class RequestService
         }
 
         return $result;
-    }
+
+    }//end checkEmbedded()
+
 
     /**
      * @TODO
@@ -917,7 +1009,7 @@ class RequestService
             }
 
             return;
-        }
+        }//end if
 
         if (empty($result['id']) || !Uuid::isValid($result['id'])) {
             return;
@@ -934,7 +1026,8 @@ class RequestService
         $resultMetadataSelf = (array) $result['_self'];
         $this->responseService->addToMetadata($resultMetadataSelf, 'dateRead', $objectEntity);
         $result['_self'] = $resultMetadataSelf;
-    }
+    }//end handleMetadataSelf()
+
 
     /**
      * @TODO use and fix/clean-up this function or just remove this function?
@@ -961,7 +1054,7 @@ class RequestService
                 return [];
             }
             $this->object = $object;
-        }
+        }//end if
 
         switch ($method) {
             case 'GET':
@@ -988,12 +1081,14 @@ class RequestService
                 break;
             default:
                 break;
-        }
+        }//end switch
 
         $this->entityManager->flush();
 
         return $this->createResponse($this->object);
-    }
+
+    }//end itemRequestHandler()
+
 
     /**
      * This function searches all the objectEntities and formats the data.
@@ -1029,7 +1124,9 @@ class RequestService
         );
 
         return $this->data;
-    }
+
+    }//end searchRequestHandler()
+
 
     /**
      * Determines the proxy source from configuration, then use proxy handler to proxy the request.
@@ -1046,7 +1143,9 @@ class RequestService
         $data['response'] = $this->proxyHandler($parameters, $configuration, $source);
 
         return $data;
+
     }//end proxyRequestHandler()
+
 
     /**
      * Creating the response object.
@@ -1059,8 +1158,6 @@ class RequestService
     {
         if ($data instanceof ObjectEntity) {
             $data = $data->toArray();
-        } else {
-            //
         }
 
         $content = $this->serializeData($data, $contentType);
@@ -1070,5 +1167,6 @@ class RequestService
             200,
             ['Content-type' => $contentType]
         );
-    }
-}
+
+    }//end createResponse()
+}//end class

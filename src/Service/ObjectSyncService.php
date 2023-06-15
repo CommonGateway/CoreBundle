@@ -43,6 +43,7 @@ class ObjectSyncService
      */
     private LoggerInterface $objectSyncLogger;
 
+
     /**
      * The constructor sets al needed variables.
      *
@@ -65,6 +66,7 @@ class ObjectSyncService
         $this->resourceService = $resourceService;
         $this->objectSyncLogger = $objectSyncLogger;
     }//end __construct()
+
     
     /**
      * Synchronise the object to the source.
@@ -121,5 +123,7 @@ class ObjectSyncService
         $this->entityManager->flush();
 
         return $synchronisation->getObject()->toArray();
+
     }//end getProxyPath()
+
 }//end class

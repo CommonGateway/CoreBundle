@@ -46,6 +46,7 @@ class AuthenticationService
         $this->fileService = new FileService();
     }
 
+
     /**
      * Converts a string RSA key to a JWK via the filesystem.
      *
@@ -63,6 +64,7 @@ class AuthenticationService
 
         return $jwk;
     }//end convertRSAKeyToJWK()
+
 
     /**
      * Converts a RSA private key to a JWK.
@@ -93,6 +95,7 @@ class AuthenticationService
         return $jwk;
     }//end convertRSAtoJWK()
 
+
     /**
      * Determines the algorithm for the JWT token to create from the source.
      *
@@ -108,6 +111,7 @@ class AuthenticationService
             return 'RS512';
         }
     }//end getAlgorithm()
+
 
     /**
      * Gets a JWK for a source based on the algorithm of the source.
@@ -129,6 +133,7 @@ class AuthenticationService
         }
     }//end getJWK()
 
+
     /**
      * Gets an application id for a source.
      *
@@ -138,11 +143,12 @@ class AuthenticationService
      */
     public function getApplicationId(Source $source): string
     {
-        if ($source->getJwtId()) {
+        if ($source->getJwtId() !== null) {
             return $source->getJwtId();
-        } else {
-            return $source->getId();
-        }
+        } 
+
+        return $source->getId();
+
     }//end getApplicationId()
 
     /**
@@ -165,6 +171,7 @@ class AuthenticationService
             'user_representation' => $this->parameterBag->get('app_name'),
         ]);
     }//end getJwtPayload()
+
 
     /**
      * Creates a JWT token to identify with on the application.
@@ -191,7 +198,9 @@ class AuthenticationService
         $jwsSerializer = new CompactSerializer();
 
         return $jwsSerializer->serialize($jws, 0);
+        
     }//end createJwtToken()
+
 
     /**
      * Create a JWT token from Component settings.
@@ -219,7 +228,9 @@ class AuthenticationService
         $jwsSerializer = new CompactSerializer();
 
         return $jwsSerializer->serialize($jws, 0);
+
     }//end getJwtToken()
+
 
     /**
      * Writes the certificate and ssl keys to disk, returns the filenames.
@@ -244,6 +255,7 @@ class AuthenticationService
         return $configs;
     }//end getCertificate()
 
+
     /**
      * Removes certificates and private keys from disk if they are not necessary anymore.
      *
@@ -263,6 +275,7 @@ class AuthenticationService
             $this->fileService->removeFile($config['verify']);
         }
     }//end removeFiles()
+
 
     /**
      * Sends a post with auth info and certificate(s) to fetch a jwt token.
@@ -289,6 +302,7 @@ class AuthenticationService
 
     }//end getVrijbrpToken
 
+
     /**
      * Sends a post with auth info to fetch a jwt token.
      *
@@ -305,6 +319,7 @@ class AuthenticationService
         return json_decode($response->getBody()->getContents(), true)['accessToken'];
 
     }//end getPinkToken
+
 
     /**
      * Sends a post with authentication info to an OAuth Token Endpoint to fetch an authentication token.
@@ -355,7 +370,9 @@ class AuthenticationService
         $result = \Safe\json_decode($response->getBody()->getContents(), true);
 
         return $result[$authenticationConfig['tokenField']];
+
     }//end getOauthToken()
+
 
     /**
      * Checks from which type of auth we need to fetch a token from.
@@ -377,8 +394,13 @@ class AuthenticationService
         }//end switch
         
         return null;
-    }//end getTokenFromUrl
 
+    }//end getTokenFromUrl()
+
+
+    /**
+     * Gets a hmac token.
+     */
     public function getHmacToken(array $requestOptions, Source $source): string
     {
         // todo: what if we don't have a body, method or url in $requestOptions?
@@ -405,8 +427,13 @@ class AuthenticationService
         $hmac = base64_encode($s);
 
         return 'hmac '.$websiteKey.':'.$hmac.':'.$nonce.':'.$time;
-    }
 
+    }//end getHmacToken()
+
+
+    /**
+     * Gets the authentication values through various checks.
+     */
     public function getAuthentication(Source $source): array
     {
         $requestOptions = [];
@@ -446,7 +473,9 @@ class AuthenticationService
         }
 
         return $requestOptions;
-    }
+
+    }//end getAuthentication()
+
 
     /**
      * Decides if the provided JWT token is signed with the RS512 Algorithm.
@@ -468,6 +497,7 @@ class AuthenticationService
         }
     }//end checkRS512()
 
+
     /**
      * Decides if the provided JWT token is signed with the HS256 Algorithm.
      *
@@ -488,6 +518,7 @@ class AuthenticationService
         }
     }//end checkHS256()
 
+
     /**
      * Decides if the provided JWT token is signed with the HS256 Algorithm.
      *
@@ -507,6 +538,7 @@ class AuthenticationService
             return false;
         }
     }//end checkRS256()
+
 
     /**
      * Checks the algorithm of the JWT token and decides how to generate a JWK from the provided public key.
@@ -539,6 +571,7 @@ class AuthenticationService
         }
     }//end checkHeadersAndGetJWK()
 
+
     /**
      * Verifies the JWT token and returns the payload if the JWT token is valid.
      *
@@ -564,6 +597,7 @@ class AuthenticationService
             throw new AuthenticationException('Unauthorized: The provided Authorization header is invalid', 401);
         }
     }//end verifyJWTToken()
+
 
     /**
      * Serializes a user to be used by the token authenticator.
@@ -597,4 +631,5 @@ class AuthenticationService
 
         return $payload;
     }//end serializeUser()
+
 }//end class
