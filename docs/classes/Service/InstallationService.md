@@ -125,7 +125,7 @@ Overrides the default configuration of an Action. Will also set entity and sourc
 **Description**
 
 ```php
-public update (array $config, \SymfonyStyle|null $io)
+public update (array $config, \SymfonyStyle|null $style)
 ```
 
 Updates all commonground bundles on the common gateway installation.
@@ -134,10 +134,10 @@ This functions serves as the jump of point for the `commengateway:plugins:update
 
 **Parameters**
 
-*   `(array) $config`
-    : The (optional) configuration
-*   `(\SymfonyStyle|null) $io`
-    : In case we run update from the :initialize command and want cache:warmup to show IO messages.
+* `(array) $config`
+: The (optional) configuration  
+* `(\SymfonyStyle|null) $style`
+: In case we run update from the :initialize command and want cache:warmup to show IO messages.  
 
 **Return Values**
 
