@@ -1,21 +1,32 @@
-# CommonGateway\CoreBundle\Service\OasService
+# CommonGateway\CoreBundle\Service\OasService  
 
 This service handles the creation of OAS documentation for a given application.
+
+
+
+
 
 ## Methods
 
 | Name | Description |
 |------|-------------|
-|[\_\_construct](#oasservice__construct)||
+|[__construct](#oasservice__construct)||
 |[createOas](#oasservicecreateoas)|Create an OAS documentation for a specific application.|
 
-### OasService::\_\_construct
+
+
+
+### OasService::__construct  
 
 **Description**
 
 ```php
  __construct (void)
 ```
+
+ 
+
+ 
 
 **Parameters**
 
@@ -25,9 +36,11 @@ This service handles the creation of OAS documentation for a given application.
 
 `void`
 
+
 <hr />
 
-### OasService::createOas
+
+### OasService::createOas  
 
 **Description**
 
@@ -35,7 +48,9 @@ This service handles the creation of OAS documentation for a given application.
 public createOas (void)
 ```
 
-Create an OAS documentation for a specific application.
+Create an OAS documentation for a specific application. 
+
+ 
 
 **Parameters**
 
@@ -45,4 +60,8 @@ Create an OAS documentation for a specific application.
 
 `array`
 
+
+
+
 <hr />
+
