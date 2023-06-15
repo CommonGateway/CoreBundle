@@ -17,6 +17,7 @@ use function PHPUnit\Framework\throwException;
  */
 class ComposerService
 {
+
     private function arrayEnum(array $array, array $enum): bool
     {
         // Lets see if the values in the array arry pressent in the enum
@@ -28,6 +29,7 @@ class ComposerService
 
         return true;
     }//end arrayEnum()
+
 
     /**
      * Make a call to composer.
@@ -296,10 +298,14 @@ class ComposerService
         }
 
         return $content;
+
     }//end composerCall()
+
 
     /**
      * Gets all installed plugins from the lock file.
+     * 
+     * @return array
      */
     public function getLockFile(): array
     {
@@ -314,7 +320,9 @@ class ComposerService
         $plugins = json_decode($plugins, true);
 
         return $plugins['packages'];
+
     }//end getLockFile()
+
 
     /**
      * Show al packages installed trough composer.
@@ -339,7 +347,9 @@ class ComposerService
         }
 
         return $plugins;
+
     }//end getAll()
+
 
     /**
      * Show a single package installed trough composer.
@@ -354,7 +364,9 @@ class ComposerService
     public function require(string $package, array $options = []): array
     {
         return $this->composerCall('require', $options, $package);
+
     }//end require()
+
     
     /**
      * Show a single package installed trough composer.
@@ -369,7 +381,9 @@ class ComposerService
     public function upgrade(string $package, array $options = []): array
     {
         return $this->composerCall('upgrade', $options, $package);
+
     }//end upgrade()
+
 
     /**
      * Show a single package installed trough composer.
@@ -384,7 +398,9 @@ class ComposerService
     public function remove(string $package, array $options = []): array
     {
         return $this->composerCall('remove', $options, $package);
+
     }//end remove()
+
 
     /**
      * Show a single package installed trough composer.
@@ -416,17 +432,22 @@ class ComposerService
                     if (version_compare($plugin['version'], $version) < 0) {
                         if (!$plugin['update']) {
                             $plugin['update'] = $version;
-                        } elseif (version_compare($plugin['update'], $version) < 0) {
+                            continue;
+                        } 
+                        
+                        if (version_compare($plugin['update'], $version) < 0) {
                             $plugin['update'] = $version;
                         }
                     }
-                }
+                }//end foreach
                 break;
-            }
-        }
+            }//end if
+        }//end foreach
 
         return $plugin;
+
     }//end getSingle()
+
 
     /**
      * Search for a given term.
@@ -459,7 +480,9 @@ class ComposerService
         }
 
         return $plugins;
+
     }//end search()
+
 
     /**
      * Search for a given term.
@@ -473,5 +496,7 @@ class ComposerService
     public function audit(array $options = []): array
     {
         return $this->composerCall('audit', $options);
+
     }//end audit()
+    
 }//end class
