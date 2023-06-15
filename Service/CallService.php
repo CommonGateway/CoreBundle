@@ -314,6 +314,7 @@ class CallService
         return $this->handleEndpointsConfigIn($source, $endpoint, $response, null, null);
 
     }//end call()
+    
 
     /**
      * Handles the endpointsConfig of a Source before we do an api-call.
@@ -348,6 +349,7 @@ class CallService
         return $config;
 
     }//end handleEndpointsConfigOut()
+
 
     /**
      * Handles endpointConfig for a specific endpoint on a source and a specific configuration key like: 'query' or 'headers'.
@@ -398,6 +400,7 @@ class CallService
         return $config;
 
     }//end handleEndpointConfigOut()
+
 
     /**
      * Handles the endpointsConfig of a Source after we did an api-call.
@@ -576,6 +579,7 @@ class CallService
 
     }//end getContentType()
 
+
     /**
      * Decodes a response based on the source it belongs to.
      *
@@ -633,6 +637,7 @@ class CallService
         }//end try
     }//end decodeResponse()
 
+
     /**
      * Determines the authentication procedure based upon a source.
      *
@@ -645,6 +650,7 @@ class CallService
         return $this->authenticationService->getAuthentication($source);
 
     }//end getAuthentication()
+
 
     /**
      * Fetches all pages for a source and merges the result arrays to one array.
@@ -673,11 +679,11 @@ class CallService
                 $decodedResponse = $this->decodeResponse($source, $response);
                 if (
                     $decodedResponse === [] ||
-                    isset($decodedResponse['data']) && $decodedResponse['data'] === [] ||
-                    isset($decodedResponse['results']) && $decodedResponse['results'] === [] ||
-                    isset($decodedResponse['items']) && $decodedResponse['items'] == [] ||
-                    isset($decodedResponse['result']['instance']['rows']) && $decodedResponse['result']['instance']['rows'] == [] ||
-                    isset($decodedResponse['page']) && $decodedResponse['page'] !== $pageCount - 1 ||
+                    isset($decodedResponse['data']) === true                       && $decodedResponse['data'] === [] ||
+                    isset($decodedResponse['results']) === true                    && $decodedResponse['results'] === [] ||
+                    isset($decodedResponse['items']) === true                      && $decodedResponse['items'] == [] ||
+                    isset($decodedResponse['result']['instance']['rows']) === true && $decodedResponse['result']['instance']['rows'] == [] ||
+                    isset($decodedResponse['page']) === true                       && $decodedResponse['page'] !== $pageCount - 1 ||
                     $decodedResponse == $previousResult
                 ) {
                     break;
@@ -689,15 +695,15 @@ class CallService
                 $this->callLogger->error($exception->getMessage());
             }//end try
 
-            if (isset($decodedResponse['results'])) {
+            if (isset($decodedResponse['results']) === true) {
                 $results = array_merge($decodedResponse['results'], $results);
-            } elseif (isset($decodedResponse['items'])) {
+            } elseif (isset($decodedResponse['items']) === true) {
                 $results = array_merge($decodedResponse['items'], $results);
-            } elseif (isset($decodedResponse['data'])) {
+            } elseif (isset($decodedResponse['data']) === true) {
                 $results = array_merge($decodedResponse['data'], $results);
-            } elseif (isset($decodedResponse['result']['instance']['rows'])) {
+            } elseif (isset($decodedResponse['result']['instance']['rows']) === true) {
                 $results = array_merge($decodedResponse['result']['instance']['rows'], $results);
-            } elseif (isset($decodedResponse[0])) {
+            } elseif (isset($decodedResponse[0]) === true) {
                 $results = array_merge($decodedResponse, $results);
             }
         }//end while
