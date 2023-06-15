@@ -47,9 +47,9 @@ class DataClearCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $env = $this->parameterBagInterface->get('app_env');
-        $io = new SymfonyStyle($input, $output);
+        $symfonyStyle = new SymfonyStyle($input, $output);
 
-        $io->writeln([
+        $symfonyStyle->writeln([
             '',
             '<info>Common Gateway Data Remover</info>',
             '============',
@@ -59,14 +59,14 @@ class DataClearCommand extends Command
         ]);
 
         if ($env != 'dev') {
-            $io->error('Could not remove the data bescouse the environment is not in dev mode');
+            $symfonyStyle->error('Could not remove the data bescouse the environment is not in dev mode');
 
             return Command::FAILURE;
         }
 
         $objects = $this->entitymanager->getRepository('App:ObjectEntity')->findAll();
 
-        $io->writeln('Found '.count($objects).' objects');
+        $symfonyStyle->writeln('Found '.count($objects).' objects');
 
         // creates a new progress bar (50 units)
         $progressBar = new ProgressBar($output, count($objects));
@@ -86,8 +86,8 @@ class DataClearCommand extends Command
         $progressBar->finish();
         $this->entitymanager->flush();
 
-        $io->writeln('');
-        $io->success('All done');
+        $symfonyStyle->writeln('');
+        $symfonyStyle->success('All done');
 
         return Command::SUCCESS;
     }
