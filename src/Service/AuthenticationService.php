@@ -48,7 +48,17 @@ class AuthenticationService
         $this->parameterBag = $parameterBag;
         $this->fileService  = new FileService();
 
-    }//end __construct()
+    }
+    
+    /**
+     * TODO: REMOVE ME!!!
+     *
+     * @return void|null
+     */
+    private function testRemoveMe()
+    {
+        return null;
+    }
 
 
     /**
