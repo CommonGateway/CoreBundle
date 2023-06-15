@@ -165,7 +165,7 @@ Remove non-existing items from the cache.
 **Description**
 
 ```php
-public getEndpoint (\Uuid $id)
+public getEndpoint (\Uuid $identification)
 ```
 
 Get a single endpoint from the cache. 
@@ -174,7 +174,7 @@ Get a single endpoint from the cache.
 
 **Parameters**
 
-* `(\Uuid) $id`
+* `(\Uuid) $identification`
 
 **Return Values**
 
@@ -215,7 +215,7 @@ Get a single endpoint from the cache.
 **Description**
 
 ```php
-public getObject (string $id)
+public getObject (string $identification)
 ```
 
 Get a single object from the cache. 
@@ -224,7 +224,7 @@ Get a single object from the cache.
 
 **Parameters**
 
-* `(string) $id`
+* `(string) $identification`
 
 **Return Values**
 
@@ -241,7 +241,7 @@ Get a single object from the cache.
 **Description**
 
 ```php
-public getSchema (\Uuid $id)
+public getSchema (\Uuid $identification)
 ```
 
 Get a single schema from the cache. 
@@ -250,7 +250,7 @@ Get a single schema from the cache.
 
 **Parameters**
 
-* `(\Uuid) $id`
+* `(\Uuid) $identification`
 
 **Return Values**
 
