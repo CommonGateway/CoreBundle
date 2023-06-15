@@ -48,7 +48,7 @@ class AuthenticationService
         $this->parameterBag = $parameterBag;
         $this->fileService  = new FileService();
 
-    }
+    }//end __construct()
 
 
     /**
