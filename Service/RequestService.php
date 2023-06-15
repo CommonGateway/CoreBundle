@@ -3,6 +3,7 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use Adbar\Dot;
+use App\Entity\Application;
 use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\Gateway as Source;
@@ -36,8 +37,27 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class RequestService
 {
+
+    /**
+     * @var EntityManagerInterface
+     */
     private EntityManagerInterface $entityManager;
+
+    /**
+     * @var CacheService
+     */
     private CacheService $cacheService;
+
+    /**
+     * @var GatewayResourceService
+     */
+    private GatewayResourceService $resourceService;
+
+    /**
+     * @var MappingService
+     */
+    private MappingService $mappingService;
+
     private array $configuration;
     private array $data;
     private ObjectEntity $object;
@@ -54,12 +74,14 @@ class RequestService
     private SessionInterface $session;
     private LoggerInterface $logger;
     private DownloadService $downloadService;
-    
+
     /**
      * The constructor sets al needed variables.
      *
      * @param EntityManagerInterface   $entityManager
      * @param CacheService             $cacheService
+     * @param GatewayResourceService   $resourceService
+     * @param MappingService           $mappingService
      * @param ResponseService          $responseService
      * @param ObjectEntityService      $objectEntityService
      * @param LogService               $logService
@@ -74,6 +96,8 @@ class RequestService
     public function __construct(
         EntityManagerInterface $entityManager,
         CacheService $cacheService,
+        GatewayResourceService $resourceService,
+        MappingService $mappingService,
         ResponseService $responseService,
         ObjectEntityService $objectEntityService,
         LogService $logService,
@@ -87,6 +111,8 @@ class RequestService
     ) {
         $this->entityManager = $entityManager;
         $this->cacheService = $cacheService;
+        $this->resourceService = $resourceService;
+        $this->mappingService = $mappingService;
         $this->responseService = $responseService;
         $this->objectEntityService = $objectEntityService;
         $this->logService = $logService;
@@ -181,7 +207,7 @@ class RequestService
 
         return $vars;
     }
-    
+
     /**
      * This function adds a single query param to the given $vars array. ?$name=$value
      * Will check if request query $name has [...] inside the parameter, like this: ?queryParam[$nameKey]=$value.
@@ -423,13 +449,13 @@ class RequestService
         $this->configuration = $configuration;
 
         $filters = [];
-    
+
         // Get application configuration in and out for current endpoint/global if this is set on current application.
         if ($this->session->get('application') !== null) {
             $appEndpointConfig = $this->getAppEndpointConfig();
         }
 
-        // haat aan de de _
+        // Need to do something about the _
         if (isset($this->data['querystring'])) {
             //            $query = explode('&',$this->data['querystring']);
             //            foreach ($query as $row) {
@@ -438,19 +464,12 @@ class RequestService
             //                $value = $row[1];
             //                $filters[$key] = $value;
             //            }
-            
+
             $filters = $this->realRequestQueryAll($this->data['method']);
-            
+
             if (isset($appEndpointConfig['in']['query']) === true) {
                 $filters = $this->queryAppEndpointConfig($filters, $appEndpointConfig['in']['query']);
             }
-
-//            // todo: replace this foreach with a function that uses $appEndpointConfig to check for ['in']['query']['mapping'] and use that instead.
-//            foreach ($filters as $key=>$value) {
-//                if ($value === 'all' || $value === 'alles' || $value === '*') {
-//                    unset($filters[$key]);
-//                }
-//            }
         }
 
         // Get the ID
@@ -793,26 +812,17 @@ class RequestService
 
     /**
      * Gets the application configuration 'in' and/or 'out' for the current endpoint.
-     * First checks if the current/active application has configuration.
-     * If this is the case, check if the currently used endpoint or 'global' is present in this configuration for 'in' and/or 'out'.
-     * Example: application->configuration['global']['out'].
+     * 
+     * @param string $endpointRef       The reference of the current endpoint
+     * @param string $endpoint          The current endpoint path
+     * @param string $applicationConfig An item of the configuration of the application
      *
      * @return array The 'in' and 'out' configuration of the Application for the current Endpoint.
      */
-    private function getAppEndpointConfig(): array
+    private function getConfigInOutOrGlobal(string $endpointRef, string $endpoint, array $applicationConfig): array
     {
-        $application = $this->entityManager->getRepository('App:Application')->findOneBy(['id' => $this->session->get('application')]);
-        if ($application === null || $application->getConfiguration() === null) {
-            return [];
-        }
-
-        $endpointRef = isset($this->data['endpoint']) === true ? $this->data['endpoint']->getReference() : '/';
-        $endpoint = $this->getCurrentEndpoint();
-
-        $applicationConfig = $application->getConfiguration();
-
-        // Check if there is 'in' and/or 'out' configuration for the current $endpoint or 'global'.
         $appEndpointConfig = [];
+
         foreach (['in', 'out'] as $type) {
             if (array_key_exists($endpointRef, $applicationConfig) === true && array_key_exists($type, $applicationConfig[$endpointRef])) {
                 $appEndpointConfig[$type] = $applicationConfig[$endpointRef][$type];
@@ -822,6 +832,36 @@ class RequestService
                 // Do global last, so that we allow overwriting the global options for specific endpoints ^.
                 $appEndpointConfig[$type] = $applicationConfig['global'][$type];
             }
+        }
+
+        return $appEndpointConfig;
+    }
+
+    /**
+     * Gets the application configuration 'in' and/or 'out' for the current endpoint.
+     * First checks if the current/active application has configuration.
+     * If this is the case, check if the currently used endpoint or 'global' is present in this configuration for 'in' and/or 'out'.
+     * Example: application->configuration['global']['out'].
+     *
+     * @return array The 'in' and 'out' configuration of the Application for the current Endpoint.
+     */
+    private function getAppEndpointConfig(): array
+    {
+
+        // @TODO set created application to the session
+        $application = $this->entityManager->getRepository('App:Application')->findOneBy(['id' => $this->session->get('application')]);
+        if ($application instanceof Application === false
+            || $application->getConfiguration() === null
+        ) {
+            return [];
+        }
+
+        $endpointRef = isset($this->data['endpoint']) === true ? $this->data['endpoint']->getReference() : '/';
+        $endpoint = $this->getCurrentEndpoint();
+
+        $appEndpointConfig = [];
+        foreach ($application->getConfiguration() as $applicationConfig) {
+            $appEndpointConfig = $this->getConfigInOutOrGlobal($endpointRef, $endpoint, $applicationConfig);
         }
 
         return $appEndpointConfig;
@@ -847,7 +887,7 @@ class RequestService
 
         return '/'.implode('/', $pathArray);
     }
-    
+
     /**
      * Handle the Application Endpoint configuration for query params. If filters/query should be changed in any way.
      *
@@ -858,8 +898,15 @@ class RequestService
      */
     private function queryAppEndpointConfig(array $filters, array $queryConfig): array
     {
-        // todo
-        
+        // Check if there is a mapping key.
+        if (key_exists('mapping', $queryConfig) === true) {
+            // Find the mapping.
+            $mapping = $this->resourceService->getMapping($queryConfig['mapping'], 'commongateway/corebundle');
+
+            // Mapp the filters with the given mapping object.
+            $filters = $this->mappingService->mapping($mapping, $filters);
+        }
+
         return $filters;
     }
 
