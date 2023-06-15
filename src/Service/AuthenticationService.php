@@ -52,18 +52,6 @@ class AuthenticationService
 
 
     /**
-     * TODO: REMOVE ME!!!
-     *
-     * @return void|null
-     */
-    private function testRemoveMe()
-    {
-        return null;
-
-    }//end testRemoveMe()
-
-
-    /**
      * Converts a string RSA key to a JWK via the filesystem.
      *
      * @param string $key The key to load
