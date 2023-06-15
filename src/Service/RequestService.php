@@ -65,7 +65,7 @@ class RequestService
     /**
      * string
      */
-    private string $id;
+    private string $identification;
 
     /**
      * $schema
@@ -304,18 +304,18 @@ class RequestService
         }
 
         // Pull the id or reference from the content.
-        if (isset($this->content['_self']['schema']['id'])) {
-            $id = $this->content['_self']['schema']['id'];
+        if (isset($this->content['_self']['schema']['id']) === true) {
+            $identification = $this->content['_self']['schema']['id'];
         }
-        if (isset($this->content['_self']['schema']['ref'])) {
+        if (isset($this->content['_self']['schema']['ref']) === true) {
             $reference = $this->content['_self']['schema']['ref'];
         }
-        if (isset($this->content['_self']['schema']['reference'])) {
+        if (isset($this->content['_self']['schema']['reference']) === true) {
             $reference = $this->content['_self']['schema']['reference'];
         }
 
         // In normal circumstances we expect a all to com form an endpoint so...
-        if (isset($parameters['endpoint'])) {
+        if (isset($parameters['endpoint']) === true) {
             // The endpoint contains exactly one schema
             if (count($this->data['endpoint']->getEntities()) == 1) {
                 return $this->data['endpoint']->getEntities()->first();
@@ -324,10 +324,10 @@ class RequestService
             if (count($this->data['endpoint']->getEntities()) >= 1) {
                 // todo: so right now if we dont have an id or ref and multiple options we "guess" the first, it that smart?
                 $criteria = Criteria::create()->orderBy(['date_created' => Criteria::DESC]);
-                if (isset($id)) {
-                    $criteria->where(['id' => $id]);
+                if (isset($identification) === true) {
+                    $criteria->where(['id' => $identification]);
                 }
-                if (isset($reference)) {
+                if (isset($reference) === true) {
                     $criteria->where(['reference' => $reference]);
                 }
 
@@ -337,10 +337,10 @@ class RequestService
         }//end if
 
         // We only end up here if there is no endpoint or an unlimited endpoint.
-        if (isset($id)) {
-            return $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $id]);
+        if (isset($id) === true) {
+            return $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $identification]);
         }
-        if (isset($reference)) {
+        if (isset($reference) === true) {
             return $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference]);
         }
 
@@ -407,7 +407,7 @@ class RequestService
                     Response::HTTP_NOT_FOUND,
                     ['Content-type' => $contentType]
                 );
-            }
+            }//end if
 
             if ($proxy instanceof Source && !$proxy->getIsEnabled()) {
                 return new Response(
@@ -482,7 +482,7 @@ class RequestService
             }
         }
 
-        // Lets play it save
+        // Lets play it save.
         return [];
 
     }//end getScopes()
@@ -505,15 +505,15 @@ class RequestService
 
         $filters = [];
 
-        // haat aan de de _
-        if (isset($this->data['querystring'])) {
-            //            $query = explode('&',$this->data['querystring']);
-            //            foreach ($query as $row) {
-            //                $row = explode('=', $row);
-            //                $key = $row[0];
-            //                $value = $row[1];
-            //                $filters[$key] = $value;
-            //            }
+        // haat aan de de _ .
+        if (isset($this->data['querystring']) === true) {
+            // $query = explode('&',$this->data['querystring']);
+            // foreach ($query as $row) {
+            //     $row = explode('=', $row);
+            //     $key = $row[0];
+            //     $value = $row[1];
+            //     $filters[$key] = $value;
+            // }
             $filters = $this->realRequestQueryAll($this->data['method']);
 
             foreach ($filters as $key => $value) {
@@ -523,16 +523,16 @@ class RequestService
             }
         }
 
-        // Get the ID
-        $this->id = $this->getId($this->data);
+        // Get the ID.
+        $this->identification = $this->getId($this->data);
 
-        // If we have an ID we can get an entity to work with (except on gets we handle those from cache)
-        if (isset($this->id) && $this->id && $this->data['method'] != 'GET') {
-            $this->object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->id]);
+        // If we have an ID we can get an entity to work with (except on gets we handle those from cache).
+        if (isset($this->identification) === true && $this->identification && $this->data['method'] != 'GET') {
+            $this->object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->identification]);
         }
 
-        // Lets pas the part variables to filters
-        // todo: this is hacky
+        // Lets pas the part variables to filters.
+        // todo: this is hacky.
         foreach ($this->data['path'] as $key => $value) {
             if (strpos($key, '{') !== false) {
                 if ($key !== '{id}') {
@@ -543,34 +543,34 @@ class RequestService
             }
         }//end foreach
 
-        // We might have some content
-        if (isset($this->data['body'])) {
+        // We might have some content.
+        if (isset($this->data['body']) === true) {
             $this->content = $this->data['body'];
         }
 
-        // Get the schema
+        // Get the schema.
         $this->schema = $this->getSchema($this->data);
 
         if ($this->schema !== false) {
             $this->session->set('schema', $this->schema->getId()->toString());
         }
-        // Bit os savety cleanup <- dit zou eigenlijk in de hydrator moeten gebeuren
+        // Bit os savety cleanup <- dit zou eigenlijk in de hydrator moeten gebeuren.
 //        unset($this->content['id']);
         unset($this->content['_id']);
         unset($this->content['_self']); // todo: i don't think this does anything useful?
         unset($this->content['_schema']);
 
         // todo: make this a function, like eavService->getRequestExtend()
-        if (isset($this->data['query']['extend'])) {
+        if (isset($this->data['query']['extend']) === true) {
             $extend = $this->data['query']['extend'];
 
-            // Lets deal with a comma seperated list
+            // Lets deal with a comma seperated list.
             if (!is_array($extend)) {
                 $extend = explode(',', $extend);
             }
 
             $dot = new Dot();
-            // Lets turn the from dor attat into an propper array
+            // Lets turn the from dor attat into an propper array.
             foreach ($extend as $key => $value) {
                 $dot->add($value, true);
             }
@@ -579,12 +579,12 @@ class RequestService
         }//end if
         $metadataSelf = $extend['_self'] ?? [];
 
-        // todo: controlleren of de gebruiker ingelogd is
+        // todo: controlleren of de gebruiker ingelogd is.
 
-        // Make a list of schema's that are allowed for this endpoint
+        // Make a list of schema's that are allowed for this endpoint.
         $allowedSchemas['id'] = [];
         $allowedSchemas['name'] = [];
-        if (isset($this->data['endpoint'])) {
+        if (isset($this->data['endpoint']) === true) {
             foreach ($this->data['endpoint']->getEntities() as $entity) {
                 $allowedSchemas['id'][] = $entity->getId()->toString();
                 $allowedSchemas['name'][] = $entity->getName();
@@ -594,8 +594,8 @@ class RequestService
         // Security
         $scopes = $this->getScopes();
         foreach ($allowedSchemas['name'] as $schema) {
-            if (!isset($scopes[$schema][$this->data['method']])) {
-                // THROW SECURITY ERROR AND EXIT
+            if (isset($scopes[$schema][$this->data['method']]) === false) {
+                // THROW SECURITY ERROR AND EXIT.
             }
         }
 
@@ -605,41 +605,41 @@ class RequestService
             $appEndpointConfig = $this->getAppEndpointConfig();
         }
 
-        // All prepped so lets go
+        // All prepped so lets go.
         // todo: split these into functions?
         switch ($this->data['method']) {
             case 'GET':
-                // We have an id (so single object)
-                if (isset($this->id) && $this->id) {
-                    $this->session->set('object', $this->id);
-                    $result = $this->cacheService->getObject($this->id);
+                // We have an id (so single object).
+                if (isset($this->identification) === true) {
+                    $this->session->set('object', $this->identification);
+                    $result = $this->cacheService->getObject($this->identification);
 
-                    // check endpoint throws foreach and set the eventtype
-                    // use event dispatcher
+                    // check endpoint throws foreach and set the eventtype.
+                    // use event dispatcher.
 
-                    // If we do not have an object we throw an 404
+                    // If we do not have an object we throw an 404.
                     if ($result === null) {
                         return new Response($this->serializer->serialize([
-                            'message' => 'Could not find an object with id '.$this->id,
+                            'message' => 'Could not find an object with id '.$this->identification,
                             'type'    => 'Bad Request',
                             'path'    => implode(', ', $allowedSchemas['name']),
-                            'data'    => ['id' => $this->id],
+                            'data'    => ['id' => $this->identification],
                         ], 'json'), Response::HTTP_NOT_FOUND);
                     }
 
-                    // Lets see if the found result is allowed for this endpoint
+                    // Lets see if the found result is allowed for this endpoint.
                     if (isset($this->data['endpoint']) && !in_array($result['_self']['schema']['id'], $allowedSchemas['id'])) {
                         return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                     }
 
-                    // create log
+                    // create log.
                     // todo if $this->content is array and not string/null, cause someone could do a get item call with a body...
-                    $responseLog = new Response(is_string($this->content) || is_null($this->content) ? $this->content : null, 200, ['CoreBundle' => 'GetItem']);
+                    $responseLog = new Response(is_string($this->content) === true || is_null($this->content) === true ? $this->content : null, 200, ['CoreBundle' => 'GetItem']);
                     $session = new Session();
-                    $session->set('object', $this->id);
+                    $session->set('object', $this->identification);
 
                     // todo: This log is needed so we know an user has 'read' this object
-                    $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) ? json_encode($this->content) : $this->content);
+                    $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) === true ? json_encode($this->content) : $this->content);
                 } else {
                     //$this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
                     $result = $this->cacheService->searchObjects(null, $filters, $allowedSchemas['id']);
@@ -649,21 +649,21 @@ class RequestService
                 $eventType = 'commongateway.object.create';
 
                 // We have an id on a post so die
-                if (isset($this->id) === true && empty($this->id) === false) {
-                    $this->session->set('object', $this->id);
+                if (isset($this->identification) === true && empty($this->identification) === false) {
+                    $this->session->set('object', $this->identification);
                     $this->logger->error('You can not POST to an (existing) id, consider using PUT or PATCH instead');
 
                     return new Response('You can not POST to an (existing) id, consider using PUT or PATCH instead', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
-                // We need to know the type of object that the user is trying to post, so lets look that up
+                // We need to know the type of object that the user is trying to post, so lets look that up.
                 if ($this->schema instanceof Entity === false) {
                     $this->logger->error('No schema could be established for your request');
 
                     return new Response('No schema could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
-                // Lets see if the found result is allowed for this endpoint
+                // Lets see if the found result is allowed for this endpoint.
                 if (isset($this->data['endpoint']) === true && in_array($this->schema->getId(), $allowedSchemas['id']) === false) {
                     $this->logger->error('Object is not supported by this endpoint');
 
@@ -692,7 +692,7 @@ class RequestService
                         $this->cacheService->cacheObject($this->object); /* @todo this is hacky, the above schould alredy do this */
                     }
                 } else {
-                    // Use validation to throw an error
+                    // Use validation to throw an error.
                 }
 
                 $result = $this->cacheService->getObject($this->object->getId()->toString());
@@ -700,40 +700,40 @@ class RequestService
             case 'PUT':
                 $eventType = 'commongateway.object.update';
 
-                // We dont have an id on a PUT so die
-                if (!isset($this->id)) {
+                // We dont have an id on a PUT so die.
+                if (isset($this->identification) === true) {
                     $this->logger->error('No id could be established for your request');
 
                     return new Response('No id could be established for your request', '400');
                 }
-                $this->session->set('object', $this->id);
+                $this->session->set('object', $this->identification);
 
-                // We need to know the type of object that the user is trying to post, so lets look that up
+                // We need to know the type of object that the user is trying to post, so lets look that up.
                 if ($this->schema instanceof Entity === false) {
                     $this->logger->error('No schema could be established for your request');
 
                     return new Response('No schema could be established for your request', '400');
                 }
 
-                // Lets see if the found result is allowd for this endpoint
-                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
+                // Lets see if the found result is allowd for this endpoint.
+                if (isset($this->data['endpoint']) === true && in_array($this->schema->getId(), $allowedSchemas['id']) === false) {
                     $this->logger->error('Object is not supported by this endpoint');
 
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
-                $this->object = $this->entityManager->find('App:ObjectEntity', $this->id);
+                $this->object = $this->entityManager->find('App:ObjectEntity', $this->identification);
 
                 //if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
-                $this->logger->debug('updating object '.$this->id);
+                $this->logger->debug('updating object '.$this->identification);
 
                 if ($this->object->getLock() === null
                     || $this->object->getLock() !== null
-                    && key_exists('lock', $this->content)
+                    && key_exists('lock', $this->content) === true
                     && $this->object->getLock() === $this->content['lock']
                 ) {
-                    if ($this->object->hydrate($this->content, true)) { // This should be an unsafe hydration
-                        if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
+                    if ($this->object->hydrate($this->content, true)) { // This should be an unsafe hydration.
+                        if (array_key_exists('@dateRead', $this->content) === true && $this->content['@dateRead'] == false) {
                             $this->objectEntityService->setUnread($this->object);
                         }
 
@@ -744,7 +744,7 @@ class RequestService
                             $this->entityManager->flush();
                         }
                     } else {
-                        // Use validation to throw an error
+                        // Use validation to throw an error.
                     }
                 }
 
@@ -753,32 +753,32 @@ class RequestService
             case 'PATCH':
                 $eventType = 'commongateway.object.update';
 
-                // We dont have an id on a PATCH so die
-                if (!isset($this->id)) {
+                // We dont have an id on a PATCH so die.
+                if (isset($this->identification) === true) {
                     $this->logger->error('No id could be established for your request');
 
                     return new Response('No id could be established for your request', '400');
                 }
-                $this->session->set('object', $this->id);
+                $this->session->set('object', $this->identification);
 
-                // We need to know the type of object that the user is trying to post, so lets look that up
+                // We need to know the type of object that the user is trying to post, so lets look that up.
                 if ($this->schema instanceof Entity === false) {
                     $this->logger->error('No schema could be established for your request');
 
                     return new Response('No schema could be established for your request', '400');
                 }
 
-                // Lets see if the found result is allowd for this endpoint
-                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
+                // Lets see if the found result is allowd for this endpoint.
+                if (isset($this->data['endpoint']) === true && in_array($this->schema->getId(), $allowedSchemas['id']) === false) {
                     $this->logger->error('Object is not supported by this endpoint');
 
                     return new Response('Object is not supported by this endpoint', '406');
                 }
 
-                $this->object = $this->entityManager->find('App:ObjectEntity', $this->id);
+                $this->object = $this->entityManager->find('App:ObjectEntity', $this->identification);
 
                 //if ($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
-                $this->logger->debug('updating object '.$this->id);
+                $this->logger->debug('updating object '.$this->identification);
 
                 if ($this->object->getLock() === null
                     || $this->object->getLock() !== null
@@ -797,7 +797,7 @@ class RequestService
                             $this->entityManager->flush();
                         }
                     } else {
-                        // Use validation to throw an error
+                        // Use validation to throw an error.
                     }
                 }
 
@@ -805,23 +805,23 @@ class RequestService
                 break;
             case 'DELETE':
 
-                // We dont have an id on a PUT so die
-                if (!isset($this->id)) {
+                // We dont have an id on a PUT so die.
+                if (!isset($this->identification)) {
                     $this->logger->error('No id could be established for your request');
 
                     return new Response('No id could be established for your request', '400');
                 }
-                $this->session->set('object', $this->id);
+                $this->session->set('object', $this->identification);
 
-                // We need to know the type of object that the user is trying to post, so lets look that up
+                // We need to know the type of object that the user is trying to post, so lets look that up.
                 if ($this->schema instanceof Entity === false) {
                     $this->logger->error('No schema could be established for your request');
 
                     return new Response('No schema could be established for your request', '400');
                 }
 
-                // Lets see if the found result is allowd for this endpoint
-                if (isset($this->data['endpoint']) && !in_array($this->schema->getId(), $allowedSchemas['id'])) {
+                // Lets see if the found result is allowd for this endpoint.
+                if (isset($this->data['endpoint']) === true && in_array($this->schema->getId(), $allowedSchemas['id']) === false) {
                     $this->logger->error('Object is not supported by this endpoint');
 
                     return new Response('Object is not supported by this endpoint', '406');
@@ -973,9 +973,11 @@ class RequestService
      */
     public function checkEmbedded($result)
     {
-        if (isset($result->embedded)) {
+        if (isset($result->embedded) === true) {
             unset($result->embedded);
-        } elseif (isset($result['embedded'])) {
+        } 
+        
+        if (isset($result['embedded']) === true) {
             unset($result['embedded']);
         }
 
@@ -994,13 +996,14 @@ class RequestService
      */
     private function handleMetadataSelf(&$result, array $metadataSelf)
     {
-        // todo: Adding type array before &$result will break this function ^^^
-        if (empty($metadataSelf)) {
+        // todo: Adding type array before &$result will break this function ^^^.
+        if (empty($metadataSelf) === true) {
+
             return;
         }
 
-        // todo: $this->id is sometimes empty, it should never be an empty string
-        if (isset($result['results']) && $this->data['method'] === 'GET' && empty($this->id)) {
+        // todo: $this->identification is sometimes empty, it should never be an empty string.
+        if (isset($result['results']) === true && $this->data['method'] === 'GET' && empty($this->identification) === true) {
             array_walk($result['results'], function (&$record) {
                 $record = iterator_to_array($record);
             });
@@ -1011,15 +1014,17 @@ class RequestService
             return;
         }//end if
 
-        if (empty($result['id']) || !Uuid::isValid($result['id'])) {
+        if (empty($result['id']) === true || Uuid::isValid($result['id']) === false) {
+
             return;
         }
         $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['id']]);
 
-        if (!$objectEntity instanceof ObjectEntity) {
+        if ($objectEntity instanceof ObjectEntity === true) {
+
             return;
         }
-        if ($this->data['method'] === 'GET' && !empty($this->id)) {
+        if ($this->data['method'] === 'GET' && empty($this->identification) === false) {
             $metadataSelf['dateRead'] = 'getItem';
         }
         $this->responseService->xCommongatewayMetadata = $metadataSelf;
@@ -1046,8 +1051,8 @@ class RequestService
         $content = $this->data['request']->getContent();
 
         // Lets see if we have an object
-        if (array_key_exists('id', $this->data)) {
-            $this->id = $data['id'];
+        if (array_key_exists('id', $this->data) === true) {
+            $this->identification = $data['id'];
             $object = $this->cacheService->getObject($data['id']);
             if ($object === null) {
                 // Throw not found
