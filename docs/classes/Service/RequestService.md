@@ -23,7 +23,7 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 |[requestHandler](#requestservicerequesthandler)|Handles incomming requests and is responsible for generating a response.|
 |[searchRequestHandler](#requestservicesearchrequesthandler)|This function searches all the objectEntities and formats the data.|
 |[serializeData](#requestserviceserializedata)|Determines the right content type and serializes the data accordingly.|
-|[shouldWeUnsetEmbedded](#requestserviceshouldweunsetembedded)|If embedded should be shown or not.|
+|[shouldWeUnsetEmbedded](#requestserviceshouldweunsetembedded)|Handle the Application Endpoint Configuration for embedded. If embedded should be shown or not.|
 
 
 
