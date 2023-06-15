@@ -41,6 +41,7 @@ class CallService
     private SessionInterface $session;
     private LoggerInterface $callLogger;
 
+
     /**
      * The constructor sets al needed variables.
      *
@@ -67,6 +68,7 @@ class CallService
         $this->session = $session;
         $this->callLogger = $callLogger;
     }
+
 
     /**
      * Writes the certificate and ssl keys to disk, returns the filenames.
@@ -96,6 +98,7 @@ class CallService
         }
     }//end getCertificate()
 
+
     /**
      * Removes certificates and private keys from disk if they are not necessary anymore.
      *
@@ -117,6 +120,7 @@ class CallService
             $this->fileService->removeFile($config['verify']);
         }
     }//end removeFiles()
+
 
     /**
      * Removes empty headers and sets array to string values.
@@ -314,7 +318,7 @@ class CallService
         return $this->handleEndpointsConfigIn($source, $endpoint, $response, null, null);
 
     }//end call()
-    
+
 
     /**
      * Handles the endpointsConfig of a Source before we do an api-call.
