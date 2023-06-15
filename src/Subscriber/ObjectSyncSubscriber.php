@@ -129,6 +129,8 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
 
         // Dispatch event.
         $this->objectEntityService->dispatchEvent('commongateway.action.event', $data, 'commongateway.object.sync');
-    }//end prePersist()
+
+    }//end postPersist()
+
 
 }//end class
