@@ -23,6 +23,7 @@ use Psr\Log\LoggerInterface;
  */
 class ObjectSyncSubscriber implements EventSubscriberInterface
 {
+
     /**
      * @var EntityManagerInterface
      */
@@ -48,6 +49,7 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
      */
     private LoggerInterface $pluginLogger;
 
+
     /**
      * The constructor sets al needed variables.
      *
@@ -64,12 +66,14 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
         ObjectEntityService $objectEntityService,
         LoggerInterface $pluginLogger
     ) {
-        $this->entityManager = $entityManager;
-        $this->syncService = $syncService;
-        $this->resourceService = $resourceService;
+        $this->entityManager       = $entityManager;
+        $this->syncService         = $syncService;
+        $this->resourceService     = $resourceService;
         $this->objectEntityService = $objectEntityService;
-        $this->pluginLogger = $pluginLogger;
+        $this->pluginLogger        = $pluginLogger;
+
     }//end __construct()
+
 
     /**
      * Defines the events that the subscriber should subscribe to.
@@ -81,7 +85,9 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
         return [
             Events::postPersist,
         ];
+
     }//end getSubscribedEvents()
+
 
     /**
      * Passes the result of prePersist to preUpdate.
@@ -94,7 +100,6 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
 
         // Check if object is an instance of an ObjectEntity.
         if ($object instanceof ObjectEntity === false) {
-
             return;
         }
 
@@ -113,7 +118,7 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
 
             return;
         }
-        
+
         $data = [
             'object' => $object,
             'schema' => $object->getEntity(),
@@ -124,5 +129,8 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
 
         // Dispatch event.
         $this->objectEntityService->dispatchEvent('commongateway.action.event', $data, 'commongateway.object.sync');
-    }//end prePersist()
+
+    }//end postPersist()
+
+
 }//end class

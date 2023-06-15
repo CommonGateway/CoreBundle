@@ -18,14 +18,19 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class InstallCommand extends Command
 {
+
     protected static $defaultName = 'commongateway:install';
+
     private $installationService;
+
 
     public function __construct(InstallationService $installationService)
     {
         $this->installationService = $installationService;
         parent::__construct();
-    }
+
+    }//end __construct()
+
 
     /**
      * Configures the command.
@@ -40,6 +45,7 @@ class InstallCommand extends Command
             ->addOption('unsafe', 'u', InputOption::VALUE_OPTIONAL, 'Update existing schema\'s and data sets', false)
             ->setDescription('This command runs the installation service on a commongateway bundle')
             ->setHelp('This command allows you to run further installation an configuration actions afther installing a plugin');
+
     }//end configure()
 
 
@@ -60,5 +66,6 @@ class InstallCommand extends Command
         return $this->installationService->install($bundle, $options);
 
     }//end execute()
+
 
 }//end class

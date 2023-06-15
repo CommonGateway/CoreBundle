@@ -22,6 +22,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class NotificationService
 {
+
     /**
      * @var array
      */
@@ -52,6 +53,7 @@ class NotificationService
      */
     private GatewayResourceService $resourceService;
 
+
     /**
      * The constructor sets al needed variables.
      *
@@ -62,15 +64,17 @@ class NotificationService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        LoggerInterface        $notificationLogger,
+        LoggerInterface $notificationLogger,
         SynchronizationService $syncService,
         GatewayResourceService $resourceService
     ) {
-        $this->entityManager = $entityManager;
-        $this->logger = $notificationLogger;
-        $this->syncService = $syncService;
+        $this->entityManager   = $entityManager;
+        $this->logger          = $notificationLogger;
+        $this->syncService     = $syncService;
         $this->resourceService = $resourceService;
+
     }//end __construct()
+
 
     /**
      * Handles incoming notification api-call and is responsible for generating a response.
@@ -86,7 +90,7 @@ class NotificationService
             return $data;
         }
 
-        $this->data = $data;
+        $this->data          = $data;
         $this->configuration = $configuration;
 
         $this->logger->debug('NotificationService -> notificationHandler()');
@@ -106,11 +110,13 @@ class NotificationService
 
         $this->entityManager->flush();
 
-        $response = ['Message' => 'Notification received, object synchronized'];
+        $response         = ['Message' => 'Notification received, object synchronized'];
         $data['response'] = new Response(json_encode($response), 200, ['Content-type' => 'application/json']);
 
         return $data;
+
     }//end notificationHandler()
+
 
     /**
      * Tries to find a synchronisation with the data from the notification and action->configuration.
@@ -135,14 +141,16 @@ class NotificationService
 
         // Get (source) id from notification data.
         $explodedUrl = explode('/', $url);
-        $sourceId = end($explodedUrl);
+        $sourceId    = end($explodedUrl);
 
         $synchronization = $this->syncService->findSyncBySource($source, $entity, $sourceId);
         $synchronization->setEndpoint(str_replace($source->getLocation(), '', $url));
         $this->entityManager->persist($synchronization);
 
         return $synchronization;
+
     }//end findSync()
+
 
     /**
      * Tries to find a source using the url of the object a notification was created for.
@@ -167,5 +175,8 @@ class NotificationService
         }
 
         return $sources[0];
+
     }//end findSource()
+
+
 }//end class

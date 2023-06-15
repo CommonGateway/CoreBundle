@@ -1,7 +1,6 @@
 <?php
 
 // src/Subscriber/DatabaseActivitySubscriber.php
-
 namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Entity\ObjectEntity;
@@ -22,30 +21,34 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
  */
 class ObjectUriSubscriber implements EventSubscriberInterface
 {
+
     /**
      * @var ParameterBagInterface
      */
     private ParameterBagInterface $parameterBag;
-    
+
     /**
      * @var SessionInterface
      */
     private SessionInterface $session;
-    
+
+
     /**
      * The constructor sets al needed variables.
      *
      * @param ParameterBagInterface $parameterBag
-     * @param SessionInterface $session
+     * @param SessionInterface      $session
      */
     public function __construct(
         ParameterBagInterface $parameterBag,
         SessionInterface $session
     ) {
         $this->parameterBag = $parameterBag;
-        $this->session = $session;
+        $this->session      = $session;
+
     }//end __construct()
-    
+
+
     /**
      * Todo: ???
      *
@@ -58,12 +61,16 @@ class ObjectUriSubscriber implements EventSubscriberInterface
             Events::postPersist,
             Events::postUpdate,
         ];
+
     }//end getSubscribedEvents()
+
 
     public function postUpdate(LifecycleEventArgs $args): void
     {
         $this->postPersist($args);
-    }//end postUpdate
+
+    }//end postUpdate()
+
 
     /**
      * Updates the cache whenever an object is put into the database.
@@ -83,5 +90,8 @@ class ObjectUriSubscriber implements EventSubscriberInterface
 
             return;
         }
+
     }//end postPersist()
+
+
 }//end class

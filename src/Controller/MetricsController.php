@@ -1,7 +1,6 @@
 <?php
 
 // src/Controller/MetricsController.php
-
 namespace CommonGateway\CoreBundle\Controller;
 
 use CommonGateway\CoreBundle\Service\MetricsService;
@@ -21,10 +20,12 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class MetricsController extends AbstractController
 {
+
     /**
      * @var MetricsService The metrics service
      */
     private MetricsService $metricsService;
+
 
     /**
      * The constructor sets al needed variables.
@@ -34,7 +35,9 @@ class MetricsController extends AbstractController
     public function __construct(MetricsService $metricsService)
     {
         $this->metricsService = $metricsService;
+
     }//end __construct()
+
 
     /**
      * Provides a metrics endpoint for prometheus to crawl.
@@ -47,9 +50,12 @@ class MetricsController extends AbstractController
      */
     public function metrics(Request $request): Response
     {
-        $status = 200;
+        $status  = 200;
         $metrics = $this->metricsService->getAll();
 
         return new Response(json_encode(['metrics' => $metrics]), $status, ['Content-type' => 'application/json']);
+
     }//end metrics()
-}//end Class
+
+
+}//end class

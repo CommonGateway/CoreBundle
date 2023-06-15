@@ -26,6 +26,7 @@ use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
 
 class FileSystemCreateService
 {
+
     /**
      * The local filesystem.
      *
@@ -33,13 +34,16 @@ class FileSystemCreateService
      */
     private SymfonyFilesystem $filesystem;
 
+
     /**
      * The class constructor.
      */
     public function __construct()
     {
         $this->filesystem = new SymfonyFilesystem();
+
     }//end __construct()
+
 
     /**
      * Writes a zip file in the local filesystem.
@@ -51,13 +55,15 @@ class FileSystemCreateService
     public function createZipFileFromContent(string $content): string
     {
         // Let's create a temporary file.
-        $fileId = new Uuid();
+        $fileId   = new Uuid();
         $filename = "/var/tmp/tmp-{$fileId->toString()}.zip";
         $this->filesystem->touch($filename);
         $this->filesystem->appendToFile($filename, $content);
 
         return $filename;
+
     }//end createZipFileFromContent()
+
 
     /**
      * Removes a zip file from the local filesystem.
@@ -69,7 +75,9 @@ class FileSystemCreateService
     public function removeZipFile(string $filename): void
     {
         $this->filesystem->remove($filename);
+
     }//end removeZipFile()
+
 
     /**
      * Connects to a Filesystem.
@@ -96,7 +104,7 @@ class FileSystemCreateService
 
         $connectionOptions = new FtpConnectionOptions(
             $url['host'],
-            $url['path'] ?? '/',
+            ($url['path'] ?? '/'),
             $source->getUsername(),
             $source->getPassword(),
             $url['port'],
@@ -106,7 +114,9 @@ class FileSystemCreateService
         $adapter = new FtpAdapter($connectionOptions);
 
         return new Filesystem($adapter);
+
     }//end openFtpFilesystem()
+
 
     /**
      * Opens a zip filesystem.
@@ -121,8 +131,11 @@ class FileSystemCreateService
     {
         // Open the zip file.
         $provider = new FilesystemZipArchiveProvider($filename);
-        $adapter = new ZipArchiveAdapter($provider);
+        $adapter  = new ZipArchiveAdapter($provider);
 
         return new Filesystem($adapter);
+
     }//end openZipFilesystem()
+
+
 }//end class

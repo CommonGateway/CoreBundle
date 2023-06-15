@@ -6,10 +6,12 @@ use CommonGateway\CoreBundle\Service\RequestService;
 
 class RequestProxyHandler implements ActionHandlerInterface
 {
+
     /**
      * @var RequestService
      */
     private RequestService $requestService;
+
 
     /**
      * @param RequestService $requestService The RequestService.
@@ -17,7 +19,9 @@ class RequestProxyHandler implements ActionHandlerInterface
     public function __construct(RequestService $requestService)
     {
         $this->requestService = $requestService;
+
     }//end __construct()
+
 
     /**
      *  This function returns the required configuration as a [json-schema](https://json-schema.org/) array.
@@ -40,7 +44,9 @@ class RequestProxyHandler implements ActionHandlerInterface
                 ],
             ],
         ];
+
     }//end getConfiguration()
+
 
     /**
      * This function runs the search request service plugin.
@@ -53,5 +59,8 @@ class RequestProxyHandler implements ActionHandlerInterface
     public function run(array $data, array $configuration): array
     {
         return $this->requestService->proxyRequestHandler($data, $configuration);
+
     }//end run()
+
+
 }//end class
