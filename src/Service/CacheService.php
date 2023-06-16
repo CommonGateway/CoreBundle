@@ -851,7 +851,7 @@ class CacheService
     //     // This checks for each attribute of the given Entity if $attribute->getSearchable() is true.
     //     $filterCheck = $this->entityManager->getRepository('App:ObjectEntity')->getFilterParameters($entity, '', 1, true);
 
-    //     foreach ($filters as $param => $value) {
+    //     foreach (array_keys($filters) as $param) {
     //         if (in_array($param, $filterCheck) === false) {
     //             $unsupportedParams = isset($unsupportedParams) === false ? $param : "$unsupportedParams, $param";
     //         }
