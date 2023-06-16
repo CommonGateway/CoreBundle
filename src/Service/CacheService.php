@@ -277,10 +277,8 @@ class CacheService
         $updatedObjectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $objectEntity->getId()->toString()]);
         if ($updatedObjectEntity !== null) {
             $objectEntity = $updatedObjectEntity;
-        }
-
-        if ($updatedObjectEntity === null) {
-            isset($this->style) === true && $this->style->writeln('Could not find an ObjectEntity with id: '.$objectEntity->getId()->toString());
+        } elseif (isset($this->style) === true) {
+            $this->style->writeln('Could not find an ObjectEntity with id: '.$objectEntity->getId()->toString());
         }
 
         $collection = $this->client->objects->json;
