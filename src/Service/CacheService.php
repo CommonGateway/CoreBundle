@@ -533,7 +533,7 @@ class CacheService
         }
 
         // Handle filters that expect $value to be an array
-        if ($this->handleFilterArray($key, $value)) {
+        if ($this->handleFilterArray($value)) {
             return;
         }
 
@@ -579,14 +579,13 @@ class CacheService
     /**
      * Handles a single filter used on a get collection api call. Specifically an filter where the value is an array.
      *
-     * @param $key
      * @param $value
      *
      * @throws Exception
      *
      * @return bool
      */
-    private function handleFilterArray($key, &$value): bool
+    private function handleFilterArray(&$value): bool
     {
         // Lets check for the methods like in
         if (is_array($value) === true) {
