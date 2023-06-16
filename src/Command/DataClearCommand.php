@@ -21,22 +21,37 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 class DataClearCommand extends Command
 {
 
+    /**
+     * @var static
+     */
     protected static $defaultName = 'commongateway:data:clear';
 
-    private $cacheService;
+    /**
+     * @var CacheService
+     */
+    private CacheService $cacheService;
 
-    private EntityManagerInterface $entityManagerInterface;
+    /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
 
+    /**
+     * @var ParameterBagInterface
+     */
     private ParameterBagInterface $parameterBagInterface;
 
 
+    /**
+     * __construct
+     */
     public function __construct(
         CacheService $cacheService,
-        EntityManagerInterface $entityManagerInterface,
+        EntityManagerInterface $entityManager,
         ParameterBagInterface $parameterBagInterface
     ) {
         $this->cacheService          = $cacheService;
-        $this->entitymanager         = $entityManagerInterface;
+        $this->entityManager         = $entityManager;
         $this->parameterBagInterface = $parameterBagInterface;
 
         parent::__construct();
@@ -44,6 +59,11 @@ class DataClearCommand extends Command
     }//end __construct()
 
 
+    /**
+     * Configures this command.
+     * 
+     * @return void Nothng.
+     */
     protected function configure(): void
     {
         $this
@@ -53,6 +73,11 @@ class DataClearCommand extends Command
     }//end configure()
 
 
+    /**
+     * Executes this command.
+     * 
+     * @return int 1 if succsesfull 0 if not.
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $env          = $this->parameterBagInterface->get('app_env');
@@ -75,27 +100,27 @@ class DataClearCommand extends Command
             return Command::FAILURE;
         }
 
-        $objects = $this->entitymanager->getRepository('App:ObjectEntity')->findAll();
+        $objects = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
 
         $symfonyStyle->writeln('Found '.count($objects).' objects');
 
-        // creates a new progress bar (50 units)
+        // creates a new progress bar (50 units).
         $progressBar = new ProgressBar($output, count($objects));
 
-        // starts and displays the progress bar
+        // starts and displays the progress bar.
         $progressBar->start();
 
         foreach ($objects as $object) {
-            // advances the progress bar 1 unit
+            // advances the progress bar 1 unit.
             $progressBar->advance();
 
-            // you can also advance the progress bar by more than 1 unit
-            $this->entitymanager->remove($object);
+            // you can also advance the progress bar by more than 1 unit.
+            $this->entityManager->remove($object);
         }
 
-        // ensures that the progress bar is at 100%
+        // ensures that the progress bar is at 100%.
         $progressBar->finish();
-        $this->entitymanager->flush();
+        $this->entityManager->flush();
 
         $symfonyStyle->writeln('');
         $symfonyStyle->success('All done');

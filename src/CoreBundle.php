@@ -1,8 +1,8 @@
 <?php
 
-// CommonGateway/CoreBundle/CoreBundle.php
+// CommonGateway/CoreBundle/CoreBundle.php.
 /*
- * This file is part of the Conduction Common Ground Bundle
+ * This file is part of the Conduction Common Ground Bundle.
  *
  * @author Conduction <info@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
  * @license EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
