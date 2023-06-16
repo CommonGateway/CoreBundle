@@ -45,7 +45,7 @@ class UninstallCommand extends Command
 
     /**
      * Configures this commmand.
-     * 
+     *
      * @return void Nothing.
      */
     protected function configure(): void
@@ -62,10 +62,10 @@ class UninstallCommand extends Command
 
     /**
      * Executes this commmand.
-     * 
-     * @param InputInterface $input
+     *
+     * @param InputInterface  $input
      * @param OutputInterface $output
-     * 
+     *
      * @return int 1 if successfully executed, else 0.
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
