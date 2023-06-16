@@ -357,22 +357,22 @@ class InstallationService
      */
     private function translateCoreReferences()
     {
-        foreach ($this->objects as $translateFrom => $value) {
+        foreach (array_keys($this->objects) as $translateFrom) {
             switch ($translateFrom) {
-            case 'https://json-schema.org/draft/2020-12/action':
-                $translateTo = 'https://docs.commongateway.nl/schemas/Action.schema.json';
-                break;
-            case 'https://json-schema.org/draft/2020-12/schema':
-                $translateTo = 'https://docs.commongateway.nl/schemas/Entity.schema.json';
-                break;
-            case 'https://json-schema.org/draft/2020-12/source':
-                $translateTo = 'https://docs.commongateway.nl/schemas/Gateway.schema.json';
-                break;
-            case 'https://json-schema.org/draft/2020-12/mapping':
-                $translateTo = 'https://docs.commongateway.nl/schemas/Mapping.schema.json';
-                break;
-            default:
-                continue 2;
+                case 'https://json-schema.org/draft/2020-12/action':
+                    $translateTo = 'https://docs.commongateway.nl/schemas/Action.schema.json';
+                    break;
+                case 'https://json-schema.org/draft/2020-12/schema':
+                    $translateTo = 'https://docs.commongateway.nl/schemas/Entity.schema.json';
+                    break;
+                case 'https://json-schema.org/draft/2020-12/source':
+                    $translateTo = 'https://docs.commongateway.nl/schemas/Gateway.schema.json';
+                    break;
+                case 'https://json-schema.org/draft/2020-12/mapping':
+                    $translateTo = 'https://docs.commongateway.nl/schemas/Mapping.schema.json';
+                    break;
+                default:
+                    continue 2;
             }
 
             if (isset($this->objects[$translateTo]) === false) {
