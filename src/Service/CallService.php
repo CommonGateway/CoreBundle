@@ -5,7 +5,7 @@ namespace CommonGateway\CoreBundle\Service;
 // use App\Entity\CallLog;
 use App\Entity\Gateway as Source;
 use Doctrine\ORM\EntityManagerInterface;
-use Dompdf\Exception;
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
@@ -159,83 +159,21 @@ class CallService
         return $headers;
 
     }//end removeEmptyHeaders()
-
-
-    /**
-     * Creates a default CallLog with given info.
-     *
-     * @param Source $source
-     * @param string $endpoint
-     * @param string $method
-     * @param array  $config
-     *
-     * @return CallLog $log
-     */
-    private function createDefaultLog(Source $source, string $endpoint, string $method, array $config): CallLog
-    {
-        $log = new CallLog();
-        $log->setSource($source);
-        $log->setEndpoint($source->getLocation().$endpoint);
-        $log->setMethod($method);
-        $log->setConfig($config);
-        $log->setRequestBody($config['body'] ?? null);
-
-        return $log;
-
-    }//end createDefaultLog()
-
-
-    /**
-     * Updates the CallLog after a successfull call.
-     *
-     * @param CallLog      $log
-     * @param Response     $responseClone
-     * @param float|string $startTimer    Timestamp when request started.
-     *
-     * @return void Nothing
-     */
-    private function updateLog(CallLog $log, Response $responseClone, $startTimer): void
-    {
-
-        $stopTimer = microtime(true);
-        $log->setResponseHeaders($responseClone->getHeaders());
-        $log->setResponseStatus('');
-        $log->setResponseStatusCode($responseClone->getStatusCode());
-        // Disabled because you cannot getBody after passing it here
-        // $log->setResponseBody($responseClone->getBody()->getContents());
-        $log->setResponseBody('');
-        $log->setResponseTime($stopTimer - $startTimer);
-        $this->entityManager->persist($log);
-        $this->entityManager->flush();
-
-    }//end updateLog()
-
-
+    
+    
     /**
      * Handles the exception if the call triggered one.
      *
      * @param ServerException|ClientException|RequestException|Exception $exception
-     * @param Source                                                     $source
-     * @param string                                                     $method
-     * @param array                                                      $config
+     * @param Source $source
+     * @param string $endpoint
+     *
+     * @throws Exception
      *
      * @return Response $this->handleEndpointsConfigIn()
      */
     private function handleCallException($exception, Source $source, string $endpoint): Response
     {
-        // $stopTimer = microtime(true);
-        // $log->setResponseStatus('');
-        // if ($e->getResponse()) {
-        // $log->setResponseStatusCode($e->getResponse()->getStatusCode());
-        // $log->setResponseBody($e->getResponse()->getBody()->getContents());
-        // $log->setResponseHeaders($e->getResponse()->getHeaders());
-        // } else {
-        // $log->setResponseStatusCode(0);
-        // $log->setResponseBody($e->getMessage());
-        // }
-        // $log->setResponseTime($stopTimer - $startTimer);
-        // $this->entityManager->persist($log);
-        // $this->entityManager->flush();
         if (method_exists(get_class($exception), 'getResponse') === true
             && $exception->getResponse() !== null
         ) {
@@ -258,6 +196,8 @@ class CallService
      * @param array  $config             The additional configuration to call the source.
      * @param bool   $asynchronous       Whether or not to call the source asynchronously.
      * @param bool   $createCertificates Whether or not to create certificates for this source.
+     *
+     * @throws Exception
      *
      * @return Response
      */
@@ -294,20 +234,20 @@ class CallService
         // Set authentication if needed
         $config = array_merge_recursive($this->getAuthentication($source), $config);
         $createCertificates && $this->getCertificate($config);
-        $config['headers'] = array_merge(($source->getHeaders() ?? []), $config['headers']);
+        
         // Backwards compatible, $source->getHeaders = deprecated
+        $config['headers'] = array_merge(($source->getHeaders() ?? []), $config['headers']);
+        
         $config['headers']['host'] = $parsedUrl['host'];
         $config['headers']         = $this->removeEmptyHeaders($config['headers']);
-        // $log->setRequestHeaders($config['headers'] ?? null);
+        
         $url = $source->getLocation().$endpoint;
         $this->callLogger->info('Calling url '.$url);
 
         $config = $this->handleEndpointsConfigOut($source, $endpoint, $config);
 
-        $startTimer = microtime(true);
-
         $this->callLogger->debug('Call configuration: ', $config);
-        // Lets make the call
+        // Let's make the call
         try {
             if (!$asynchronous) {
                 $response = $this->client->request($method, $url, $config);
@@ -324,8 +264,6 @@ class CallService
             return $this->handleEndpointsConfigIn($source, $endpoint, null, $exception, null);
         }//end try
 
-        // $responseClone = clone $response;
-        // $this->updateLog($log, $responseClone, $startTimer);
         $createCertificates && $this->removeFiles($config);
 
         return $this->handleEndpointsConfigIn($source, $endpoint, $response, null, null);
@@ -424,14 +362,14 @@ class CallService
      * @param Source          $source          The source.
      * @param string          $endpoint        The endpoint used to do an api-call on the source.
      * @param Response|null   $response        The response of an api-call we might want to change.
-     * @param \Exception|null $exception       The Exception thrown as response of an api-call that we might want to change.
+     * @param Exception|null $exception       The Exception thrown as response of an api-call that we might want to change.
      * @param string|null     $responseContent The response content of an api-call that threw an Exception that we might want to change.
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return Response The response.
      */
-    private function handleEndpointsConfigIn(Source $source, string $endpoint, ?Response $response, ?\Exception $exception=null, ?string $responseContent=null): Response
+    private function handleEndpointsConfigIn(Source $source, string $endpoint, ?Response $response, ?Exception $exception=null, ?string $responseContent=null): Response
     {
         $this->callLogger->info('Handling incoming configuration for endpoints');
         $endpointsConfig = $source->getEndpointsConfig();
@@ -490,14 +428,14 @@ class CallService
      * Will check if we have to handle EndpointConfigIn on an Exception response.
      *
      * @param array       $endpointConfigIn The endpointConfig 'in' of a specific endpoint and source.
-     * @param \Exception  $exception        The Exception thrown as response of an api-call that we might want to change.
+     * @param Exception  $exception        The Exception thrown as response of an api-call that we might want to change.
      * @param string|null $responseContent  The response content of an api-call that threw an Exception that we might want to change.
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return Response The Response.
      */
-    private function handleEndpointConfigInEx(array $endpointConfigIn, \Exception $exception, ?string $responseContent): Response
+    private function handleEndpointConfigInEx(array $endpointConfigIn, Exception $exception, ?string $responseContent): Response
     {
         // Check if error is set and the exception has a getResponse() otherwise just throw the exception
         if (array_key_exists('error', $endpointConfigIn) === false
@@ -604,7 +542,7 @@ class CallService
      * @param Source   $source   The source that has been called
      * @param Response $response The response to decode
      *
-     * @throws \Exception Thrown if the response does not fit any supported content type
+     * @throws Exception Thrown if the response does not fit any supported content type
      *
      * @return array The decoded response
      */
@@ -648,10 +586,10 @@ class CallService
             $result = $xmlEncoder->decode($responseBody, 'xml');
 
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->callLogger->error('Could not decode body, content type could not be determined');
 
-            throw new \Exception('Could not decode body, content type could not be determined');
+            throw new Exception('Could not decode body, content type could not be determined');
         }//end try
 
     }//end decodeResponse()
@@ -709,7 +647,7 @@ class CallService
 
                 $decodedResponses[] = $decodedResponse;
                 $previousResult     = $decodedResponse;
-            } catch (\Exception $exception) {
+            } catch (Exception $exception) {
                 $errorCount++;
                 $this->callLogger->error($exception->getMessage());
             }//end try
