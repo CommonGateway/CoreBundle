@@ -211,10 +211,10 @@ class InstallationService
 
         // Let's check the basic folders for legacy purposes. todo: remove these at some point.
         $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Action');
-        $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Schema');
         // Entity.
-        $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Source');
+        $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Schema');
         // Gateway.
+        $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Source');
         $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Mapping');
         $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Data');
         // A function that translates old core schema references to the new ones. Only here for backwards compatibility.
@@ -1104,8 +1104,8 @@ class InstallationService
 
         // Check for reference to entity, if so, add entity to endpoint.
         if (isset($newEndpointData['reference']) === true) {
-            $newEndpoint->setEntity(null);
             // Old way of setting Entity for Endpoints
+            $newEndpoint->setEntity(null);
             foreach ($newEndpoint->getEntities() as $removeEntity) {
                 $newEndpoint->removeEntity($removeEntity);
             }
@@ -1256,9 +1256,9 @@ class InstallationService
             array_key_exists('reference', $handlerData) ? $action->setReference($handlerData['reference']) : '';
             $action->setListens(($handlerData['listens'] ?? []));
             $action->setConditions(($handlerData['conditions'] ?? ['==' => [1, 1]]));
-
-            $defaultConfig = $this->addActionConfiguration($actionHandler);
+    
             // todo: maybe use: Action->getDefaultConfigFromSchema() instead?
+            $defaultConfig = $this->addActionConfiguration($actionHandler);
             isset($handlerData['configuration']) && $defaultConfig = $this->overrideConfig($defaultConfig, ($handlerData['configuration'] ?? []));
             $action->setConfiguration($defaultConfig);
 
@@ -1307,9 +1307,9 @@ class InstallationService
                 $this->logger->error('Handler '.$action->getClass().' has no configuration');
                 continue;
             }
-
-            $defaultConfig = $this->addActionConfiguration($actionHandler);
+    
             // todo: maybe use: Action->getDefaultConfigFromSchema() instead?
+            $defaultConfig = $this->addActionConfiguration($actionHandler);
             empty($action->getConfiguration()) === false && $defaultConfig = $this->overrideConfig($defaultConfig, ($action->getConfiguration() ?? []));
 
             $action->setConfiguration($defaultConfig);
