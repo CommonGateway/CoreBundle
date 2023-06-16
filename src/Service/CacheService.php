@@ -118,7 +118,7 @@ class CacheService
 
     /**
      * Remove non-existing items from the cache.
-     * 
+     *
      * @return void Nothing.
      */
     public function cleanup(): void
@@ -142,8 +142,8 @@ class CacheService
 
     /**
      * Throws all available objects into the cache.
-     * 
-     * @return int 
+     *
+     * @return int
      */
     public function warmup()
     {

@@ -42,7 +42,7 @@ class ValidateObjectCommand extends Command
 
     /**
      * Configures this command.
-     * 
+     *
      * @return void Nothing.
      */
     protected function configure(): void
@@ -56,10 +56,10 @@ class ValidateObjectCommand extends Command
 
     /**
      * Executes this command.
-     * 
-     * @param InputInterface $input
+     *
+     * @param InputInterface  $input
      * @param OutputInterface $output
-     * 
+     *
      * @return int 1 if successfully executed, otherwise 0.
      */
     protected function execute(InputInterface $input, OutputInterface $output): int

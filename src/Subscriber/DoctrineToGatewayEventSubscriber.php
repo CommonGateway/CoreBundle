@@ -81,9 +81,9 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
 
 
     /**
-     * This method can only return the event names; you cannot define a  
+     * This method can only return the event names; you cannot define a
      * custom method name to execute when each event triggers.
-     *  
+     *
      * @return array
      */
     public function getSubscribedEvents(): array

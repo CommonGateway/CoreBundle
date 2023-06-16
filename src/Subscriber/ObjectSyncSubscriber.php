@@ -46,6 +46,7 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
     ) {
         $this->objectEntityService = $objectEntityService;
         $this->pluginLogger        = $pluginLogger;
+
     }//end __construct()
 
 

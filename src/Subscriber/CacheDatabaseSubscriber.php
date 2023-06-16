@@ -66,9 +66,9 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
 
     /**
      * Executes postPersist().
-     * 
+     *
      * @param LifecycleEventArgs $args
-     * 
+     *
      * @return void Nothing.
      */
     public function postUpdate(LifecycleEventArgs $args): void

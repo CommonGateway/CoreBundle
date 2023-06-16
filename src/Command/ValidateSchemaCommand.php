@@ -40,10 +40,9 @@ class ValidateSchemaCommand extends Command
     }//end __construct()
 
 
-
     /**
      * Configures this command.
-     * 
+     *
      * @return void Nothing.
      */
     protected function configure(): void
@@ -57,10 +56,10 @@ class ValidateSchemaCommand extends Command
 
     /**
      * Executes this command.
-     * 
-     * @param InputInterface  $input 
-     * @param OutputInterface $output 
-     * 
+     *
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     *
      * @return int 1 for success, 0 for failure.
      */
     protected function execute(InputInterface $input, OutputInterface $output): int

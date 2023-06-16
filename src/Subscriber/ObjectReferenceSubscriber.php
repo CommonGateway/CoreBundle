@@ -40,9 +40,9 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     /**
      * This method can only return the event names; you cannot define a,
      * custom method name to execute when each event triggers.
-     * 
+     *
      * @todo Should be a static.
-     * 
+     *
      * @return array
      */
     public function getSubscribedEvents(): array
