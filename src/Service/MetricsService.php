@@ -117,16 +117,16 @@ class MetricsService
                 'value' => $this->entityManager->getRepository('App:Application')->count([]),
             ],
             [
+                // todo: count (request) monologs with unique request id
                 'name'  => 'app_requests',
-            // todo: count (request) monologs with unique request id
+                // todo: should never get lower
                 'type'  => 'counter',
-            // todo: should never get lower
                 'help'  => 'The total amount of incomming requests handled by this gateway',
                 'value' => $requests,
             ],
             [
+                // todo: count (call) monologs with unique call id
                 'name'  => 'app_calls',
-            // todo: count (call) monologs with unique call id
                 'type'  => 'counter',
                 'help'  => 'The total amount of outgoing calls handled by this gateway',
                 'value' => $calls,
