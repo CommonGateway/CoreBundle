@@ -830,41 +830,33 @@ class CacheService
     // }
     // return null;
     // }//end handleOrderCheck()
-
-
     // /**
-    //  * @TODO reenable when this function is used again.
-    //  * Will check if we are allowed to filter on the given $filters in the query params.
-    //  * Uses ObjectEntityRepository->getFilterParameters() to check if we are allowed to filter, see eavService->handleSearch() $filterCheck.
-    //  *
-    //  * @param Entity     $entity  The entity we are going to check for allowed attributes to filter on.
-    //  * @param array|null $filters The filters from query params.
-    //  *
-    //  * @return string|null Returns null if all filters are allowed or if none are present. Else an error message.
-    //  */
+    // * @TODO reenable when this function is used again.
+    // * Will check if we are allowed to filter on the given $filters in the query params.
+    // * Uses ObjectEntityRepository->getFilterParameters() to check if we are allowed to filter, see eavService->handleSearch() $filterCheck.
+    // *
+    // * @param Entity     $entity  The entity we are going to check for allowed attributes to filter on.
+    // * @param array|null $filters The filters from query params.
+    // *
+    // * @return string|null Returns null if all filters are allowed or if none are present. Else an error message.
+    // */
     // private function handleFilterCheck(Entity $entity, ?array $filters): ?string
     // {
-    //     if (empty($filters) === true) {
-    //         return null;
-    //     }
-
-    //     // This checks for each attribute of the given Entity if $attribute->getSearchable() is true.
-    //     $filterCheck = $this->entityManager->getRepository('App:ObjectEntity')->getFilterParameters($entity, '', 1, true);
-
-    //     foreach (array_keys($filters) as $param) {
-    //         if (in_array($param, $filterCheck) === false) {
-    //             $unsupportedParams = isset($unsupportedParams) === false ? $param : "$unsupportedParams, $param";
-    //         }
-    //     }
-
-    //     if (isset($unsupportedParams) === true) {
-    //         $filterCheckStr = implode(', ', $filterCheck);
-
-    //         return 'Unsupported queryParameters ('.$unsupportedParams.'). Supported queryParameters: '.$filterCheckStr;
-    //     }
-
-    //     return null;
-
+    // if (empty($filters) === true) {
+    // return null;
+    // }
+    // This checks for each attribute of the given Entity if $attribute->getSearchable() is true.
+    // $filterCheck = $this->entityManager->getRepository('App:ObjectEntity')->getFilterParameters($entity, '', 1, true);
+    // foreach (array_keys($filters) as $param) {
+    // if (in_array($param, $filterCheck) === false) {
+    // $unsupportedParams = isset($unsupportedParams) === false ? $param : "$unsupportedParams, $param";
+    // }
+    // }
+    // if (isset($unsupportedParams) === true) {
+    // $filterCheckStr = implode(', ', $filterCheck);
+    // return 'Unsupported queryParameters ('.$unsupportedParams.'). Supported queryParameters: '.$filterCheckStr;
+    // }
+    // return null;
     // }//end handleFilterCheck()
 
 
