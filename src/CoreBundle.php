@@ -1,13 +1,13 @@
 <?php
 
-// Conduction/CommonGroundBundle/CommonGroundBundle.php
+// CommonGateway/CoreBundle/CoreBundle.php
 /*
  * This file is part of the Conduction Common Ground Bundle
  *
- * (c) Conduction <info@conduction.nl>
+ * @author Conduction <info@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ * @license EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ * @category Bundle
  */
 
 namespace CommonGateway\CoreBundle;
@@ -16,4 +16,15 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class CoreBundle extends Bundle
 {
+    /**
+     * Returns the path the bundle is in.
+     *
+     * @return string
+     */
+    public function getPath(): string
+    {
+        return \dirname(__DIR__);
+        
+    }//end getPath()
+    
 }//end class
