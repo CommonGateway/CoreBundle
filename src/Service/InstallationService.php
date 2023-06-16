@@ -172,9 +172,9 @@ class InstallationService
 
             $this->logger->debug('Doing a cache warmup after installer is done...');
             $this->cacheService->warmup();
-    
+
             return Command::SUCCESS;
-        }//endif
+        }//end if
 
         // If we don't want to update a single plugin then we want to install al the plugins.
         $plugins = $this->composerService->getAll();
@@ -184,7 +184,7 @@ class InstallationService
         foreach ($plugins as $plugin) {
             $this->install($plugin['name'], $config);
         }
-        
+
         $this->logger->debug('Doing a cache warmup after installer is done...');
         $this->cacheService->warmup();
 
