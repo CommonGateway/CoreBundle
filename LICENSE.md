@@ -6,10 +6,10 @@ Licensed under the EUPL
 
 ## Table of Contents
 
-*   [Licence](#licence)
-    *   [Table of Contents](#table-of-contents)
-    *   [EUPL text in English](#eupl-text-in-english)
-    *   [EUPL text in Dutch](#eupl-text-in-dutch)
+- [Licence](#licence)
+  - [Table of Contents](#table-of-contents)
+  - [EUPL text in English](#eupl-text-in-english)
+  - [EUPL text in Dutch](#eupl-text-in-dutch)
 
 ## EUPL text in English
 
@@ -178,26 +178,26 @@ Licensed under the EUPL
      for the grant of any rights to the Work.
 
     8.Disclaimer of Liability
-    Except in the cases of wilful misconduct or damages directly caused to natural 
-    persons, the Licensor will in no event be
-    liable for any direct or indirect, material or moral, damages of any kind, 
-    arising out of the Licence or of the use of the
-    Work, including without limitation, damages for loss of goodwill, work stoppage, 
-    computer failure or malfunction, loss
-    of data or any commercial damage, even if the Licensor has been advised of the 
-    possibility of such damage. However,
-    the Licensor will be liable under statutory product liability laws as far such
-     laws apply to the Work.
+    Except in the cases of wilful misconduct or damages directly caused to 
+    natural persons, the Licensor will in no event be
+    liable for any direct or indirect, material or moral, damages of any 
+    kind, rising out of the Licence or of the use of the
+    Work, including without limitation, damages for loss of goodwill, work
+     stoppage, computer failure or malfunction, loss
+    of data or any commercial damage, even if the Licensor has been advised
+     of the possibility of such damage. However,
+    the Licensor will be liable under statutory product liability laws as
+     far such laws apply to the Work.
 
     9.Additional agreements
     While distributing the Work, You may choose to conclude an additional agreement,
      defining obligations or services
-    consistent with this Licence. However, if accepting obligations, You may act 
-    only on your own behalf and on your sole
+    consistent with this Licence. However, if accepting obligations, You may
+     act only on your own behalf and on your sole
     responsibility, not on behalf of the original Licensor or any other Contributor,
      and only if You agree to indemnify,
-    defend, and hold each Contributor harmless for any liability incurred by, or 
-    claims asserted against such Contributor by
+    defend, and hold each Contributor harmless for any liability incurred
+     by, or claims asserted against such Contributor by
     the fact You have accepted any warranty or additional liability.
 
     10.Acceptance of the Licence
@@ -219,13 +219,13 @@ Licensed under the EUPL
      communication by You (for example,
     by offering to download the Work from a remote location) the distribution 
     channel or media (for example, a website)
-    must at least provide to the public the information requested by the applicable 
-    law regarding the Licensor, the Licence
+    must at least provide to the public the information requested by
+     the applicable law regarding the Licensor, the Licence
     and the way it may be accessible, concluded, stored and reproduced by the License.
 
     12.Termination of the Licence
-    The Licence and the rights granted hereunder will terminate automatically upon 
-    any breach by the Licensee of the terms
+    The Licence and the rights granted hereunder will terminate automatically
+     upon any breach by the Licensee of the terms
     of the Licence.
     Such a termination will not terminate the licences of any person who has 
     received the Work from the Licensee under
@@ -253,8 +253,8 @@ Licensed under the EUPL
     Without prejudice to specific agreement between parties,
     — any litigation resulting from the interpretation of this License, arising
      between the European Union institutions,
-    bodies, offices or agencies, as a Licensor, and any Licensee, will be subject 
-    to the jurisdiction of the Court of Justice
+    bodies, offices or agencies, as a Licensor, and any Licensee, will
+     be subject to the jurisdiction of the Court of Justice
     of the European Union, as laid down in article 272 of the Treaty on the Functioning
      of the European Union,
     — any litigation arising between other parties and resulting from the interpretation
@@ -368,11 +368,11 @@ Licensed under the EUPL
     3.Mededeling van de broncode
     De licentiegever kan het werk verstrekken in zijn broncode of als uitvoerbare
      code. Indien het werk als uitvoerbare code wordt verstrekt, verstrekt de licentiegeve
-     r bij elke door hem verspreide kopie van het werk tevens een machinaal leesbare 
-     kopie van de broncode van het werk of geeft hij in een mededeling, volgende
-      op de bij het werk gevoegde auteursrechtelijke kennisgeving, de plaats aan
-       waar de broncode gemakkelijk en vrij toegankelijk is, zolang de licentiegever
-        het werk blijft verspreiden of mededelen.
+     r bij elke door hem verspreide kopie van het werk tevens een machinaal
+      leesbare kopie van de broncode van het werk of geeft hij in een mededeling,
+       volgende op de bij het werk gevoegde auteursrechtelijke kennisgeving, de
+        plaats aan waar de broncode gemakkelijk en vrij toegankelijk is, zolang
+         de licentiegever het werk blijft verspreiden of mededelen.
 
     4.Beperkingen van het auteursrecht
     Geen enkele bepaling in deze licentie heeft ten doel de licentiehouder het
@@ -411,7 +411,8 @@ Licensed under the EUPL
        „verenigbare licentie” verstaan, de licenties die in het aanhangsel bij 
        deze licentie zijn opgesomd. Indien de verplichtingen van de licentiehouder
         uit hoofde van de verenigbare licentie in strijd zijn met diens verplichtingen
-         uit hoofde van deze licentie, hebben de verplichtingen van de verenigbare licentie voorrang.
+         uit hoofde van deze licentie, hebben de verplichtingen van de verenigbare
+          licentie voorrang.
 
     Verstrekking van de broncode: bij de verspreiding of mededeling van kopieën
      van het werk verstrekt de licentiehouder een machinaal leesbare kopie van 
