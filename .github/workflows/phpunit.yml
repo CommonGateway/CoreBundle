@@ -17,4 +17,10 @@ jobs:
       - name: ls all
         run: ls -la vendor
       - name: Run tests
-        run: php vendor/bin/phpunit --coverage-text
+        run: php vendor/bin/phpunit --coverage-text=tests/results/phpunit.txt
+      - name: Output the run Details
+        if: (success() || failure())
+        uses: actions/upload-artifact@v2
+        with:
+          name: RunReports
+          path: tests/results
