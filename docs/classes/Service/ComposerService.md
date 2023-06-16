@@ -105,7 +105,7 @@ Gets all installed plugins from the lock file.
 **Description**
 
 ```php
-public getSingle (string $package, array $options)
+public getSingle (string $package)
 ```
 
 Show a single package installed trough composer. 
@@ -115,7 +115,6 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 **Parameters**
 
 * `(string) $package`
-* `(array) $options`
 
 **Return Values**
 
