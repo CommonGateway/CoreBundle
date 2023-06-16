@@ -255,15 +255,15 @@ class AuthenticationService
     public function getCertificate(array $config): array
     {
         $configs = [];
-        if (isset($config['cert'])) {
+        if (isset($config['cert']) === true) {
             $configs['cert'] = $this->fileService->writeFile('certificate', $config['cert']);
         }
 
-        if (isset($config['ssl_key'])) {
+        if (isset($config['ssl_key']) === true) {
             $configs['ssl_key'] = $this->fileService->writeFile('privateKey', $config['ssl_key']);
         }
 
-        if (isset($config['verify']) && is_string($config['verify'])) {
+        if (isset($config['verify']) === true && is_string($config['verify']) === true) {
             $configs['verify'] = $this->fileService->writeFile('verify', $config['ssl_key']);
         }
 
@@ -281,15 +281,15 @@ class AuthenticationService
      */
     public function removeFiles(array $config): void
     {
-        if (isset($config['cert'])) {
+        if (isset($config['cert']) === true) {
             $this->fileService->removeFile($config['cert']);
         }
 
-        if (isset($config['ssl_key'])) {
+        if (isset($config['ssl_key']) === true) {
             $this->fileService->removeFile($config['ssl_key']);
         }
 
-        if (isset($config['verify']) && is_string($config['verify'])) {
+        if (isset($config['verify']) === true && is_string($config['verify'])) {
             $this->fileService->removeFile($config['verify']);
         }
 

@@ -155,7 +155,7 @@ class CacheService
 
         // Backwards compatablity
         if (isset($this->client) === false) {
-            isset($this->io) ? $this->io->writeln('No cache client found, halting warmup') : '';
+            isset($this->style) ? $this->style->writeln('No cache client found, halting warmup') : '';
 
             return Command::SUCCESS;
         }
@@ -853,7 +853,7 @@ class CacheService
      */
     private function handleFilterCheck(Entity $entity, ?array $filters): ?string
     {
-        if (empty($filters)) {
+        if (empty($filters) === true) {
             return null;
         }
 
@@ -866,7 +866,7 @@ class CacheService
             }
         }
 
-        if (isset($unsupportedParams)) {
+        if (isset($unsupportedParams) === true) {
             $filterCheckStr = implode(', ', $filterCheck);
 
             return 'Unsupported queryParameters ('.$unsupportedParams.'). Supported queryParameters: '.$filterCheckStr;
@@ -890,7 +890,7 @@ class CacheService
      */
     private function handleSearch(array &$filter, array $completeFilter, ?string $search)
     {
-        if (isset($completeFilter['_search']) && !empty($completeFilter['_search'])) {
+        if (isset($completeFilter['_search']) === true && empty($completeFilter['_search']) === false) {
             $search = $completeFilter['_search'];
         }
 
@@ -909,7 +909,7 @@ class CacheService
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value
         else if (is_array($search) === true) {
             $searchRegex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $search[array_key_first($search)]);
-            if (empty($searchRegex)) {
+            if (empty($searchRegex) === true) {
                 return;
             }
 
@@ -938,15 +938,15 @@ class CacheService
      */
     public function setPagination(&$limit, &$start, array $filters): array
     {
-        if (isset($filters['_limit'])) {
+        if (isset($filters['_limit']) === true) {
             $limit = (int) $filters['_limit'];
         } else {
             $limit = 30;
         }
 
-        if (isset($filters['_start']) || isset($filters['_offset'])) {
-            $start = isset($filters['_start']) ? (int) $filters['_start'] : (int) $filters['_offset'];
-        } else if (isset($filters['_page'])) {
+        if (isset($filters['_start']) === true || isset($filters['_offset']) === true) {
+            $start = isset($filters['_start']) === true ? (int) $filters['_start'] : (int) $filters['_offset'];
+        } else if (isset($filters['_page']) === true) {
             $start = (((int) $filters['_page'] - 1) * $limit);
         } else {
             $start = 0;
@@ -968,9 +968,9 @@ class CacheService
      */
     public function handleResultPagination(array $filter, array $results, int $total=0): array
     {
-        $start = isset($filter['_start']) && is_numeric($filter['_start']) ? (int) $filter['_start'] : 0;
-        $limit = isset($filter['_limit']) && is_numeric($filter['_limit']) ? (int) $filter['_limit'] : 30;
-        $page  = isset($filter['_page']) && is_numeric($filter['_page']) ? (int) $filter['_page'] : 1;
+        $start = isset($filter['_start']) === true && is_numeric($filter['_start']) === true ? (int) $filter['_start'] : 0;
+        $limit = isset($filter['_limit']) === true && is_numeric($filter['_limit']) === true ? (int) $filter['_limit'] : 30;
+        $page  = isset($filter['_page']) === true && is_numeric($filter['_page']) === true ? (int) $filter['_page'] : 1;
 
         // Lets build the page & pagination
         if ($start > 1) {
@@ -1008,14 +1008,14 @@ class CacheService
             return $endpoint;
         }
 
-        if (isset($this->style)) {
+        if (isset($this->style) === true) {
             $this->style->writeln('Start caching endpoint '.$endpoint->getId()->toString().' with name: '.$endpoint->getName());
         }
 
         $updatedEndpoint = $this->entityManager->getRepository('App:Endpoint')->find($endpoint->getId());
         if ($updatedEndpoint !== null) {
             $endpoint = $updatedEndpoint;
-        } else if (isset($this->style)) {
+        } else if (isset($this->style) === true) {
             $this->style->writeln('Could not find an Endpoint with id: '.$endpoint->getId()->toString());
         }
 
@@ -1099,13 +1099,13 @@ class CacheService
 
         $collection = $this->client->endpoints->json;
 
-        if (isset($filter['path'])) {
+        if (isset($filter['path']) === true) {
             $path             = $filter['path'];
             $filter['$where'] = "\"$path\".match(this.pathRegex)";
             unset($filter['path']);
         }
 
-        if (isset($filter['method'])) {
+        if (isset($filter['method']) === true) {
             $method        = $filter['method'];
             $filter['$or'] = [
                 ['methods' => ['$in' => [$method]]],
@@ -1142,8 +1142,6 @@ class CacheService
             return $entity;
         }
 
-        $collection = $this->client->schemas->json;
-
         // Remap the array
         $array              = $entity->toSchema(null);
         $array['reference'] = $array['$id'];
@@ -1151,20 +1149,18 @@ class CacheService
         unset($array['$id']);
         unset($array['$schema']);
 
-        /*
-            var_dump($array);
+        // var_dump($array);
+        // $collection = $this->client->schemas->json;
+        // if ($collection->findOneAndReplace(
+        // ['_id' => $entity->getID()],
+        // $entity->toSchema(null),
+        // ['upsert' => true]
+        // )) {
+        // $this->style->writeln('Updated object '.$entity->getId().' to cache');
+        // } else {
+        // $this->style->writeln('Wrote object '.$entity->getId().' to cache');
+        // }
 
-
-            if ($collection->findOneAndReplace(
-            ['_id' => $entity->getID()],
-            $entity->toSchema(null),
-            ['upsert' => true]
-            )) {
-            $this->style->writeln('Updated object '.$entity->getId().' to cache');
-            } else {
-            $this->style->writeln('Wrote object '.$entity->getId().' to cache');
-            }
-        */
 
         return $entity;
 
@@ -1184,9 +1180,6 @@ class CacheService
         if (isset($this->client) === false) {
             return;
         }
-
-        $collection = $this->client->schemas->json;
-
     }//end removeSchema()
 
 
@@ -1203,9 +1196,6 @@ class CacheService
         if (isset($this->client) === false) {
             return [];
         }
-
-        $collection = $this->client->schemas->json;
-
     }//end getSchema()
 
 
