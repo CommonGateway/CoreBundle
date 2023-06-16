@@ -32,7 +32,7 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 **Description**
 
 ```php
-public __construct (\EntityManagerInterface $entityManager, \CacheService $cacheService, \GatewayResourceService $gatewayResourceService, \MappingService $mappingService, \CacheService $cacheService, \ResponseService $responseService, \ObjectEntityService $objectEntityService, \LogService $logService, \CallService $callService, \Security $security, \EventDispatcherInterface $eventDispatcher, \SerializerInterface $serializer, \SessionInterface $session, \LoggerInterface $requestLogger, \DownloadService $downloadService)
+public __construct (\EntityManagerInterface $entityManager, \CacheService $cacheService, \GatewayResourceService $resourceService, \MappingService $mappingService, \ResponseService $responseService, \ObjectEntityService $objectEntityService, \LogService $logService, \CallService $callService, \Security $security, \EventDispatcherInterface $eventDispatcher, \SerializerInterface $serializer, \SessionInterface $session, \LoggerInterface $requestLogger, \DownloadService $downloadService)
 ```
 
 The constructor sets al needed variables. 
@@ -43,9 +43,8 @@ The constructor sets al needed variables.
 
 * `(\EntityManagerInterface) $entityManager`
 * `(\CacheService) $cacheService`
-* `(\GatewayResourceService) $gatewayResourceService`
+* `(\GatewayResourceService) $resourceService`
 * `(\MappingService) $mappingService`
-* `(\CacheService) $cacheService`
 * `(\ResponseService) $responseService`
 * `(\ObjectEntityService) $objectEntityService`
 * `(\LogService) $logService`
