@@ -745,7 +745,9 @@ class CacheService
      */
     private function handleEntities(array &$filter, array $completeFilter, array $entities): ?array
     {
-        $filterCheck = $filter;
+        // @todo: reenable this when checking for allowed filters and ordering is reenabled.
+        // $filterCheck = $filter;
+
         $errorData   = [];
         foreach ($entities as $entity) {
             if (Uuid::isValid($entity) === true) {
@@ -763,10 +765,11 @@ class CacheService
                 continue;
             }
 
+            // @todo: for now we do not check for allowed filters and ordering, because this breaks things.
             // Only allow ordering & filtering on attributes with sortable = true & searchable = true (respectively).
             // $orderError = $this->handleOrderCheck($entityObject, $completeFilter['_order'] ?? null);
             // $filterError = $this->handleFilterCheck($entityObject, $filterCheck ?? null);
-            // todo: for now we do not check for allowed filters and ordering, because this breaks things.
+
             $orderError  = null;
             $filterError = null;
             if (empty($orderError) === true && empty($filterError) === true) {
