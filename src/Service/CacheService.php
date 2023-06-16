@@ -245,6 +245,7 @@ class CacheService
             $this->style->block("File: {$exception->getFile()}, Line: {$exception->getLine()}");
             $this->style->block("Trace: {$exception->getTraceAsString()}");
         };
+
     }//end styleCatchException()
 
 
@@ -276,6 +277,7 @@ class CacheService
         if ($updatedObjectEntity !== null) {
             $objectEntity = $updatedObjectEntity;
         }
+
         if ($updatedObjectEntity === null) {
             isset($this->style) === true && $this->style->writeln('Could not find an ObjectEntity with id: '.$objectEntity->getId()->toString());
         }
@@ -441,7 +443,6 @@ class CacheService
         if (empty($entities) === false) {
             $queryError = $this->handleEntities($filter, $completeFilter, $entities);
             if ($queryError !== null) {
-
                 return $queryError;
             }
         }
@@ -453,7 +454,7 @@ class CacheService
         $this->setPagination($limit, $start, $completeFilter);
 
         // Order
-        $order                                          = isset($completeFilter['_order']) === true ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
+        $order                                                   = isset($completeFilter['_order']) === true ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
         empty($order) === false && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
 
         // Find / Search
@@ -464,11 +465,11 @@ class CacheService
 
     /**
      * Retrieves objects from a cache collection.
-     * 
+     *
      * @param array $filter
      * @param array $options
      * @param array $completeFilter
-     * 
+     *
      * @return array|null $this->handleResultPagination()
      */
     public function retrieveObjectsFromCache(array $filter, array $options, array $completeFilter=[]): ?array
@@ -535,6 +536,7 @@ class CacheService
         if ($this->handleFilterArray($key, $value)) {
             return;
         }
+
         // If the value is a boolean we need a other format.
         if (is_bool($value) === true) {
             // Set as key '$eq' with the value.
@@ -542,7 +544,6 @@ class CacheService
 
             return;
         }
-
 
         // Todo: This works, we should go to php 8.0 later.
         if (str_contains($value, '%') === true) {
