@@ -307,11 +307,9 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     /**
      * Flushing entity manager.
      *
-     * @param LifecycleEventArgs $args
-     *
      * @return void
      */
-    public function preFlush(PreFlushEventArgs $args): void
+    public function preFlush(): void
     {
         // Write the log
         $this->logger->info(
@@ -329,11 +327,9 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     /**
      * Flushed entity manager.
      *
-     * @param LifecycleEventArgs $args
-     *
      * @return void
      */
-    public function postFlush(PostFlushEventArgs $args): void
+    public function postFlush(): void
     {
         // Write the log
         $this->logger->info(
