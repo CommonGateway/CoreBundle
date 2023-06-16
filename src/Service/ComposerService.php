@@ -42,7 +42,7 @@ class ComposerService
      *
      * @return array|string
      */
-    private function composerCall(string $call, array $options = [], string $package = '')
+    private function composerCall(string $call, array $options=[], string $package='')
     {
         $optionsList = [];
         // Let's check for valid calls.
@@ -366,7 +366,7 @@ class ComposerService
      *
      * @return array
      */
-    public function getAll(array $options = []): array
+    public function getAll(array $options=[]): array
     {
         $lockFile = $this->getLockFile();
         $plugins  = [];
@@ -394,7 +394,7 @@ class ComposerService
      *
      * @return array
      */
-    public function require(string $package, array $options = []): array
+    public function require(string $package, array $options=[]): array
     {
         return $this->composerCall('require', $options, $package);
 
@@ -411,7 +411,7 @@ class ComposerService
      *
      * @return array
      */
-    public function upgrade(string $package, array $options = []): array
+    public function upgrade(string $package, array $options=[]): array
     {
         return $this->composerCall('upgrade', $options, $package);
 
@@ -428,7 +428,7 @@ class ComposerService
      *
      * @return array
      */
-    public function remove(string $package, array $options = []): array
+    public function remove(string $package, array $options=[]): array
     {
         return $this->composerCall('remove', $options, $package);
 
@@ -445,7 +445,7 @@ class ComposerService
      *
      * @return array
      */
-    public function getSingle(string $package, array $options = []): array
+    public function getSingle(string $package, array $options=[]): array
     {
         $url = 'https://packagist.org/packages/'.$package.'.json';
 
@@ -493,7 +493,7 @@ class ComposerService
      *
      * @return array
      */
-    public function search(string $search=null, array $options = []): array
+    public function search(string $search=null, array $options=[]): array
     {
         $url   = 'https://packagist.org/search.json';
         $query = ['tags' => 'common-gateway-plugin'];
@@ -529,7 +529,7 @@ class ComposerService
      *
      * @return array
      */
-    public function audit(array $options = []): array
+    public function audit(array $options=[]): array
     {
         return $this->composerCall('audit', $options);
 
