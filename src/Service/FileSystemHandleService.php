@@ -190,18 +190,19 @@ class FileSystemHandleService
      */
     public function call(Source $source, string $location, array $config=[]): array
     {
-        // Todo: Also add handleEndpointsConfigOut?
+        // @Todo: Also add handleEndpointsConfigOut?
         $fileSystem = $this->fscService->openFtpFilesystem($source);
-
         $content = $this->getFileContents($fileSystem, $location);
 
         if (isset($config['format']) === true) {
-            $decodedFile = $this->decodeFile($content, $location, $config['format']);
-        } else if (isset($config['format']) === false) {
-            $decodedFile = $this->decodeFile($content, $location);
-        }
 
-        return $this->handleEndpointsConfigIn($source, $location, $decodedFile);
+            return $this->handleEndpointsConfigIn($source, $location, $this->decodeFile($content, $location, $config['format']));
+        } 
+        
+        if (isset($config['format']) === false) {
+
+            return $this->handleEndpointsConfigIn($source, $location, $this->decodeFile($content, $location));
+        }
 
     }//end call()
 

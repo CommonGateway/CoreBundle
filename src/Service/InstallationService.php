@@ -1281,14 +1281,14 @@ class InstallationService
                 $action = new Action($actionHandler);
             }
 
-            array_key_exists('name', $handlerData) ? $action->setName($handlerData['name']) : '';
-            array_key_exists('reference', $handlerData) ? $action->setReference($handlerData['reference']) : '';
+            array_key_exists('name', $handlerData) === true ? $action->setName($handlerData['name']) : '';
+            array_key_exists('reference', $handlerData) === true ? $action->setReference($handlerData['reference']) : '';
             $action->setListens(($handlerData['listens'] ?? []));
             $action->setConditions(($handlerData['conditions'] ?? ['==' => [1, 1]]));
 
             $defaultConfig = $this->addActionConfiguration($actionHandler);
             // todo: maybe use: Action->getDefaultConfigFromSchema() instead?
-            isset($handlerData['configuration']) && $defaultConfig = $this->overrideConfig($defaultConfig, ($handlerData['configuration'] ?? []));
+            isset($handlerData['configuration']) === true && $defaultConfig = $this->overrideConfig($defaultConfig, ($handlerData['configuration'] ?? []));
             $action->setConfiguration($defaultConfig);
 
             if (isset($handlerData['version']) === true) {
@@ -1367,14 +1367,14 @@ class InstallationService
             switch ($value['type']) {
             case 'string':
             case 'array':
-                if (isset($value['example'])) {
+                if (isset($value['example']) === true) {
                     $defaultConfig[$key] = $value['example'];
                 }
                 break;
             case 'object':
                 break;
             case 'uuid':
-                if (isset($value['$ref'])) {
+                if (isset($value['$ref']) === true) {
                     try {
                         $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $value['$ref']]);
                     } catch (Exception $exception) {
@@ -1406,7 +1406,7 @@ class InstallationService
     {
         foreach ($overrides as $key => $override) {
             if (is_array($override) && $this->isAssociative($override)) {
-                $defaultConfig[$key] = $this->overrideConfig(isset($defaultConfig[$key]) ? $defaultConfig[$key] : [], $override);
+                $defaultConfig[$key] = $this->overrideConfig(isset($defaultConfig[$key]) === true ? $defaultConfig[$key] : [], $override);
 
                 continue;
             }//end if

@@ -368,7 +368,7 @@ class RequestService
     public function getSchema(array $parameters)
     {
         // If we have an object this is easy.
-        if (isset($this->object)) {
+        if (isset($this->object) === true) {
             return $this->object->getEntity();
         }
 
@@ -409,7 +409,7 @@ class RequestService
         }//end if
 
         // We only end up here if there is no endpoint or an unlimited endpoint.
-        if (isset($id) === true) {
+        if (isset($identification) === true) {
             return $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $identification]);
         }
 
@@ -675,7 +675,7 @@ class RequestService
                 }
 
                 // Lets see if the found result is allowed for this endpoint.
-                if (isset($this->data['endpoint']) && in_array($result['_self']['schema']['id'], $allowedSchemas['id']) === false) {
+                if (isset($this->data['endpoint']) === true && in_array($result['_self']['schema']['id'], $allowedSchemas['id']) === false) {
                     return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 

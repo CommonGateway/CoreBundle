@@ -88,7 +88,7 @@ class CallService
     public function getCertificate(array &$config)
     {
         if (isset($config['cert']) === true) {
-            if (is_array($config['cert'])) {
+            if (is_array($config['cert']) === true) {
                 $config['cert'][0] = $this->fileService->writeFile('certificate', $config['cert'][0]);
             } else if (is_string($config['cert'])) {
                 $config['cert'] = $this->fileService->writeFile('certificate', $config['cert']);
@@ -96,9 +96,9 @@ class CallService
         }
 
         if (isset($config['ssl_key']) === true) {
-            if (is_array($config['ssl_key'])) {
+            if (is_array($config['ssl_key']) === true) {
                 $config['ssl_key'][0] = $this->fileService->writeFile('privateKey', $config['ssl_key'][0]);
-            } else if (is_string($config['ssl_key'])) {
+            } else if (is_string($config['ssl_key']) === true) {
                 $config['ssl_key'] = $this->fileService->writeFile('privateKey', $config['ssl_key']);
             }
         }
@@ -272,16 +272,16 @@ class CallService
         $this->session->set('source', $source->getId()->toString());
         $this->callLogger->info('Calling source '.$source->getName());
 
-        if (!$source->getIsEnabled()) {
+        if ($source->getIsEnabled() === null || $source->getIsEnabled() === false) {
             throw new HttpException('409', "This source is not enabled: {$source->getName()}");
         }
 
-        if ($source->getConfiguration()) {
+        if (empty($source->getConfiguration()) === false) {
             $config = array_merge_recursive($config, $source->getConfiguration());
         }
 
         // $log = $this->createDefaultLog($source, $endpoint, $method, $config);
-        if (empty($source->getLocation())) {
+        if (empty($source->getLocation()) === true) {
             throw new HttpException('409', "This source has no location: {$source->getName()}");
         }
 
@@ -304,7 +304,8 @@ class CallService
 
         $config = $this->handleEndpointsConfigOut($source, $endpoint, $config);
 
-        $startTimer = microtime(true);
+        // @todo reenable when calllogs are added reenabled
+        // $startTimer = microtime(true);
 
         $this->callLogger->debug('Call configuration: ', $config);
         // Lets make the call
@@ -324,8 +325,10 @@ class CallService
             return $this->handleEndpointsConfigIn($source, $endpoint, null, $exception, null);
         }//end try
 
+        // @todo reenable when calllogs are added reenabled
         // $responseClone = clone $response;
         // $this->updateLog($log, $responseClone, $startTimer);
+
         $createCertificates && $this->removeFiles($config);
 
         return $this->handleEndpointsConfigIn($source, $endpoint, $response, null, null);
@@ -346,14 +349,14 @@ class CallService
     {
         $this->callLogger->info('Handling outgoing configuration for endpoints');
         $endpointsConfig = $source->getEndpointsConfig();
-        if (empty($endpointsConfig)) {
+        if (empty($endpointsConfig) === true) {
             return $config;
         }
 
         // Let's check if the endpoint used on this source has "out" configuration in the EndpointsConfig of the source.
-        if (array_key_exists($endpoint, $endpointsConfig) === true && array_key_exists('out', $endpointsConfig[$endpoint])) {
+        if (array_key_exists($endpoint, $endpointsConfig) === true && array_key_exists('out', $endpointsConfig[$endpoint]) === true) {
             $endpointConfigOut = $endpointsConfig[$endpoint]['out'];
-        } else if (array_key_exists('global', $endpointsConfig) === true && array_key_exists('out', $endpointsConfig['global'])) {
+        } else if (array_key_exists('global', $endpointsConfig) === true && array_key_exists('out', $endpointsConfig['global']) === true) {
             $endpointConfigOut = $endpointsConfig['global']['out'];
         }
 
@@ -476,7 +479,7 @@ class CallService
             $headers = $this->handleEndpointConfigIn($response->getHeaders(), $endpointConfigIn, 'headers');
             $body    = $this->handleEndpointConfigIn($response->getBody(), $endpointConfigIn, 'body');
 
-            is_array($body) && $body = json_encode($body);
+            is_array($body) === true && $body = json_encode($body);
 
             return new Response($response->getStatusCode(), $headers, $body, $response->getProtocolVersion());
         }
@@ -639,7 +642,7 @@ class CallService
             $result = json_decode($responseBody, true);
         }//end switch
 
-        if (isset($result)) {
+        if (isset($result) === true) {
             return $result;
         }
 

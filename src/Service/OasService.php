@@ -189,7 +189,7 @@ class OasService
                 'schema'      => [
                     'type'       => $attribute->getType(),
                     'format'     => $attribute->getFormat(),
-                    'properties' => isset($properties) ? $properties : null,
+                    'properties' => isset($properties) === true ? $properties : null,
                     'items'      => ['type' => 'string'],
                 ],
             ];
