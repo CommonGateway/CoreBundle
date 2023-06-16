@@ -797,47 +797,39 @@ class CacheService
 
 
     // /**
-    //  * Will check if we are allowed to order with the given $order query param.
-    //  * Uses ObjectEntityRepository->getOrderParameters() to check if we are allowed to order, see eavService->handleSearch() $orderCheck.
-    //  *
-    //  * @param Entity           $entity The entity we are going to check for allowed attributes to order on.
-    //  * @param mixed|array|null $order  The order query param, should be an array or null. (but could be a string)
-    //  *
-    //  * @return string|null Returns null if given order query param is correct/allowed or when it is not present. Else an error message.
-    //  */
+    // * Will check if we are allowed to order with the given $order query param.
+    // * Uses ObjectEntityRepository->getOrderParameters() to check if we are allowed to order, see eavService->handleSearch() $orderCheck.
+    // *
+    // * @param Entity           $entity The entity we are going to check for allowed attributes to order on.
+    // * @param mixed|array|null $order  The order query param, should be an array or null. (but could be a string)
+    // *
+    // * @return string|null Returns null if given order query param is correct/allowed or when it is not present. Else an error message.
+    // */
     // private function handleOrderCheck(Entity $entity, $order): ?string
     // {
-    //     if (empty($order)) {
-    //         return null;
-    //     }
-
-    //     // This checks for each attribute of the given Entity if $attribute->getSortable() is true.
-    //     $orderCheck = $this->entityManager->getRepository('App:ObjectEntity')->getOrderParameters($entity, '', 1, true);
-
-    //     if (is_array($order) === false) {
-    //         $orderCheckStr = implode(', ', $orderCheck);
-    //         $message       = 'Please give an attribute to order on. Like this: ?_order[attributeName]=desc/asc. Supported order query parameters: '.$orderCheckStr;
-    //     }
-
-    //     if (is_array($order) === true && count($order) > 1) {
-    //         $message = 'Only one order query param at the time is allowed.';
-    //     }
-
-    //     if (is_array($order) === true && in_array(strtoupper(array_values($order)[0]), ['DESC', 'ASC']) === false) {
-    //         $message = 'Please use desc or asc as value for your order query param, not: '.array_values($order)[0];
-    //     }
-
-    //     if (is_array($order) === true && in_array(array_keys($order)[0], $orderCheck) === false) {
-    //         $orderCheckStr = implode(', ', $orderCheck);
-    //         $message       = 'Unsupported order query parameter ('.array_keys($order)[0].'). Supported order query parameters: '.$orderCheckStr;
-    //     }
-
-    //     if (isset($message) === true) {
-    //         return $message;
-    //     }
-
-    //     return null;
-
+    // if (empty($order)) {
+    // return null;
+    // }
+    // This checks for each attribute of the given Entity if $attribute->getSortable() is true.
+    // $orderCheck = $this->entityManager->getRepository('App:ObjectEntity')->getOrderParameters($entity, '', 1, true);
+    // if (is_array($order) === false) {
+    // $orderCheckStr = implode(', ', $orderCheck);
+    // $message       = 'Please give an attribute to order on. Like this: ?_order[attributeName]=desc/asc. Supported order query parameters: '.$orderCheckStr;
+    // }
+    // if (is_array($order) === true && count($order) > 1) {
+    // $message = 'Only one order query param at the time is allowed.';
+    // }
+    // if (is_array($order) === true && in_array(strtoupper(array_values($order)[0]), ['DESC', 'ASC']) === false) {
+    // $message = 'Please use desc or asc as value for your order query param, not: '.array_values($order)[0];
+    // }
+    // if (is_array($order) === true && in_array(array_keys($order)[0], $orderCheck) === false) {
+    // $orderCheckStr = implode(', ', $orderCheck);
+    // $message       = 'Unsupported order query parameter ('.array_keys($order)[0].'). Supported order query parameters: '.$orderCheckStr;
+    // }
+    // if (isset($message) === true) {
+    // return $message;
+    // }
+    // return null;
     // }//end handleOrderCheck()
 
 
@@ -1165,39 +1157,33 @@ class CacheService
 
 
     // /**
-    //  * Removes an Schema from the cache.
-    //  *
-    //  * @param Entity $entity
-    //  *
-    //  * @return void
-    //  */
+    // * Removes an Schema from the cache.
+    // *
+    // * @param Entity $entity
+    // *
+    // * @return void
+    // */
     // public function removeSchema(Entity $entity): void
     // {
-    //     // @TODO remove entity from cache.
-    //     // Backwards compatablity
-    //     if (isset($this->client) === false) {
-    //         return;
-    //     }
-
+    // @TODO remove entity from cache.
+    // Backwards compatablity
+    // if (isset($this->client) === false) {
+    // return;
+    // }
     // }//end removeSchema()
-
-
     // /**
-    //  * Get a single schema from the cache.
-    //  *
-    //  * @param Uuid $identification
-    //  *
-    //  * @return array|null
-    //  */
+    // * Get a single schema from the cache.
+    // *
+    // * @param Uuid $identification
+    // *
+    // * @return array|null
+    // */
     // public function getSchema(Uuid $identification): ?array
     // {
-    //     // @TODO get entity from cache.
-    //     // Backwards compatablity
-    //     if (isset($this->client) === false) {
-    //         return [];
-    //     }
-
+    // @TODO get entity from cache.
+    // Backwards compatablity
+    // if (isset($this->client) === false) {
+    // return [];
+    // }
     // }//end getSchema()
-
-
 }//end class
