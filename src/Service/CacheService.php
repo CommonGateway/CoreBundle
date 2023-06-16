@@ -894,12 +894,12 @@ class CacheService
             $search = $completeFilter['_search'];
         }
 
-        if (empty($search)) {
+        if (empty($search) === true) {
             return;
         }
 
         // Normal search on every property with type text (includes strings)
-        if (is_string($search)) {
+        if (is_string($search) === true) {
             $filter['$text']
                 = [
                     '$search'        => $search,
@@ -907,7 +907,7 @@ class CacheService
                 ];
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value
-        else if (is_array($search)) {
+        else if (is_array($search) === true) {
             $searchRegex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $search[array_key_first($search)]);
             if (empty($searchRegex)) {
                 return;
