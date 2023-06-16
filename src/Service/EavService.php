@@ -51,15 +51,15 @@ class EavService
      */
     public function checkEntityforAttribute(Entity $entity): Entity
     {
-        // Make sure we have a reference
+        // Make sure we have a reference.
         if (!$entity->getReference()) {
             return $entity;
         }
 
-        // Find the atribbutes
+        // Find the atribbutes.
         $attributes = $this->entityManager->getRepository('App:Attribute')->findBy(['reference' => $entity->getReference(), 'object' => null]);
 
-        // Add them to the entity
+        // Add them to the entity.
         foreach ($attributes as $attribute) {
             $attribute->setObject($entity);
         }
@@ -78,7 +78,7 @@ class EavService
      */
     public function checkAttributeforEntity(Attribute $attribute): Attribute
     {
-        // Make sure we have a referende
+        // Make sure we have a referende.
         if (!$attribute->getReference() || $attribute->getObject()) {
             return $attribute;
         }
@@ -102,17 +102,17 @@ class EavService
      */
     public function deleteAllObjects(Entity $entity): bool
     {
-        // Get al the objects for a specifi entity
+        // Get al the objects for a specifi entity.
         if (isset($entity) === true) {
             $objects = $this->entityManager->getRepository('App:ObjectEntity')->findBy(['entity' => $entity]);
         }
 
-        // Or just get all the objects
+        // Or just get all the objects.
         if (isset($entity) === false) {
             // $objects = $this->entityManager->getRepository('App:ObjectEntity')->findAll();.
         }
 
-        // Annnnnnd lets delete them
+        // Annnnnnd lets delete them.
         foreach ($objects as $object) {
             $this->entityManager->remove($object);
             $this->entityManager->flush();

@@ -441,11 +441,10 @@ class ComposerService
      * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
      *
      * @param string $package
-     * @param array  $options
      *
      * @return array
      */
-    public function getSingle(string $package, array $options=[]): array
+    public function getSingle(string $package): array
     {
         $url = 'https://packagist.org/packages/'.$package.'.json';
 
