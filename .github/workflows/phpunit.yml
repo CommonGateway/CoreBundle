@@ -13,11 +13,11 @@ jobs:
           php_version: "7.4"
           php_extensions: redis exif
           version: 2.x
-          command: require symfony/test-pack
+          command: require symfony/tests-pack
       - name: ls all
         run: ls -la vendor
       - name: Run tests
-        run: php vendor/bin/phpunit test --coverage-text=tests/results/phpunit.txt
+        run: php vendor/bin/phpunit --coverage-text=tests/results/phpunit.txt
       - name: Output the run Details
         if: (success() || failure())
         uses: actions/upload-artifact@v2

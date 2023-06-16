@@ -8,4 +8,18 @@ use PHPUnit\Framework\TestCase;
 class MappingServiceTest extends TestCase
 {
 
+    public function testMapping()
+    {
+
+    }
+
+    public function test__construct()
+    {
+
+    }
+
+    public function testCoordinateStringToArray()
+    {
+
+    }
 }
