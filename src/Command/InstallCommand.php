@@ -7,7 +7,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @Author Ruben van der Linde <ruben@conduction.nl>, Barry Brands <barry@conduction.nl>
@@ -52,7 +51,7 @@ class InstallCommand extends Command
     /**
      * Executes installation of a bundle.
      */
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function execute(InputInterface $input): int
     {
         $bundle = $input->getArgument('bundle');
 
