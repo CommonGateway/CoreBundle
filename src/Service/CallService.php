@@ -205,7 +205,7 @@ class CallService
         Source $source,
         string $endpoint='',
         string $method='GET',
-        array $config = [],
+        array $config=[],
         bool $asynchronous=false,
         bool $createCertificates=true
     ): Response {
@@ -620,7 +620,7 @@ class CallService
      *
      * @return array The array of results
      */
-    public function getAllResults(Source $source, string $endpoint='', array $config = []): array
+    public function getAllResults(Source $source, string $endpoint='', array $config=[]): array
     {
         $this->callLogger->info('Fetch all data from source and combine the results into one array');
         $errorCount     = 0;
