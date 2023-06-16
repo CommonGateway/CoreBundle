@@ -5,7 +5,6 @@ namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Entity\Attribute;
 use App\Entity\Entity;
-use CommonGateway\CoreBundle\Service\EavService;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
@@ -21,17 +20,13 @@ use Doctrine\Persistence\Event\LifecycleEventArgs;
 class ObjectReferenceSubscriber implements EventSubscriberInterface
 {
 
-    private EavService $eavService;
-
     private EntityManagerInterface $entityManager;
 
 
     public function __construct(
-        EntityManagerInterface $entityManager,
-        EavService $eavService
+        EntityManagerInterface $entityManager
     ) {
         $this->entityManager = $entityManager;
-        $this->eavService    = $eavService;
 
     }//end __construct()
 
