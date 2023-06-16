@@ -7,9 +7,15 @@ use CommonGateway\CoreBundle\Service\RequestService;
 class RequestCollectionHandler implements ActionHandlerInterface
 {
 
+    /**
+     * @var RequestService $requestService
+     */
     private RequestService $requestService;
 
 
+    /**
+     * __construct
+     */
     public function __construct(RequestService $requestService)
     {
         $this->requestService = $requestService;

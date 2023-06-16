@@ -18,11 +18,20 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class ValidateValueCommand extends Command
 {
 
+    /**
+     * @var static $defaultName
+     */
     protected static $defaultName = 'commongateway:validate:value';
 
-    private $installationService;
+    /** 
+     * @var InstallationService $installationService
+     */
+    private InstallationService $installationService;
 
 
+    /**
+     * __construct
+     */
     public function __construct(InstallationService $installationService)
     {
         $this->installationService = $installationService;
@@ -31,6 +40,11 @@ class ValidateValueCommand extends Command
     }//end __construct()
 
 
+    /**
+     * Configures this commnand.
+     * 
+     * @return void Nothing.
+     */
     protected function configure(): void
     {
         $this
@@ -40,6 +54,14 @@ class ValidateValueCommand extends Command
     }//end configure()
 
 
+    /**
+     * Executes this commnand.
+     * 
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * 
+     * @return int 1 is successfully executed, else 0.
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->installationService->setStyle(new SymfonyStyle($input, $output));

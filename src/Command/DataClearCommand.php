@@ -2,7 +2,6 @@
 
 namespace CommonGateway\CoreBundle\Command;
 
-use CommonGateway\CoreBundle\Service\CacheService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -27,11 +26,6 @@ class DataClearCommand extends Command
     protected static $defaultName = 'commongateway:data:clear';
 
     /**
-     * @var CacheService
-     */
-    private CacheService $cacheService;
-
-    /**
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
@@ -46,11 +40,9 @@ class DataClearCommand extends Command
      * __construct
      */
     public function __construct(
-        CacheService $cacheService,
         EntityManagerInterface $entityManager,
         ParameterBagInterface $parameterBagInterface
     ) {
-        $this->cacheService          = $cacheService;
         $this->entityManager         = $entityManager;
         $this->parameterBagInterface = $parameterBagInterface;
 
@@ -104,21 +96,21 @@ class DataClearCommand extends Command
 
         $symfonyStyle->writeln('Found '.count($objects).' objects');
 
-        // creates a new progress bar (50 units).
+        // Creates a new progress bar (50 units).
         $progressBar = new ProgressBar($output, count($objects));
 
-        // starts and displays the progress bar.
+        // Starts and displays the progress bar.
         $progressBar->start();
 
         foreach ($objects as $object) {
-            // advances the progress bar 1 unit.
+            // Advances the progress bar 1 unit.
             $progressBar->advance();
 
-            // you can also advance the progress bar by more than 1 unit.
+            // You can also advance the progress bar by more than 1 unit.
             $this->entityManager->remove($object);
         }
 
-        // ensures that the progress bar is at 100%.
+        // Ensures that the progress bar is at 100%.
         $progressBar->finish();
         $this->entityManager->flush();
 

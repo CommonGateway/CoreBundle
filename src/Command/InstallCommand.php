@@ -18,9 +18,15 @@ use Symfony\Component\Console\Input\InputOption;
 class InstallCommand extends Command
 {
 
+    /**
+     * @var static
+     */
     protected static $defaultName = 'commongateway:install';
 
-    private $installationService;
+    /**
+     * @var InstallationService
+     */
+    private InstallationService $installationService;
 
 
     public function __construct(InstallationService $installationService)

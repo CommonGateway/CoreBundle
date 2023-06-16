@@ -23,10 +23,19 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 class CacheDatabaseSubscriber implements EventSubscriberInterface
 {
 
+    /**
+     * @var CacheService $cacheService
+     */
     private CacheService $cacheService;
 
+    /**
+     * @var EntityManagerInterface $entityManager
+     */
     private EntityManagerInterface $entityManager;
 
+    /**
+     * @var SessionInterface $session
+     */
     private SessionInterface $session;
 
 
@@ -55,6 +64,13 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
     }//end getSubscribedEvents()
 
 
+    /**
+     * Executes postPersist().
+     * 
+     * @param LifecycleEventArgs $args
+     * 
+     * @return void Nothing.
+     */
     public function postUpdate(LifecycleEventArgs $args): void
     {
         $this->postPersist($args);
@@ -67,7 +83,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args
      *
-     * @return void
+     * @return void Nothing.
      */
     public function postPersist(LifecycleEventArgs $args): void
     {

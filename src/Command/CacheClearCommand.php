@@ -18,11 +18,19 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class CacheClearCommand extends Command
 {
 
+    /**
+     * @var static $defaultName
+     */
     protected static $defaultName = 'commongateway:cache:clear';
 
-    private $cacheService;
+    /**
+     * @var CacheService $cacheService
+     */
+    private CacheService $cacheService;
 
-
+    /** 
+     * __construct
+     */
     public function __construct(CacheService $cacheService)
     {
         $this->cacheService = $cacheService;
@@ -31,6 +39,11 @@ class CacheClearCommand extends Command
     }//end __construct()
 
 
+    /** 
+     * Configures this command.
+     * 
+     * @return void Nothing.
+     */
     protected function configure(): void
     {
         $this
@@ -40,6 +53,14 @@ class CacheClearCommand extends Command
     }//end configure()
 
 
+    /** 
+     * Executes this command.
+     * 
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * 
+     * @return int 1 is successfully executed, else 0.
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->cacheService->setStyle(new SymfonyStyle($input, $output));

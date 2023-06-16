@@ -20,9 +20,15 @@ use Doctrine\Persistence\Event\LifecycleEventArgs;
 class ObjectReferenceSubscriber implements EventSubscriberInterface
 {
 
+    /**
+     * @var EntityManagerInterface $entityManager
+     */
     private EntityManagerInterface $entityManager;
 
 
+    /**
+     * __construct
+     */
     public function __construct(
         EntityManagerInterface $entityManager
     ) {
@@ -31,8 +37,14 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     }//end __construct()
 
 
-    // this method can only return the event names; you cannot define a,
-    // custom method name to execute when each event triggers.
+    /**
+     * This method can only return the event names; you cannot define a,
+     * custom method name to execute when each event triggers.
+     * 
+     * @todo Should be a static.
+     * 
+     * @return array
+     */
     public function getSubscribedEvents(): array
     {
         return [
@@ -69,10 +81,10 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
                         $object->setInversedBy($attribute);
                     }
                 }
-            }
+            }//end if
 
             return;
-        }
+        }//end if
 
         if ($object instanceof Entity // Is it an entity.
             && $object->getReference() // Does it have a reference.
@@ -90,10 +102,10 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
                         $attribute->setInversedBy($attribute);
                     }
                 }
-            }
+            }//end foreach
 
             return;
-        }
+        }//end if
 
     }//end postPersist()
 

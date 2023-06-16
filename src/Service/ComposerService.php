@@ -59,7 +59,7 @@ class ComposerService
             // --stability (-s): Value for the minimum-stability field.
             // --license (-l): License of package.
             // --repository: Provide one (or more) custom repositories. They will be stored in the generated composer.json, and used for auto-completion when prompting for the list of requires. Every repository can be either an HTTP URL pointing to a composer repository or a JSON string which similar to what the repositories key accepts.
-            // --autoload (-a): Add a PSR-4 autoload mapping to
+            // --autoload (-a): Add a PSR-4 autoload mapping to.
             break;
         case 'install':
             $optionsList = [];

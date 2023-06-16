@@ -34,18 +34,39 @@ use Symfony\Component\Serializer\Encoder\YamlEncoder;
 class CallService
 {
 
+    /**
+     * @var AuthenticationService $authenticationService
+     */
     private AuthenticationService $authenticationService;
 
+    /**
+     * @var Client $client
+     */
     private Client $client;
 
+    /**
+     * @var EntityManagerInterface $entityManager
+     */
     private EntityManagerInterface $entityManager;
 
+    /**
+     * @var FileService $fileService
+     */
     private FileService $fileService;
 
+    /**
+     * @var MappingService $mappingService
+     */
     private MappingService $mappingService;
 
+    /**
+     * @var SessionInterface $session
+     */
     private SessionInterface $session;
 
+    /**
+     * @var LoggerInterface $callLogger
+     */
     private LoggerInterface $callLogger;
 
 
@@ -180,7 +201,7 @@ class CallService
             $responseContent = $exception->getResponse()->getBody()->getContents();
         }
 
-        $this->callLogger->error('Request failed with error '.$exception->getMessage().' and body '.$responseContent ?? null);
+        $this->callLogger->error('Request failed with error '.$exception->getMessage().' and body '.($responseContent ?? null));
 
         return $this->handleEndpointsConfigIn($source, $endpoint, null, $exception, $responseContent ?? null);
 
@@ -524,7 +545,7 @@ class CallService
     {
         $this->callLogger->debug('Determine content type of response');
 
-        // switch voor obejct.
+        // Switch voor obejct.
         $contentType = $response->getHeader('content-type')[0];
 
         if (!$contentType) {
@@ -637,8 +658,8 @@ class CallService
                 if ($decodedResponse === []
                     || isset($decodedResponse['data']) === true                       && $decodedResponse['data'] === []
                     || isset($decodedResponse['results']) === true                    && $decodedResponse['results'] === []
-                    || isset($decodedResponse['items']) === true                      && $decodedResponse['items'] == []
-                    || isset($decodedResponse['result']['instance']['rows']) === true && $decodedResponse['result']['instance']['rows'] == []
+                    || isset($decodedResponse['items']) === true                      && $decodedResponse['items'] === []
+                    || isset($decodedResponse['result']['instance']['rows']) === true && $decodedResponse['result']['instance']['rows'] === []
                     || isset($decodedResponse['page']) === true                       && $decodedResponse['page'] !== ($pageCount - 1)
                     || $decodedResponse == $previousResult
                 ) {

@@ -118,8 +118,10 @@ class CacheService
 
     /**
      * Remove non-existing items from the cache.
+     * 
+     * @return void Nothing.
      */
-    public function cleanup()
+    public function cleanup(): void
     {
         isset($this->style) === true && $this->style->writeln(
             [
@@ -140,6 +142,8 @@ class CacheService
 
     /**
      * Throws all available objects into the cache.
+     * 
+     * @return int 
      */
     public function warmup()
     {
@@ -529,7 +533,7 @@ class CacheService
     private function handleFilter($key, &$value)
     {
         if (substr($key, 0, 1) == '_') {
-            // todo: deal with filters starting with _ like: _dateCreated.
+            // @Todo: deal with filters starting with _ like: _dateCreated.
         }
 
         // Handle filters that expect $value to be an array.
@@ -566,7 +570,7 @@ class CacheService
             return;
         }
 
-        // todo: exact match is default, make case insensitive optional:
+        // @Todo: exact match is default, make case insensitive optional:
         $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value);
         $value = [
             '$regex'   => "^$value$",
@@ -589,7 +593,7 @@ class CacheService
     {
         // Lets check for the methods like in.
         if (is_array($value) === true) {
-            // int_compare.
+            // Type: int_compare.
             if (array_key_exists('int_compare', $value) === true && is_array($value['int_compare']) === true) {
                 $value = array_map('intval', $value['int_compare']);
             } else if (array_key_exists('int_compare', $value) === true) {
@@ -598,7 +602,7 @@ class CacheService
                 return true;
             }
 
-            // bool_compare.
+            // Type: bool_compare.
             if (array_key_exists('bool_compare', $value) === true && is_array($value['bool_compare']) === true) {
                 $value = array_map('boolval', $value['bool_compare']);
             } else if (array_key_exists('bool_compare', $value) === true) {
@@ -607,7 +611,7 @@ class CacheService
                 return true;
             }
 
-            // after, before, strictly_after,strictly_before.
+            // After, before, strictly_after,strictly_before.
             if (empty(array_intersect_key($value, array_flip(['after', 'before', 'strictly_after', 'strictly_before']))) === false) {
                 $newValue = null;
                 // Compare datetime.
@@ -636,7 +640,7 @@ class CacheService
                 return true;
             }//end if
 
-            // like.
+            // Type: like.
             if (array_key_exists('like', $value) === true && is_array($value['like']) === true) {
                 // $value = array_map('like', $value['like']);
             } else if (array_key_exists('like', $value) === true) {
@@ -649,7 +653,7 @@ class CacheService
                 return true;
             }
 
-            // regex.
+            // Type: regex.
             if (array_key_exists('regex', $value) === true && is_array($value['regex']) === true) {
                 // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('regex', $value) === true) {
@@ -658,7 +662,7 @@ class CacheService
                 return true;
             }
 
-            // >= .
+            // Type: >= .
             if (array_key_exists('>=', $value) === true && is_array($value['>=']) === true) {
                 // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('>=', $value) === true) {
@@ -667,7 +671,7 @@ class CacheService
                 return true;
             }
 
-            // > .
+            // Type: > .
             if (array_key_exists('>', $value) === true && is_array($value['>']) === true) {
                 // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('>', $value) === true) {
@@ -676,7 +680,7 @@ class CacheService
                 return true;
             }
 
-            // <= .
+            // Type: <= .
             if (array_key_exists('<=', $value) === true && is_array($value['<=']) === true) {
                 // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('<=', $value) === true) {
@@ -685,7 +689,7 @@ class CacheService
                 return true;
             }
 
-            // < .
+            // Type: < .
             if (array_key_exists('<', $value) === true && is_array($value['<']) === true) {
                 // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('<', $value) === true) {
@@ -694,7 +698,7 @@ class CacheService
                 return true;
             }
 
-            // exact .
+            // Type: Exact .
             if (array_key_exists('exact', $value) === true && is_array($value['exact']) === true) {
                 // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('exact', $value) === true) {
@@ -703,7 +707,7 @@ class CacheService
                 return true;
             }
 
-            // case_insensitive.
+            // Type: case_insensitive.
             if (array_key_exists('case_insensitive', $value) === true && is_array($value['case_insensitive']) === true) {
                 // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('case_insensitive', $value) === true) {
