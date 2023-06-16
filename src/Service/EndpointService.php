@@ -352,9 +352,9 @@ class EndpointService
             $combinedArray = array_combine($path, explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
         } catch (Exception $exception) {
             $this->logger->error('EndpointService->getNormalPath(): $exception');
-
-            array_pop($path);
+    
             // Todo: not sure why this is here, if someone does now, please add inline comments!
+            array_pop($path);
             $combinedArray = array_combine($path, explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
         }
 

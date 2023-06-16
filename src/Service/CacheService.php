@@ -411,7 +411,7 @@ class CacheService
      *
      * @return array|null
      */
-    public function searchObjects(string $search=null, array $filter=[], array $entities=[]): ?array
+    public function searchObjects(string $search=null, array $filter = [], array $entities = []): ?array
     {
         // Backwards compatablity
         if (isset($this->client) === false) {
@@ -473,7 +473,7 @@ class CacheService
      *
      * @return array|null $this->handleResultPagination()
      */
-    public function retrieveObjectsFromCache(array $filter, array $options, array $completeFilter=[]): ?array
+    public function retrieveObjectsFromCache(array $filter, array $options, array $completeFilter = []): ?array
     {
         $collection = $this->client->objects->json;
         $results    = $collection->find($filter, $options)->toArray();
