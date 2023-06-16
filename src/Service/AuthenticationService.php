@@ -450,8 +450,8 @@ class AuthenticationService
         $time       = time();
 
         $hmac = $websiteKey.$requestOptions['method'].$uri.$time.$nonce.$post;
-        $s    = hash_hmac('sha256', $hmac, $source->getSecret(), true);
-        $hmac = base64_encode($s);
+        $hash    = hash_hmac('sha256', $hmac, $source->getSecret(), true);
+        $hmac = base64_encode($hash);
 
         return 'hmac '.$websiteKey.':'.$hmac.':'.$nonce.':'.$time;
 
