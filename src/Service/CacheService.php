@@ -1160,8 +1160,6 @@ class CacheService
         // } else {
         // $this->style->writeln('Wrote object '.$entity->getId().' to cache');
         // }
-
-
         return $entity;
 
     }//end cacheShema()
@@ -1180,6 +1178,7 @@ class CacheService
         if (isset($this->client) === false) {
             return;
         }
+
     }//end removeSchema()
 
 
@@ -1196,6 +1195,7 @@ class CacheService
         if (isset($this->client) === false) {
             return [];
         }
+
     }//end getSchema()
 
 
