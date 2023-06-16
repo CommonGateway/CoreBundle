@@ -211,7 +211,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         $object = $args->getObject();
 
         // If this subscriber only applies to certain entity types,
-        if (!$object instanceof ObjectEntity) {
+        if ($object instanceof ObjectEntity === false) {
             return;
         }
 
@@ -304,7 +304,8 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         $object = $args->getObject();
 
         // if this subscriber only applies to certain entity types,
-        if (!$object instanceof ObjectEntity) {
+        if ($object instanceof ObjectEntity === false) {
+            
             return;
         }
 

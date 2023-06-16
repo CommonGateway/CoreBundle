@@ -38,11 +38,20 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
 class AuthenticationService
 {
 
+    /**
+     * @var ParameterBagInterface $parameterBag;
+     */
     private ParameterBagInterface $parameterBag;
 
+    /**
+     * @var FileService $fileService;
+     */
     private FileService $fileService;
 
 
+    /**
+     * __construct
+     */
     public function __construct(ParameterBagInterface $parameterBag)
     {
         $this->parameterBag = $parameterBag;
@@ -430,7 +439,7 @@ class AuthenticationService
      */
     public function getHmacToken(array $requestOptions, Source $source): string
     {
-        // todo: what if we don't have a body, method or url in $requestOptions?
+        // @Todo: what if we don't have a body, method or url in $requestOptions?
         switch ($requestOptions['method']) {
         case 'POST':
             $md5  = md5($requestOptions['body'], true);
@@ -438,7 +447,7 @@ class AuthenticationService
             break;
         case 'GET':
         default:
-            // todo: what about a get call?
+            // @Todo: what about a get call?
             $get  = 'not a UTF-8 string';
             $post = base64_encode($get);
             break;
@@ -510,11 +519,11 @@ class AuthenticationService
     /**
      * Decides if the provided JWT token is signed with the RS512 Algorithm.
      *
-     * @param JWT $token The token provided by the user
+     * @param JWT $token The token provided by the user.
      *
-     * @return bool Whether the token is in HS256 or not
+     * @return bool Whether the token is in HS256 or not.
      */
-    public function checkRS512(JWT $token)
+    public function checkRS512(JWT $token): bool
     {
         $headerChecker = new HeaderCheckerManager([new AlgorithmChecker(['RS512'])], [new JWSTokenSupport()]);
 
@@ -532,11 +541,11 @@ class AuthenticationService
     /**
      * Decides if the provided JWT token is signed with the HS256 Algorithm.
      *
-     * @param JWT $token The token provided by the user
+     * @param JWT $token The token provided by the user.
      *
-     * @return bool Whether the token is in HS256 or not
+     * @return bool Whether the token is in HS256 or not.
      */
-    public function checkHS256(JWT $token)
+    public function checkHS256(JWT $token): bool
     {
         $headerChecker = new HeaderCheckerManager([new AlgorithmChecker(['HS256'])], [new JWSTokenSupport()]);
 
@@ -554,9 +563,9 @@ class AuthenticationService
     /**
      * Decides if the provided JWT token is signed with the HS256 Algorithm.
      *
-     * @param JWT $token The token provided by the user
+     * @param JWT $token The token provided by the user.
      *
-     * @return bool Whether the token is in HS256 or not
+     * @return bool Whether the token is in HS256 or not.
      */
     public function checkRS256(JWT $token)
     {

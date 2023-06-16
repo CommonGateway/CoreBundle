@@ -270,7 +270,7 @@ class CallService
         $this->callLogger->debug('Call configuration: ', $config);
         // Let's make the call.
         try {
-            if (!$asynchronous) {
+            if ($asynchronous === false) {
                 $response = $this->client->request($method, $url, $config);
             } else {
                 $response = $this->client->requestAsync($method, $url, $config);
@@ -548,7 +548,7 @@ class CallService
         // Switch voor obejct.
         $contentType = $response->getHeader('content-type')[0];
 
-        if (!$contentType) {
+        if (isset($contentType) === false || empty($contentType) === true) {
             $contentType = $source->getAccept();
         }
 
@@ -576,7 +576,7 @@ class CallService
         // resultaat omzetten.
         // als geen content-type header dan content-type header is accept header.
         $responseBody = $response->getBody()->getContents();
-        if (!$responseBody) {
+        if (isset($responseBody) === false) {
             return [];
         }
 

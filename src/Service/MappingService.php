@@ -154,7 +154,7 @@ class MappingService
 
         // Unset unwanted key's.
         foreach ($mappingObject->getUnset() as $unset) {
-            if (!$dotArray->has($unset)) {
+            if ($dotArray->has($unset) === false) {
                 isset($this->style) === true && $this->style->debug("Trying to unset an property that doesn't exist during mapping");
                 continue;
             }
@@ -164,7 +164,7 @@ class MappingService
 
         // Cast values to a specific type.
         foreach ($mappingObject->getCast() as $key => $cast) {
-            if (!$dotArray->has($key)) {
+            if ($dotArray->has($key) === false) {
                 isset($this->style) === true && $this->style->debug("Trying to cast an property that doesn't exist during mapping");
                 continue;
             }
