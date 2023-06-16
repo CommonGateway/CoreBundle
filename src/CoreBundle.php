@@ -16,6 +16,8 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class CoreBundle extends Bundle
 {
+
+
     /**
      * Returns the path the bundle is in.
      *
@@ -24,7 +26,8 @@ class CoreBundle extends Bundle
     public function getPath(): string
     {
         return \dirname(__DIR__);
-        
+
     }//end getPath()
-    
+
+
 }//end class
