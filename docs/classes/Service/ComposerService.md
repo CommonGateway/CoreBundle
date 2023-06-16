@@ -1,4 +1,10 @@
-# CommonGateway\CoreBundle\Service\ComposerService
+# CommonGateway\CoreBundle\Service\ComposerService  
+
+
+
+
+
+
 
 ## Methods
 
@@ -13,7 +19,10 @@
 |[search](#composerservicesearch)|Search for a given term.|
 |[upgrade](#composerserviceupgrade)|Show a single package installed trough composer.|
 
-### ComposerService::audit
+
+
+
+### ComposerService::audit  
 
 **Description**
 
@@ -21,21 +30,25 @@
 public audit (array $options)
 ```
 
-Search for a given term.
+Search for a given term. 
 
-See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function 
 
 **Parameters**
 
-*   `(array) $options`
+* `(array) $options`
 
 **Return Values**
 
 `array`
 
+
+
+
 <hr />
 
-### ComposerService::getAll
+
+### ComposerService::getAll  
 
 **Description**
 
@@ -43,9 +56,9 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 public getAll (void)
 ```
 
-Show al packages installed trough composer.
+Show al packages installed trough composer. 
 
-See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function 
 
 **Parameters**
 
@@ -55,9 +68,13 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 
 `array`
 
+
+
+
 <hr />
 
-### ComposerService::getLockFile
+
+### ComposerService::getLockFile  
 
 **Description**
 
@@ -65,7 +82,9 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 public getLockFile (void)
 ```
 
-Gets all installed plugins from the lock file.
+Gets all installed plugins from the lock file. 
+
+ 
 
 **Parameters**
 
@@ -75,9 +94,13 @@ Gets all installed plugins from the lock file.
 
 `array`
 
+
+
+
 <hr />
 
-### ComposerService::getSingle
+
+### ComposerService::getSingle  
 
 **Description**
 
@@ -85,21 +108,25 @@ Gets all installed plugins from the lock file.
 public getSingle (string $package)
 ```
 
-Show a single package installed trough composer.
+Show a single package installed trough composer. 
 
-See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function 
 
 **Parameters**
 
-*   `(string) $package`
+* `(string) $package`
 
 **Return Values**
 
 `array`
 
+
+
+
 <hr />
 
-### ComposerService::remove
+
+### ComposerService::remove  
 
 **Description**
 
@@ -107,22 +134,26 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 public remove (string $package, array $options)
 ```
 
-Show a single package installed trough composer.
+Show a single package installed trough composer. 
 
-See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function 
 
 **Parameters**
 
-*   `(string) $package`
-*   `(array) $options`
+* `(string) $package`
+* `(array) $options`
 
 **Return Values**
 
 `array`
 
+
+
+
 <hr />
 
-### ComposerService::require
+
+### ComposerService::require  
 
 **Description**
 
@@ -130,22 +161,26 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 public require (string $package, array $options)
 ```
 
-Show a single package installed trough composer.
+Show a single package installed trough composer. 
 
-See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function 
 
 **Parameters**
 
-*   `(string) $package`
-*   `(array) $options`
+* `(string) $package`
+* `(array) $options`
 
 **Return Values**
 
 `array`
 
+
+
+
 <hr />
 
-### ComposerService::search
+
+### ComposerService::search  
 
 **Description**
 
@@ -153,21 +188,25 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 public search (string|null $search)
 ```
 
-Search for a given term.
+Search for a given term. 
 
-See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function 
 
 **Parameters**
 
-*   `(string|null) $search`
+* `(string|null) $search`
 
 **Return Values**
 
 `array`
 
+
+
+
 <hr />
 
-### ComposerService::upgrade
+
+### ComposerService::upgrade  
 
 **Description**
 
@@ -175,17 +214,21 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 public upgrade (string $package, array $options)
 ```
 
-Show a single package installed trough composer.
+Show a single package installed trough composer. 
 
-See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function 
 
 **Parameters**
 
-*   `(string) $package`
-*   `(array) $options`
+* `(string) $package`
+* `(array) $options`
 
 **Return Values**
 
 `array`
 
+
+
+
 <hr />
+

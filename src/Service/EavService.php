@@ -38,7 +38,7 @@ class EavService
     public function checkEntityforAttribute(Entity $entity): Entity
     {
         // Make sure we have a reference.
-        if (!$entity->getReference()) {
+        if ($entity->getReference() === null) {
             return $entity;
         }
 
@@ -64,7 +64,7 @@ class EavService
     public function checkAttributeforEntity(Attribute $attribute): Attribute
     {
         // Make sure we have a referende.
-        if (!$attribute->getReference() || $attribute->getObject()) {
+        if ($attribute->getReference() === null || $attribute->getObject() !== null) {
             return $attribute;
         }
 

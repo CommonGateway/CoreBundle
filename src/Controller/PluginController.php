@@ -96,7 +96,7 @@ class PluginController extends AbstractController
     {
         $status = 200;
 
-        if (!$package = $request->query->get('plugin', false)) {
+        if (empty($package = $request->query->get('plugin', false)) === true) {
             return new Response('No plugin provided as query parameters', 400, ['Content-type' => 'application/json']);
         }
 
@@ -113,7 +113,7 @@ class PluginController extends AbstractController
     {
         $status = 200;
 
-        if (!$package = $request->query->get('plugin', false)) {
+        if (empty($package = $request->query->get('plugin', false)) === true) {
             return new Response('No plugin provided as query parameters', 400, ['Content-type' => 'application/json']);
         }
 
@@ -130,7 +130,7 @@ class PluginController extends AbstractController
     {
         $status = 200;
 
-        if ($package = $request->query->get('plugin', false) === null || $package = $request->query->get('plugin', false) === false) {
+        if (empty($package = $request->query->get('plugin', false)) === true) {
             return new Response('No plugin provided as query parameters', 400, ['Content-type' => 'application/json']);
         }
 

@@ -283,7 +283,7 @@ class ComposerService
             $call,
         ];
 
-        if ($package != '') {
+        if (empty($package) === false) {
             $cmd[] = strtolower($package);
         }
 
@@ -307,7 +307,7 @@ class ComposerService
         $process->run();
 
         // executes after the command finishes.
-        if (!$process->isSuccessful()) {
+        if ($process->isSuccessful() === false) {
             // throw new ProcessFailedException($process);
             // var_dump('error');
             $content = $process->getErrorOutput();
@@ -451,7 +451,7 @@ class ComposerService
                 // Lets see if we have newer versions than currently installer.
                 foreach (array_keys($plugin['versions'])  as $version) {
                     if (version_compare($plugin['version'], $version) < 0) {
-                        if (!$plugin['update']) {
+                        if (isset($plugin['update']) === false || empty($plugin['update']) === true) {
                             $plugin['update'] = $version;
                             continue;
                         }

@@ -1381,7 +1381,7 @@ class InstallationService
 
             if ($key == 'entity' && is_string($override) === true && Uuid::isValid($override) === false) {
                 $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $override]);
-                if (!$entity) {
+                if ($entity === null) {
                     $this->logger->error("No entity found with reference {$override} (overrideConfig() for installation.json)");
                     continue;
                 }
@@ -1393,7 +1393,7 @@ class InstallationService
 
             if ($key == 'source' && is_string($override) === true && Uuid::isValid($override) === false) {
                 $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $override]);
-                if (!$source) {
+                if ($source === null) {
                     $this->logger->error("No source found with reference {$override} (overrideConfig() for installation.json)");
                     continue;
                 }

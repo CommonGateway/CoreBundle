@@ -86,7 +86,7 @@ class DataClearCommand extends Command
             ]
         );
 
-        if ($env != 'dev') {
+        if ($env !== 'dev') {
             $symfonyStyle->error('Could not remove the data bescouse the environment is not in dev mode');
 
             return Command::FAILURE;
