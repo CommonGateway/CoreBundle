@@ -35,10 +35,9 @@ class SearchController extends AbstractController
      */
     public function installedAction()
     {
-        $status  = 200;
+        $status = 200;
         // $this->cacheService->getAll(['--installed'])['installed'];
         // return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
-
         // Do we want/need this search command??
         return new Response(json_encode(['This command is not functional yet.']), $status, ['Content-type' => 'application/json']);
 
