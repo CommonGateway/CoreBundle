@@ -9,6 +9,8 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 class CoreExtension extends Extension
 {
+
+
     /**
      * @param array            $configs   The config
      * @param ContainerBuilder $container The container builder
