@@ -159,14 +159,14 @@ class CallService
         return $headers;
 
     }//end removeEmptyHeaders()
-    
-    
+
+
     /**
      * Handles the exception if the call triggered one.
      *
      * @param ServerException|ClientException|RequestException|Exception $exception
-     * @param Source $source
-     * @param string $endpoint
+     * @param Source                                                     $source
+     * @param string                                                     $endpoint
      *
      * @throws Exception
      *
@@ -234,13 +234,13 @@ class CallService
         // Set authentication if needed
         $config = array_merge_recursive($this->getAuthentication($source), $config);
         $createCertificates && $this->getCertificate($config);
-        
+
         // Backwards compatible, $source->getHeaders = deprecated
         $config['headers'] = array_merge(($source->getHeaders() ?? []), $config['headers']);
-        
+
         $config['headers']['host'] = $parsedUrl['host'];
         $config['headers']         = $this->removeEmptyHeaders($config['headers']);
-        
+
         $url = $source->getLocation().$endpoint;
         $this->callLogger->info('Calling url '.$url);
 
@@ -359,11 +359,11 @@ class CallService
      * Handles the endpointsConfig of a Source after we did an api-call.
      * See FileSystemService->handleEndpointsConfigIn() for how we handle this on FileSystem sources.
      *
-     * @param Source          $source          The source.
-     * @param string          $endpoint        The endpoint used to do an api-call on the source.
-     * @param Response|null   $response        The response of an api-call we might want to change.
+     * @param Source         $source          The source.
+     * @param string         $endpoint        The endpoint used to do an api-call on the source.
+     * @param Response|null  $response        The response of an api-call we might want to change.
      * @param Exception|null $exception       The Exception thrown as response of an api-call that we might want to change.
-     * @param string|null     $responseContent The response content of an api-call that threw an Exception that we might want to change.
+     * @param string|null    $responseContent The response content of an api-call that threw an Exception that we might want to change.
      *
      * @throws Exception
      *
@@ -428,7 +428,7 @@ class CallService
      * Will check if we have to handle EndpointConfigIn on an Exception response.
      *
      * @param array       $endpointConfigIn The endpointConfig 'in' of a specific endpoint and source.
-     * @param Exception  $exception        The Exception thrown as response of an api-call that we might want to change.
+     * @param Exception   $exception        The Exception thrown as response of an api-call that we might want to change.
      * @param string|null $responseContent  The response content of an api-call that threw an Exception that we might want to change.
      *
      * @throws Exception
