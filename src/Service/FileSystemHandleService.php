@@ -133,7 +133,7 @@ class FileSystemHandleService
      *
      * @return array The decoded file content.
      */
-    public function decodeFile(?string $content, string $location, ?string $format=null): array
+    public function decodeFile(?string $content, string $location, ?string $format = null): array
     {
         /*
          * Increase memory, data read from file can get quite large.
@@ -183,7 +183,7 @@ class FileSystemHandleService
      *
      * @return array The decoded response array of the call.
      */
-    public function call(Source $source, string $location, array $config=[]): array
+    public function call(Source $source, string $location, array $config = []): array
     {
         // Todo: Also add handleEndpointsConfigOut?
         $fileSystem = $this->fscService->openFtpFilesystem($source);

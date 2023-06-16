@@ -94,7 +94,7 @@ class MappingService
      *
      * @return array The result (output) of the mapping process
      */
-    public function mapping(Mapping $mappingObject, array $input, bool $list=false): array
+    public function mapping(Mapping $mappingObject, array $input, bool $list = false): array
     {
         // Check for list
         if ($list === true) {

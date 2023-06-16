@@ -197,11 +197,11 @@ class CallService
      */
     public function call(
         Source $source,
-        string $endpoint='',
-        string $method='GET',
-        array $config=[],
-        bool $asynchronous=false,
-        bool $createCertificates=true
+        string $endpoint = '',
+        string $method = 'GET',
+        array $config = [],
+        bool $asynchronous = false,
+        bool $createCertificates = true
     ): Response {
         $this->session->set('source', $source->getId()->toString());
         $this->callLogger->info('Calling source '.$source->getName());
@@ -360,7 +360,7 @@ class CallService
      *
      * @return Response The response.
      */
-    private function handleEndpointsConfigIn(Source $source, string $endpoint, ?Response $response, ?Exception $exception=null, ?string $responseContent=null): Response
+    private function handleEndpointsConfigIn(Source $source, string $endpoint, ?Response $response, ?Exception $exception = null, ?string $responseContent = null): Response
     {
         $this->callLogger->info('Handling incoming configuration for endpoints');
         $endpointsConfig = $source->getEndpointsConfig();
@@ -536,7 +536,7 @@ class CallService
     public function decodeResponse(
         Source $source,
         Response $response,
-        ?string $contentType='application/json'
+        ?string $contentType = 'application/json'
     ): array {
         $this->callLogger->info('Decoding response content');
         // resultaat omzetten
@@ -605,7 +605,7 @@ class CallService
      *
      * @return array The array of results
      */
-    public function getAllResults(Source $source, string $endpoint='', array $config=[]): array
+    public function getAllResults(Source $source, string $endpoint = '', array $config = []): array
     {
         $this->callLogger->info('Fetch all data from source and combine the results into one array');
         $errorCount     = 0;

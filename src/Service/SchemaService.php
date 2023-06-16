@@ -213,7 +213,7 @@ class SchemaService
      *
      * @return ObjectEntity The PERSISTED object entity on the forced id
      */
-    public function hydrate(ObjectEntity $objectEntity, array $hydrate=[]): ObjectEntity
+    public function hydrate(ObjectEntity $objectEntity, array $hydrate = []): ObjectEntity
     {
         // This savety dosn't make sense but we need it.
         if ($objectEntity->getEntity() === null) {
