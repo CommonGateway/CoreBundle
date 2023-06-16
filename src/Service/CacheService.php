@@ -60,7 +60,7 @@ class CacheService
     /**
      * @var SymfonyStyle
      */
-    private SymfonyStyle $io;
+    private SymfonyStyle $style;
 
     /**
      * @var ParameterBagInterface
@@ -102,13 +102,13 @@ class CacheService
     /**
      * Set symfony style in order to output to the console.
      *
-     * @param SymfonyStyle $io
+     * @param SymfonyStyle $style
      *
      * @return self
      */
-    public function setStyle(SymfonyStyle $io): self
+    public function setStyle(SymfonyStyle $style): self
     {
-        $this->io = $io;
+        $this->style = $style;
 
         return $this;
 
@@ -120,19 +120,19 @@ class CacheService
      */
     public function cleanup()
     {
-        isset($this->io) ? $this->io->writeln(
+        isset($this->style) === true && $this->style->writeln(
             [
                 'Common Gateway Cache Cleanup',
                 '============',
                 '',
             ]
-        ) : '';
+        );
 
-        isset($this->io) ? $this->io->section('Cleaning Object\'s') : '';
+        isset($this->style) === true && $this->style->section('Cleaning Object\'s');
         $collection = $this->client->objects->json;
         $filter     = [];
         $objects    = $collection->find($filter)->toArray();
-        isset($this->io) ? $this->io->writeln('Found '.count($objects).'') : '';
+        isset($this->style) === true && $this->style->writeln('Found '.count($objects).'');
 
     }//end cleanup()
 
@@ -142,74 +142,74 @@ class CacheService
      */
     public function warmup()
     {
-        isset($this->io) ? $this->io->writeln(
+        isset($this->style) === true && $this->style->writeln(
             [
                 'Common Gateway Cache Warmup',
                 '============',
                 '',
             ]
-        ) : '';
+        );
 
-        isset($this->io) ? $this->io->writeln('Connecting to'.$this->parameters->get('cache_url')) : '';
+        isset($this->style) === true && $this->style->writeln('Connecting to'.$this->parameters->get('cache_url'));
 
         // Backwards compatablity
         if (!isset($this->client)) {
-            isset($this->io) ? $this->io->writeln('No cache client found, halting warmup') : '';
+            isset($this->style) === true && $this->style->writeln('No cache client found, halting warmup');
 
             return Command::SUCCESS;
         }
 
         // Objects
-        isset($this->io) ? $this->io->section('Caching Objects\'s') : '';
+        isset($this->style) === true && $this->style->section('Caching Objects\'s');
         $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
-        isset($this->io) ? $this->io->writeln('Found '.count($objectEntities).' objects\'s') : '';
+        isset($this->style) === true && $this->style->writeln('Found '.count($objectEntities).' objects\'s');
 
         foreach ($objectEntities as $objectEntity) {
             try {
                 $this->cacheObject($objectEntity);
             } catch (Exception $exception) {
-                $this->ioCatchException($exception);
+                $this->styleCatchException($exception);
                 continue;
             }
         }
 
         // Schemas
-        isset($this->io) ? $this->io->section('Caching Schema\'s') : '';
+        isset($this->style) === true && $this->style->section('Caching Schema\'s');
         $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
-        isset($this->io) ? $this->io->writeln('Found '.count($schemas).' Schema\'s') : '';
+        isset($this->style) === true && $this->style->writeln('Found '.count($schemas).' Schema\'s');
 
         foreach ($schemas as $schema) {
             try {
                 $this->cacheShema($schema);
             } catch (Exception $exception) {
-                $this->ioCatchException($exception);
+                $this->styleCatchException($exception);
                 continue;
             }
         }
 
         // Endpoints
-        isset($this->io) ? $this->io->section('Caching Endpoint\'s') : '';
+        isset($this->style) === true && $this->style->section('Caching Endpoint\'s');
         $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
-        isset($this->io) ? $this->io->writeln('Found '.count($endpoints).' Endpoint\'s') : '';
+        isset($this->style) === true && $this->style->writeln('Found '.count($endpoints).' Endpoint\'s');
 
         foreach ($endpoints as $endpoint) {
             try {
                 $this->cacheEndpoint($endpoint);
             } catch (Exception $exception) {
-                $this->ioCatchException($exception);
+                $this->styleCatchException($exception);
                 continue;
             }
         }
 
         // Created indexes
-        $collection = $this->client->objects->json->createIndex(['$**' => 'text']);
-        $collection = $this->client->schemas->json->createIndex(['$**' => 'text']);
-        $collection = $this->client->endpoints->json->createIndex(['$**' => 'text']);
+        $this->client->objects->json->createIndex(['$**' => 'text']);
+        $this->client->schemas->json->createIndex(['$**' => 'text']);
+        $this->client->endpoints->json->createIndex(['$**' => 'text']);
 
-        isset($this->io) ? $this->io->writeln(['Removing deleted endpoints', '============']) : '';
+        isset($this->style) === true && $this->style->writeln(['Removing deleted endpoints', '============']);
         $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
 
-        isset($this->io) ? $this->io->writeln(['Removing deleted objects', '============']) : '';
+        isset($this->style) === true && $this->style->writeln(['Removing deleted objects', '============']);
         $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
 
         return Command::SUCCESS;
@@ -221,8 +221,8 @@ class CacheService
     {
         $endpoints = $collection->find()->toArray();
         foreach ($endpoints as $endpoint) {
-            if (!$this->entityManager->find($type, $endpoint['_id'])) {
-                (isset($this->io) ?? $this->io->writeln("removing {$endpoint['_id']} from cache"));
+            if ($this->entityManager->find($type, $endpoint['_id']) === null) {
+                (isset($this->style) === true ?? $this->style->writeln("removing {$endpoint['_id']} from cache"));
                 $collection->findOneAndDelete(['id' => $endpoint['_id']]);
             }
         }
@@ -237,14 +237,15 @@ class CacheService
      *
      * @return void
      */
-    private function ioCatchException(Exception $exception)
+    private function styleCatchException(Exception $exception)
     {
         $this->logger->error($exception->getMessage());
-        (isset($this->io) ?? $this->io->warning($exception->getMessage()));
-        (isset($this->io) ?? $this->io->block("File: {$exception->getFile()}, Line: {$exception->getLine()}"));
-        (isset($this->io) ?? $this->io->block("Trace: {$exception->getTraceAsString()}"));
-
-    }//end ioCatchException()
+        if (isset($this->style) === true) {
+            $this->style->warning($exception->getMessage());
+            $this->style->block("File: {$exception->getFile()}, Line: {$exception->getLine()}");
+            $this->style->block("Trace: {$exception->getTraceAsString()}");
+        };
+    }//end styleCatchException()
 
 
     /**
@@ -257,25 +258,26 @@ class CacheService
     public function cacheObject(ObjectEntity $objectEntity): ObjectEntity
     {
         // For when we can't generate a schema for an ObjectEntity (for example setting an id on ObjectEntity created with testData)
-        if (!$objectEntity->getEntity()) {
+        if ($objectEntity->getEntity() === null) {
             return $objectEntity;
         }
 
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if (isset($this->client) === false) {
             return $objectEntity;
         }
 
-        if (isset($this->io)) {
-            $this->io->writeln('Start caching object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName());
+        if (isset($this->style) === true) {
+            $this->style->writeln('Start caching object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName());
         }
 
         // todo: temp fix to make sure we have the latest version of this ObjectEntity before we cache it.
         $updatedObjectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $objectEntity->getId()->toString()]);
         if ($updatedObjectEntity !== null) {
             $objectEntity = $updatedObjectEntity;
-        } else if (isset($this->io)) {
-            $this->io->writeln('Could not find an ObjectEntity with id: '.$objectEntity->getId()->toString());
+        }
+        if ($updatedObjectEntity === null) {
+            isset($this->style) === true && $this->style->writeln('Could not find an ObjectEntity with id: '.$objectEntity->getId()->toString());
         }
 
         $collection = $this->client->objects->json;
@@ -306,9 +308,9 @@ class CacheService
             ['upsert' => true]
         )
         ) {
-            isset($this->io) ? $this->io->writeln('Updated object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache') : '';
+            isset($this->style) === true && $this->style->writeln('Updated object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache');
         } else {
-            isset($this->io) ? $this->io->writeln('Wrote object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache') : '';
+            isset($this->style) === true && $this->style->writeln('Wrote object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache');
         }
 
         return $objectEntity;
@@ -352,7 +354,7 @@ class CacheService
     public function removeObject(ObjectEntity $object): void
     {
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if (isset($this->client) === false) {
             return;
         }
 
@@ -374,7 +376,7 @@ class CacheService
     public function getObject(string $identification): ?array
     {
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if (isset($this->client) === false) {
             return null;
         }
 
@@ -409,7 +411,7 @@ class CacheService
     public function searchObjects(string $search=null, array $filter=[], array $entities=[]): ?array
     {
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if (isset($this->client) === false) {
             return [];
         }
 
@@ -436,9 +438,10 @@ class CacheService
         }
 
         // Search for the correct entity / entities
-        if (!empty($entities)) {
+        if (empty($entities) === false) {
             $queryError = $this->handleEntities($filter, $completeFilter, $entities);
             if ($queryError !== null) {
+
                 return $queryError;
             }
         }
@@ -450,8 +453,8 @@ class CacheService
         $this->setPagination($limit, $start, $completeFilter);
 
         // Order
-        $order                                          = isset($completeFilter['_order']) ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
-        !empty($order) && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
+        $order                                          = isset($completeFilter['_order']) === true ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
+        empty($order) === false && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
 
         // Find / Search
         return $this->retrieveObjectsFromCache($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order], $completeFilter);
@@ -459,6 +462,15 @@ class CacheService
     }//end searchObjects()
 
 
+    /**
+     * Retrieves objects from a cache collection.
+     * 
+     * @param array $filter
+     * @param array $options
+     * @param array $completeFilter
+     * 
+     * @return array|null $this->handleResultPagination()
+     */
     public function retrieveObjectsFromCache(array $filter, array $options, array $completeFilter=[]): ?array
     {
         $collection = $this->client->objects->json;
@@ -480,14 +492,14 @@ class CacheService
      */
     private function queryBackwardsCompatibility(array &$filter)
     {
-        !isset($filter['_limit']) && isset($filter['limit']) && $filter['_limit']    = $filter['limit'];
-        !isset($filter['_start']) && isset($filter['start']) && $filter['_start']    = $filter['start'];
-        !isset($filter['_offset']) && isset($filter['offset']) && $filter['_offset'] = $filter['offset'];
-        !isset($filter['_page']) && isset($filter['page']) && $filter['_page']       = $filter['page'];
-        !isset($filter['_extend']) && isset($filter['extend']) && $filter['_extend'] = $filter['extend'];
-        !isset($filter['_search']) && isset($filter['search']) && $filter['_search'] = $filter['search'];
-        !isset($filter['_order']) && isset($filter['order']) && $filter['_order']    = $filter['order'];
-        !isset($filter['_fields']) && isset($filter['fields']) && $filter['_fields'] = $filter['fields'];
+        isset($filter['_limit']) === false && isset($filter['limit']) === true && $filter['_limit']    = $filter['limit'];
+        isset($filter['_start']) === false && isset($filter['start']) === true && $filter['_start']    = $filter['start'];
+        isset($filter['_offset']) === false && isset($filter['offset']) === true && $filter['_offset'] = $filter['offset'];
+        isset($filter['_page']) === false && isset($filter['page']) === true && $filter['_page']       = $filter['page'];
+        isset($filter['_extend']) === false && isset($filter['extend']) === true && $filter['_extend'] = $filter['extend'];
+        isset($filter['_search']) === false && isset($filter['search']) === true && $filter['_search'] = $filter['search'];
+        isset($filter['_order']) === false && isset($filter['order']) === true && $filter['_order']    = $filter['order'];
+        isset($filter['_fields']) === false && isset($filter['fields']) === true && $filter['_fields'] = $filter['fields'];
 
         unset(
             $filter['start'],
@@ -523,9 +535,17 @@ class CacheService
         if ($this->handleFilterArray($key, $value)) {
             return;
         }
+        // If the value is a boolean we need a other format.
+        if (is_bool($value) === true) {
+            // Set as key '$eq' with the value.
+            $value = ['$eq' => $value];
+
+            return;
+        }
+
 
         // Todo: This works, we should go to php 8.0 later.
-        if (str_contains($value, '%')) {
+        if (str_contains($value, '%') === true) {
             $regex = str_replace('%', '', $value);
             $regex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $regex);
             $value = ['$regex' => $regex];
@@ -570,28 +590,28 @@ class CacheService
         // Lets check for the methods like in
         if (is_array($value)) {
             // int_compare
-            if (array_key_exists('int_compare', $value) && is_array($value['int_compare'])) {
+            if (array_key_exists('int_compare', $value) === true && is_array($value['int_compare']) === true) {
                 $value = array_map('intval', $value['int_compare']);
-            } else if (array_key_exists('int_compare', $value)) {
+            } else if (array_key_exists('int_compare', $value) === true) {
                 $value = (int) $value['int_compare'];
 
                 return true;
             }
 
             // bool_compare
-            if (array_key_exists('bool_compare', $value) && is_array($value['bool_compare'])) {
+            if (array_key_exists('bool_compare', $value) === true && is_array($value['bool_compare']) === true) {
                 $value = array_map('boolval', $value['bool_compare']);
-            } else if (array_key_exists('bool_compare', $value)) {
+            } else if (array_key_exists('bool_compare', $value) === true) {
                 $value = (bool) $value['bool_compare'];
 
                 return true;
             }
 
             // after, before, strictly_after,strictly_before
-            if (!empty(array_intersect_key($value, array_flip(['after', 'before', 'strictly_after', 'strictly_before'])))) {
+            if (empty(array_intersect_key($value, array_flip(['after', 'before', 'strictly_after', 'strictly_before']))) === false) {
                 $newValue = null;
                 // Compare datetime
-                if (!empty(array_intersect_key($value, array_flip(['after', 'strictly_after'])))) {
+                if (empty(array_intersect_key($value, array_flip(['after', 'strictly_after']))) === false) {
                     $after       = array_key_exists('strictly_after', $value) ? 'strictly_after' : 'after';
                     $compareDate = new DateTime($value[$after]);
                     $compareKey  = $after === 'strictly_after' ? '$gt' : '$gte';
@@ -601,7 +621,7 @@ class CacheService
                     $newValue["$compareKey"] = "{$compareDate->format('c')}";
                 }
 
-                if (!empty(array_intersect_key($value, array_flip(['before', 'strictly_before'])))) {
+                if (empty(array_intersect_key($value, array_flip(['before', 'strictly_before']))) === false) {
                     $before      = array_key_exists('strictly_before', $value) ? 'strictly_before' : 'before';
                     $compareDate = new DateTime($value[$before]);
                     $compareKey  = $before === 'strictly_before' ? '$lt' : '$lte';
@@ -617,9 +637,9 @@ class CacheService
             }//end if
 
             // like
-            if (array_key_exists('like', $value) && is_array($value['like'])) {
+            if (array_key_exists('like', $value) === true && is_array($value['like']) === true) {
                 // $value = array_map('like', $value['like']);
-            } else if (array_key_exists('like', $value)) {
+            } else if (array_key_exists('like', $value) === true) {
                 $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value['like']);
                 $value = [
                     '$regex'   => ".*$value.*",
@@ -630,63 +650,63 @@ class CacheService
             }
 
             // regex
-            if (array_key_exists('regex', $value) && is_array($value['regex'])) {
+            if (array_key_exists('regex', $value) === true && is_array($value['regex']) === true) {
                 // $value = array_map('like', $value['like']); @todo
-            } else if (array_key_exists('regex', $value)) {
+            } else if (array_key_exists('regex', $value) === true) {
                 $value = ['$regex' => $value['regex']];
 
                 return true;
             }
 
             // >=
-            if (array_key_exists('>=', $value) && is_array($value['>='])) {
+            if (array_key_exists('>=', $value) === true && is_array($value['>=']) === true) {
                 // $value = array_map('like', $value['like']); @todo
-            } else if (array_key_exists('>=', $value)) {
+            } else if (array_key_exists('>=', $value) === true) {
                 $value = ['$gte' => (int) $value['>=']];
 
                 return true;
             }
 
             // >
-            if (array_key_exists('>', $value) && is_array($value['>'])) {
+            if (array_key_exists('>', $value) === true && is_array($value['>']) === true) {
                 // $value = array_map('like', $value['like']); @todo
-            } else if (array_key_exists('>', $value)) {
+            } else if (array_key_exists('>', $value) === true) {
                 $value = ['$gt' => (int) $value['>']];
 
                 return true;
             }
 
             // <=
-            if (array_key_exists('<=', $value) && is_array($value['<='])) {
+            if (array_key_exists('<=', $value) === true && is_array($value['<=']) === true) {
                 // $value = array_map('like', $value['like']); @todo
-            } else if (array_key_exists('<=', $value)) {
+            } else if (array_key_exists('<=', $value) === true) {
                 $value = ['$lte' => (int) $value['<=']];
 
                 return true;
             }
 
             // <
-            if (array_key_exists('<', $value) && is_array($value['<'])) {
+            if (array_key_exists('<', $value) === true && is_array($value['<']) === true) {
                 // $value = array_map('like', $value['like']); @todo
-            } else if (array_key_exists('<', $value)) {
+            } else if (array_key_exists('<', $value) === true) {
                 $value = ['$lt' => (int) $value['<']];
 
                 return true;
             }
 
             // exact
-            if (array_key_exists('exact', $value) && is_array($value['exact'])) {
+            if (array_key_exists('exact', $value) === true && is_array($value['exact']) === true) {
                 // $value = array_map('like', $value['like']); @todo
-            } else if (array_key_exists('exact', $value)) {
+            } else if (array_key_exists('exact', $value) === true) {
                 $value = $value;
 
                 return true;
             }
 
             // case_insensitive
-            if (array_key_exists('case_insensitive', $value) && is_array($value['case_insensitive'])) {
+            if (array_key_exists('case_insensitive', $value) === true && is_array($value['case_insensitive']) === true) {
                 // $value = array_map('like', $value['like']); @todo
-            } else if (array_key_exists('case_insensitive', $value)) {
+            } else if (array_key_exists('case_insensitive', $value) === true) {
                 $value = [
                     '$regex'   => $value['case_insensitive'],
                     '$options' => 'i',
@@ -987,15 +1007,15 @@ class CacheService
             return $endpoint;
         }
 
-        if (isset($this->io)) {
-            $this->io->writeln('Start caching endpoint '.$endpoint->getId()->toString().' with name: '.$endpoint->getName());
+        if (isset($this->style)) {
+            $this->style->writeln('Start caching endpoint '.$endpoint->getId()->toString().' with name: '.$endpoint->getName());
         }
 
         $updatedEndpoint = $this->entityManager->getRepository('App:Endpoint')->find($endpoint->getId());
         if ($updatedEndpoint !== null) {
             $endpoint = $updatedEndpoint;
-        } else if (isset($this->io)) {
-            $this->io->writeln('Could not find an Endpoint with id: '.$endpoint->getId()->toString());
+        } else if (isset($this->style)) {
+            $this->style->writeln('Could not find an Endpoint with id: '.$endpoint->getId()->toString());
         }
 
         $collection = $this->client->endpoints->json;
@@ -1009,9 +1029,9 @@ class CacheService
             ['upsert' => true]
         )
         ) {
-            isset($this->io) ? $this->io->writeln('Updated endpoint '.$endpoint->getId()->toString().' to cache') : '';
+            isset($this->style) === true && $this->style->writeln('Updated endpoint '.$endpoint->getId()->toString().' to cache');
         } else {
-            isset($this->io) ? $this->io->writeln('Wrote object '.$endpoint->getId()->toString().' to cache') : '';
+            isset($this->style) === true && $this->style->writeln('Wrote object '.$endpoint->getId()->toString().' to cache');
         }
 
         return $endpoint;
@@ -1139,9 +1159,9 @@ class CacheService
             $entity->toSchema(null),
             ['upsert' => true]
             )) {
-            $this->io->writeln('Updated object '.$entity->getId().' to cache');
+            $this->style->writeln('Updated object '.$entity->getId().' to cache');
             } else {
-            $this->io->writeln('Wrote object '.$entity->getId().' to cache');
+            $this->style->writeln('Wrote object '.$entity->getId().' to cache');
             }
         */
 
