@@ -1,18 +1,25 @@
-# CommonGateway\CoreBundle\Service\EndpointService
+# CommonGateway\CoreBundle\Service\EndpointService  
 
 This service handles calls on the ZZ endpoint (or in other words abstract routing).
+
+
+
+
 
 ## Methods
 
 | Name | Description |
 |------|-------------|
-|[\_\_construct](#endpointservice__construct)|The constructor sets al needed variables.|
+|[__construct](#endpointservice__construct)|The constructor sets al needed variables.|
 |[decodeBody](#endpointservicedecodebody)|Decodes the body of the request based upon the content-type header, accept header or endpoint default.|
 |[getAcceptType](#endpointservicegetaccepttype)|Gets the accept type based on the request.|
 |[getEndpoint](#endpointservicegetendpoint)|Gets the endpoint based on the request.|
 |[handleRequest](#endpointservicehandlerequest)|Handle the request afther it commes in through the ZZ controller.|
 
-### EndpointService::\_\_construct
+
+
+
+### EndpointService::__construct  
 
 **Description**
 
@@ -20,26 +27,30 @@ This service handles calls on the ZZ endpoint (or in other words abstract routin
 public __construct (\EntityManagerInterface $entityManager, \SerializerInterface $serializer, \RequestService $requestService, \EventDispatcherInterface $eventDispatcher)
 ```
 
-The constructor sets al needed variables.
+The constructor sets al needed variables. 
+
+ 
 
 **Parameters**
 
-*   `(\EntityManagerInterface) $entityManager`
-    : The enitymanger
-*   `(\SerializerInterface) $serializer`
-    : The serializer
-*   `(\RequestService) $requestService`
-    : The request service
-*   `(\EventDispatcherInterface) $eventDispatcher`
-    : The event dispatcher
+* `(\EntityManagerInterface) $entityManager`
+: The enitymanger  
+* `(\SerializerInterface) $serializer`
+: The serializer  
+* `(\RequestService) $requestService`
+: The request service  
+* `(\EventDispatcherInterface) $eventDispatcher`
+: The event dispatcher  
 
 **Return Values**
 
 `void`
 
+
 <hr />
 
-### EndpointService::decodeBody
+
+### EndpointService::decodeBody  
 
 **Description**
 
@@ -47,7 +58,9 @@ The constructor sets al needed variables.
 public decodeBody (void)
 ```
 
-Decodes the body of the request based upon the content-type header, accept header or endpoint default.
+Decodes the body of the request based upon the content-type header, accept header or endpoint default. 
+
+ 
 
 **Parameters**
 
@@ -57,9 +70,13 @@ Decodes the body of the request based upon the content-type header, accept heade
 
 `array`
 
+
+
+
 <hr />
 
-### EndpointService::getAcceptType
+
+### EndpointService::getAcceptType  
 
 **Description**
 
@@ -67,9 +84,9 @@ Decodes the body of the request based upon the content-type header, accept heade
 public getAcceptType (void)
 ```
 
-Gets the accept type based on the request.
+Gets the accept type based on the request. 
 
-This method breaks complexity rules but since a switch is the most efficent and performent way to do this we made a design decicion to allow it
+This method breaks complexity rules but since a switch is the most efficent and performent way to do this we made a design decicion to allow it 
 
 **Parameters**
 
@@ -81,9 +98,11 @@ This method breaks complexity rules but since a switch is the most efficent and 
 
 > The accept type
 
+
 <hr />
 
-### EndpointService::getEndpoint
+
+### EndpointService::getEndpoint  
 
 **Description**
 
@@ -91,7 +110,9 @@ This method breaks complexity rules but since a switch is the most efficent and 
 public getEndpoint (void)
 ```
 
-Gets the endpoint based on the request.
+Gets the endpoint based on the request. 
+
+ 
 
 **Parameters**
 
@@ -103,13 +124,17 @@ Gets the endpoint based on the request.
 
 > The found endpoint
 
+
 **Throws Exceptions**
+
 
 `\Exception`
 
+
 <hr />
 
-### EndpointService::handleRequest
+
+### EndpointService::handleRequest  
 
 **Description**
 
@@ -117,19 +142,27 @@ Gets the endpoint based on the request.
 public handleRequest (\Request $request)
 ```
 
-Handle the request afther it commes in through the ZZ controller.
+Handle the request afther it commes in through the ZZ controller. 
+
+ 
 
 **Parameters**
 
-*   `(\Request) $request`
-    : The inbound request
+* `(\Request) $request`
+: The inbound request  
 
 **Return Values**
 
 `\Response`
 
+
+
+
 **Throws Exceptions**
+
 
 `\Exception`
 
+
 <hr />
+
