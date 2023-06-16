@@ -295,7 +295,7 @@ class EndpointService
      *
      * @return array The parameter array
      */
-    private function getParametersFromRequest(?array $parameters=[]): array
+    private function getParametersFromRequest(?array $parameters = []): array
     {
         // Lets make sure that we always have a path.
         $this->logger->debug('Get the raw path');

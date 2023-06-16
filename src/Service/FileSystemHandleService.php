@@ -188,7 +188,7 @@ class FileSystemHandleService
      *
      * @return array The decoded response array of the call.
      */
-    public function call(Source $source, string $location, array $config=[]): array
+    public function call(Source $source, string $location, array $config = []): array
     {
         // Todo: Also add handleEndpointsConfigOut?
         $fileSystem = $this->fscService->openFtpFilesystem($source);

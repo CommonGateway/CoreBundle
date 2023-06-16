@@ -153,8 +153,8 @@ class CacheService
         isset($this->style) === true && $this->style->writeln('Connecting to'.$this->parameters->get('cache_url'));
 
         // Backwards compatablity
-        if (!isset($this->client)) {
-            isset($this->style) === true && $this->style->writeln('No cache client found, halting warmup');
+        if (isset($this->client) === false) {
+            isset($this->io) ? $this->io->writeln('No cache client found, halting warmup') : '';
 
             return Command::SUCCESS;
         }
@@ -410,7 +410,7 @@ class CacheService
      *
      * @return array|null
      */
-    public function searchObjects(string $search=null, array $filter=[], array $entities=[]): ?array
+    public function searchObjects(string $search=null, array $filter = [], array $entities = []): ?array
     {
         // Backwards compatablity
         if (isset($this->client) === false) {
@@ -472,7 +472,7 @@ class CacheService
      *
      * @return array|null $this->handleResultPagination()
      */
-    public function retrieveObjectsFromCache(array $filter, array $options, array $completeFilter=[]): ?array
+    public function retrieveObjectsFromCache(array $filter, array $options, array $completeFilter = []): ?array
     {
         $collection = $this->client->objects->json;
         $results    = $collection->find($filter, $options)->toArray();
@@ -751,11 +751,11 @@ class CacheService
         $errorData   = [];
         foreach ($entities as $entity) {
             if (Uuid::isValid($entity) === true) {
-                // $filter['_self.schema.id']='b92a3a39-3639-4bf5-b2af-c404bc2cb005';
+                // $filter['_self.schema.id'] = 'b92a3a39-3639-4bf5-b2af-c404bc2cb005';
                 $filter['_self.schema.id']['$in'][] = $entity;
                 $entityObject                       = $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $entity]);
             } else {
-                // $filter['_self.schema.ref']='https://larping.nl/schema/example.schema.json';
+                // $filter['_self.schema.ref'] = 'https://larping.nl/schema/example.schema.json';
                 $filter['_self.schema.ref']['$in'][] = $entity;
                 $entityObject                        = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $entity]);
             }
@@ -814,7 +814,7 @@ class CacheService
         // This checks for each attribute of the given Entity if $attribute->getSortable() is true.
         $orderCheck = $this->entityManager->getRepository('App:ObjectEntity')->getOrderParameters($entity, '', 1, true);
 
-        if (!is_array($order)) {
+        if (is_array($order) === false) {
             $orderCheckStr = implode(', ', $orderCheck);
             $message       = 'Please give an attribute to order on. Like this: ?_order[attributeName]=desc/asc. Supported order query parameters: '.$orderCheckStr;
         }
@@ -823,11 +823,11 @@ class CacheService
             $message = 'Only one order query param at the time is allowed.';
         }
 
-        if (is_array($order) && !in_array(strtoupper(array_values($order)[0]), ['DESC', 'ASC'])) {
+        if (is_array($order) && in_array(strtoupper(array_values($order)[0]), ['DESC', 'ASC']) === false) {
             $message = 'Please use desc or asc as value for your order query param, not: '.array_values($order)[0];
         }
 
-        if (is_array($order) && !in_array(array_keys($order)[0], $orderCheck)) {
+        if (is_array($order) && in_array(array_keys($order)[0], $orderCheck) === false) {
             $orderCheckStr = implode(', ', $orderCheck);
             $message       = 'Unsupported order query parameter ('.array_keys($order)[0].'). Supported order query parameters: '.$orderCheckStr;
         }
@@ -860,8 +860,8 @@ class CacheService
         $filterCheck = $this->entityManager->getRepository('App:ObjectEntity')->getFilterParameters($entity, '', 1, true);
 
         foreach ($filters as $param => $value) {
-            if (!in_array($param, $filterCheck)) {
-                $unsupportedParams = !isset($unsupportedParams) ? $param : "$unsupportedParams, $param";
+            if (in_array($param, $filterCheck) === false) {
+                $unsupportedParams = isset($unsupportedParams) === false ? $param : "$unsupportedParams, $param";
             }
         }
 
@@ -1003,7 +1003,7 @@ class CacheService
     public function cacheEndpoint(Endpoint $endpoint): Endpoint
     {
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if (isset($this->client) === false) {
             return $endpoint;
         }
 
@@ -1049,7 +1049,7 @@ class CacheService
     public function removeEndpoint(Endpoint $endpoint): void
     {
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if (isset($this->client) === false) {
             return;
         }
 
@@ -1070,7 +1070,7 @@ class CacheService
     public function getEndpoint(string $identification): ?array
     {
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if (isset($this->client) === false) {
             return [];
         }
 
@@ -1092,7 +1092,7 @@ class CacheService
     public function getEndpoints(array $filter): ?Endpoint
     {
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if (isset($this->client) === false) {
             return [];
         }
 
@@ -1137,7 +1137,7 @@ class CacheService
     public function cacheShema(Entity $entity): Entity
     {
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if (isset($this->client) === false) {
             return $entity;
         }
 
@@ -1180,7 +1180,7 @@ class CacheService
     public function removeSchema(Entity $entity): void
     {
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if (isset($this->client) === false) {
             return;
         }
 
@@ -1199,7 +1199,7 @@ class CacheService
     public function getSchema(Uuid $identification): ?array
     {
         // Backwards compatablity
-        if (!isset($this->client)) {
+        if (isset($this->client) === false) {
             return [];
         }
 

@@ -253,7 +253,7 @@ class RequestService
      *
      * @return array An array with all query parameters.
      */
-    public function realRequestQueryAll(string $method='get', ?string $queryString=''): array
+    public function realRequestQueryAll(string $method = 'get', ?string $queryString = ''): array
     {
         $vars = [];
         if (strtolower($method) === 'get' && empty($this->data['querystring']) === true && empty($queryString) === true) {
@@ -615,7 +615,7 @@ class RequestService
             $extend = $this->data['query']['extend'];
 
             // Lets deal with a comma seperated list.
-            if (!is_array($extend)) {
+            if (is_array($extend) === false) {
                 $extend = explode(',', $extend);
             }
 
@@ -677,7 +677,7 @@ class RequestService
                 }
 
                 // Lets see if the found result is allowed for this endpoint.
-                if (isset($this->data['endpoint']) && !in_array($result['_self']['schema']['id'], $allowedSchemas['id'])) {
+                if (isset($this->data['endpoint']) && in_array($result['_self']['schema']['id'], $allowedSchemas['id']) === false) {
                     return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
@@ -859,7 +859,7 @@ class RequestService
         case 'DELETE':
 
             // We dont have an id on a PUT so die.
-            if (!isset($this->identification)) {
+            if (isset($this->identification) === false) {
                 $this->logger->error('No id could be established for your request');
 
                 return new Response('No id could be established for your request', '400');

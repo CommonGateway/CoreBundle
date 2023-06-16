@@ -263,9 +263,9 @@ class CallService
      */
     public function call(
         Source $source,
-        string $endpoint='',
-        string $method='GET',
-        array $config=[],
+        string $endpoint = '',
+        string $method = 'GET',
+        array $config = [],
         bool $asynchronous=false,
         bool $createCertificates=true
     ): Response {
@@ -611,7 +611,7 @@ class CallService
     public function decodeResponse(
         Source $source,
         Response $response,
-        ?string $contentType='application/json'
+        ?string $contentType = 'application/json'
     ): array {
         $this->callLogger->info('Decoding response content');
         // resultaat omzetten
@@ -682,7 +682,7 @@ class CallService
      *
      * @return array The array of results
      */
-    public function getAllResults(Source $source, string $endpoint='', array $config=[]): array
+    public function getAllResults(Source $source, string $endpoint = '', array $config = []): array
     {
         $this->callLogger->info('Fetch all data from source and combine the results into one array');
         $errorCount     = 0;

@@ -161,7 +161,7 @@ class InstallationService
      *
      * @return int
      */
-    public function update(array $config=[], SymfonyStyle $style=null): int
+    public function update(array $config = [], SymfonyStyle $style=null): int
     {
         // Let's see if we are trying to update a single plugin.
         if (isset($config['plugin']) === true) {
@@ -205,7 +205,7 @@ class InstallationService
      *
      * @return bool The result of the installation.
      */
-    public function install(string $bundle, array $config=[]): bool
+    public function install(string $bundle, array $config = []): bool
     {
         $this->logger->debug('Installing plugin '.$bundle, ['plugin' => $bundle]);
 
@@ -825,7 +825,7 @@ class InstallationService
      *
      * @return void
      */
-    private function editSchemaProperties(array $schemasData=[]): void
+    private function editSchemaProperties(array $schemasData = []): void
     {
         foreach ($schemasData as $schemaData) {
             // Get the schema and source from the schemadata.
@@ -855,7 +855,7 @@ class InstallationService
      *
      * @return void
      */
-    private function updateSchemasCollection(array $collectionsData=[])
+    private function updateSchemasCollection(array $collectionsData = [])
     {
         $collections = 0;
 
@@ -908,7 +908,7 @@ class InstallationService
      *
      * @return array An array of endpoints
      */
-    private function createEndpoints(array $endpointsData=[]): array
+    private function createEndpoints(array $endpointsData = []): array
     {
         $endpoints = [];
 
@@ -1250,7 +1250,7 @@ class InstallationService
      *
      * @return array An array of Action objects
      */
-    private function createActions(array $handlersData=[]): array
+    private function createActions(array $handlersData = []): array
     {
         $actions = [];
 
@@ -1315,7 +1315,7 @@ class InstallationService
      *
      * @return void An array of Action objects
      */
-    private function fixConfigRef(array $actionRefs=[]): void
+    private function fixConfigRef(array $actionRefs = []): void
     {
         $actions = 0;
 
@@ -1468,7 +1468,7 @@ class InstallationService
      *
      * @return array An array of cronjobs.
      */
-    private function createCronjobs(array $actions=[]): array
+    private function createCronjobs(array $actions = []): array
     {
         $cronjobs = [];
 
@@ -1546,7 +1546,7 @@ class InstallationService
      *
      * @return array An array of users.
      */
-    private function createUsers(array $usersData=[]): array
+    private function createUsers(array $usersData = []): array
     {
         $orgRepository = $this->entityManager->getRepository('App:Organization');
 
@@ -1574,7 +1574,7 @@ class InstallationService
             }
         }//end foreach
 
-        if (empty($userData) === false) {
+        if (empty($usersData) === false) {
             $users = $this->handleObjectType('https://docs.commongateway.nl/schemas/User.schema.json', $usersData);
         }
 
@@ -1665,7 +1665,7 @@ class InstallationService
      *
      * @return array An array of dashboardCard objects
      */
-    private function createCards(array $cardsData=[]): array
+    private function createCards(array $cardsData = []): array
     {
         $cards = [];
 

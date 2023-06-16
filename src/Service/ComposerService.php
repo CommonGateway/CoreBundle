@@ -23,7 +23,7 @@ class ComposerService
     {
         // Lets see if the values in the array arry pressent in the enum
         foreach ($array as $value) {
-            if (!in_array($value, $enum)) {
+            if (in_array($value, $enum) === false) {
                 return false;
             }
         }
@@ -42,7 +42,7 @@ class ComposerService
      *
      * @return array|string
      */
-    private function composerCall(string $call, array $options=[], string $package='')
+    private function composerCall(string $call, array $options = [], string $package = '')
     {
         $optionsList = [];
         // Let's check for valid calls.
@@ -296,7 +296,7 @@ class ComposerService
         }
 
         // Force JSON output where supported
-        if (in_array('--format', $optionsList) && !in_array('--format json', $options)) {
+        if (in_array('--format', $optionsList) && in_array('--format json', $options) === false) {
             $options[] = '--format=json';
         }
 
@@ -366,13 +366,13 @@ class ComposerService
      *
      * @return array
      */
-    public function getAll(array $options=[]): array
+    public function getAll(array $options = []): array
     {
         $lockFile = $this->getLockFile();
         $plugins  = [];
         foreach ($lockFile as $result) {
             // Remove non gateway plugins from the result
-            if (!isset($result['keywords']) || !in_array('common-gateway-plugin', $result['keywords'])) {
+            if (isset($result['keywords']) === false || in_array('common-gateway-plugin', $result['keywords']) === false) {
                 continue;
             }
 
@@ -394,7 +394,7 @@ class ComposerService
      *
      * @return array
      */
-    public function require(string $package, array $options=[]): array
+    public function require(string $package, array $options = []): array
     {
         return $this->composerCall('require', $options, $package);
 
@@ -411,7 +411,7 @@ class ComposerService
      *
      * @return array
      */
-    public function upgrade(string $package, array $options=[]): array
+    public function upgrade(string $package, array $options = []): array
     {
         return $this->composerCall('upgrade', $options, $package);
 
@@ -428,7 +428,7 @@ class ComposerService
      *
      * @return array
      */
-    public function remove(string $package, array $options=[]): array
+    public function remove(string $package, array $options = []): array
     {
         return $this->composerCall('remove', $options, $package);
 
@@ -445,7 +445,7 @@ class ComposerService
      *
      * @return array
      */
-    public function getSingle(string $package, array $options=[]): array
+    public function getSingle(string $package, array $options = []): array
     {
         $url = 'https://packagist.org/packages/'.$package.'.json';
 
@@ -493,7 +493,7 @@ class ComposerService
      *
      * @return array
      */
-    public function search(string $search=null, array $options=[]): array
+    public function search(string $search=null, array $options = []): array
     {
         $url   = 'https://packagist.org/search.json';
         $query = ['tags' => 'common-gateway-plugin'];
@@ -529,7 +529,7 @@ class ComposerService
      *
      * @return array
      */
-    public function audit(array $options=[]): array
+    public function audit(array $options = []): array
     {
         return $this->composerCall('audit', $options);
 
