@@ -44,7 +44,6 @@ class ObjectSyncService
      */
     private LoggerInterface $objectSyncLogger;
 
-
     /**
      * The constructor sets al needed variables.
      *
@@ -68,7 +67,6 @@ class ObjectSyncService
         $this->objectSyncLogger = $objectSyncLogger;
 
     }//end __construct()
-
 
     /**
      * Synchronise the object to the source.
@@ -127,6 +125,4 @@ class ObjectSyncService
         return $synchronisation->getObject()->toArray();
 
     }//end objectSyncHandler()
-
-
 }//end class

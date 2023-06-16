@@ -28,7 +28,6 @@ class EavService
 
     private string $id;
 
-
     /**
      * @param EntityManagerInterface $entityManager
      */
@@ -40,7 +39,6 @@ class EavService
         $this->cacheService  = $cacheService;
 
     }//end __construct()
-
 
     /**
      * Checks an entity to see if there are anny atributtes waiting for it.
@@ -68,7 +66,6 @@ class EavService
 
     }//end checkEntityforAttribute()
 
-
     /**
      * Checks an atribute to see if a schema for its reference has becomme available.
      *
@@ -91,7 +88,6 @@ class EavService
         return $attribute;
 
     }//end checkAttributeforEntity()
-
 
     /**
      * Removes all object entities from the database (should obviusly not be used in production).
@@ -121,6 +117,4 @@ class EavService
         return true;
 
     }//end deleteAllObjects()
-
-
 }//end class

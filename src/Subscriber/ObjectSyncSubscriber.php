@@ -49,7 +49,6 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
      */
     private LoggerInterface $pluginLogger;
 
-
     /**
      * The constructor sets al needed variables.
      *
@@ -74,7 +73,6 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
 
     }//end __construct()
 
-
     /**
      * Defines the events that the subscriber should subscribe to.
      *
@@ -87,7 +85,6 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
         ];
 
     }//end getSubscribedEvents()
-
 
     /**
      * Passes the result of prePersist to preUpdate.
@@ -131,6 +128,4 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
         $this->objectEntityService->dispatchEvent('commongateway.action.event', $data, 'commongateway.object.sync');
 
     }//end postPersist()
-
-
 }//end class

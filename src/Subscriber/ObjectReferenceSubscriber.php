@@ -25,7 +25,6 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
 
     private EntityManagerInterface $entityManager;
 
-
     public function __construct(
         EntityManagerInterface $entityManager,
         EavService $eavService
@@ -34,7 +33,6 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
         $this->eavService    = $eavService;
 
     }//end __construct()
-
 
     // this method can only return the event names; you cannot define a
     // custom method name to execute when each event triggers
@@ -46,7 +44,6 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
         ];
 
     }//end getSubscribedEvents()
-
 
     /**
      * Checks whether we should check attributes and entities for connections.
@@ -102,12 +99,9 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
 
     }//end postPersist()
 
-
     public function postUpdate(LifecycleEventArgs $args): void
     {
         $this->postPersist($args);
 
     }//end postUpdate()
-
-
 }//end class

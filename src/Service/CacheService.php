@@ -73,7 +73,6 @@ class CacheService
      */
     private SerializerInterface $serializer;
 
-
     /**
      * @param EntityManagerInterface $entityManager The entity manager
      * @param CacheInterface         $cache         The cache interface
@@ -99,7 +98,6 @@ class CacheService
 
     }//end __construct()
 
-
     /**
      * Set symfony style in order to output to the console.
      *
@@ -114,7 +112,6 @@ class CacheService
         return $this;
 
     }//end setStyle()
-
 
     /**
      * Remove non-existing items from the cache.
@@ -136,7 +133,6 @@ class CacheService
         isset($this->style) === true && $this->style->writeln('Found '.count($objects).'');
 
     }//end cleanup()
-
 
     /**
      * Throws all available objects into the cache.
@@ -217,7 +213,6 @@ class CacheService
 
     }//end warmup()
 
-
     private function removeDataFromCache(Collection $collection, string $type): void
     {
         $endpoints = $collection->find()->toArray();
@@ -229,7 +224,6 @@ class CacheService
         }
 
     }//end removeDataFromCache()
-
 
     /**
      * Writes exception data to symfony IO.
@@ -248,7 +242,6 @@ class CacheService
         };
 
     }//end styleCatchException()
-
 
     /**
      * Put a single object into the cache.
@@ -320,7 +313,6 @@ class CacheService
 
     }//end cacheObject()
 
-
     /**
      * Gets the User object of an ObjectEntity.
      *
@@ -346,7 +338,6 @@ class CacheService
 
     }//end getObjectUser()
 
-
     /**
      * Removes an object from the cache.
      *
@@ -367,7 +358,6 @@ class CacheService
         $collection->findOneAndDelete(['_id' => $identification]);
 
     }//end removeObject()
-
 
     /**
      * Get a single object from the cache.
@@ -398,7 +388,6 @@ class CacheService
         return null;
 
     }//end getObject()
-
 
     /**
      * Searches the object store for objects containing the search string.
@@ -463,7 +452,6 @@ class CacheService
 
     }//end searchObjects()
 
-
     /**
      * Retrieves objects from a cache collection.
      *
@@ -482,7 +470,6 @@ class CacheService
         return $this->handleResultPagination($completeFilter, $results, $total);
 
     }//end retrieveObjectsFromCache()
-
 
     /**
      * Make sure we still support the old query params. By translating them to the new ones with _.
@@ -514,7 +501,6 @@ class CacheService
         );
 
     }//end queryBackwardsCompatibility()
-
 
     /**
      * Handles a single filter used on a get collection api call. This function makes sure special filters work correctly.
@@ -574,7 +560,6 @@ class CacheService
         ];
 
     }//end handleFilter()
-
 
     /**
      * Handles a single filter used on a get collection api call. Specifically an filter where the value is an array.
@@ -735,7 +720,6 @@ class CacheService
 
     }//end handleFilterArray()
 
-
     /**
      * Will add entity filters to the filters array.
      * Will also check if we are allowed to filter & order with the given filters and order query params.
@@ -796,7 +780,6 @@ class CacheService
 
     }//end handleEntities()
 
-
     /**
      * Will check if we are allowed to order with the given $order query param.
      * Uses ObjectEntityRepository->getOrderParameters() to check if we are allowed to order, see eavService->handleSearch() $orderCheck.
@@ -841,7 +824,6 @@ class CacheService
 
     }//end handleOrderCheck()
 
-
     /**
      * Will check if we are allowed to filter on the given $filters in the query params.
      * Uses ObjectEntityRepository->getFilterParameters() to check if we are allowed to filter, see eavService->handleSearch() $filterCheck.
@@ -875,7 +857,6 @@ class CacheService
         return null;
 
     }//end handleFilterCheck()
-
 
     /**
      * Adds search filter to the query on MongoDB. Will use given $search string to search on entire object, unless
@@ -926,7 +907,6 @@ class CacheService
 
     }//end handleSearch()
 
-
     /**
      * Decides the pagination values.
      *
@@ -955,7 +935,6 @@ class CacheService
         return $filters;
 
     }//end setPagination()
-
 
     /**
      * Adds pagination variables to an array with the results we found with searchObjects().
@@ -992,7 +971,6 @@ class CacheService
         ];
 
     }//end handleResultPagination()
-
 
     /**
      * Put a single endpoint into the cache.
@@ -1039,7 +1017,6 @@ class CacheService
 
     }//end cacheEndpoint()
 
-
     /**
      * Removes an endpoint from the cache.
      *
@@ -1059,7 +1036,6 @@ class CacheService
         $collection->findOneAndDelete(['id' => $endpoint->getId()->toString()]);
 
     }//end removeEndpoint()
-
 
     /**
      * Get a single endpoint from the cache.
@@ -1088,7 +1064,6 @@ class CacheService
         return null;
 
     }//end getEndpoint()
-
 
     public function getEndpoints(array $filter): ?Endpoint
     {
@@ -1126,7 +1101,6 @@ class CacheService
         }
 
     }//end getEndpoints()
-
 
     /**
      * Put a single schema into the cache.
@@ -1170,7 +1144,6 @@ class CacheService
 
     }//end cacheShema()
 
-
     /**
      * Removes an Schema from the cache.
      *
@@ -1189,7 +1162,6 @@ class CacheService
 
     }//end removeSchema()
 
-
     /**
      * Get a single schema from the cache.
      *
@@ -1207,6 +1179,4 @@ class CacheService
         $collection = $this->client->schemas->json;
 
     }//end getSchema()
-
-
 }//end class

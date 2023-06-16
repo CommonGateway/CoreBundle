@@ -11,8 +11,6 @@ namespace CommonGateway\CoreBundle\Service;
  */
 class FileService
 {
-
-
     public function writeFile(string $baseFileName, string $contents): string
     {
         $stamp = microtime().getmypid();
@@ -22,12 +20,9 @@ class FileService
 
     }//end writeFile()
 
-
     public function removeFile($filename): void
     {
         unlink($filename);
 
     }//end removeFile()
-
-
 }//end class

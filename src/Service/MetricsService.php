@@ -40,7 +40,6 @@ class MetricsService
      */
     private ParameterBagInterface $parameters;
 
-
     /**
      * The constructor sets al needed variables.
      *
@@ -64,7 +63,6 @@ class MetricsService
         }
 
     }//end __construct()
-
 
     /**
      * Search for a given term.
@@ -143,7 +141,6 @@ class MetricsService
 
     }//end getAll()
 
-
     /**
      * Get metrics concerning errors.
      *
@@ -187,7 +184,6 @@ class MetricsService
 
     }//end getErrors()
 
-
     /**
      * Get metrics concerning plugins.
      *
@@ -224,7 +220,6 @@ class MetricsService
         return $metrics;
 
     }//end getPlugins()
-
 
     /**
      * Get metrics concerning objects.
@@ -278,6 +273,4 @@ class MetricsService
         return $metrics;
 
     }//end getObjects()
-
-
 }//end class

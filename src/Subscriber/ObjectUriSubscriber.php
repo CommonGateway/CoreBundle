@@ -32,7 +32,6 @@ class ObjectUriSubscriber implements EventSubscriberInterface
      */
     private SessionInterface $session;
 
-
     /**
      * The constructor sets al needed variables.
      *
@@ -47,7 +46,6 @@ class ObjectUriSubscriber implements EventSubscriberInterface
         $this->session      = $session;
 
     }//end __construct()
-
 
     /**
      * Todo: ???
@@ -64,13 +62,11 @@ class ObjectUriSubscriber implements EventSubscriberInterface
 
     }//end getSubscribedEvents()
 
-
     public function postUpdate(LifecycleEventArgs $args): void
     {
         $this->postPersist($args);
 
     }//end postUpdate()
-
 
     /**
      * Updates the cache whenever an object is put into the database.
@@ -92,6 +88,4 @@ class ObjectUriSubscriber implements EventSubscriberInterface
         }
 
     }//end postPersist()
-
-
 }//end class

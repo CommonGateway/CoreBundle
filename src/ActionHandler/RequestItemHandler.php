@@ -9,13 +9,11 @@ class RequestItemHandler implements ActionHandlerInterface
 
     private RequestService $requestService;
 
-
     public function __construct(RequestService $requestService)
     {
         $this->requestService = $requestService;
 
     }//end __construct()
-
 
     /**
      *  This function returns the required configuration as a [json-schema](https://json-schema.org/) array.
@@ -41,7 +39,6 @@ class RequestItemHandler implements ActionHandlerInterface
 
     }//end getConfiguration()
 
-
     /**
      * This function runs the search item service plugin.
      *
@@ -55,6 +52,4 @@ class RequestItemHandler implements ActionHandlerInterface
         return $this->requestService->itemRequestHandler($data, $configuration);
 
     }//end run()
-
-
 }//end class

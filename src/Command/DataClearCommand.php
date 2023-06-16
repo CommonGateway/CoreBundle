@@ -29,7 +29,6 @@ class DataClearCommand extends Command
 
     private ParameterBagInterface $parameterBagInterface;
 
-
     public function __construct(
         CacheService $cacheService,
         EntityManagerInterface $entityManagerInterface,
@@ -43,7 +42,6 @@ class DataClearCommand extends Command
 
     }//end __construct()
 
-
     protected function configure(): void
     {
         $this
@@ -51,7 +49,6 @@ class DataClearCommand extends Command
             ->setHelp('use with care, or better don\'t use at all');
 
     }//end configure()
-
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -103,6 +100,4 @@ class DataClearCommand extends Command
         return Command::SUCCESS;
 
     }//end execute()
-
-
 }//end class

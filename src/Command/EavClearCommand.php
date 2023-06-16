@@ -27,7 +27,6 @@ class EavClearCommand extends Command
      */
     private EavService $eavService;
 
-
     /**
      * @param EavService $eavService The eav Service
      */
@@ -37,7 +36,6 @@ class EavClearCommand extends Command
         parent::__construct();
 
     }//end __construct()
-
 
     /**
      * @return void
@@ -50,7 +48,6 @@ class EavClearCommand extends Command
 
     }//end configure()
 
-
     /**
      * @param InputInterface  $input
      * @param OutputInterface $output
@@ -62,6 +59,4 @@ class EavClearCommand extends Command
         return $this->eavService->deleteAllObjects();
 
     }//end execute()
-
-
 }//end class

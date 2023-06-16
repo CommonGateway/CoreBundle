@@ -24,7 +24,6 @@ class UninstallCommand extends Command
 
     private InstallationService $installationService;
 
-
     public function __construct(InstallationService $installationService)
     {
         $this->installationService = $installationService;
@@ -32,7 +31,6 @@ class UninstallCommand extends Command
         parent::__construct();
 
     }//end __construct()
-
 
     protected function configure(): void
     {
@@ -44,7 +42,6 @@ class UninstallCommand extends Command
             ->setHelp('This command allows you to create a OAS files for your EAV entities');
 
     }//end configure()
-
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -58,6 +55,4 @@ class UninstallCommand extends Command
         return Command::SUCCESS;
 
     }//end execute()
-
-
 }//end class

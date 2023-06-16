@@ -48,7 +48,6 @@ class CallService
 
     private LoggerInterface $callLogger;
 
-
     /**
      * The constructor sets al needed variables.
      *
@@ -76,7 +75,6 @@ class CallService
         $this->callLogger            = $callLogger;
 
     }//end __construct()
-
 
     /**
      * Writes the certificate and ssl keys to disk, returns the filenames.
@@ -109,7 +107,6 @@ class CallService
 
     }//end getCertificate()
 
-
     /**
      * Removes certificates and private keys from disk if they are not necessary anymore.
      *
@@ -135,7 +132,6 @@ class CallService
 
     }//end removeFiles()
 
-
     /**
      * Removes empty headers and sets array to string values.
      *
@@ -159,7 +155,6 @@ class CallService
         return $headers;
 
     }//end removeEmptyHeaders()
-
 
     /**
      * Handles the exception if the call triggered one.
@@ -185,7 +180,6 @@ class CallService
         return $this->handleEndpointsConfigIn($source, $endpoint, null, $exception, $responseContent ?? null);
 
     }//end handleCallException()
-
 
     /**
      * Calls a source according to given configuration.
@@ -270,7 +264,6 @@ class CallService
 
     }//end call()
 
-
     /**
      * Handles the endpointsConfig of a Source before we do an api-call.
      *
@@ -304,7 +297,6 @@ class CallService
         return $config;
 
     }//end handleEndpointsConfigOut()
-
 
     /**
      * Handles endpointConfig for a specific endpoint on a source and a specific configuration key like: 'query' or 'headers'.
@@ -353,7 +345,6 @@ class CallService
         return $config;
 
     }//end handleEndpointConfigOut()
-
 
     /**
      * Handles the endpointsConfig of a Source after we did an api-call.
@@ -423,7 +414,6 @@ class CallService
 
     }//end handleEndpointsConfigIn()
 
-
     /**
      * Will check if we have to handle EndpointConfigIn on an Exception response.
      *
@@ -469,7 +459,6 @@ class CallService
 
     }//end handleEndpointConfigInEx()
 
-
     /**
      * Handles endpointConfig for a specific endpoint on a source and a specific response property like: 'headers' or 'body'.
      * After we did an api-call.
@@ -511,7 +500,6 @@ class CallService
 
     }//end handleEndpointConfigIn()
 
-
     /**
      * Determine the content type of a response.
      *
@@ -534,7 +522,6 @@ class CallService
         return $contentType;
 
     }//end getContentType()
-
 
     /**
      * Decodes a response based on the source it belongs to.
@@ -594,7 +581,6 @@ class CallService
 
     }//end decodeResponse()
 
-
     /**
      * Determines the authentication procedure based upon a source.
      *
@@ -607,7 +593,6 @@ class CallService
         return $this->authenticationService->getAuthentication($source);
 
     }//end getAuthentication()
-
 
     /**
      * Fetches all pages for a source and merges the result arrays to one array.
@@ -668,6 +653,4 @@ class CallService
         return $results;
 
     }//end getAllResults()
-
-
 }//end class

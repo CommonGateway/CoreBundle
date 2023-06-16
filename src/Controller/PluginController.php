@@ -22,7 +22,6 @@ class PluginController extends AbstractController
      */
     private ComposerService $composerService;
 
-
     /**
      * The constructor sets al needed variables.
      *
@@ -36,7 +35,6 @@ class PluginController extends AbstractController
 
     }//end __construct()
 
-
     /**
      * @Route("/installed", methods={"GET"})
      */
@@ -49,7 +47,6 @@ class PluginController extends AbstractController
 
     }//end installedAction()
 
-
     /**
      * @Route("/audit", methods={"GET"})
      */
@@ -61,7 +58,6 @@ class PluginController extends AbstractController
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
 
     }//end auditAction()
-
 
     /**
      * @Route("/available", methods={"GET"})
@@ -78,7 +74,6 @@ class PluginController extends AbstractController
 
     }//end availableAction()
 
-
     /**
      * @Route("/view", methods={"GET"})
      */
@@ -93,7 +88,6 @@ class PluginController extends AbstractController
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
 
     }//end viewAction()
-
 
     /**
      * @Route("/installl", methods={"POST"})
@@ -112,7 +106,6 @@ class PluginController extends AbstractController
 
     }//end installlAction()
 
-
     /**
      * @Route("/upgrade", methods={"POST"})
      */
@@ -130,7 +123,6 @@ class PluginController extends AbstractController
 
     }//end upgradeAction()
 
-
     /**
      * @Route("/remove", methods={"POST"})
      */
@@ -147,6 +139,4 @@ class PluginController extends AbstractController
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
 
     }//end removeAction()
-
-
 }//end class

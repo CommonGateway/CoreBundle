@@ -36,7 +36,6 @@ class GatewayResourceService
      */
     private LoggerInterface $pluginLogger;
 
-
     /**
      * The constructor sets al needed variables.
      *
@@ -49,7 +48,6 @@ class GatewayResourceService
         $this->pluginLogger  = $pluginLogger;
 
     }//end __construct()
-
 
     /**
      * Get a schema by reference.
@@ -70,7 +68,6 @@ class GatewayResourceService
 
     }//end getSchema()
 
-
     /**
      * Get a mapping by reference.
      *
@@ -90,7 +87,6 @@ class GatewayResourceService
 
     }//end getMapping()
 
-
     /**
      * Get a source by reference.
      *
@@ -109,7 +105,6 @@ class GatewayResourceService
         return $source;
 
     }//end getSource()
-
 
     /**
      * Find all sources that have a location that match the specified url.
@@ -140,7 +135,6 @@ class GatewayResourceService
 
     }//end findSourcesForUrl()
 
-
     /**
      * Get a endpoint by reference.
      *
@@ -160,7 +154,6 @@ class GatewayResourceService
 
     }//end getEndpoint()
 
-
     /**
      * Get an action by reference.
      *
@@ -179,6 +172,4 @@ class GatewayResourceService
         return $action;
 
     }//end getAction()
-
-
 }//end class

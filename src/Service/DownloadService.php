@@ -38,7 +38,6 @@ class DownloadService
      */
     private Environment $twig;
 
-
     /**
      * The constructor sets al needed variables.
      *
@@ -56,7 +55,6 @@ class DownloadService
         $this->twig          = $twig;
 
     }//end __construct()
-
 
     /**
      * Renders a pdf.
@@ -91,7 +89,6 @@ class DownloadService
 
     }//end render()
 
-
     /**
      * Downloads a pdf.
      *
@@ -111,6 +108,4 @@ class DownloadService
         return $pdfWriter->output();
 
     }//end downloadPdf()
-
-
 }//end class

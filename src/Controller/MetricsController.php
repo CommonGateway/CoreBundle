@@ -26,7 +26,6 @@ class MetricsController extends AbstractController
      */
     private MetricsService $metricsService;
 
-
     /**
      * The constructor sets al needed variables.
      *
@@ -37,7 +36,6 @@ class MetricsController extends AbstractController
         $this->metricsService = $metricsService;
 
     }//end __construct()
-
 
     /**
      * Provides a metrics endpoint for prometheus to crawl.
@@ -56,6 +54,4 @@ class MetricsController extends AbstractController
         return new Response(json_encode(['metrics' => $metrics]), $status, ['Content-type' => 'application/json']);
 
     }//end metrics()
-
-
 }//end class

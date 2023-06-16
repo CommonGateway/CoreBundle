@@ -24,7 +24,6 @@ class UpgradeCommand extends Command
 
     private InstallationService $installationService;
 
-
     public function __construct(InstallationService $installationService)
     {
         $this->installationService = $installationService;
@@ -32,7 +31,6 @@ class UpgradeCommand extends Command
         parent::__construct();
 
     }//end __construct()
-
 
     protected function configure(): void
     {
@@ -45,7 +43,6 @@ class UpgradeCommand extends Command
 
     }//end configure()
 
-
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io     = new SymfonyStyle($input, $output);
@@ -56,6 +53,4 @@ class UpgradeCommand extends Command
         return $this->installationService->upgrade($io, $bundle, $data, $schema);
 
     }//end execute()
-
-
 }//end class

@@ -23,14 +23,12 @@ class ComposerUpdateCommand extends Command
 
     private $installationService;
 
-
     public function __construct(InstallationService $installationService)
     {
         $this->installationService = $installationService;
         parent::__construct();
 
     }//end __construct()
-
 
     protected function configure(): void
     {
@@ -45,7 +43,6 @@ class ComposerUpdateCommand extends Command
 
     }//end configure()
 
-
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->installationService->setStyle(new SymfonyStyle($input, $output));
@@ -59,6 +56,4 @@ class ComposerUpdateCommand extends Command
         return $this->installationService->composerupdate();
 
     }//end execute()
-
-
 }//end class

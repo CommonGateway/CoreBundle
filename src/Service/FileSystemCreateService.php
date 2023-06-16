@@ -34,7 +34,6 @@ class FileSystemCreateService
      */
     private SymfonyFilesystem $filesystem;
 
-
     /**
      * The class constructor.
      */
@@ -43,7 +42,6 @@ class FileSystemCreateService
         $this->filesystem = new SymfonyFilesystem();
 
     }//end __construct()
-
 
     /**
      * Writes a zip file in the local filesystem.
@@ -64,7 +62,6 @@ class FileSystemCreateService
 
     }//end createZipFileFromContent()
 
-
     /**
      * Removes a zip file from the local filesystem.
      *
@@ -77,7 +74,6 @@ class FileSystemCreateService
         $this->filesystem->remove($filename);
 
     }//end removeZipFile()
-
 
     /**
      * Connects to a Filesystem.
@@ -117,7 +113,6 @@ class FileSystemCreateService
 
     }//end openFtpFilesystem()
 
-
     /**
      * Opens a zip filesystem.
      *
@@ -136,6 +131,4 @@ class FileSystemCreateService
         return new Filesystem($adapter);
 
     }//end openZipFilesystem()
-
-
 }//end class

@@ -17,8 +17,6 @@ use function PHPUnit\Framework\throwException;
  */
 class ComposerService
 {
-
-
     private function arrayEnum(array $array, array $enum): bool
     {
         // Lets see if the values in the array arry pressent in the enum
@@ -31,7 +29,6 @@ class ComposerService
         return true;
 
     }//end arrayEnum()
-
 
     /**
      * Make a call to composer.
@@ -329,7 +326,6 @@ class ComposerService
 
     }//end composerCall()
 
-
     /**
      * Gets all installed plugins from the lock file.
      *
@@ -355,7 +351,6 @@ class ComposerService
         return $plugins['packages'];
 
     }//end getLockFile()
-
 
     /**
      * Show al packages installed trough composer.
@@ -383,7 +378,6 @@ class ComposerService
 
     }//end getAll()
 
-
     /**
      * Show a single package installed trough composer.
      *
@@ -399,7 +393,6 @@ class ComposerService
         return $this->composerCall('require', $options, $package);
 
     }//end require()
-
 
     /**
      * Show a single package installed trough composer.
@@ -417,7 +410,6 @@ class ComposerService
 
     }//end upgrade()
 
-
     /**
      * Show a single package installed trough composer.
      *
@@ -433,7 +425,6 @@ class ComposerService
         return $this->composerCall('remove', $options, $package);
 
     }//end remove()
-
 
     /**
      * Show a single package installed trough composer.
@@ -482,7 +473,6 @@ class ComposerService
 
     }//end getSingle()
 
-
     /**
      * Search for a given term.
      *
@@ -519,7 +509,6 @@ class ComposerService
 
     }//end search()
 
-
     /**
      * Search for a given term.
      *
@@ -534,6 +523,4 @@ class ComposerService
         return $this->composerCall('audit', $options);
 
     }//end audit()
-
-
 }//end class

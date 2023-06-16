@@ -22,14 +22,12 @@ class ValidateValueCommand extends Command
 
     private $installationService;
 
-
     public function __construct(InstallationService $installationService)
     {
         $this->installationService = $installationService;
         parent::__construct();
 
     }//end __construct()
-
 
     protected function configure(): void
     {
@@ -39,7 +37,6 @@ class ValidateValueCommand extends Command
 
     }//end configure()
 
-
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->installationService->setStyle(new SymfonyStyle($input, $output));
@@ -47,6 +44,4 @@ class ValidateValueCommand extends Command
         return $this->installationService->validateValues();
 
     }//end execute()
-
-
 }//end class

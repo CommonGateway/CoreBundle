@@ -22,14 +22,12 @@ class CacheClearCommand extends Command
 
     private $cacheService;
 
-
     public function __construct(CacheService $cacheService)
     {
         $this->cacheService = $cacheService;
         parent::__construct();
 
     }//end __construct()
-
 
     protected function configure(): void
     {
@@ -39,7 +37,6 @@ class CacheClearCommand extends Command
 
     }//end configure()
 
-
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->cacheService->setStyle(new SymfonyStyle($input, $output));
@@ -47,6 +44,4 @@ class CacheClearCommand extends Command
         return $this->cacheService->clear();
 
     }//end execute()
-
-
 }//end class

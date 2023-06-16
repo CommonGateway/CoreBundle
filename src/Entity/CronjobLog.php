@@ -22,12 +22,9 @@ class CronjobLog
      */
     private $id;
 
-
     public function getId(): ?int
     {
         return $this->id;
 
     }//end getId()
-
-
 }//end class

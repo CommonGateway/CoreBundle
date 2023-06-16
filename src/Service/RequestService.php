@@ -137,7 +137,6 @@ class RequestService
      */
     private DownloadService $downloadService;
 
-
     /**
      * The constructor sets al needed variables.
      *
@@ -189,7 +188,6 @@ class RequestService
         $this->downloadService     = $downloadService;
 
     }//end __construct()
-
 
     /**
      * Determines the right content type and serializes the data accordingly.
@@ -243,7 +241,6 @@ class RequestService
 
     }//end serializeData()
 
-
     /**
      * A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.
      * This function will not.
@@ -275,7 +272,6 @@ class RequestService
         return $vars;
 
     }//end realRequestQueryAll()
-
 
     /**
      * This function adds a single query param to the given $vars array. ?$name=$value
@@ -310,7 +306,6 @@ class RequestService
         }
 
     }//end recursiveRequestQueryKey()
-
 
     /**
      * Get the ID from given parameters.
@@ -356,7 +351,6 @@ class RequestService
         return false;
 
     }//end getId()
-
 
     /**
      * Get the schema from given parameters returns false if no schema could be established.
@@ -421,7 +415,6 @@ class RequestService
         return false;
 
     }//end getSchema()
-
 
     /**
      * @param array $data          The data from the call
@@ -508,7 +501,6 @@ class RequestService
 
     }//end proxyHandler()
 
-
     /**
      * Get a scopes array for the current user (or of the anonymus if no user s logged in).
      *
@@ -529,7 +521,6 @@ class RequestService
         return [];
 
     }//end getScopes()
-
 
     /**
      * Handles incomming requests and is responsible for generating a response.
@@ -920,7 +911,6 @@ class RequestService
 
     }//end requestHandler()
 
-
     /**
      * Gets the application configuration 'in' and/or 'out' for the current endpoint.
      *
@@ -954,7 +944,6 @@ class RequestService
 
     }//end getConfigInOutOrGlobal()
 
-
     /**
      * Gets the application configuration 'in' and/or 'out' for the current endpoint.
      * First checks if the current/active application has configuration.
@@ -985,7 +974,6 @@ class RequestService
 
     }//end getAppEndpointConfig()
 
-
     /**
      * Gets the path (/endpoint) of the currently used Endpoint, using the path array of the current Endpoint.
      *
@@ -1008,7 +996,6 @@ class RequestService
         return '/'.implode('/', $pathArray);
 
     }//end getCurrentEndpoint()
-
 
     /**
      * If embedded should be shown or not.
@@ -1033,7 +1020,6 @@ class RequestService
         return $filters;
 
     }//end queryAppEndpointConfig()
-
 
     /**
      * Handle the Application Endpoint Configuration for embedded. If embedded should be shown or not.
@@ -1072,7 +1058,6 @@ class RequestService
 
     }//end shouldWeUnsetEmbedded()
 
-
     /**
      * If embedded should be shown or not.
      *
@@ -1093,7 +1078,6 @@ class RequestService
         return $result;
 
     }//end checkEmbedded()
-
 
     /**
      * @TODO
@@ -1145,7 +1129,6 @@ class RequestService
         $result['_self'] = $resultMetadataSelf;
 
     }//end handleMetadataSelf()
-
 
     /**
      * @TODO use and fix/clean-up this function or just remove this function?
@@ -1210,7 +1193,6 @@ class RequestService
 
     }//end itemRequestHandler()
 
-
     /**
      * Determines the proxy source from configuration, then use proxy handler to proxy the request.
      *
@@ -1228,7 +1210,6 @@ class RequestService
         return $data;
 
     }//end proxyRequestHandler()
-
 
     /**
      * Creating the response object.
@@ -1252,6 +1233,4 @@ class RequestService
         );
 
     }//end createResponse()
-
-
 }//end class

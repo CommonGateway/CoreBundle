@@ -65,7 +65,6 @@ class EndpointService
      */
     private ?Endpoint $endpoint = null;
 
-
     /**
      * The constructor sets al needed variables.
      *
@@ -90,7 +89,6 @@ class EndpointService
         $this->logger          = $endpointLogger;
 
     }//end __construct()
-
 
     /**
      * Handle the request afther it commes in through the ZZ controller.
@@ -167,7 +165,6 @@ class EndpointService
 
     }//end handleRequest()
 
-
     /**
      * Gets the accept type based on the request.
      *
@@ -232,7 +229,6 @@ class EndpointService
 
     }//end getAcceptType()
 
-
     /**
      * Decodes the body of the request based upon the content-type header, accept header or endpoint default.
      *
@@ -265,7 +261,6 @@ class EndpointService
 
     }//end decodeBody()
 
-
     /**
      * Gets the endpoint based on the request.
      *
@@ -286,7 +281,6 @@ class EndpointService
         throw new NotFoundHttpException('No proper endpoint could be determined');
 
     }//end getEndpoint()
-
 
     /**
      * Builds a parameter array from the request.
@@ -336,7 +330,6 @@ class EndpointService
 
     }//end getParametersFromRequest()
 
-
     /**
      * Gets and returns the correct path array for a normal endpoint.
      *
@@ -367,7 +360,6 @@ class EndpointService
         return $combinedArray;
 
     }//end getNormalPath()
-
 
     /**
      * Gets and returns the correct path array for a proxy endpoint.
@@ -404,6 +396,4 @@ class EndpointService
         return array_combine($path, $explodedPathRaw);
 
     }//end getProxyPath()
-
-
 }//end class
