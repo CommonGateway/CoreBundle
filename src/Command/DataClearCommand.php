@@ -61,7 +61,7 @@ class DataClearCommand extends Command
 
     /**
      * Configures this command.
-     * 
+     *
      * @return void Nothng.
      */
     protected function configure(): void
@@ -75,7 +75,7 @@ class DataClearCommand extends Command
 
     /**
      * Executes this command.
-     * 
+     *
      * @return int 1 if succsesfull 0 if not.
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
