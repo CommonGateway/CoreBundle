@@ -36,7 +36,6 @@ class SchemaService
      */
     private SessionInterface $session;
 
-
     /**
      * @param EntityManagerInterface $entityManager The entity manager
      */
@@ -48,7 +47,6 @@ class SchemaService
         $this->logger        = $schemaLogger;
 
     }//end __construct()
-
 
     /**
      * Validates the  objects in the EAV setup.
@@ -71,7 +69,6 @@ class SchemaService
 
     }//end validateObjects()
 
-
     /**
      * Validates the  objects in the EAV setup.
      *
@@ -91,7 +88,6 @@ class SchemaService
         }
 
     }//end validateValues()
-
 
     /**
      * Validates the schemas in the EAV setup.
@@ -113,7 +109,6 @@ class SchemaService
         return 1;
 
     }//end validateSchemas()
-
 
     /**
      * Validates a single schema.
@@ -169,7 +164,6 @@ class SchemaService
 
     }//end validateSchema()
 
-
     /**
      * Validates a single atribute.
      *
@@ -211,7 +205,6 @@ class SchemaService
 
     }//end validateAtribute()
 
-
     /**
      * Handles forced id's on object entities.
      *
@@ -220,7 +213,7 @@ class SchemaService
      *
      * @return ObjectEntity The PERSISTED object entity on the forced id
      */
-    public function hydrate(ObjectEntity $objectEntity, array $hydrate=[]): ObjectEntity
+    public function hydrate(ObjectEntity $objectEntity, array $hydrate = []): ObjectEntity
     {
         // This savety dosn't make sense but we need it.
         if ($objectEntity->getEntity() === null) {
@@ -336,6 +329,4 @@ class SchemaService
         return $objectEntity;
 
     }//end hydrate()
-
-
 }//end class

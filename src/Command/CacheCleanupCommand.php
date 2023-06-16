@@ -68,6 +68,4 @@ class CacheCleanupCommand extends Command
         return Command::SUCCESS;
 
     }//end execute()
-
-
 }//end class

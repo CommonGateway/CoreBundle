@@ -40,7 +40,6 @@ class MetricsService
      */
     private ParameterBagInterface $parameters;
 
-
     /**
      * The constructor sets al needed variables.
      *
@@ -64,7 +63,6 @@ class MetricsService
         }
 
     }//end __construct()
-
 
     /**
      * Search for a given term.
@@ -119,16 +117,16 @@ class MetricsService
                 'value' => $this->entityManager->getRepository('App:Application')->count([]),
             ],
             [
+                // todo: count (request) monologs with unique request id
                 'name'  => 'app_requests',
-            // @Todo: count (request) monologs with unique request id.
+                // todo: should never get lower
                 'type'  => 'counter',
-            // @Todo: should never get lower.
                 'help'  => 'The total amount of incomming requests handled by this gateway',
                 'value' => $requests,
             ],
             [
+                // todo: count (call) monologs with unique call id
                 'name'  => 'app_calls',
-            // @Todo: count (call) monologs with unique call id.
                 'type'  => 'counter',
                 'help'  => 'The total amount of outgoing calls handled by this gateway',
                 'value' => $calls,
@@ -142,7 +140,6 @@ class MetricsService
         return array_merge($metrics, $this->getObjects());
 
     }//end getAll()
-
 
     /**
      * Get metrics concerning errors.
@@ -187,7 +184,6 @@ class MetricsService
 
     }//end getErrors()
 
-
     /**
      * Get metrics concerning plugins.
      *
@@ -224,7 +220,6 @@ class MetricsService
         return $metrics;
 
     }//end getPlugins()
-
 
     /**
      * Get metrics concerning objects.
@@ -278,6 +273,4 @@ class MetricsService
         return $metrics;
 
     }//end getObjects()
-
-
 }//end class

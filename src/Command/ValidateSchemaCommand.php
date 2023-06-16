@@ -69,6 +69,4 @@ class ValidateSchemaCommand extends Command
         return $this->installationService->validateSchemas();
 
     }//end execute()
-
-
 }//end class

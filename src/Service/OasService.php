@@ -29,7 +29,6 @@ class OasService
      */
     private ParameterBagInterface $parameters;
 
-
     /**
      * @param EntityManagerInterface $entityManager The Entity Manager
      */
@@ -41,7 +40,6 @@ class OasService
         $this->parameters    = $parameters;
 
     }//end __construct()
-
 
     /**
      * Create an OAS documentation for a specific application.
@@ -80,7 +78,6 @@ class OasService
 
     }//end createOas()
 
-
     /**
      * Adds the endpoints to an OAS Array.
      *
@@ -98,7 +95,6 @@ class OasService
         return $pathArray;
 
     }//end getPathArray()
-
 
     /**
      * Adds the endpoints to an OAS Array.
@@ -155,7 +151,6 @@ class OasService
         return $oas;
 
     }//end addEndpoints()
-
 
     /**
      * Gets the operations for a given endpoint.
@@ -220,7 +215,6 @@ class OasService
 
     }//end addParameters()
 
-
     /**
      * Gets the operations for a given endpoint.
      *
@@ -264,7 +258,6 @@ class OasService
 
     }//end setCollectionResponse()
 
-
     /**
      * Gets the operations for a given endpoint.
      *
@@ -272,7 +265,7 @@ class OasService
      *
      * @return array The operations for the given endpoint
      */
-    private function getEndpointOperations(Endpoint $endpoint, string $method=null, string $operationId): array
+    private function getEndpointOperations(Endpoint $endpoint, string $method = null, string $operationId): array
     {
         $operations = [];
 
@@ -396,7 +389,6 @@ class OasService
 
     }//end getEndpointOperations()
 
-
     /**
      * Get the schema's for a given endpoint.
      *
@@ -416,7 +408,6 @@ class OasService
 
     }//end getEndpointSchemas()
 
-
     /**
      * Add the security to an OAS array.
      *
@@ -429,6 +420,4 @@ class OasService
         return $oas;
 
     }//end addSecurity()
-
-
 }//end class

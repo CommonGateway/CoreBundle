@@ -54,7 +54,6 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
 
     }//end getSubscribedEvents()
 
-
     /**
      * Checks whether we should check attributes and entities for connections.
      *
@@ -109,12 +108,9 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
 
     }//end postPersist()
 
-
     public function postUpdate(LifecycleEventArgs $args): void
     {
         $this->postPersist($args);
 
     }//end postUpdate()
-
-
 }//end class

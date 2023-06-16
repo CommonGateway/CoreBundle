@@ -120,6 +120,4 @@ class DataClearCommand extends Command
         return Command::SUCCESS;
 
     }//end execute()
-
-
 }//end class

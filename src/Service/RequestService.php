@@ -24,8 +24,6 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Exception\NotAcceptableHttpException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
-use CommonGateway\CoreBundle\Service\MappingService;
-use CommonGateway\CoreBundle\Service\GatewayResourceService;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -137,13 +135,11 @@ class RequestService
      */
     private DownloadService $downloadService;
 
-
     /**
      * The constructor sets al needed variables.
      *
      * @param EntityManagerInterface   $entityManager
-     * @param CacheService             $cacheService
-     * @param GatewayResourceService   $gatewayResourceService
+     * @param GatewayResourceService   $resourceService
      * @param MappingService           $mappingService
      * @param CacheService             $cacheService
      * @param ResponseService          $responseService
@@ -190,7 +186,6 @@ class RequestService
 
     }//end __construct()
 
-
     /**
      * Determines the right content type and serializes the data accordingly.
      *
@@ -224,7 +219,7 @@ class RequestService
             $content = \Safe\json_encode($data);
         }
 
-        // @TODO: This is preparation for checking if the accept header is allowed by the endpoint.
+        // @TODO: Preparation for checking if accept header is allowed. We probably should be doing this in the EndpointService instead?
         // if ($endpoint instanceof Endpoint
         // && empty($endpoint->getContentTypes()) === false
         // && in_array($accept, $endpoint->getContentTypes()) === false
@@ -243,7 +238,6 @@ class RequestService
 
     }//end serializeData()
 
-
     /**
      * A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.
      * This function will not.
@@ -253,7 +247,7 @@ class RequestService
      *
      * @return array An array with all query parameters.
      */
-    public function realRequestQueryAll(string $method='get', ?string $queryString=''): array
+    public function realRequestQueryAll(string $method = 'get', ?string $queryString = ''): array
     {
         $vars = [];
         if (strtolower($method) === 'get' && empty($this->data['querystring']) === true && empty($queryString) === true) {
@@ -279,7 +273,6 @@ class RequestService
         return $vars;
 
     }//end realRequestQueryAll()
-
 
     /**
      * This function adds a single query param to the given $vars array. ?$name=$value
@@ -314,7 +307,6 @@ class RequestService
         }
 
     }//end recursiveRequestQueryKey()
-
 
     /**
      * Get the ID from given parameters.
@@ -360,7 +352,6 @@ class RequestService
         return false;
 
     }//end getId()
-
 
     /**
      * Get the schema from given parameters returns false if no schema could be established.
@@ -426,14 +417,13 @@ class RequestService
 
     }//end getSchema()
 
-
     /**
      * @param array $data          The data from the call
      * @param array $configuration The configuration from the call
      *
      * @return Response The data as returned bij the origanal source
      */
-    public function proxyHandler(array $data, array $configuration, ?Source $proxy=null): Response
+    public function proxyHandler(array $data, array $configuration, ?Source $proxy = null): Response
     {
         $this->data          = $data;
         $this->configuration = $configuration;
@@ -512,7 +502,6 @@ class RequestService
 
     }//end proxyHandler()
 
-
     /**
      * Get a scopes array for the current user (or of the anonymus if no user s logged in).
      *
@@ -533,7 +522,6 @@ class RequestService
         return [];
 
     }//end getScopes()
-
 
     /**
      * Handles incomming requests and is responsible for generating a response.
@@ -559,13 +547,6 @@ class RequestService
 
         // Need to do something about the _
         if (isset($this->data['querystring']) === true) {
-            // $query = explode('&',$this->data['querystring']);
-            // foreach ($query as $row) {
-            // $row = explode('=', $row);
-            // $key = $row[0];
-            // $value = $row[1];
-            // $filters[$key] = $value;
-            // }
             $filters = $this->realRequestQueryAll($this->data['method']);
 
             if (isset($appEndpointConfig['in']['query']) === true) {
@@ -576,8 +557,8 @@ class RequestService
         // Get the ID.
         $this->identification = $this->getId();
 
-        // If we have an ID we can get an entity to work with (except on gets we handle those from cache).
-        if (isset($this->identification) === true && $this->identification && $this->data['method'] != 'GET') {
+        // If we have an ID we can get an Object to work with (except on gets we handle those from cache).
+        if (isset($this->identification) === true && empty($this->identification) === false && $this->data['method'] != 'GET') {
             $this->object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->identification]);
         }
 
@@ -606,11 +587,11 @@ class RequestService
             $this->session->set('schema', $this->schema->getId()->toString());
         }
 
-        // Bit os savety cleanup <- dit zou eigenlijk in de hydrator moeten gebeuren.
+        // Bit os safety cleanup <- dit zou eigenlijk in de hydrator moeten gebeuren.
         // unset($this->content['id']);
         unset($this->content['_id']);
-        unset($this->content['_self']);
         // todo: i don't think this does anything useful?
+        unset($this->content['_self']);
         unset($this->content['_schema']);
 
         // todo: make this a function, like eavService->getRequestExtend()
@@ -657,7 +638,7 @@ class RequestService
         switch ($this->data['method']) {
         case 'GET':
             // We have an id (so single object).
-            if (isset($this->identification) === true) {
+            if (isset($this->identification) === true && empty($this->identification) === false) {
                 $this->session->set('object', $this->identification);
                 $result = $this->cacheService->getObject($this->identification);
 
@@ -735,14 +716,14 @@ class RequestService
                     $this->entityManager->persist($this->object);
                     $this->entityManager->flush();
                     $this->session->set('object', $this->object->getId()->toString());
+                    // @todo this is hacky, the above should already do this
                     $this->cacheService->cacheObject($this->object);
-                    // @todo this is hacky, the above schould alredy do this.
                     $this->entityManager->flush();
                 } else {
                     $this->entityManager->persist($this->object);
                     $this->session->set('object', $this->object->getId()->toString());
+                    // @todo this is hacky, the above should already do this
                     $this->cacheService->cacheObject($this->object);
-                    // @todo this is hacky, the above schould alredy do this.
                 }
             } else {
                 // Use validation to throw an error..
@@ -925,7 +906,6 @@ class RequestService
 
     }//end requestHandler()
 
-
     /**
      * Gets the application configuration 'in' and/or 'out' for the current endpoint.
      *
@@ -953,12 +933,12 @@ class RequestService
             if (array_key_exists('global', $applicationConfig) === true && array_key_exists($type, $applicationConfig['global'])) {
                 // Do global last, so that we allow overwriting the global options for specific endpoints ^.
                 $appEndpointConfig[$type] = $applicationConfig['global'][$type];
-                continue;
             }
         }
 
-    }//end getConfigInOutOrGlobal()
+        return $appEndpointConfig;
 
+    }//end getConfigInOutOrGlobal()
 
     /**
      * Gets the application configuration 'in' and/or 'out' for the current endpoint.
@@ -990,7 +970,6 @@ class RequestService
 
     }//end getAppEndpointConfig()
 
-
     /**
      * Gets the path (/endpoint) of the currently used Endpoint, using the path array of the current Endpoint.
      *
@@ -1013,7 +992,6 @@ class RequestService
         return '/'.implode('/', $pathArray);
 
     }//end getCurrentEndpoint()
-
 
     /**
      * If embedded should be shown or not.
@@ -1038,7 +1016,6 @@ class RequestService
         return $filters;
 
     }//end queryAppEndpointConfig()
-
 
     /**
      * Handle the Application Endpoint Configuration for embedded. If embedded should be shown or not.
@@ -1066,9 +1043,7 @@ class RequestService
                 foreach ($result['results'] as $key => $item) {
                     $result['results'][$key] = $this->checkEmbedded($item);
                 }
-            }
-
-            if (isset($result['results']) === false) {
+            } else {
                 $result = $this->checkEmbedded($result);
             }
         }//end if
@@ -1076,7 +1051,6 @@ class RequestService
         return $result;
 
     }//end shouldWeUnsetEmbedded()
-
 
     /**
      * If embedded should be shown or not.
@@ -1098,7 +1072,6 @@ class RequestService
         return $result;
 
     }//end checkEmbedded()
-
 
     /**
      * @TODO
@@ -1151,71 +1124,6 @@ class RequestService
 
     }//end handleMetadataSelf()
 
-
-    /**
-     * @TODO use and fix/clean-up this function or just remove this function?
-     *
-     * @param array $data          The data from the call
-     * @param array $configuration The configuration from the call
-     *
-     * @return array The modified data
-     */
-    public function itemRequestHandler(array $data, array $configuration): array
-    {
-        $this->data          = $data;
-        $this->configuration = $configuration;
-
-        $method  = $this->data['request']->getMethod();
-        $content = $this->data['request']->getContent();
-
-        // Lets see if we have an object.
-        if (array_key_exists('id', $this->data) === true) {
-            $this->identification = $data['id'];
-            $object               = $this->cacheService->getObject($data['id']);
-            if ($object === null) {
-                // Throw not found.
-                return [];
-            }
-
-            $this->object = $object;
-        }//end if
-
-        switch ($method) {
-        case 'GET':
-            break;
-        case 'PUT':
-            if ($this->object->validate($content) && $this->object->hydrate($content, true)) {
-                $this->entityManager->persist($this->object);
-                break;
-            }
-
-            // @TODO Use validation to throw an error.
-            break;
-            break;
-        case 'PATCH':
-            if ($this->object->hydrate($content) && $this->object->validate()) {
-                $this->entityManager->persist($this->object);
-                break;
-            }
-
-            // @TODO Use validation to throw an error.
-            break;
-        case 'DELETE':
-            $this->entityManager->remove($this->object);
-
-            return new Response('', '202');
-            break;
-        default:
-            break;
-        }//end switch
-
-        $this->entityManager->flush();
-
-        return $this->createResponse($this->object);
-
-    }//end itemRequestHandler()
-
-
     /**
      * Determines the proxy source from configuration, then use proxy handler to proxy the request.
      *
@@ -1233,7 +1141,6 @@ class RequestService
         return $data;
 
     }//end proxyRequestHandler()
-
 
     /**
      * Creating the response object.
@@ -1257,6 +1164,4 @@ class RequestService
         );
 
     }//end createResponse()
-
-
 }//end class

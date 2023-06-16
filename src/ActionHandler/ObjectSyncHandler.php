@@ -9,13 +9,11 @@ class ObjectSyncHandler implements ActionHandlerInterface
 
     private ObjectSyncService $service;
 
-
     public function __construct(ObjectSyncService $service)
     {
         $this->service = $service;
 
     }//end __construct()
-
 
     /**
      *  This function returns the required configuration as a [json-schema](https://json-schema.org/) array.
@@ -35,7 +33,6 @@ class ObjectSyncHandler implements ActionHandlerInterface
 
     }//end getConfiguration()
 
-
     /**
      * This function runs the search request service plugin.
      *
@@ -49,6 +46,4 @@ class ObjectSyncHandler implements ActionHandlerInterface
         return $this->service->objectSyncHandler($data, $configuration);
 
     }//end run()
-
-
 }//end class

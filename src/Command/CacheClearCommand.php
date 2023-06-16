@@ -69,6 +69,4 @@ class CacheClearCommand extends Command
         return $this->cacheService->clear();
 
     }//end execute()
-
-
 }//end class

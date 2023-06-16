@@ -38,7 +38,6 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
      */
     private SessionInterface $session;
 
-
     public function __construct(
         CacheService $cacheService,
         EntityManagerInterface $entityManager,
@@ -77,7 +76,6 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
 
     }//end postUpdate()
 
-
     /**
      * Updates the chache whenever an object is put into the database.
      *
@@ -109,7 +107,6 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         }
 
     }//end postPersist()
-
 
     /**
      * Remove objects from the cache after they are removed from the database.
@@ -143,6 +140,4 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         }
 
     }//end preRemove()
-
-
 }//end class

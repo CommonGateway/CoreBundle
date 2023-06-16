@@ -42,14 +42,12 @@ class AuthenticationService
 
     private FileService $fileService;
 
-
     public function __construct(ParameterBagInterface $parameterBag)
     {
         $this->parameterBag = $parameterBag;
         $this->fileService  = new FileService();
 
     }//end __construct()
-
 
     /**
      * Converts a string RSA key to a JWK via the filesystem.
@@ -69,7 +67,6 @@ class AuthenticationService
         return $jwk;
 
     }//end convertRSAKeyToJWK()
-
 
     /**
      * Converts an RSA private key to a JWK.
@@ -100,7 +97,6 @@ class AuthenticationService
 
     }//end convertRSAtoJWK()
 
-
     /**
      * Determines the algorithm for the JWT token to create from the source.
      *
@@ -117,7 +113,6 @@ class AuthenticationService
         }
 
     }//end getAlgorithm()
-
 
     /**
      * Gets a JWK for a source based on the algorithm of the source.
@@ -142,7 +137,6 @@ class AuthenticationService
 
     }//end getJWK()
 
-
     /**
      * Gets an application id for a source.
      *
@@ -159,7 +153,6 @@ class AuthenticationService
         return $source->getId();
 
     }//end getApplicationId()
-
 
     /**
      * Creates the JWT payload to identify at an external source.
@@ -184,7 +177,6 @@ class AuthenticationService
         );
 
     }//end getJwtPayload()
-
 
     /**
      * Creates a JWT token to identify with on the application.
@@ -213,7 +205,6 @@ class AuthenticationService
         return $jwsSerializer->serialize($jws, 0);
 
     }//end createJwtToken()
-
 
     /**
      * Create a JWT token from Component settings.
@@ -246,7 +237,6 @@ class AuthenticationService
 
     }//end getJwtToken()
 
-
     /**
      * Writes the certificate and ssl keys to disk, returns the filenames.
      *
@@ -273,7 +263,6 @@ class AuthenticationService
 
     }//end getCertificate()
 
-
     /**
      * Removes certificates and private keys from disk if they are not necessary anymore.
      *
@@ -296,7 +285,6 @@ class AuthenticationService
         }
 
     }//end removeFiles()
-
 
     /**
      * Sends a post with auth info and certificate(s) to fetch a jwt token.
@@ -329,7 +317,6 @@ class AuthenticationService
 
     }//end getVrijbrpToken()
 
-
     /**
      * Sends a post with auth info to fetch a jwt token.
      *
@@ -346,7 +333,6 @@ class AuthenticationService
         return json_decode($response->getBody()->getContents(), true)['accessToken'];
 
     }//end getPinkToken()
-
 
     /**
      * Sends a post with authentication info to an OAuth Token Endpoint to fetch an authentication token.
@@ -400,7 +386,6 @@ class AuthenticationService
 
     }//end getOauthToken()
 
-
     /**
      * Checks from which type of auth we need to fetch a token from.
      *
@@ -423,7 +408,6 @@ class AuthenticationService
         return null;
 
     }//end getTokenFromUrl()
-
 
     /**
      * Gets a hmac token.
@@ -456,7 +440,6 @@ class AuthenticationService
         return 'hmac '.$websiteKey.':'.$hmac.':'.$nonce.':'.$time;
 
     }//end getHmacToken()
-
 
     /**
      * Gets the authentication values through various checks.
@@ -506,7 +489,6 @@ class AuthenticationService
 
     }//end getAuthentication()
 
-
     /**
      * Decides if the provided JWT token is signed with the RS512 Algorithm.
      *
@@ -527,7 +509,6 @@ class AuthenticationService
         }
 
     }//end checkRS512()
-
 
     /**
      * Decides if the provided JWT token is signed with the HS256 Algorithm.
@@ -550,7 +531,6 @@ class AuthenticationService
 
     }//end checkHS256()
 
-
     /**
      * Decides if the provided JWT token is signed with the HS256 Algorithm.
      *
@@ -571,7 +551,6 @@ class AuthenticationService
         }
 
     }//end checkRS256()
-
 
     /**
      * Checks the algorithm of the JWT token and decides how to generate a JWK from the provided public key.
@@ -605,7 +584,6 @@ class AuthenticationService
 
     }//end checkHeadersAndGetJWK()
 
-
     /**
      * Verifies the JWT token and returns the payload if the JWT token is valid.
      *
@@ -632,7 +610,6 @@ class AuthenticationService
         }
 
     }//end verifyJWTToken()
-
 
     /**
      * Serializes a user to be used by the token authenticator.
@@ -667,6 +644,4 @@ class AuthenticationService
         return $payload;
 
     }//end serializeUser()
-
-
 }//end class

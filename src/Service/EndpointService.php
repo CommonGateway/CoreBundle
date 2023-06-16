@@ -65,7 +65,6 @@ class EndpointService
      */
     private ?Endpoint $endpoint = null;
 
-
     /**
      * The constructor sets al needed variables.
      *
@@ -90,7 +89,6 @@ class EndpointService
         $this->logger          = $endpointLogger;
 
     }//end __construct()
-
 
     /**
      * Handle the request afther it commes in through the ZZ controller.
@@ -167,7 +165,6 @@ class EndpointService
 
     }//end handleRequest()
 
-
     /**
      * Gets the accept type based on the request.
      *
@@ -232,7 +229,6 @@ class EndpointService
 
     }//end getAcceptType()
 
-
     /**
      * Decodes the body of the request based upon the content-type header, accept header or endpoint default.
      *
@@ -265,7 +261,6 @@ class EndpointService
 
     }//end decodeBody()
 
-
     /**
      * Gets the endpoint based on the request.
      *
@@ -287,7 +282,6 @@ class EndpointService
 
     }//end getEndpoint()
 
-
     /**
      * Builds a parameter array from the request.
      *
@@ -295,7 +289,7 @@ class EndpointService
      *
      * @return array The parameter array
      */
-    private function getParametersFromRequest(?array $parameters=[]): array
+    private function getParametersFromRequest(?array $parameters = []): array
     {
         // Lets make sure that we always have a path.
         $this->logger->debug('Get the raw path');
@@ -336,7 +330,6 @@ class EndpointService
 
     }//end getParametersFromRequest()
 
-
     /**
      * Gets and returns the correct path array for a normal endpoint.
      *
@@ -353,8 +346,8 @@ class EndpointService
         } catch (Exception $exception) {
             $this->logger->error('EndpointService->getNormalPath(): $exception');
 
-            array_pop($path);
             // Todo: not sure why this is here, if someone does now, please add inline comments!
+            array_pop($path);
             $combinedArray = array_combine($path, explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
         }
 
@@ -367,7 +360,6 @@ class EndpointService
         return $combinedArray;
 
     }//end getNormalPath()
-
 
     /**
      * Gets and returns the correct path array for a proxy endpoint.
@@ -404,6 +396,4 @@ class EndpointService
         return array_combine($path, $explodedPathRaw);
 
     }//end getProxyPath()
-
-
 }//end class

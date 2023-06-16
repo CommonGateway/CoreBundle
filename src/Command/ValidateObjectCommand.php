@@ -69,6 +69,4 @@ class ValidateObjectCommand extends Command
         return $this->installationService->validateObjects();
 
     }//end execute()
-
-
 }//end class

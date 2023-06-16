@@ -69,6 +69,4 @@ class ValidateValueCommand extends Command
         return $this->installationService->validateValues();
 
     }//end execute()
-
-
 }//end class

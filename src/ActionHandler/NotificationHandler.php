@@ -12,7 +12,6 @@ class NotificationHandler implements ActionHandlerInterface
      */
     private NotificationService $notificationService;
 
-
     /**
      * @param NotificationService $notificationService The RequestService.
      */
@@ -21,7 +20,6 @@ class NotificationHandler implements ActionHandlerInterface
         $this->notificationService = $notificationService;
 
     }//end __construct()
-
 
     /**
      *  This function returns the required configuration as a [json-schema](https://json-schema.org/) array.
@@ -56,7 +54,6 @@ class NotificationHandler implements ActionHandlerInterface
 
     }//end getConfiguration()
 
-
     /**
      * This function runs the notification service.
      *
@@ -70,6 +67,4 @@ class NotificationHandler implements ActionHandlerInterface
         return $this->notificationService->notificationHandler($data, $configuration);
 
     }//end run()
-
-
 }//end class

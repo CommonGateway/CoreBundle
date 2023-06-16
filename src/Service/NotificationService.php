@@ -53,7 +53,6 @@ class NotificationService
      */
     private GatewayResourceService $resourceService;
 
-
     /**
      * The constructor sets al needed variables.
      *
@@ -74,7 +73,6 @@ class NotificationService
         $this->resourceService = $resourceService;
 
     }//end __construct()
-
 
     /**
      * Handles incoming notification api-call and is responsible for generating a response.
@@ -117,7 +115,6 @@ class NotificationService
 
     }//end notificationHandler()
 
-
     /**
      * Tries to find a synchronisation with the data from the notification and action->configuration.
      *
@@ -151,7 +148,6 @@ class NotificationService
 
     }//end findSync()
 
-
     /**
      * Tries to find a source using the url of the object a notification was created for.
      *
@@ -177,6 +173,4 @@ class NotificationService
         return $sources[0];
 
     }//end findSource()
-
-
 }//end class

@@ -28,14 +28,12 @@ class InstallCommand extends Command
      */
     private InstallationService $installationService;
 
-
     public function __construct(InstallationService $installationService)
     {
         $this->installationService = $installationService;
         parent::__construct();
 
     }//end __construct()
-
 
     /**
      * Configures the command.
@@ -52,7 +50,6 @@ class InstallCommand extends Command
             ->setHelp('This command allows you to run further installation an configuration actions afther installing a plugin');
 
     }//end configure()
-
 
     /**
      * Executes installation of a bundle.
@@ -71,6 +68,4 @@ class InstallCommand extends Command
         return $this->installationService->install($bundle, $options);
 
     }//end execute()
-
-
 }//end class

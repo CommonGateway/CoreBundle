@@ -29,7 +29,6 @@ class MappingService
     // Create a private variable to store the twig environment.
     private Environment $twig;
 
-
     /**
      * Setting up the base class with required services.
      *
@@ -41,7 +40,6 @@ class MappingService
         $this->twig = $twig;
 
     }//end __construct()
-
 
     /**
      * Set symfony style in order to output to the console.
@@ -57,7 +55,6 @@ class MappingService
         return $this;
 
     }//end setStyle()
-
 
     /**
      * Replaces strings in array keys, helpful for characters like . in array keys.
@@ -86,7 +83,6 @@ class MappingService
 
     }//end encodeArrayKeys()
 
-
     /**
      * Maps (transforms) an array (input) to a different array (output).
      *
@@ -98,7 +94,7 @@ class MappingService
      *
      * @return array The result (output) of the mapping process
      */
-    public function mapping(Mapping $mappingObject, array $input, bool $list=false): array
+    public function mapping(Mapping $mappingObject, array $input, bool $list = false): array
     {
         // Check for list
         if ($list === true) {
@@ -206,7 +202,6 @@ class MappingService
 
     }//end mapping()
 
-
     /**
      * Handles a single cast.
      *
@@ -276,7 +271,6 @@ class MappingService
 
     }//end handleCast()
 
-
     /**
      * Converts a coordinate string to an array of coordinates.
      *
@@ -307,6 +301,4 @@ class MappingService
         return $coordinateArray;
 
     }//end coordinateStringToArray()
-
-
 }//end class

@@ -55,7 +55,6 @@ class FileSystemHandleService
      */
     private FileSystemCreateService $fscService;
 
-
     /**
      * The class constructor.
      *
@@ -77,7 +76,6 @@ class FileSystemHandleService
 
     }//end __construct()
 
-
     /**
      * Gets the content of a file from a specific file on a filesystem.
      *
@@ -97,7 +95,6 @@ class FileSystemHandleService
         return null;
 
     }//end getFileContents()
-
 
     /**
      * Returns the contents of all files in a filesystem.
@@ -125,7 +122,6 @@ class FileSystemHandleService
 
     }//end getContentFromAllFiles()
 
-
     /**
      * Decodes a file content using a given format, default = json_decode.
      *
@@ -137,7 +133,7 @@ class FileSystemHandleService
      *
      * @return array The decoded file content.
      */
-    public function decodeFile(?string $content, string $location, ?string $format=null): array
+    public function decodeFile(?string $content, string $location, ?string $format = null): array
     {
         /*
          * Increase memory, data read from file can get quite large.
@@ -178,7 +174,6 @@ class FileSystemHandleService
 
     }//end decodeFile()
 
-
     /**
      * Calls a Filesystem source according to given configuration.
      *
@@ -188,7 +183,7 @@ class FileSystemHandleService
      *
      * @return array The decoded response array of the call.
      */
-    public function call(Source $source, string $location, array $config=[]): array
+    public function call(Source $source, string $location, array $config = []): array
     {
         // @Todo: Also add handleEndpointsConfigOut?
         $fileSystem = $this->fscService->openFtpFilesystem($source);
@@ -203,7 +198,6 @@ class FileSystemHandleService
         }
 
     }//end call()
-
 
     /**
      * Handles the endpointsConfig of a Filesystem Source after we did a guzzle call.
@@ -241,7 +235,6 @@ class FileSystemHandleService
         return $decodedFile;
 
     }//end handleEndpointsConfigIn()
-
 
     /**
      * Handles endpointConfig for a specific endpoint on a Filesystem source and a specific key like: 'root'.
@@ -286,6 +279,4 @@ class FileSystemHandleService
         return $decodedFile;
 
     }//end handleEndpointConfigIn()
-
-
 }//end class

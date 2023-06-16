@@ -33,6 +33,4 @@ class CronjobLog
         return $this->id;
 
     }//end getId()
-
-
 }//end class

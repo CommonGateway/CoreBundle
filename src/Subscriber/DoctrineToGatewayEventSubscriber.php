@@ -56,7 +56,6 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      */
     private Logger $logger;
 
-
     /**
      * Load requiered services, schould not be aprouched directly.
      *
@@ -102,7 +101,6 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
 
     }//end getSubscribedEvents()
 
-
     /**
      * Deleting object from database.
      *
@@ -133,7 +131,6 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 
     }//end preRemove()
-
 
     /**
      * Creating object in database.
@@ -166,7 +163,6 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
 
     }//end prePersist()
 
-
     /**
      * Updating object to database.
      *
@@ -198,7 +194,6 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
 
     }//end preUpdate()
 
-
     /**
      * Deleted object from database.
      *
@@ -226,7 +221,6 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 
     }//end postRemove()
-
 
     /**
      * Created object in database.
@@ -259,7 +253,6 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
 
     }//end postPersist()
 
-
     /**
      * Updated object in database.
      *
@@ -291,7 +284,6 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
 
     }//end postUpdate()
 
-
     /**
      * Read object from database.
      *
@@ -322,7 +314,6 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
 
     }//end postLoad()
 
-
     /**
      * Flushing entity manager.
      *
@@ -342,7 +333,6 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
 
     }//end preFlush()
 
-
     /**
      * Flushed entity manager.
      *
@@ -361,6 +351,4 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 
     }//end postFlush()
-
-
 }//end class

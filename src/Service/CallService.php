@@ -69,7 +69,6 @@ class CallService
      */
     private LoggerInterface $callLogger;
 
-
     /**
      * The constructor sets al needed variables.
      *
@@ -97,7 +96,6 @@ class CallService
         $this->callLogger            = $callLogger;
 
     }//end __construct()
-
 
     /**
      * Writes the certificate and ssl keys to disk, returns the filenames.
@@ -130,7 +128,6 @@ class CallService
 
     }//end getCertificate()
 
-
     /**
      * Removes certificates and private keys from disk if they are not necessary anymore.
      *
@@ -155,7 +152,6 @@ class CallService
         }
 
     }//end removeFiles()
-
 
     /**
      * Removes empty headers and sets array to string values.
@@ -207,7 +203,6 @@ class CallService
 
     }//end handleCallException()
 
-
     /**
      * Calls a source according to given configuration.
      *
@@ -224,11 +219,11 @@ class CallService
      */
     public function call(
         Source $source,
-        string $endpoint='',
-        string $method='GET',
-        array $config=[],
-        bool $asynchronous=false,
-        bool $createCertificates=true
+        string $endpoint = '',
+        string $method = 'GET',
+        array $config = [],
+        bool $asynchronous = false,
+        bool $createCertificates = true
     ): Response {
         $this->session->set('source', $source->getId()->toString());
         $this->callLogger->info('Calling source '.$source->getName());
@@ -291,7 +286,6 @@ class CallService
 
     }//end call()
 
-
     /**
      * Handles the endpointsConfig of a Source before we do an api-call.
      *
@@ -325,7 +319,6 @@ class CallService
         return $config;
 
     }//end handleEndpointsConfigOut()
-
 
     /**
      * Handles endpointConfig for a specific endpoint on a source and a specific configuration key like: 'query' or 'headers'.
@@ -375,7 +368,6 @@ class CallService
 
     }//end handleEndpointConfigOut()
 
-
     /**
      * Handles the endpointsConfig of a Source after we did an api-call.
      * See FileSystemService->handleEndpointsConfigIn() for how we handle this on FileSystem sources.
@@ -390,7 +382,7 @@ class CallService
      *
      * @return Response The response.
      */
-    private function handleEndpointsConfigIn(Source $source, string $endpoint, ?Response $response, ?Exception $exception=null, ?string $responseContent=null): Response
+    private function handleEndpointsConfigIn(Source $source, string $endpoint, ?Response $response, ?Exception $exception = null, ?string $responseContent = null): Response
     {
         $this->callLogger->info('Handling incoming configuration for endpoints');
         $endpointsConfig = $source->getEndpointsConfig();
@@ -444,7 +436,6 @@ class CallService
 
     }//end handleEndpointsConfigIn()
 
-
     /**
      * Will check if we have to handle EndpointConfigIn on an Exception response.
      *
@@ -490,7 +481,6 @@ class CallService
 
     }//end handleEndpointConfigInEx()
 
-
     /**
      * Handles endpointConfig for a specific endpoint on a source and a specific response property like: 'headers' or 'body'.
      * After we did an api-call.
@@ -532,7 +522,6 @@ class CallService
 
     }//end handleEndpointConfigIn()
 
-
     /**
      * Determine the content type of a response.
      *
@@ -556,7 +545,6 @@ class CallService
 
     }//end getContentType()
 
-
     /**
      * Decodes a response based on the source it belongs to.
      *
@@ -570,7 +558,7 @@ class CallService
     public function decodeResponse(
         Source $source,
         Response $response,
-        ?string $contentType='application/json'
+        ?string $contentType = 'application/json'
     ): array {
         $this->callLogger->info('Decoding response content');
         // resultaat omzetten.
@@ -615,7 +603,6 @@ class CallService
 
     }//end decodeResponse()
 
-
     /**
      * Determines the authentication procedure based upon a source.
      *
@@ -629,7 +616,6 @@ class CallService
 
     }//end getAuthentication()
 
-
     /**
      * Fetches all pages for a source and merges the result arrays to one array.
      *
@@ -641,7 +627,7 @@ class CallService
      *
      * @return array The array of results
      */
-    public function getAllResults(Source $source, string $endpoint='', array $config=[]): array
+    public function getAllResults(Source $source, string $endpoint = '', array $config = []): array
     {
         $this->callLogger->info('Fetch all data from source and combine the results into one array');
         $errorCount     = 0;
@@ -688,6 +674,4 @@ class CallService
         return $results;
 
     }//end getAllResults()
-
-
 }//end class

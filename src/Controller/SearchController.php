@@ -22,13 +22,11 @@ class SearchController extends AbstractController
      */
     private CacheService $cacheService;
 
-
     public function __construct(CacheService $cacheService)
     {
         $this->cacheService = $cacheService;
 
     }//end __construct()
-
 
     /**
      * @Route("/", methods={"GET"})
@@ -42,6 +40,4 @@ class SearchController extends AbstractController
         return new Response(json_encode(['This command is not functional yet.']), $status, ['Content-type' => 'application/json']);
 
     }//end installedAction()
-
-
 }//end class

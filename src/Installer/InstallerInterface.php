@@ -22,6 +22,4 @@ interface InstallerInterface
      * Uninstall
      */
     public function uninstall();
-
-
 }//end interface

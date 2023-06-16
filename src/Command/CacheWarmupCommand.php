@@ -69,6 +69,4 @@ class CacheWarmupCommand extends Command
         return $this->cacheService->warmup();
 
     }//end execute()
-
-
 }//end class

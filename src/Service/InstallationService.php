@@ -114,7 +114,6 @@ class InstallationService
         'https://docs.commongateway.nl/schemas/User.schema.json',
     ];
 
-
     /**
      * The constructor sets al needed variables.
      *
@@ -148,7 +147,6 @@ class InstallationService
 
     }//end __construct()
 
-
     /**
      * Updates all commonground bundles on the common gateway installation.
      *
@@ -161,7 +159,7 @@ class InstallationService
      *
      * @return int
      */
-    public function update(array $config=[], SymfonyStyle $style=null): int
+    public function update(array $config = [], SymfonyStyle $style = null): int
     {
         $this->cacheService->setStyle($style);
 
@@ -192,7 +190,6 @@ class InstallationService
 
     }//end update()
 
-
     /**
      * Installs the files from a bundle.
      *
@@ -205,7 +202,7 @@ class InstallationService
      *
      * @return bool The result of the installation.
      */
-    public function install(string $bundle, array $config=[]): bool
+    public function install(string $bundle, array $config = []): bool
     {
         $this->logger->debug('Installing plugin '.$bundle, ['plugin' => $bundle]);
 
@@ -214,10 +211,10 @@ class InstallationService
 
         // Let's check the basic folders for legacy purposes. todo: remove these at some point.
         $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Action');
-        $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Schema');
         // Entity.
-        $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Source');
+        $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Schema');
         // Gateway.
+        $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Source');
         $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Mapping');
         $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Data');
         // A function that translates old core schema references to the new ones. Only here for backwards compatibility.
@@ -234,7 +231,6 @@ class InstallationService
         return true;
 
     }//end install()
-
 
     /**
      * Will handle all files found in the plugin, creating new objects using the $this->objects array.
@@ -290,7 +286,6 @@ class InstallationService
 
     }//end handlePluginFiles()
 
-
     /**
      * Handles default / required test data from the data.json file if we are not loading in ALL testdata.
      *
@@ -317,7 +312,6 @@ class InstallationService
         }
 
     }//end handleDataJson()
-
 
     /**
      * @param string $bundle The bundle.
@@ -347,7 +341,6 @@ class InstallationService
         }
 
     }//end handleInstallationJson()
-
 
     /**
      * For backwards compatibility, support old core schema reference and translate them to the new ones.
@@ -384,7 +377,6 @@ class InstallationService
         }//end foreach
 
     }//end translateCoreReferences()
-
 
     /**
      * This function reads a folder to find other folders or json objects.
@@ -440,7 +432,6 @@ class InstallationService
 
     }//end readDirectory()
 
-
     /**
      * This function read a folder to find other folders or json objects.
      *
@@ -469,7 +460,6 @@ class InstallationService
         return $this->addToObjects($mappingSchema);
 
     }//end readfile()
-
 
     /**
      * Adds an object to the objects stack if it is valid.
@@ -505,7 +495,6 @@ class InstallationService
 
     }//end addToObjects()
 
-
     /**
      * Handles schemas of a certain type.
      *
@@ -532,7 +521,6 @@ class InstallationService
         return $objects;
 
     }//end handleObjectType()
-
 
     /**
      * Create an object bases on a type and a schema (the object as an array).
@@ -581,7 +569,6 @@ class InstallationService
         return $object;
 
     }//end handleObject()
-
 
     /**
      * This function loads a core schema.
@@ -651,7 +638,6 @@ class InstallationService
 
     }//end loadCoreSchema()
 
-
     /**
      * Creates a new object of the given type.
      *
@@ -691,7 +677,6 @@ class InstallationService
         }//end switch
 
     }//end createNewObjectType()
-
 
     /**
      * This function loads an non-core schema.
@@ -733,7 +718,6 @@ class InstallationService
         return $object;
 
     }//end loadSchema()
-
 
     /**
      * Specifically handles the installation file.
@@ -815,7 +799,6 @@ class InstallationService
 
     }//end handleInstaller()
 
-
     /**
      * This function adds a given default source to the schema.
      *
@@ -825,7 +808,7 @@ class InstallationService
      *
      * @return void
      */
-    private function editSchemaProperties(array $schemasData=[]): void
+    private function editSchemaProperties(array $schemasData = []): void
     {
         foreach ($schemasData as $schemaData) {
             // Get the schema and source from the schemadata.
@@ -846,7 +829,6 @@ class InstallationService
 
     }//end editSchemaProperties()
 
-
     /**
      * This functions connects schema's with a reference containing the collection schemaPrefix to the given collection.
      * This way endpoints will be created with the correct prefix.
@@ -855,7 +837,7 @@ class InstallationService
      *
      * @return void
      */
-    private function updateSchemasCollection(array $collectionsData=[])
+    private function updateSchemasCollection(array $collectionsData = [])
     {
         $collections = 0;
 
@@ -882,7 +864,6 @@ class InstallationService
 
     }//end updateSchemasCollection()
 
-
     /**
      * Adds a collection to all schemas that have a reference starting with $schemaPrefix.
      *
@@ -900,7 +881,6 @@ class InstallationService
 
     }//end addSchemasToCollection()
 
-
     /**
      * This function creates endpoints for an array of schema references or source references.
      *
@@ -908,7 +888,7 @@ class InstallationService
      *
      * @return array An array of endpoints
      */
-    private function createEndpoints(array $endpointsData=[]): array
+    private function createEndpoints(array $endpointsData = []): array
     {
         $endpoints = [];
 
@@ -948,7 +928,6 @@ class InstallationService
         return $endpoints;
 
     }//end createEndpoints()
-
 
     /**
      * Creates a single endpoint for an Entity or a Source using the data from installation.json.
@@ -1003,7 +982,6 @@ class InstallationService
 
     }//end createEndpoint()
 
-
     /**
      * Constructs an Endpoint using the Endpoint constructor, but how the constructor is called depends on the $type.
      *
@@ -1031,7 +1009,6 @@ class InstallationService
 
     }//end constructEndpoint()
 
-
     /**
      * Checks if an object exists, using the given repository and reference.
      *
@@ -1053,7 +1030,6 @@ class InstallationService
         return $object;
 
     }//end checkIfObjectExists()
-
 
     /**
      * Creates a reference for a new Endpoint using the name of the object we are creating it for and the domain of its reference.
@@ -1085,7 +1061,6 @@ class InstallationService
 
     }//end createEndpointReference()
 
-
     /**
      * Creates the basics for a new subEndpoint or subSchemaEndpoint.
      *
@@ -1109,7 +1084,6 @@ class InstallationService
 
     }//end createBaseEndpoint()
 
-
     /**
      * Updates some basic fields like name, description and throws for a new subEndpoint or subSchemaEndpoint.
      *
@@ -1130,8 +1104,8 @@ class InstallationService
 
         // Check for reference to entity, if so, add entity to endpoint.
         if (isset($newEndpointData['reference']) === true) {
+            // Old way of setting Entity for Endpoints
             $newEndpoint->setEntity(null);
-            // Old way of setting Entity for Endpoints.
             foreach ($newEndpoint->getEntities() as $removeEntity) {
                 $newEndpoint->removeEntity($removeEntity);
             }
@@ -1145,7 +1119,6 @@ class InstallationService
         return $newEndpoint;
 
     }//end setEndpointBasics()
-
 
     /**
      * Creates subEndpoints for an Entity Endpoint. Example: domain.com/api/entities/subEndpoint['path'].
@@ -1189,7 +1162,6 @@ class InstallationService
         return $endpoints;
 
     }//end handleSubEndpoints()
-
 
     /**
      * Creates subSchemaEndpoints for an Entity Endpoint. Example: domain.com/api/entities/{uuid}/subSchemaEndpoint['path']/{uuid}.
@@ -1242,7 +1214,6 @@ class InstallationService
 
     }//end handleSubSchemaEndpoints()
 
-
     /**
      * This functions creates actions for an array of handlers.
      *
@@ -1250,7 +1221,7 @@ class InstallationService
      *
      * @return array An array of Action objects
      */
-    private function createActions(array $handlersData=[]): array
+    private function createActions(array $handlersData = []): array
     {
         $actions = [];
 
@@ -1286,9 +1257,9 @@ class InstallationService
             $action->setListens(($handlerData['listens'] ?? []));
             $action->setConditions(($handlerData['conditions'] ?? ['==' => [1, 1]]));
 
-            $defaultConfig = $this->addActionConfiguration($actionHandler);
             // todo: maybe use: Action->getDefaultConfigFromSchema() instead?
-            isset($handlerData['configuration']) === true && $defaultConfig = $this->overrideConfig($defaultConfig, ($handlerData['configuration'] ?? []));
+            $defaultConfig                                         = $this->addActionConfiguration($actionHandler);
+            isset($handlerData['configuration']) && $defaultConfig = $this->overrideConfig($defaultConfig, ($handlerData['configuration'] ?? []));
             $action->setConfiguration($defaultConfig);
 
             if (isset($handlerData['version']) === true) {
@@ -1307,7 +1278,6 @@ class InstallationService
 
     }//end createActions()
 
-
     /**
      * This functions replaces references in the action->configuration array with corresponding ids of the entity/source.
      *
@@ -1315,7 +1285,7 @@ class InstallationService
      *
      * @return void An array of Action objects
      */
-    private function fixConfigRef(array $actionRefs=[]): void
+    private function fixConfigRef(array $actionRefs = []): void
     {
         $actions = 0;
 
@@ -1338,8 +1308,8 @@ class InstallationService
                 continue;
             }
 
-            $defaultConfig = $this->addActionConfiguration($actionHandler);
             // todo: maybe use: Action->getDefaultConfigFromSchema() instead?
+            $defaultConfig                                                 = $this->addActionConfiguration($actionHandler);
             empty($action->getConfiguration()) === false && $defaultConfig = $this->overrideConfig($defaultConfig, ($action->getConfiguration() ?? []));
 
             $action->setConfiguration($defaultConfig);
@@ -1351,7 +1321,6 @@ class InstallationService
         $this->logger->info($actions.' Actions configuration updated.');
 
     }//end fixConfigRef()
-
 
     /**
      * This function creates default configuration for the action.
@@ -1393,7 +1362,6 @@ class InstallationService
 
     }//end addActionConfiguration()
 
-
     /**
      * Overrides the default configuration of an Action. Will also set entity and source to id if a reference is given.
      *
@@ -1405,8 +1373,8 @@ class InstallationService
     public function overrideConfig(array $defaultConfig, array $overrides): array
     {
         foreach ($overrides as $key => $override) {
-            if (is_array($override) === true && $this->isAssociative($override)) {
-                $defaultConfig[$key] = $this->overrideConfig(isset($defaultConfig[$key]) === true ? $defaultConfig[$key] : [], $override);
+            if (is_array($override) && $this->isAssociative($override)) {
+                $defaultConfig[$key] = $this->overrideConfig(($defaultConfig[$key] ?? []), $override);
 
                 continue;
             }//end if
@@ -1442,7 +1410,6 @@ class InstallationService
 
     }//end overrideConfig()
 
-
     /**
      * Decides if an array is associative.
      *
@@ -1460,7 +1427,6 @@ class InstallationService
 
     }//end isAssociative()
 
-
     /**
      * This function creates cronjobs for an array of action references.
      *
@@ -1468,7 +1434,7 @@ class InstallationService
      *
      * @return array An array of cronjobs.
      */
-    private function createCronjobs(array $actions=[]): array
+    private function createCronjobs(array $actions = []): array
     {
         $cronjobs = [];
 
@@ -1492,7 +1458,6 @@ class InstallationService
         return $cronjobs;
 
     }//end createCronjobs()
-
 
     /**
      * This function creates applications with the given $applications data.
@@ -1537,7 +1502,6 @@ class InstallationService
 
     }//end createApplications()
 
-
     /**
      * This function creates users with the given $users data.
      * Each user in this array should have a securityGroups array with references to SecurityGroups.
@@ -1546,7 +1510,7 @@ class InstallationService
      *
      * @return array An array of users.
      */
-    private function createUsers(array $usersData=[]): array
+    private function createUsers(array $usersData = []): array
     {
         $orgRepository = $this->entityManager->getRepository('App:Organization');
 
@@ -1583,7 +1547,6 @@ class InstallationService
         return $users;
 
     }//end createUsers()
-
 
     /**
      * Replaces $userData['securityGroups'] references with real SecurityGroups objects,
@@ -1622,7 +1585,6 @@ class InstallationService
 
     }//end handleUserGroups()
 
-
     /**
      * Replaces $userData['applications'] references with real Application objects,
      * so the fromSchema function for User can create a user with this.
@@ -1655,7 +1617,6 @@ class InstallationService
 
     }//end handleUserApps()
 
-
     /**
      * This functions creates dashboard cars for an array of endpoints, sources, schema's or objects.
      *
@@ -1665,7 +1626,7 @@ class InstallationService
      *
      * @return array An array of dashboardCard objects
      */
-    private function createCards(array $cardsData=[]): array
+    private function createCards(array $cardsData = []): array
     {
         $cards = [];
 
@@ -1743,6 +1704,4 @@ class InstallationService
         return $cards;
 
     }//end createCards()
-
-
 }//end class

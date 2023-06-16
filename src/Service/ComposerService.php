@@ -17,8 +17,6 @@ use function PHPUnit\Framework\throwException;
  */
 class ComposerService
 {
-
-
     private function arrayEnum(array $array, array $enum): bool
     {
         // Lets see if the values in the array arry pressent in the enum.
@@ -32,7 +30,6 @@ class ComposerService
 
     }//end arrayEnum()
 
-
     /**
      * Make a call to composer.
      *
@@ -42,7 +39,7 @@ class ComposerService
      *
      * @return array|string
      */
-    private function composerCall(string $call, array $options=[], string $package='')
+    private function composerCall(string $call, array $options = [], string $package = '')
     {
         $optionsList = [];
         // Let's check for valid calls.
@@ -329,7 +326,6 @@ class ComposerService
 
     }//end composerCall()
 
-
     /**
      * Gets all installed plugins from the lock file.
      *
@@ -356,7 +352,6 @@ class ComposerService
 
     }//end getLockFile()
 
-
     /**
      * Show al packages installed trough composer.
      *
@@ -381,7 +376,6 @@ class ComposerService
 
     }//end getAll()
 
-
     /**
      * Show a single package installed trough composer.
      *
@@ -392,13 +386,12 @@ class ComposerService
      *
      * @return array
      */
-    public function require(string $package, array $options=[]): array
+    public function require(string $package, array $options = []): array
     {
         return $this->composerCall('require', $options, $package);
 
     }//end require()
 
-
     /**
      * Show a single package installed trough composer.
      *
@@ -409,13 +402,12 @@ class ComposerService
      *
      * @return array
      */
-    public function upgrade(string $package, array $options=[]): array
+    public function upgrade(string $package, array $options = []): array
     {
         return $this->composerCall('upgrade', $options, $package);
 
     }//end upgrade()
 
-
     /**
      * Show a single package installed trough composer.
      *
@@ -426,12 +418,11 @@ class ComposerService
      *
      * @return array
      */
-    public function remove(string $package, array $options=[]): array
+    public function remove(string $package, array $options = []): array
     {
         return $this->composerCall('remove', $options, $package);
 
     }//end remove()
-
 
     /**
      * Show a single package installed trough composer.
@@ -479,7 +470,6 @@ class ComposerService
 
     }//end getSingle()
 
-
     /**
      * Search for a given term.
      *
@@ -514,7 +504,6 @@ class ComposerService
 
     }//end search()
 
-
     /**
      * Search for a given term.
      *
@@ -524,11 +513,9 @@ class ComposerService
      *
      * @return array
      */
-    public function audit(array $options=[]): array
+    public function audit(array $options = []): array
     {
         return $this->composerCall('audit', $options);
 
     }//end audit()
-
-
 }//end class
