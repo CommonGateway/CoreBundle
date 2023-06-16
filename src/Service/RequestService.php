@@ -250,7 +250,7 @@ class RequestService
      *
      * @return array An array with all query parameters.
      */
-    public function realRequestQueryAll(string $method='get', ?string $queryString=''): array
+    public function realRequestQueryAll(string $method = 'get', ?string $queryString = ''): array
     {
         $vars = [];
         if (strtolower($method) === 'get' && empty($this->data['querystring']) === true && empty($queryString) === true) {
@@ -422,7 +422,7 @@ class RequestService
      *
      * @return Response The data as returned bij the origanal source
      */
-    public function proxyHandler(array $data, array $configuration, ?Source $proxy=null): Response
+    public function proxyHandler(array $data, array $configuration, ?Source $proxy = null): Response
     {
         $this->data          = $data;
         $this->configuration = $configuration;

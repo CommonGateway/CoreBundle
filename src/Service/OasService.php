@@ -265,7 +265,7 @@ class OasService
      *
      * @return array The operations for the given endpoint
      */
-    private function getEndpointOperations(Endpoint $endpoint, string $method=null, string $operationId): array
+    private function getEndpointOperations(Endpoint $endpoint, string $method = null, string $operationId): array
     {
         $operations = [];
 

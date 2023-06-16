@@ -159,7 +159,7 @@ class InstallationService
      *
      * @return int
      */
-    public function update(array $config=[], SymfonyStyle $style=null): int
+    public function update(array $config = [], SymfonyStyle $style = null): int
     {
         // Let's see if we are trying to update a single plugin.
         if (isset($config['plugin']) === true) {
@@ -202,7 +202,7 @@ class InstallationService
      *
      * @return bool The result of the installation.
      */
-    public function install(string $bundle, array $config=[]): bool
+    public function install(string $bundle, array $config = []): bool
     {
         $this->logger->debug('Installing plugin '.$bundle, ['plugin' => $bundle]);
 
@@ -808,7 +808,7 @@ class InstallationService
      *
      * @return void
      */
-    private function editSchemaProperties(array $schemasData=[]): void
+    private function editSchemaProperties(array $schemasData = []): void
     {
         foreach ($schemasData as $schemaData) {
             // Get the schema and source from the schemadata.
@@ -837,7 +837,7 @@ class InstallationService
      *
      * @return void
      */
-    private function updateSchemasCollection(array $collectionsData=[])
+    private function updateSchemasCollection(array $collectionsData = [])
     {
         $collections = 0;
 
@@ -888,7 +888,7 @@ class InstallationService
      *
      * @return array An array of endpoints
      */
-    private function createEndpoints(array $endpointsData=[]): array
+    private function createEndpoints(array $endpointsData = []): array
     {
         $endpoints = [];
 
@@ -1221,7 +1221,7 @@ class InstallationService
      *
      * @return array An array of Action objects
      */
-    private function createActions(array $handlersData=[]): array
+    private function createActions(array $handlersData = []): array
     {
         $actions = [];
 
@@ -1256,9 +1256,9 @@ class InstallationService
             array_key_exists('reference', $handlerData) ? $action->setReference($handlerData['reference']) : '';
             $action->setListens(($handlerData['listens'] ?? []));
             $action->setConditions(($handlerData['conditions'] ?? ['==' => [1, 1]]));
-    
+
             // todo: maybe use: Action->getDefaultConfigFromSchema() instead?
-            $defaultConfig = $this->addActionConfiguration($actionHandler);
+            $defaultConfig                                         = $this->addActionConfiguration($actionHandler);
             isset($handlerData['configuration']) && $defaultConfig = $this->overrideConfig($defaultConfig, ($handlerData['configuration'] ?? []));
             $action->setConfiguration($defaultConfig);
 
@@ -1285,7 +1285,7 @@ class InstallationService
      *
      * @return void An array of Action objects
      */
-    private function fixConfigRef(array $actionRefs=[]): void
+    private function fixConfigRef(array $actionRefs = []): void
     {
         $actions = 0;
 
@@ -1307,9 +1307,9 @@ class InstallationService
                 $this->logger->error('Handler '.$action->getClass().' has no configuration');
                 continue;
             }
-    
+
             // todo: maybe use: Action->getDefaultConfigFromSchema() instead?
-            $defaultConfig = $this->addActionConfiguration($actionHandler);
+            $defaultConfig                                                 = $this->addActionConfiguration($actionHandler);
             empty($action->getConfiguration()) === false && $defaultConfig = $this->overrideConfig($defaultConfig, ($action->getConfiguration() ?? []));
 
             $action->setConfiguration($defaultConfig);
@@ -1434,7 +1434,7 @@ class InstallationService
      *
      * @return array An array of cronjobs.
      */
-    private function createCronjobs(array $actions=[]): array
+    private function createCronjobs(array $actions = []): array
     {
         $cronjobs = [];
 
@@ -1510,7 +1510,7 @@ class InstallationService
      *
      * @return array An array of users.
      */
-    private function createUsers(array $usersData=[]): array
+    private function createUsers(array $usersData = []): array
     {
         $orgRepository = $this->entityManager->getRepository('App:Organization');
 
@@ -1626,7 +1626,7 @@ class InstallationService
      *
      * @return array An array of dashboardCard objects
      */
-    private function createCards(array $cardsData=[]): array
+    private function createCards(array $cardsData = []): array
     {
         $cards = [];
 
