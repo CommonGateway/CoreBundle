@@ -17,6 +17,9 @@ use Symfony\Component\Routing\Annotation\Route;
 class SearchController extends AbstractController
 {
 
+    /**
+     * @var CacheService
+     */
     private CacheService $cacheService;
 
 
@@ -30,12 +33,14 @@ class SearchController extends AbstractController
     /**
      * @Route("/", methods={"GET"})
      */
-    public function installedAction(Request $request)
+    public function installedAction()
     {
         $status  = 200;
-        $results = ['bla'];
         // $this->cacheService->getAll(['--installed'])['installed'];
-        return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
+        // return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
+
+        // Do we want/need this search command??
+        return new Response(json_encode(['This command is not functional yet.']), $status, ['Content-type' => 'application/json']);
 
     }//end installedAction()
 
