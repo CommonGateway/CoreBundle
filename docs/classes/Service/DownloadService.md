@@ -1,23 +1,16 @@
-# CommonGateway\CoreBundle\Service\DownloadService  
+# CommonGateway\CoreBundle\Service\DownloadService
 
 Handles incoming notification api-calls by finding or creating a synchronization and synchronizing an object.
-
-
-
-
 
 ## Methods
 
 | Name | Description |
 |------|-------------|
-|[__construct](#downloadservice__construct)|The constructor sets al needed variables.|
+|[\_\_construct](#downloadservice__construct)|The constructor sets al needed variables.|
 |[downloadPdf](#downloadservicedownloadpdf)|Downloads a pdf.|
 |[render](#downloadservicerender)|Renders a pdf.|
 
-
-
-
-### DownloadService::__construct  
+### DownloadService::\_\_construct
 
 **Description**
 
@@ -25,28 +18,24 @@ Handles incoming notification api-calls by finding or creating a synchronization
 public __construct (\EntityManagerInterface $entityManager, \LoggerInterface $requestLogger, \Environment $twig)
 ```
 
-The constructor sets al needed variables. 
-
- 
+The constructor sets al needed variables.
 
 **Parameters**
 
-* `(\EntityManagerInterface) $entityManager`
-: The EntityManager  
-* `(\LoggerInterface) $requestLogger`
-: The Logger  
-* `(\Environment) $twig`
-: Twig  
+*   `(\EntityManagerInterface) $entityManager`
+    : The EntityManager
+*   `(\LoggerInterface) $requestLogger`
+    : The Logger
+*   `(\Environment) $twig`
+    : Twig
 
 **Return Values**
 
 `void`
 
-
 <hr />
 
-
-### DownloadService::downloadPdf  
+### DownloadService::downloadPdf
 
 **Description**
 
@@ -54,14 +43,12 @@ The constructor sets al needed variables.
 public downloadPdf (array $data)
 ```
 
-Downloads a pdf. 
-
- 
+Downloads a pdf.
 
 **Parameters**
 
-* `(array) $data`
-: The data to render for this pdf.  
+*   `(array) $data`
+    : The data to render for this pdf.
 
 **Return Values**
 
@@ -69,11 +56,9 @@ Downloads a pdf.
 
 > The pdf as string output.
 
-
 <hr />
 
-
-### DownloadService::render  
+### DownloadService::render
 
 **Description**
 
@@ -81,14 +66,12 @@ Downloads a pdf.
 public render (array $data)
 ```
 
-Renders a pdf. 
-
- 
+Renders a pdf.
 
 **Parameters**
 
-* `(array) $data`
-: The data to render.  
+*   `(array) $data`
+    : The data to render.
 
 **Return Values**
 
@@ -96,6 +79,4 @@ Renders a pdf.
 
 > The content rendered.
 
-
 <hr />
-
