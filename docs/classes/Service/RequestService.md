@@ -1,16 +1,12 @@
-# CommonGateway\CoreBundle\Service\RequestService  
+# CommonGateway\CoreBundle\Service\RequestService
 
 Handles incomming request from endpoints or controllers that relate to the gateways object structure (eav).
-
-
-
-
 
 ## Methods
 
 | Name | Description |
 |------|-------------|
-|[__construct](#requestservice__construct)|The constructor sets al needed variables.|
+|[\_\_construct](#requestservice__construct)|The constructor sets al needed variables.|
 |[checkEmbedded](#requestservicecheckembedded)|If embedded should be shown or not.|
 |[createResponse](#requestservicecreateresponse)|Creating the response object.|
 |[getId](#requestservicegetid)|Get the ID from given parameters.|
@@ -24,10 +20,7 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 |[serializeData](#requestserviceserializedata)|Determines the right content type and serializes the data accordingly.|
 |[shouldWeUnsetEmbedded](#requestserviceshouldweunsetembedded)|Handle the Application Endpoint Configuration for embedded. If embedded should be shown or not.|
 
-
-
-
-### RequestService::__construct  
+### RequestService::\_\_construct
 
 **Description**
 
@@ -35,36 +28,32 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 public __construct (\EntityManagerInterface $entityManager, \GatewayResourceService $resourceService, \MappingService $mappingService, \CacheService $cacheService, \ResponseService $responseService, \ObjectEntityService $objectEntityService, \LogService $logService, \CallService $callService, \Security $security, \EventDispatcherInterface $eventDispatcher, \SerializerInterface $serializer, \SessionInterface $session, \LoggerInterface $requestLogger, \DownloadService $downloadService)
 ```
 
-The constructor sets al needed variables. 
-
- 
+The constructor sets al needed variables.
 
 **Parameters**
 
-* `(\EntityManagerInterface) $entityManager`
-* `(\GatewayResourceService) $resourceService`
-* `(\MappingService) $mappingService`
-* `(\CacheService) $cacheService`
-* `(\ResponseService) $responseService`
-* `(\ObjectEntityService) $objectEntityService`
-* `(\LogService) $logService`
-* `(\CallService) $callService`
-* `(\Security) $security`
-* `(\EventDispatcherInterface) $eventDispatcher`
-* `(\SerializerInterface) $serializer`
-* `(\SessionInterface) $session`
-* `(\LoggerInterface) $requestLogger`
-* `(\DownloadService) $downloadService`
+*   `(\EntityManagerInterface) $entityManager`
+*   `(\GatewayResourceService) $resourceService`
+*   `(\MappingService) $mappingService`
+*   `(\CacheService) $cacheService`
+*   `(\ResponseService) $responseService`
+*   `(\ObjectEntityService) $objectEntityService`
+*   `(\LogService) $logService`
+*   `(\CallService) $callService`
+*   `(\Security) $security`
+*   `(\EventDispatcherInterface) $eventDispatcher`
+*   `(\SerializerInterface) $serializer`
+*   `(\SessionInterface) $session`
+*   `(\LoggerInterface) $requestLogger`
+*   `(\DownloadService) $downloadService`
 
 **Return Values**
 
 `void`
 
-
 <hr />
 
-
-### RequestService::checkEmbedded  
+### RequestService::checkEmbedded
 
 **Description**
 
@@ -72,26 +61,20 @@ The constructor sets al needed variables.
 public checkEmbedded (object|array $result)
 ```
 
-If embedded should be shown or not. 
-
- 
+If embedded should be shown or not.
 
 **Parameters**
 
-* `(object|array) $result`
-: fetched result  
+*   `(object|array) $result`
+    : fetched result
 
 **Return Values**
 
 `array|null`
 
-
-
-
 <hr />
 
-
-### RequestService::createResponse  
+### RequestService::createResponse
 
 **Description**
 
@@ -99,25 +82,19 @@ If embedded should be shown or not.
 public createResponse ( $data)
 ```
 
-Creating the response object. 
-
- 
+Creating the response object.
 
 **Parameters**
 
-* `() $data`
+*   `() $data`
 
 **Return Values**
 
 `\Response`
 
-
-
-
 <hr />
 
-
-### RequestService::getId  
+### RequestService::getId
 
 **Description**
 
@@ -125,9 +102,7 @@ Creating the response object.
 public getId (void)
 ```
 
-Get the ID from given parameters. 
-
- 
+Get the ID from given parameters.
 
 **Parameters**
 
@@ -137,13 +112,9 @@ Get the ID from given parameters.
 
 `string|false`
 
-
-
-
 <hr />
 
-
-### RequestService::getSchema  
+### RequestService::getSchema
 
 **Description**
 
@@ -151,25 +122,19 @@ Get the ID from given parameters.
 public getSchema (array $parameters)
 ```
 
-Get the schema from given parameters returns false if no schema could be established. 
-
- 
+Get the schema from given parameters returns false if no schema could be established.
 
 **Parameters**
 
-* `(array) $parameters`
+*   `(array) $parameters`
 
 **Return Values**
 
 `\Entity|false`
 
-
-
-
 <hr />
 
-
-### RequestService::getScopes  
+### RequestService::getScopes
 
 **Description**
 
@@ -177,9 +142,7 @@ Get the schema from given parameters returns false if no schema could be establi
 public getScopes (void)
 ```
 
-Get a scopes array for the current user (or of the anonymus if no user s logged in). 
-
- 
+Get a scopes array for the current user (or of the anonymus if no user s logged in).
 
 **Parameters**
 
@@ -189,13 +152,9 @@ Get a scopes array for the current user (or of the anonymus if no user s logged 
 
 `array`
 
-
-
-
 <hr />
 
-
-### RequestService::itemRequestHandler  
+### RequestService::itemRequestHandler
 
 **Description**
 
@@ -203,10 +162,6 @@ Get a scopes array for the current user (or of the anonymus if no user s logged 
  itemRequestHandler (void)
 ```
 
- 
-
- 
-
 **Parameters**
 
 `This function has no parameters.`
@@ -215,11 +170,9 @@ Get a scopes array for the current user (or of the anonymus if no user s logged 
 
 `void`
 
-
 <hr />
 
-
-### RequestService::proxyHandler  
+### RequestService::proxyHandler
 
 **Description**
 
@@ -227,10 +180,6 @@ Get a scopes array for the current user (or of the anonymus if no user s logged 
  proxyHandler (void)
 ```
 
- 
-
- 
-
 **Parameters**
 
 `This function has no parameters.`
@@ -239,11 +188,9 @@ Get a scopes array for the current user (or of the anonymus if no user s logged 
 
 `void`
 
-
 <hr />
 
-
-### RequestService::proxyRequestHandler  
+### RequestService::proxyRequestHandler
 
 **Description**
 
@@ -251,16 +198,14 @@ Get a scopes array for the current user (or of the anonymus if no user s logged 
 public proxyRequestHandler (array $parameters, array $configuration)
 ```
 
-Determines the proxy source from configuration, then use proxy handler to proxy the request. 
-
- 
+Determines the proxy source from configuration, then use proxy handler to proxy the request.
 
 **Parameters**
 
-* `(array) $parameters`
-: The parameters of the request.  
-* `(array) $configuration`
-: The configuration of the action.  
+*   `(array) $parameters`
+    : The parameters of the request.
+*   `(array) $configuration`
+    : The configuration of the action.
 
 **Return Values**
 
@@ -268,11 +213,9 @@ Determines the proxy source from configuration, then use proxy handler to proxy 
 
 > The result of the proxy.
 
-
 <hr />
 
-
-### RequestService::realRequestQueryAll  
+### RequestService::realRequestQueryAll
 
 **Description**
 
@@ -280,16 +223,16 @@ Determines the proxy source from configuration, then use proxy handler to proxy 
 public realRequestQueryAll (string $method, string|null $queryString)
 ```
 
-A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore. 
+A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.
 
-This function will not. 
+This function will not.
 
 **Parameters**
 
-* `(string) $method`
-: The method of the Request  
-* `(string|null) $queryString`
-: A queryString from a request if we want to give it to this function instead of using global var $_SERVER.  
+*   `(string) $method`
+    : The method of the Request
+*   `(string|null) $queryString`
+    : A queryString from a request if we want to give it to this function instead of using global var $\_SERVER.
 
 **Return Values**
 
@@ -297,11 +240,9 @@ This function will not.
 
 > An array with all query parameters.
 
-
 <hr />
 
-
-### RequestService::requestHandler  
+### RequestService::requestHandler
 
 **Description**
 
@@ -309,16 +250,14 @@ This function will not.
 public requestHandler (array $data, array $configuration)
 ```
 
-Handles incomming requests and is responsible for generating a response. 
-
- 
+Handles incomming requests and is responsible for generating a response.
 
 **Parameters**
 
-* `(array) $data`
-: The data from the call  
-* `(array) $configuration`
-: The configuration from the call  
+*   `(array) $data`
+    : The data from the call
+*   `(array) $configuration`
+    : The configuration from the call
 
 **Return Values**
 
@@ -326,17 +265,13 @@ Handles incomming requests and is responsible for generating a response.
 
 > The modified data
 
-
 **Throws Exceptions**
-
 
 `\Exception`
 
-
 <hr />
 
-
-### RequestService::serializeData  
+### RequestService::serializeData
 
 **Description**
 
@@ -344,16 +279,14 @@ Handles incomming requests and is responsible for generating a response.
 public serializeData (array $data, mixed $contentType)
 ```
 
-Determines the right content type and serializes the data accordingly. 
-
- 
+Determines the right content type and serializes the data accordingly.
 
 **Parameters**
 
-* `(array) $data`
-: The data to serialize.  
-* `(mixed) $contentType`
-: The content type to determine.  
+*   `(array) $data`
+    : The data to serialize.
+*   `(mixed) $contentType`
+    : The content type to determine.
 
 **Return Values**
 
@@ -361,11 +294,9 @@ Determines the right content type and serializes the data accordingly.
 
 > The serialized data.
 
-
 <hr />
 
-
-### RequestService::shouldWeUnsetEmbedded  
+### RequestService::shouldWeUnsetEmbedded
 
 **Description**
 
@@ -373,17 +304,17 @@ Determines the right content type and serializes the data accordingly.
 public shouldWeUnsetEmbedded (object|array $result, array $embeddedConfig)
 ```
 
-Handle the Application Endpoint Configuration for embedded. If embedded should be shown or not. 
+Handle the Application Endpoint Configuration for embedded. If embedded should be shown or not.
 
-Configuration Example: ['global']['out']['embedded']['unset'] = true  
-Configuration Example 2: ['global']['out']['embedded']['unset']['except'] = ['application/json+ld', 'application/ld+json']. 
+Configuration Example: \['global']\['out']\['embedded']\['unset'] = true\
+Configuration Example 2: \['global']\['out']\['embedded']\['unset']\['except'] = \['application/json+ld', 'application/ld+json'].
 
 **Parameters**
 
-* `(object|array) $result`
-: fetched result  
-* `(array) $embeddedConfig`
-: Application configuration ['out']['embedded']  
+*   `(object|array) $result`
+    : fetched result
+*   `(array) $embeddedConfig`
+    : Application configuration \['out']\['embedded']
 
 **Return Values**
 
@@ -391,6 +322,4 @@ Configuration Example 2: ['global']['out']['embedded']['unset']['except'] = ['ap
 
 > The updated result.
 
-
 <hr />
-

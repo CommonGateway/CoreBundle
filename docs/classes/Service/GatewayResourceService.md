@@ -1,16 +1,10 @@
-# CommonGateway\CoreBundle\Service\GatewayResourceService  
-
-
-
-
-
-
+# CommonGateway\CoreBundle\Service\GatewayResourceService
 
 ## Methods
 
 | Name | Description |
 |------|-------------|
-|[__construct](#gatewayresourceservice__construct)|The constructor sets al needed variables.|
+|[\_\_construct](#gatewayresourceservice__construct)|The constructor sets al needed variables.|
 |[findSourcesForUrl](#gatewayresourceservicefindsourcesforurl)|Find all sources that have a location that match the specified url.|
 |[getAction](#gatewayresourceservicegetaction)|Get an action by reference.|
 |[getEndpoint](#gatewayresourceservicegetendpoint)|Get a endpoint by reference.|
@@ -18,10 +12,7 @@
 |[getSchema](#gatewayresourceservicegetschema)|Get a schema by reference.|
 |[getSource](#gatewayresourceservicegetsource)|Get a source by reference.|
 
-
-
-
-### GatewayResourceService::__construct  
+### GatewayResourceService::\_\_construct
 
 **Description**
 
@@ -29,24 +20,20 @@
 public __construct (\EntityManagerInterface $entityManager, \LoggerInterface $pluginLogger)
 ```
 
-The constructor sets al needed variables. 
-
- 
+The constructor sets al needed variables.
 
 **Parameters**
 
-* `(\EntityManagerInterface) $entityManager`
-* `(\LoggerInterface) $pluginLogger`
+*   `(\EntityManagerInterface) $entityManager`
+*   `(\LoggerInterface) $pluginLogger`
 
 **Return Values**
 
 `void`
 
-
 <hr />
 
-
-### GatewayResourceService::findSourcesForUrl  
+### GatewayResourceService::findSourcesForUrl
 
 **Description**
 
@@ -54,28 +41,24 @@ The constructor sets al needed variables.
 public findSourcesForUrl (string $url, string $pluginName)
 ```
 
-Find all sources that have a location that match the specified url. 
+Find all sources that have a location that match the specified url.
 
-Todo: we should use a mongoDB filter instead of this, sources should exist in MongoDB. 
+Todo: we should use a mongoDB filter instead of this, sources should exist in MongoDB.
 
 **Parameters**
 
-* `(string) $url`
-: The url we are trying to find a matching source for.  
-* `(string) $pluginName`
-: The name of the plugin that requests these resources.  
+*   `(string) $url`
+    : The url we are trying to find a matching source for.
+*   `(string) $pluginName`
+    : The name of the plugin that requests these resources.
 
 **Return Values**
 
 `array|null`
 
-
-
-
 <hr />
 
-
-### GatewayResourceService::getAction  
+### GatewayResourceService::getAction
 
 **Description**
 
@@ -83,28 +66,22 @@ Todo: we should use a mongoDB filter instead of this, sources should exist in Mo
 public getAction (string $reference, string $pluginName)
 ```
 
-Get an action by reference. 
-
- 
+Get an action by reference.
 
 **Parameters**
 
-* `(string) $reference`
-: The reference to look for  
-* `(string) $pluginName`
-: The name of the plugin that requests the resource.  
+*   `(string) $reference`
+    : The reference to look for
+*   `(string) $pluginName`
+    : The name of the plugin that requests the resource.
 
 **Return Values**
 
 `\Action|null`
 
-
-
-
 <hr />
 
-
-### GatewayResourceService::getEndpoint  
+### GatewayResourceService::getEndpoint
 
 **Description**
 
@@ -112,28 +89,22 @@ Get an action by reference.
 public getEndpoint (string $reference, string $pluginName)
 ```
 
-Get a endpoint by reference. 
-
- 
+Get a endpoint by reference.
 
 **Parameters**
 
-* `(string) $reference`
-: The location to look for.  
-* `(string) $pluginName`
-: The name of the plugin that requests the resource.  
+*   `(string) $reference`
+    : The location to look for.
+*   `(string) $pluginName`
+    : The name of the plugin that requests the resource.
 
 **Return Values**
 
 `\Endpoint|null`
 
-
-
-
 <hr />
 
-
-### GatewayResourceService::getMapping  
+### GatewayResourceService::getMapping
 
 **Description**
 
@@ -141,28 +112,22 @@ Get a endpoint by reference.
 public getMapping (string $reference, string $pluginName)
 ```
 
-Get a mapping by reference. 
-
- 
+Get a mapping by reference.
 
 **Parameters**
 
-* `(string) $reference`
-: The reference to look for.  
-* `(string) $pluginName`
-: The name of the plugin that requests the resource.  
+*   `(string) $reference`
+    : The reference to look for.
+*   `(string) $pluginName`
+    : The name of the plugin that requests the resource.
 
 **Return Values**
 
 `\Mapping|null`
 
-
-
-
 <hr />
 
-
-### GatewayResourceService::getSchema  
+### GatewayResourceService::getSchema
 
 **Description**
 
@@ -170,28 +135,22 @@ Get a mapping by reference.
 public getSchema (string $reference, string $pluginName)
 ```
 
-Get a schema by reference. 
-
- 
+Get a schema by reference.
 
 **Parameters**
 
-* `(string) $reference`
-: The reference to look for.  
-* `(string) $pluginName`
-: The name of the plugin that requests the resource.  
+*   `(string) $reference`
+    : The reference to look for.
+*   `(string) $pluginName`
+    : The name of the plugin that requests the resource.
 
 **Return Values**
 
 `\Entity|null`
 
-
-
-
 <hr />
 
-
-### GatewayResourceService::getSource  
+### GatewayResourceService::getSource
 
 **Description**
 
@@ -199,23 +158,17 @@ Get a schema by reference.
 public getSource (string $reference, string $pluginName)
 ```
 
-Get a source by reference. 
-
- 
+Get a source by reference.
 
 **Parameters**
 
-* `(string) $reference`
-: The reference to look for.  
-* `(string) $pluginName`
-: The name of the plugin that requests the resource.  
+*   `(string) $reference`
+    : The reference to look for.
+*   `(string) $pluginName`
+    : The name of the plugin that requests the resource.
 
 **Return Values**
 
 `\Source|null`
 
-
-
-
 <hr />
-
