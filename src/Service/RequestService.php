@@ -253,7 +253,7 @@ class RequestService
      *
      * @return array An array with all query parameters.
      */
-    public function realRequestQueryAll(string $method = 'get', ?string $queryString = ''): array
+    public function realRequestQueryAll(string $method='get', ?string $queryString=''): array
     {
         $vars = [];
         if (strtolower($method) === 'get' && empty($this->data['querystring']) === true && empty($queryString) === true) {
