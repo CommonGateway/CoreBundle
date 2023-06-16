@@ -601,10 +601,9 @@ class InstallationService
             return null;
         }
 
-        $type  = $matches[1];
+        $type = $matches[1];
         // @todo remove $query? its not being used.
         // $query = explode(',', ltrim($matches[2], '?'));
-
         // Load it if we have it.
         if (array_key_exists('$id', $schema) === true) {
             $object = $this->entityManager->getRepository('App:'.$type)->findOneBy(['reference' => $schema['$id']]);
