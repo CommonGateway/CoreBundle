@@ -60,12 +60,9 @@ class RequestService
      */
     private MappingService $mappingService;
 
-<<<<<<< HEAD:src/Service/RequestService.php
     /**
      * @var array
      */
-=======
->>>>>>> master:Service/RequestService.php
     private array $configuration;
 
     /**
@@ -140,23 +137,15 @@ class RequestService
      */
     private DownloadService $downloadService;
 
-<<<<<<< HEAD:src/Service/RequestService.php
 
-=======
->>>>>>> master:Service/RequestService.php
     /**
      * The constructor sets al needed variables.
      *
      * @param EntityManagerInterface   $entityManager
      * @param CacheService             $cacheService
-<<<<<<< HEAD:src/Service/RequestService.php
      * @param GatewayResourceService   $gatewayResourceService
      * @param MappingService           $mappingService
      * @param CacheService             $cacheService
-=======
-     * @param GatewayResourceService   $resourceService
-     * @param MappingService           $mappingService
->>>>>>> master:Service/RequestService.php
      * @param ResponseService          $responseService
      * @param ObjectEntityService      $objectEntityService
      * @param LogService               $logService
@@ -173,8 +162,6 @@ class RequestService
         GatewayResourceService $resourceService,
         MappingService $mappingService,
         CacheService $cacheService,
-        GatewayResourceService $resourceService,
-        MappingService $mappingService,
         ResponseService $responseService,
         ObjectEntityService $objectEntityService,
         LogService $logService,
@@ -186,19 +173,11 @@ class RequestService
         LoggerInterface $requestLogger,
         DownloadService $downloadService
     ) {
-<<<<<<< HEAD:src/Service/RequestService.php
         $this->entityManager       = $entityManager;
         $this->cacheService        = $cacheService;
         $this->resourceService     = $resourceService;
         $this->mappingService      = $mappingService;
         $this->responseService     = $responseService;
-=======
-        $this->entityManager = $entityManager;
-        $this->cacheService = $cacheService;
-        $this->resourceService = $resourceService;
-        $this->mappingService = $mappingService;
-        $this->responseService = $responseService;
->>>>>>> master:Service/RequestService.php
         $this->objectEntityService = $objectEntityService;
         $this->logService          = $logService;
         $this->callService         = $callService;
@@ -278,6 +257,7 @@ class RequestService
     {
         $vars = [];
         if (strtolower($method) === 'get' && empty($this->data['querystring']) === true && empty($queryString) === true) {
+
             return $vars;
         }
 
@@ -296,42 +276,6 @@ class RequestService
         return $vars;
 
     }//end realRequestQueryAll()
-
-
-    /**
-     * This function adds a single query param to the given $vars array. ?$name=$value
-     * Will check if request query $name has [...] inside the parameter, like this: ?queryParam[$nameKey]=$value.
-     * Works recursive, so in case we have ?queryParam[$nameKey][$anotherNameKey][etc][etc]=$value.
-     * Also checks for queryParams ending on [] like: ?queryParam[$nameKey][] (or just ?queryParam[]), if this is the case
-     * this function will add given value to an array of [queryParam][$nameKey][] = $value or [queryParam][] = $value.
-     * If none of the above this function will just add [queryParam] = $value to $vars.
-     *
-     * @param array  $vars    The vars array we are going to store the query parameter in
-     * @param string $name    The full $name of the query param, like this: ?$name=$value
-     * @param string $nameKey The full $name of the query param, unless it contains [] like: ?queryParam[$nameKey]=$value
-     * @param string $value   The full $value of the query param, like this: ?$name=$value
-     *
-     * @return void
-     */
-    private function recursiveRequestQueryKey(array &$vars, string $name, string $nameKey, string $value)
-    {
-        $matchesCount = preg_match('/(\[[^[\]]*])/', $name, $matches);
-        if ($matchesCount > 0) {
-            $key  = $matches[0];
-            $name = str_replace($key, '', $name);
-            $key  = trim($key, '[]');
-            if (empty($key) === false) {
-                $vars[$nameKey] = ($vars[$nameKey] ?? []);
-                $this->recursiveRequestQueryKey($vars[$nameKey], $name, $key, $value);
-            } else {
-                $vars[$nameKey][] = $value;
-            }
-        } else {
-            $vars[$nameKey] = $value;
-        }
-
-    }//end recursiveRequestQueryKey()
-
 
     /**
      * This function adds a single query param to the given $vars array. ?$name=$value
@@ -355,7 +299,7 @@ class RequestService
             $key = $matches[0];
             $name = str_replace($key, '', $name);
             $key = trim($key, '[]');
-            if (!empty($key)) {
+            if (empty($key) === false) {
                 $vars[$nameKey] = $vars[$nameKey] ?? [];
                 $this->recursiveRequestQueryKey($vars[$nameKey], $name, $key, $value);
             } else {
@@ -365,6 +309,8 @@ class RequestService
             $vars[$nameKey] = $value;
         }
     }
+
+
 
     /**
      * Get the ID from given parameters.
@@ -378,33 +324,26 @@ class RequestService
         // Try to grap an id
         if (isset($this->data['path']['{id}'])) {
             return $this->data['path']['{id}'];
-        }
-
+        } 
         if (isset($this->data['path']['[id]'])) {
             return $this->data['path']['[id]'];
-        }
-
+        } 
         if (isset($this->data['query']['id'])) {
             return $this->data['query']['id'];
-        }
-
+        } 
         if (isset($this->data['path']['id'])) {
             return$this->data['path']['id'];
-        }
-
+        } 
         if (isset($this->data['path']['{uuid}'])) {
             return $this->data['path']['{uuid}'];
-        }
-
+        } 
         if (isset($this->data['query']['uuid'])) {
             return$this->data['query']['uuid'];
-        }
-
+        } 
         if (isset($this->content['id'])) {
             // the id might also be passed trough the object itself
             return $this->content['id'];
-        }
-
+        } 
         if (isset($this->content['uuid'])) {
             return $this->content['uuid'];
         }//end if
@@ -473,15 +412,12 @@ class RequestService
             return $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference]);
         }
 
-<<<<<<< HEAD:src/Service/RequestService.php
         // There is no way to establish an schema so.
         return false;
 
     }//end getSchema()
 
 
-=======
->>>>>>> master:Service/RequestService.php
     /**
      * @param array $data          The data from the call
      * @param array $configuration The configuration from the call
@@ -564,7 +500,6 @@ class RequestService
 
         // And don so lets return what we have.
         return $response;
-
     }//end proxyHandler()
 
 
@@ -613,7 +548,6 @@ class RequestService
         }
 
         // Need to do something about the _
-<<<<<<< HEAD:src/Service/RequestService.php
         if (isset($this->data['querystring']) === true) {
             // $query = explode('&',$this->data['querystring']);
             // foreach ($query as $row) {
@@ -622,17 +556,7 @@ class RequestService
             // $value = $row[1];
             // $filters[$key] = $value;
             // }
-=======
-        if (isset($this->data['querystring'])) {
-            //            $query = explode('&',$this->data['querystring']);
-            //            foreach ($query as $row) {
-            //                $row = explode('=', $row);
-            //                $key = $row[0];
-            //                $value = $row[1];
-            //                $filters[$key] = $value;
-            //            }
 
->>>>>>> master:Service/RequestService.php
             $filters = $this->realRequestQueryAll($this->data['method']);
 
             if (isset($appEndpointConfig['in']['query']) === true) {
@@ -643,7 +567,7 @@ class RequestService
         // Get the ID.
         $this->identification = $this->getId($this->data);
 
-        // If we have an ID we can get an Object to work with (except on gets we handle those from cache).
+        // If we have an ID we can get an entity to work with (except on gets we handle those from cache).
         if (isset($this->identification) === true && $this->identification && $this->data['method'] != 'GET') {
             $this->object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->identification]);
         }
@@ -718,16 +642,12 @@ class RequestService
             }
         }
 
-<<<<<<< HEAD:src/Service/RequestService.php
         // All prepped so lets go.
-=======
-        // All prepped so lets go
->>>>>>> master:Service/RequestService.php
         // todo: split these into functions?
         switch ($this->data['method']) {
         case 'GET':
             // We have an id (so single object).
-            if (isset($this->identification) === true && empty($this->identification) === false) {
+            if (isset($this->identification) === true) {
                 $this->session->set('object', $this->identification);
                 $result = $this->cacheService->getObject($this->identification);
 
@@ -993,43 +913,9 @@ class RequestService
 
         return $this->createResponse($result);
 
-    }//end requestHandler()
-
-
-    /**
-     * Gets the application configuration 'in' and/or 'out' for the current endpoint.
-     *
-     * @param string $endpointRef       The reference of the current endpoint
-     * @param string $endpoint          The current endpoint path
-     * @param string $applicationConfig An item of the configuration of the application
-     *
-     * @return array The 'in' and 'out' configuration of the Application for the current Endpoint.
-     */
-    private function getConfigInOutOrGlobal(string $endpointRef, string $endpoint, array $applicationConfig): array
-    {
-        $appEndpointConfig = [];
-
-        foreach (['in', 'out'] as $type) {
-            if (array_key_exists($endpointRef, $applicationConfig) === true && array_key_exists($type, $applicationConfig[$endpointRef])) {
-                $appEndpointConfig[$type] = $applicationConfig[$endpointRef][$type];
-                continue;
-            }
-
-            if (array_key_exists($endpoint, $applicationConfig) === true && array_key_exists($type, $applicationConfig[$endpoint])) {
-                $appEndpointConfig[$type] = $applicationConfig[$endpoint][$type];
-                continue;
-            }
-
-            if (array_key_exists('global', $applicationConfig) === true && array_key_exists($type, $applicationConfig['global'])) {
-                // Do global last, so that we allow overwriting the global options for specific endpoints ^.
-                $appEndpointConfig[$type] = $applicationConfig['global'][$type];
-                continue;
-            }
-        }
-
-    }//end getConfigInOutOrGlobal()
-
-
+    }//end requestHandler()    
+    
+    
     /**
      * Gets the application configuration 'in' and/or 'out' for the current endpoint.
      * 
@@ -1046,16 +932,21 @@ class RequestService
         foreach (['in', 'out'] as $type) {
             if (array_key_exists($endpointRef, $applicationConfig) === true && array_key_exists($type, $applicationConfig[$endpointRef])) {
                 $appEndpointConfig[$type] = $applicationConfig[$endpointRef][$type];
-            } elseif (array_key_exists($endpoint, $applicationConfig) === true && array_key_exists($type, $applicationConfig[$endpoint])) {
+                continue;
+            }
+            if (array_key_exists($endpoint, $applicationConfig) === true && array_key_exists($type, $applicationConfig[$endpoint])) {
                 $appEndpointConfig[$type] = $applicationConfig[$endpoint][$type];
-            } elseif (array_key_exists('global', $applicationConfig) === true && array_key_exists($type, $applicationConfig['global'])) {
+                continue;
+            } 
+            
+            if (array_key_exists('global', $applicationConfig) === true && array_key_exists($type, $applicationConfig['global'])) {
                 // Do global last, so that we allow overwriting the global options for specific endpoints ^.
                 $appEndpointConfig[$type] = $applicationConfig['global'][$type];
+                continue;
             }
         }
-
-        return $appEndpointConfig;
     }
+
 
     /**
      * Gets the application configuration 'in' and/or 'out' for the current endpoint.
@@ -1067,10 +958,6 @@ class RequestService
      */
     private function getAppEndpointConfig(): array
     {
-<<<<<<< HEAD:src/Service/RequestService.php
-=======
-
->>>>>>> master:Service/RequestService.php
         // @TODO set created application to the session
         $application = $this->entityManager->getRepository('App:Application')->findOneBy(['id' => $this->session->get('application')]);
         if ($application instanceof Application === false
@@ -1080,11 +967,7 @@ class RequestService
         }
 
         $endpointRef = isset($this->data['endpoint']) === true ? $this->data['endpoint']->getReference() : '/';
-<<<<<<< HEAD:src/Service/RequestService.php
-        $endpoint    = $this->getCurrentEndpoint();
-=======
         $endpoint = $this->getCurrentEndpoint();
->>>>>>> master:Service/RequestService.php
 
         $appEndpointConfig = [];
         foreach ($application->getConfiguration() as $applicationConfig) {
@@ -1108,8 +991,6 @@ class RequestService
         }
         $pathArray = $this->data['endpoint']->getPath();
 
-        $pathArray = $this->data['endpoint']->getPath();
-
         // Remove ending id from path to get the core/main endpoint.
         // This way /endpoint without /id can be used in Application Configuration for all CRUD calls.
         if (end($pathArray) === 'id') {
@@ -1122,16 +1003,10 @@ class RequestService
 
 
     /**
-<<<<<<< HEAD:src/Service/RequestService.php
      * If embedded should be shown or not.
      * Handle the Application Endpoint configuration for query params. If filters/query should be changed in any way.
      *
-     * @param array $filters     The filters/query used for the current api-call.
-=======
-     * Handle the Application Endpoint configuration for query params. If filters/query should be changed in any way.
-     *
      * @param array $filters The filters/query used for the current api-call.
->>>>>>> master:Service/RequestService.php
      * @param array $queryConfig Application configuration ['in']['query']
      *
      * @return array The updated filters/query used for the current api-call.
@@ -1143,22 +1018,12 @@ class RequestService
             // Find the mapping.
             $mapping = $this->resourceService->getMapping($queryConfig['mapping'], 'commongateway/corebundle');
 
-<<<<<<< HEAD:src/Service/RequestService.php
             // Map the filters with the given mapping object.
-=======
-            // Mapp the filters with the given mapping object.
->>>>>>> master:Service/RequestService.php
             $filters = $this->mappingService->mapping($mapping, $filters);
         }
 
         return $filters;
-<<<<<<< HEAD:src/Service/RequestService.php
-
-    }//end queryAppEndpointConfig()
-
-=======
     }
->>>>>>> master:Service/RequestService.php
 
     /**
      * Handle the Application Endpoint Configuration for embedded. If embedded should be shown or not.
@@ -1307,8 +1172,7 @@ class RequestService
             if ($validation = $this->object->validate($content) && $this->object->hydrate($content, true)) {
                 $this->entityManager->persist($this->object);
                 break;
-            }
-
+            } 
             // @TODO Use validation to throw an error
             break;
             break;
@@ -1316,8 +1180,7 @@ class RequestService
             if ($this->object->hydrate($content) && $validation = $this->object->validate()) {
                 $this->entityManager->persist($this->object);
                 break;
-            }
-
+            } 
             // @TODO Use validation to throw an error
             break;
         case 'DELETE':
