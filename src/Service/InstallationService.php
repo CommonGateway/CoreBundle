@@ -163,29 +163,29 @@ class InstallationService
      */
     public function update(array $config=[], SymfonyStyle $style=null): int
     {
+        $this->cacheService->setStyle($style);
+
         // Let's see if we are trying to update a single plugin.
         if (isset($config['plugin']) === true) {
             $this->logger->debug('Running plugin installer for a single plugin: '.$config['plugin']);
             $this->install($config['plugin'], $config);
-        } else {
-            // If we don't want to update a single plugin then we want to install al the plugins.
-            $plugins = $this->composerService->getAll();
 
-            $this->logger->debug('Running plugin installer for all plugins');
+            $this->logger->debug('Doing a cache warmup after installer is done...');
+            $this->cacheService->warmup();
+    
+            return Command::SUCCESS;
+        }//endif
 
-            foreach ($plugins as $plugin) {
-                $this->install($plugin['name'], $config);
-            }
-        }//end if
+        // If we don't want to update a single plugin then we want to install al the plugins.
+        $plugins = $this->composerService->getAll();
 
-        $this->logger->debug('Do a cache warmup after installer is done...');
+        $this->logger->debug('Running plugin installer for all plugins');
 
-        if ($style !== null) {
-            $this->cacheService->setStyle($style);
-            $style->info('Done running installer...');
-            $style->section('Running cache warmup');
+        foreach ($plugins as $plugin) {
+            $this->install($plugin['name'], $config);
         }
-
+        
+        $this->logger->debug('Doing a cache warmup after installer is done...');
         $this->cacheService->warmup();
 
         return Command::SUCCESS;
