@@ -242,7 +242,7 @@ class MappingService
             $value = false;
             break;
         case 'string':
-            echo 'i equals 2';
+            $value = (string) $value;
             break;
         case 'keyCantBeValue':
             if ($key == $value) {
