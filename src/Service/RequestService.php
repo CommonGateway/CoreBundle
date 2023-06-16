@@ -260,7 +260,11 @@ class RequestService
             return $vars;
         }
 
-        $pairs = explode('&', empty($queryString) === false ? $queryString : $_SERVER['QUERY_STRING']);
+        if (empty($queryString) === true && isset($_SERVER['QUERY_STRING']) === true) {
+            $queryString = $_SERVER['QUERY_STRING'];
+        }
+
+        $pairs = explode('&', $queryString);
         foreach ($pairs as $pair) {
             $nv    = explode('=', $pair);
             $name  = urldecode($nv[0]);
