@@ -120,12 +120,12 @@ class CallService
     public function removeFiles(array $config): void
     {
         if (isset($config['cert']) === true) {
-            $filename = is_array($config['cert']) ? $config['cert'][0] : $config['cert'];
+            $filename = is_array($config['cert']) === true ? $config['cert'][0] : $config['cert'];
             $this->fileService->removeFile($filename);
         }
 
         if (isset($config['ssl_key']) === true) {
-            $filename = is_array($config['ssl_key']) ? $config['ssl_key'][0] : $config['ssl_key'];
+            $filename = is_array($config['ssl_key']) === true ? $config['ssl_key'][0] : $config['ssl_key'];
             $this->fileService->removeFile($filename);
         }
 
@@ -146,8 +146,8 @@ class CallService
     private function removeEmptyHeaders(array $headers): ?array
     {
         foreach ($headers as $key => $header) {
-            if (is_array($header) && count($header) < 2) {
-                if (!empty($header[0])) {
+            if (is_array($header) === true && count($header) < 2) {
+                if (empty($header[0]) === false) {
                     $headers[$key] = $header[0];
                     continue;
                 }

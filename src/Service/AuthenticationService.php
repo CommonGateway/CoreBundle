@@ -289,7 +289,7 @@ class AuthenticationService
             $this->fileService->removeFile($config['ssl_key']);
         }
 
-        if (isset($config['verify']) === true && is_string($config['verify'])) {
+        if (isset($config['verify']) === true && is_string($config['verify']) === true) {
             $this->fileService->removeFile($config['verify']);
         }
 

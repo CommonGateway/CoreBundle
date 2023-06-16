@@ -169,7 +169,7 @@ class MappingService
                 continue;
             }
 
-            if (is_array($cast)) {
+            if (is_array($cast) === true) {
                 foreach ($cast as $singleCast) {
                     $this->handleCast($dotArray, $key, $singleCast);
                 }

@@ -806,7 +806,7 @@ class InstallationService
         try {
             $install = $installationService->install();
 
-            return is_bool($install) ? $install : empty($install) === false;
+            return is_bool($install) === true ? $install : empty($install) === false;
         } catch (\Throwable $throwable) {
             $this->logger->critical("Failed to install installationService {$data['installationService']}: {$throwable->getMessage()}", ['file' => $throwable->getFile(), 'line' => $throwable->getLine()]);
 
@@ -1405,13 +1405,13 @@ class InstallationService
     public function overrideConfig(array $defaultConfig, array $overrides): array
     {
         foreach ($overrides as $key => $override) {
-            if (is_array($override) && $this->isAssociative($override)) {
+            if (is_array($override) === true && $this->isAssociative($override)) {
                 $defaultConfig[$key] = $this->overrideConfig(isset($defaultConfig[$key]) === true ? $defaultConfig[$key] : [], $override);
 
                 continue;
             }//end if
 
-            if ($key == 'entity' && is_string($override) && Uuid::isValid($override) === false) {
+            if ($key == 'entity' && is_string($override) === true && Uuid::isValid($override) === false) {
                 $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $override]);
                 if (!$entity) {
                     $this->logger->error("No entity found with reference {$override} (overrideConfig() for installation.json)");
@@ -1423,7 +1423,7 @@ class InstallationService
                 continue;
             }//end if
 
-            if ($key == 'source' && is_string($override) && Uuid::isValid($override) === false) {
+            if ($key == 'source' && is_string($override) === true && Uuid::isValid($override) === false) {
                 $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $override]);
                 if (!$source) {
                     $this->logger->error("No source found with reference {$override} (overrideConfig() for installation.json)");
