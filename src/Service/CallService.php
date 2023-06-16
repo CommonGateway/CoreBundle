@@ -645,7 +645,7 @@ class CallService
                     break;
                 }
 
-                $previousResult     = $decodedResponse;
+                $previousResult = $decodedResponse;
             } catch (Exception $exception) {
                 $errorCount++;
                 $this->callLogger->error($exception->getMessage());
