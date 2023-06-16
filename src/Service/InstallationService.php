@@ -1256,9 +1256,9 @@ class InstallationService
             array_key_exists('reference', $handlerData) ? $action->setReference($handlerData['reference']) : '';
             $action->setListens(($handlerData['listens'] ?? []));
             $action->setConditions(($handlerData['conditions'] ?? ['==' => [1, 1]]));
-    
+
             // todo: maybe use: Action->getDefaultConfigFromSchema() instead?
-            $defaultConfig = $this->addActionConfiguration($actionHandler);
+            $defaultConfig                                         = $this->addActionConfiguration($actionHandler);
             isset($handlerData['configuration']) && $defaultConfig = $this->overrideConfig($defaultConfig, ($handlerData['configuration'] ?? []));
             $action->setConfiguration($defaultConfig);
 
@@ -1307,9 +1307,9 @@ class InstallationService
                 $this->logger->error('Handler '.$action->getClass().' has no configuration');
                 continue;
             }
-    
+
             // todo: maybe use: Action->getDefaultConfigFromSchema() instead?
-            $defaultConfig = $this->addActionConfiguration($actionHandler);
+            $defaultConfig                                                 = $this->addActionConfiguration($actionHandler);
             empty($action->getConfiguration()) === false && $defaultConfig = $this->overrideConfig($defaultConfig, ($action->getConfiguration() ?? []));
 
             $action->setConfiguration($defaultConfig);
