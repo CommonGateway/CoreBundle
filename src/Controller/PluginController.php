@@ -40,7 +40,7 @@ class PluginController extends AbstractController
     /**
      * @Route("/installed", methods={"GET"})
      */
-    public function installedAction(Request $request)
+    public function installedAction()
     {
         $status  = 200;
         $plugins = $this->composerService->getAll(['--installed'])['installed'];
@@ -53,7 +53,7 @@ class PluginController extends AbstractController
     /**
      * @Route("/audit", methods={"GET"})
      */
-    public function auditAction(Request $request)
+    public function auditAction()
     {
         $status  = 200;
         $plugins = $this->composerService->audit(['--format=json']);
