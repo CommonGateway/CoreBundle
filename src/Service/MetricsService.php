@@ -77,7 +77,7 @@ class MetricsService
     {
         $coreBundle = $this->composerService->getSingle('commongateway/corebundle');
 
-        // @todo the below should come out of mongoDB
+        // @todo the below should come out of mongoDB.
         $requests = 0;
         $calls    = 0;
 
@@ -120,22 +120,22 @@ class MetricsService
             ],
             [
                 'name'  => 'app_requests',
-            // todo: count (request) monologs with unique request id
+            // todo: count (request) monologs with unique request id.
                 'type'  => 'counter',
-            // todo: should never get lower
+            // todo: should never get lower.
                 'help'  => 'The total amount of incomming requests handled by this gateway',
                 'value' => $requests,
             ],
             [
                 'name'  => 'app_calls',
-            // todo: count (call) monologs with unique call id
+            // todo: count (call) monologs with unique call id.
                 'type'  => 'counter',
                 'help'  => 'The total amount of outgoing calls handled by this gateway',
                 'value' => $calls,
             ],
         ];
 
-        // Let get the data from the providers
+        // Let get the data from the providers.
         $metrics = array_merge($metrics, $this->getErrors());
         $metrics = array_merge($metrics, $this->getPlugins());
 
@@ -153,7 +153,7 @@ class MetricsService
     {
         $collection = $this->client->logs->logs;
 
-        // Count all error logs with one of these level_names
+        // Count all error logs with one of these level_names.
         $errorTypes = [
             'EMERGENCY' => $collection->count(['level_name' => ['$in' => ['EMERGENCY']]]),
             'ALERT'     => $collection->count(['level_name' => ['$in' => ['ALERT']]]),
@@ -195,7 +195,7 @@ class MetricsService
      */
     public function getPlugins(): array
     {
-        // Get all the plugins
+        // Get all the plugins.
         $plugins = $this->composerService->getAll(['--installed']);
 
         $metrics[] = [
@@ -205,7 +205,7 @@ class MetricsService
             'value' => count($plugins),
         ];
 
-        // Create a list
+        // Create a list.
         foreach ($plugins as $plugin) {
             $metrics[] = [
                 'name'   => 'app_installed_plugins',
@@ -257,7 +257,7 @@ class MetricsService
             'value' => count($schemas),
         ];
 
-        // Create a list
+        // Create a list.
         foreach ($schemas as $schema) {
             $filter = ['_self.schema.id' => $schema['id']->toString()];
 

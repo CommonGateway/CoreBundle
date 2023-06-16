@@ -65,8 +65,8 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     }//end __construct()
 
 
-    // this method can only return the event names; you cannot define a
-    // custom method name to execute when each event triggers
+    // this method can only return the event names; you cannot define a,
+    // custom method name to execute when each event triggers.
     public function getSubscribedEvents(): array
     {
         return [

@@ -21,7 +21,7 @@ class ComposerService
 
     private function arrayEnum(array $array, array $enum): bool
     {
-        // Lets see if the values in the array arry pressent in the enum
+        // Lets see if the values in the array arry pressent in the enum.
         foreach ($array as $value) {
             if (in_array($value, $enum) === false) {
                 return false;
@@ -280,7 +280,7 @@ class ComposerService
             break;
         }//end switch
 
-        // Prepare the comand
+        // Prepare the comand.
         $cmd = [
             'composer',
             $call,
@@ -290,26 +290,26 @@ class ComposerService
             $cmd[] = strtolower($package);
         }
 
-        // Check the enums
+        // Check the enums.
         if ($options and !$this->arrayEnum($options, $optionsList)) {
             // @todo throwException();
         }
 
-        // Force JSON output where supported
+        // Force JSON output where supported.
         if (in_array('--format', $optionsList) && in_array('--format json', $options) === false) {
             $options[] = '--format=json';
         }
 
-        // Include options
+        // Include options.
         $cmd = array_merge_recursive($cmd, $options);
 
-        // Start the procces
+        // Start the procces.
         $process = new Process($cmd);
         $process->setWorkingDirectory('/srv/api');
         $process->setTimeout(3600);
         $process->run();
 
-        // executes after the command finishes
+        // executes after the command finishes.
         if (!$process->isSuccessful()) {
             // throw new ProcessFailedException($process);
             // var_dump('error');
@@ -318,7 +318,7 @@ class ComposerService
             $content = $process->getOutput();
         }
 
-        // Turn in into simpethin workable
+        // Turn in into simpethin workable.
         if (in_array('--format=json', $options)) {
             $content = json_decode($content, true);
         } else {
@@ -371,7 +371,7 @@ class ComposerService
         $lockFile = $this->getLockFile();
         $plugins  = [];
         foreach ($lockFile as $result) {
-            // Remove non gateway plugins from the result
+            // Remove non gateway plugins from the result.
             if (isset($result['keywords']) === false || in_array('common-gateway-plugin', $result['keywords']) === false) {
                 continue;
             }
@@ -459,7 +459,7 @@ class ComposerService
                 $plugin           = array_merge($installedPlugin, $plugin);
                 $plugin['update'] = false;
 
-                // Lets see if we have newer versions than currently installer
+                // Lets see if we have newer versions than currently installer.
                 foreach ($plugin['versions']  as $version => $versionDetails) {
                     if (version_compare($plugin['version'], $version) < 0) {
                         if (!$plugin['update']) {
@@ -509,7 +509,7 @@ class ComposerService
 
         $plugins = json_decode($response->getBody()->getContents(), true)['results'];
 
-        // Lets pull the online detail datail
+        // Lets pull the online detail datail.
         foreach ($plugins as $key => $plugin) {
             $plugins[$key] = array_merge($plugin, $this->getSingle($plugin['name']));
         }

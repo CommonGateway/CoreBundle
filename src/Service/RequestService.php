@@ -209,7 +209,7 @@ class RequestService
 
         $xmlEncoder = new XmlEncoder([]);
 
-        // @TODO: Create hal and ld encoding
+        // @TODO: Create hal and ld encoding.
         switch ($accept) {
         case 'pdf':
             $content = $this->downloadService->downloadPdf($data);
@@ -224,7 +224,7 @@ class RequestService
             $content = \Safe\json_encode($data);
         }
 
-        // @TODO: This is preparation for checking if the accept header is allowed by the endpoint
+        // @TODO: This is preparation for checking if the accept header is allowed by the endpoint.
         // if ($endpoint instanceof Endpoint
         // && empty($endpoint->getContentTypes()) === false
         // && in_array($accept, $endpoint->getContentTypes()) === false
@@ -319,7 +319,7 @@ class RequestService
      */
     public function getId()
     {
-        // Try to grab an id
+        // Try to grab an id.
         if (isset($this->data['path']['{id}']) === true) {
             return $this->data['path']['{id}'];
         }
@@ -345,7 +345,7 @@ class RequestService
         }
 
         if (isset($this->content['id']) === true) {
-            // the id might also be passed through the object itself
+            // the id might also be passed through the object itself.
             return $this->content['id'];
         }
 
@@ -639,7 +639,7 @@ class RequestService
             }
         }
 
-        // Security
+        // Security.
         $scopes = $this->getScopes();
         foreach ($allowedSchemas['name'] as $schema) {
             if (isset($scopes[$schema][$this->data['method']]) === false) {
@@ -685,7 +685,7 @@ class RequestService
                 $session     = new Session();
                 $session->set('object', $this->identification);
 
-                // todo: This log is needed so we know an user has 'read' this object
+                // todo: This log is needed so we know an user has 'read' this object.
                 $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) === true ? json_encode($this->content) : $this->content);
             } else {
                 // $this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
@@ -731,16 +731,16 @@ class RequestService
                     $this->entityManager->flush();
                     $this->session->set('object', $this->object->getId()->toString());
                     $this->cacheService->cacheObject($this->object);
-                    // @todo this is hacky, the above schould alredy do this
+                    // @todo this is hacky, the above schould alredy do this.
                     $this->entityManager->flush();
                 } else {
                     $this->entityManager->persist($this->object);
                     $this->session->set('object', $this->object->getId()->toString());
                     $this->cacheService->cacheObject($this->object);
-                    // @todo this is hacky, the above schould alredy do this
+                    // @todo this is hacky, the above schould alredy do this.
                 }
             } else {
-                // Use validation to throw an error.
+                // Use validation to throw an error..
             }
 
             $result = $this->cacheService->getObject($this->object->getId()->toString());
@@ -903,7 +903,7 @@ class RequestService
                 break;
             }
 
-            // If we have a response return that
+            // If we have a response return that.
             if ($event->getData()['response']) {
                 return new Response($this->serializeData($event->getData()['response'], $contentType), $code, ['Content-type' => $contentType]);
             }
@@ -1163,12 +1163,12 @@ class RequestService
         $method  = $this->data['request']->getMethod();
         $content = $this->data['request']->getContent();
 
-        // Lets see if we have an object
+        // Lets see if we have an object.
         if (array_key_exists('id', $this->data) === true) {
             $this->identification = $data['id'];
             $object               = $this->cacheService->getObject($data['id']);
             if ($object === null) {
-                // Throw not found
+                // Throw not found.
                 return [];
             }
 
@@ -1184,7 +1184,7 @@ class RequestService
                 break;
             }
 
-            // @TODO Use validation to throw an error
+            // @TODO Use validation to throw an error.
             break;
             break;
         case 'PATCH':
@@ -1193,7 +1193,7 @@ class RequestService
                 break;
             }
 
-            // @TODO Use validation to throw an error
+            // @TODO Use validation to throw an error.
             break;
         case 'DELETE':
             $this->entityManager->remove($this->object);

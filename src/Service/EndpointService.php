@@ -398,7 +398,7 @@ class EndpointService
         $pathRaw         = str_replace("/$endpoint", '', $pathRaw);
         $explodedPathRaw = explode('/', $pathRaw);
 
-        // Add endpoint for proxy to $explodedPathRaw
+        // Add endpoint for proxy to $explodedPathRaw.
         $explodedPathRaw[] = $endpoint;
 
         return array_combine($path, $explodedPathRaw);

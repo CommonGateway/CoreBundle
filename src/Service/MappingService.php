@@ -26,7 +26,7 @@ class MappingService
     // Add symfony style bundle in order to output to the console.
     private SymfonyStyle $style;
 
-    // Create a private variable to store the twig environment
+    // Create a private variable to store the twig environment.
     private Environment $twig;
 
 
@@ -105,7 +105,7 @@ class MappingService
             $list        = [];
             $extraValues = [];
 
-            // Allow extra(input)values to be passed down for mapping while dealing with a list
+            // Allow extra(input)values to be passed down for mapping while dealing with a list.
             if (array_key_exists('listInput', $input) === true) {
                 $extraValues = $input;
                 $input       = $input['listInput'];
@@ -128,8 +128,8 @@ class MappingService
 
         isset($this->style) === true && $this->style->debug('Mapping array based on mapping object '.$mappingObject->getName().' (id:'.$mappingObject->getId()->toString().' / ref:'.$mappingObject->getReference().') v:'.$mappingObject->getversion());
 
-        // Determine pass trough
-        // Let's get the dot array based on https://github.com/adbario/php-dot-notation
+        // Determine pass trough.
+        // Let's get the dot array based on https://github.com/adbario/php-dot-notation.
         if ($mappingObject->getPassTrough()) {
             $dotArray = new Dot($input);
             isset($this->style) === true && $this->style->debug('Mapping *with* pass trough');
@@ -140,19 +140,19 @@ class MappingService
 
         $dotInput = new Dot($input);
 
-        // Let's do the actual mapping
+        // Let's do the actual mapping.
         foreach ($mappingObject->getMapping() as $key => $value) {
-            // If the value exists in the input dot take it from there
+            // If the value exists in the input dot take it from there.
             if ($dotInput->has($value)) {
                 $dotArray->set($key, $dotInput->get($value));
                 continue;
             }
 
-            // Render the value from twig
+            // Render the value from twig.
             $dotArray->set($key, $this->twig->createTemplate($value)->render($input));
         }
 
-        // Unset unwanted key's
+        // Unset unwanted key's.
         foreach ($mappingObject->getUnset() as $unset) {
             if (!$dotArray->has($unset)) {
                 isset($this->style) === true && $this->style->debug("Trying to unset an property that doesn't exist during mapping");
@@ -162,7 +162,7 @@ class MappingService
             $dotArray->delete($unset);
         }
 
-        // Cast values to a specific type
+        // Cast values to a specific type.
         foreach ($mappingObject->getCast() as $key => $cast) {
             if (!$dotArray->has($key)) {
                 isset($this->style) === true && $this->style->debug("Trying to cast an property that doesn't exist during mapping");
@@ -180,7 +180,7 @@ class MappingService
             $this->handleCast($dotArray, $key, $cast);
         }
 
-        // Back to array
+        // Back to array.
         $output = $dotArray->all();
 
         $output = $this->encodeArrayKeys($output, '&#46;', '.');
@@ -191,7 +191,7 @@ class MappingService
             $output = $output['#'];
         }
 
-        // Log the result
+        // Log the result.
         isset($this->style) === true && $this->style->debug(
             'Mapped object',
             [
@@ -226,7 +226,7 @@ class MappingService
             $cast         = 'unsetIfValue';
         }
 
-        // Todo: Add more casts
+        // Todo: Add more casts.
         switch ($cast) {
         case 'int':
         case 'integer':
@@ -269,7 +269,7 @@ class MappingService
             break;
         }//end switch
 
-        // Don't reset key that was deleted on purpose
+        // Don't reset key that was deleted on purpose.
         if ($dotArray->has($key)) {
             $dotArray->set($key, $value);
         }

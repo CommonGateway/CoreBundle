@@ -153,14 +153,14 @@ class CacheService
 
         isset($this->style) === true && $this->style->writeln('Connecting to'.$this->parameters->get('cache_url'));
 
-        // Backwards compatablity
+        // Backwards compatablity.
         if (isset($this->client) === false) {
             isset($this->style) ? $this->style->writeln('No cache client found, halting warmup') : '';
 
             return Command::SUCCESS;
         }
 
-        // Objects
+        // Objects.
         isset($this->style) === true && $this->style->section('Caching Objects\'s');
         $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
         isset($this->style) === true && $this->style->writeln('Found '.count($objectEntities).' objects\'s');
@@ -174,7 +174,7 @@ class CacheService
             }
         }
 
-        // Schemas
+        // Schemas.
         isset($this->style) === true && $this->style->section('Caching Schema\'s');
         $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
         isset($this->style) === true && $this->style->writeln('Found '.count($schemas).' Schema\'s');
@@ -188,7 +188,7 @@ class CacheService
             }
         }
 
-        // Endpoints
+        // Endpoints.
         isset($this->style) === true && $this->style->section('Caching Endpoint\'s');
         $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
         isset($this->style) === true && $this->style->writeln('Found '.count($endpoints).' Endpoint\'s');
@@ -202,7 +202,7 @@ class CacheService
             }
         }
 
-        // Created indexes
+        // Created indexes.
         $this->client->objects->json->createIndex(['$**' => 'text']);
         $this->client->schemas->json->createIndex(['$**' => 'text']);
         $this->client->endpoints->json->createIndex(['$**' => 'text']);
@@ -259,12 +259,12 @@ class CacheService
      */
     public function cacheObject(ObjectEntity $objectEntity): ObjectEntity
     {
-        // For when we can't generate a schema for an ObjectEntity (for example setting an id on ObjectEntity created with testData)
+        // For when we can't generate a schema for an ObjectEntity (for example setting an id on ObjectEntity created with testData).
         if ($objectEntity->getEntity() === null) {
             return $objectEntity;
         }
 
-        // Backwards compatablity
+        // Backwards compatablity.
         if (isset($this->client) === false) {
             return $objectEntity;
         }
@@ -283,7 +283,7 @@ class CacheService
 
         $collection = $this->client->objects->json;
 
-        // Lets not cash the entire schema
+        // Lets not cash the entire schema.
         $array = $objectEntity->toArray(['embedded' => true, 'user' => $this->getObjectUser($objectEntity)]);
 
         // (isset($array['_schema']['$id'])?$array['_schema'] = $array['_schema']['$id']:'');
@@ -354,7 +354,7 @@ class CacheService
      */
     public function removeObject(ObjectEntity $object): void
     {
-        // Backwards compatablity
+        // Backwards compatablity.
         if (isset($this->client) === false) {
             return;
         }
@@ -376,19 +376,19 @@ class CacheService
      */
     public function getObject(string $identification): ?array
     {
-        // Backwards compatablity
+        // Backwards compatablity.
         if (isset($this->client) === false) {
             return null;
         }
 
         $collection = $this->client->objects->json;
 
-        // Check if object is in the cache ????
+        // Check if object is in the cache?
         if ($object = $collection->findOne(['_id' => $identification])) {
             return json_decode(json_encode($object), true);
         }
 
-        // Fall back tot the entity manager
+        // Fall back tot the entity manager.
         if ($object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $identification])) {
             return $this->cacheObject($object)->toArray(['embedded' => true]);
         }
@@ -411,15 +411,15 @@ class CacheService
      */
     public function searchObjects(string $search=null, array $filter=[], array $entities=[]): ?array
     {
-        // Backwards compatablity
+        // Backwards compatablity.
         if (isset($this->client) === false) {
             return [];
         }
 
-        // Backwards compatibility
+        // Backwards compatibility.
         $this->queryBackwardsCompatibility($filter);
 
-        // Make sure we also have all filters stored in $completeFilter before unsetting
+        // Make sure we also have all filters stored in $completeFilter before unsetting.
         $completeFilter = $filter;
 
         unset(
@@ -433,12 +433,12 @@ class CacheService
             $filter['_fields']
         );
 
-        // 'normal' Filters (not starting with _ )
+        // 'normal' Filters (not starting with _ ).
         foreach ($filter as $key => &$value) {
             $this->handleFilter($key, $value);
         }
 
-        // Search for the correct entity / entities
+        // Search for the correct entity / entities.
         if (empty($entities) === false) {
             $queryError = $this->handleEntities($filter, $completeFilter, $entities);
             if ($queryError !== null) {
@@ -446,17 +446,17 @@ class CacheService
             }
         }
 
-        // Lets see if we need a search
+        // Lets see if we need a search.
         $this->handleSearch($filter, $completeFilter, $search);
 
-        // Limit & Start for pagination
+        // Limit & Start for pagination.
         $this->setPagination($limit, $start, $completeFilter);
 
-        // Order
+        // Order.
         $order                                                   = isset($completeFilter['_order']) === true ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
         empty($order) === false && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
 
-        // Find / Search
+        // Find / Search.
         return $this->retrieveObjectsFromCache($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order], $completeFilter);
 
     }//end searchObjects()
@@ -527,10 +527,10 @@ class CacheService
     private function handleFilter($key, &$value)
     {
         if (substr($key, 0, 1) == '_') {
-            // todo: deal with filters starting with _ like: _dateCreated
+            // todo: deal with filters starting with _ like: _dateCreated.
         }
 
-        // Handle filters that expect $value to be an array
+        // Handle filters that expect $value to be an array.
         if ($this->handleFilterArray($value)) {
             return;
         }
@@ -585,9 +585,9 @@ class CacheService
      */
     private function handleFilterArray(&$value): bool
     {
-        // Lets check for the methods like in
+        // Lets check for the methods like in.
         if (is_array($value) === true) {
-            // int_compare
+            // int_compare.
             if (array_key_exists('int_compare', $value) === true && is_array($value['int_compare']) === true) {
                 $value = array_map('intval', $value['int_compare']);
             } else if (array_key_exists('int_compare', $value) === true) {
@@ -596,7 +596,7 @@ class CacheService
                 return true;
             }
 
-            // bool_compare
+            // bool_compare.
             if (array_key_exists('bool_compare', $value) === true && is_array($value['bool_compare']) === true) {
                 $value = array_map('boolval', $value['bool_compare']);
             } else if (array_key_exists('bool_compare', $value) === true) {
@@ -605,10 +605,10 @@ class CacheService
                 return true;
             }
 
-            // after, before, strictly_after,strictly_before
+            // after, before, strictly_after,strictly_before.
             if (empty(array_intersect_key($value, array_flip(['after', 'before', 'strictly_after', 'strictly_before']))) === false) {
                 $newValue = null;
-                // Compare datetime
+                // Compare datetime.
                 if (empty(array_intersect_key($value, array_flip(['after', 'strictly_after']))) === false) {
                     $after       = array_key_exists('strictly_after', $value) ? 'strictly_after' : 'after';
                     $compareDate = new DateTime($value[$after]);
@@ -634,7 +634,7 @@ class CacheService
                 return true;
             }//end if
 
-            // like
+            // like.
             if (array_key_exists('like', $value) === true && is_array($value['like']) === true) {
                 // $value = array_map('like', $value['like']);
             } else if (array_key_exists('like', $value) === true) {
@@ -647,63 +647,63 @@ class CacheService
                 return true;
             }
 
-            // regex
+            // regex.
             if (array_key_exists('regex', $value) === true && is_array($value['regex']) === true) {
-                // $value = array_map('like', $value['like']); @todo
+                // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('regex', $value) === true) {
                 $value = ['$regex' => $value['regex']];
 
                 return true;
             }
 
-            // >=
+            // >= .
             if (array_key_exists('>=', $value) === true && is_array($value['>=']) === true) {
-                // $value = array_map('like', $value['like']); @todo
+                // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('>=', $value) === true) {
                 $value = ['$gte' => (int) $value['>=']];
 
                 return true;
             }
 
-            // >
+            // > .
             if (array_key_exists('>', $value) === true && is_array($value['>']) === true) {
-                // $value = array_map('like', $value['like']); @todo
+                // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('>', $value) === true) {
                 $value = ['$gt' => (int) $value['>']];
 
                 return true;
             }
 
-            // <=
+            // <= .
             if (array_key_exists('<=', $value) === true && is_array($value['<=']) === true) {
-                // $value = array_map('like', $value['like']); @todo
+                // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('<=', $value) === true) {
                 $value = ['$lte' => (int) $value['<=']];
 
                 return true;
             }
 
-            // <
+            // < .
             if (array_key_exists('<', $value) === true && is_array($value['<']) === true) {
-                // $value = array_map('like', $value['like']); @todo
+                // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('<', $value) === true) {
                 $value = ['$lt' => (int) $value['<']];
 
                 return true;
             }
 
-            // exact
+            // exact .
             if (array_key_exists('exact', $value) === true && is_array($value['exact']) === true) {
-                // $value = array_map('like', $value['like']); @todo
+                // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('exact', $value) === true) {
                 $value = $value;
 
                 return true;
             }
 
-            // case_insensitive
+            // case_insensitive.
             if (array_key_exists('case_insensitive', $value) === true && is_array($value['case_insensitive']) === true) {
-                // $value = array_map('like', $value['like']); @todo
+                // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('case_insensitive', $value) === true) {
                 $value = [
                     '$regex'   => $value['case_insensitive'],
@@ -713,16 +713,16 @@ class CacheService
                 return true;
             }
 
-            // case_sensitive
+            // case_sensitive.
             if (array_key_exists('case_sensitive', $value) === true && is_array($value['case_sensitive']) === true) {
-                // $value = array_map('like', $value['like']); @todo
+                // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('case_sensitive', $value)) {
                 $value = ['$regex' => $value['case_sensitive']];
 
                 return true;
             }
 
-            // Handle filter value = array (example: ?property=a,b,c) also works if the property we are filtering on is an array
+            // Handle filter value = array (example: ?property=a,b,c) also works if the property we are filtering on is an array.
             $value = ['$in' => $value];
 
             return true;
@@ -887,7 +887,7 @@ class CacheService
             return;
         }
 
-        // Normal search on every property with type text (includes strings)
+        // Normal search on every property with type text (includes strings).
         if (is_string($search) === true) {
             $filter['$text']
                 = [
@@ -895,7 +895,7 @@ class CacheService
                     '$caseSensitive' => false,
                 ];
         }
-        // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value
+        // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value.
         else if (is_array($search) === true) {
             $searchRegex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $search[array_key_first($search)]);
             if (empty($searchRegex) === true) {
@@ -961,7 +961,7 @@ class CacheService
         $limit = isset($filter['_limit']) === true && is_numeric($filter['_limit']) === true ? (int) $filter['_limit'] : 30;
         $page  = isset($filter['_page']) === true && is_numeric($filter['_page']) === true ? (int) $filter['_page'] : 1;
 
-        // Lets build the page & pagination
+        // Lets build the page & pagination.
         if ($start > 1) {
             $offset = ($start - 1);
         } else {
@@ -992,7 +992,7 @@ class CacheService
      */
     public function cacheEndpoint(Endpoint $endpoint): Endpoint
     {
-        // Backwards compatablity
+        // Backwards compatablity.
         if (isset($this->client) === false) {
             return $endpoint;
         }
@@ -1038,7 +1038,7 @@ class CacheService
      */
     public function removeEndpoint(Endpoint $endpoint): void
     {
-        // Backwards compatablity
+        // Backwards compatablity.
         if (isset($this->client) === false) {
             return;
         }
@@ -1059,7 +1059,7 @@ class CacheService
      */
     public function getEndpoint(string $identification): ?array
     {
-        // Backwards compatablity
+        // Backwards compatablity.
         if (isset($this->client) === false) {
             return [];
         }
@@ -1081,7 +1081,7 @@ class CacheService
 
     public function getEndpoints(array $filter): ?Endpoint
     {
-        // Backwards compatablity
+        // Backwards compatablity.
         if (isset($this->client) === false) {
             return [];
         }
@@ -1108,7 +1108,7 @@ class CacheService
         if (count($endpoints) > 1) {
             throw new NonUniqueResultException();
         } else if (count($endpoints) == 1) {
-            // @TODO: We actually want to use the denormalizer, but that breaks on not setting ids
+            // @TODO: We actually want to use the denormalizer, but that breaks on not setting ids.
             return $this->entityManager->find('App\Entity\Endpoint', $endpoints[0]['id']);
         } else {
             return null;
@@ -1126,12 +1126,12 @@ class CacheService
      */
     public function cacheShema(Entity $entity): Entity
     {
-        // Backwards compatablity
+        // Backwards compatablity.
         if (isset($this->client) === false) {
             return $entity;
         }
 
-        // Remap the array
+        // Remap the array.
         $array              = $entity->toSchema(null);
         $array['reference'] = $array['$id'];
         $array['schema']    = $array['$schema'];

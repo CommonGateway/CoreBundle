@@ -231,11 +231,11 @@ class CallService
 
         $parsedUrl = parse_url($source->getLocation());
 
-        // Set authentication if needed
+        // Set authentication if needed.
         $config = array_merge_recursive($this->getAuthentication($source), $config);
         $createCertificates && $this->getCertificate($config);
         
-        // Backwards compatible, $source->getHeaders = deprecated
+        // Backwards compatible, $source->getHeaders = deprecated.
         $config['headers'] = array_merge(($source->getHeaders() ?? []), $config['headers']);
         
         $config['headers']['host'] = $parsedUrl['host'];
@@ -247,7 +247,7 @@ class CallService
         $config = $this->handleEndpointsConfigOut($source, $endpoint, $config);
 
         $this->callLogger->debug('Call configuration: ', $config);
-        // Let's make the call
+        // Let's make the call.
         try {
             if (!$asynchronous) {
                 $response = $this->client->request($method, $url, $config);
@@ -404,12 +404,12 @@ class CallService
             $endpointConfigIn = $endpointsConfig['global']['in'];
         }
 
-        // Let's check if we are dealing with an Exception and not a Response
+        // Let's check if we are dealing with an Exception and not a Response.
         if (isset($endpointConfigIn) === true && $response === null && $exception !== null) {
             return $this->handleEndpointConfigInEx($endpointConfigIn, $exception, $responseContent);
         }
 
-        // Handle endpointConfigIn for a Response
+        // Handle endpointConfigIn for a Response.
         if (isset($endpointConfigIn) === true && $response !== null) {
             $headers = $this->handleEndpointConfigIn($response->getHeaders(), $endpointConfigIn, 'headers');
             $body    = $this->handleEndpointConfigIn($response->getBody(), $endpointConfigIn, 'body');
@@ -437,7 +437,7 @@ class CallService
      */
     private function handleEndpointConfigInEx(array $endpointConfigIn, Exception $exception, ?string $responseContent): Response
     {
-        // Check if error is set and the exception has a getResponse() otherwise just throw the exception
+        // Check if error is set and the exception has a getResponse() otherwise just throw the exception.
         if (array_key_exists('error', $endpointConfigIn) === false
             || method_exists(get_class($exception), 'getResponse') === false
             || $exception->getResponse() === null
@@ -447,7 +447,7 @@ class CallService
 
         $body = json_decode($responseContent, true);
 
-        // Create exception array
+        // Create exception array.
         $exceptionArray = [
             'statusCode' => $exception->getResponse()->getStatusCode(),
             'headers'    => $exception->getResponse()->getHeaders(),
@@ -524,7 +524,7 @@ class CallService
     {
         $this->callLogger->debug('Determine content type of response');
 
-        // switch voor obejct
+        // switch voor obejct.
         $contentType = $response->getHeader('content-type')[0];
 
         if (!$contentType) {
@@ -552,8 +552,8 @@ class CallService
         ?string $contentType='application/json'
     ): array {
         $this->callLogger->info('Decoding response content');
-        // resultaat omzetten
-        // als geen content-type header dan content-type header is accept header
+        // resultaat omzetten.
+        // als geen content-type header dan content-type header is accept header.
         $responseBody = $response->getBody()->getContents();
         if (!$responseBody) {
             return [];

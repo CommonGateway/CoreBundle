@@ -422,7 +422,7 @@ class InstallationService
             }
         }
 
-        // Make sure to warn users if they have to many files in a folder. (36 is maximum)
+        // Make sure to warn users if they have to many files in a folder. (36 is maximum).
         if (count($hits->files()) > 25) {
             $this->logger->warning("Found {strval(count($hits->files()))} files in directory, try limiting your files to 32 per directory. Or you won\'t be able to load in these schema\'s locally on a windows machine.", ['location' => $location, 'files' => count($hits->files())]);
         }
@@ -458,8 +458,8 @@ class InstallationService
             return false;
         }
 
-        // // Todo: validateJsonMapping does not exist
-        // // Check if it is a valid schema.
+        // Todo: validateJsonMapping does not exist.
+        // Check if it is a valid schema.
         // $mappingSchema = $this->validateJsonMapping($mappingSchema);
         // if ($this->validateJsonMapping($mappingSchema) === true) {
         // $this->logger->error($file->getFilename().' is not a valid json-mapping object');
@@ -721,7 +721,7 @@ class InstallationService
             $object->setOwner($this->testDataDefault['owner']);
         }
 
-        // TODO: testdata objects seem to have twice as much subobjects as they should have. Duplicates... (example: kiss->klanten->telefoonnummers)
+        // TODO: testdata objects seem to have twice as much subobjects as they should have. Duplicates... (example: kiss->klanten->telefoonnummers).
         // Now it gets a bit specif but for EAV data we allow nested fixed id's so let dive deep.
         if ($this->entityManager->contains($object) === false && (array_key_exists('id', $schema) === true || array_key_exists('_id', $schema) === true)) {
             $object = $this->schemaService->hydrate($object, $schema);
@@ -936,7 +936,7 @@ class InstallationService
 
                 $endpoints[] = $endpoint;
 
-                // Handle sub and subSchema Endpoints. (will always create an endpoint for type 'schemas')
+                // Handle sub and subSchema Endpoints. (will always create an endpoint for type 'schemas').
                 $endpointData['$id'] = $endpoint->getReference();
                 $endpoints           = array_merge($endpoints, $this->handleSubEndpoints($endpointData, $subEndpoints));
                 $endpoints           = array_merge($endpoints, $this->handleSubSchemaEndpoints($endpointData, $subSchemaEndpoints));
@@ -1131,7 +1131,7 @@ class InstallationService
         // Check for reference to entity, if so, add entity to endpoint.
         if (isset($newEndpointData['reference']) === true) {
             $newEndpoint->setEntity(null);
-            // Old way of setting Entity for Endpoints
+            // Old way of setting Entity for Endpoints.
             foreach ($newEndpoint->getEntities() as $removeEntity) {
                 $newEndpoint->removeEntity($removeEntity);
             }
@@ -1385,7 +1385,7 @@ class InstallationService
                 }
                 break;
             default:
-                // throw error
+                // throw error.
             }//end switch
         }//end foreach
 

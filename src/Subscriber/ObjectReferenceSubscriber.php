@@ -36,8 +36,8 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     }//end __construct()
 
 
-    // this method can only return the event names; you cannot define a
-    // custom method name to execute when each event triggers
+    // this method can only return the event names; you cannot define a,
+    // custom method name to execute when each event triggers.
     public function getSubscribedEvents(): array
     {
         return [
@@ -59,10 +59,10 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     {
         $object = $args->getObject();
 
-        // Let see if we need to hook an attribute to an entity
-        if ($object instanceof Attribute // It's an attribute
-            && ($object->getSchema() || $object->getReference()) // It has a reference
-            && !$object->getObject() // It isn't currently connected to a schema
+        // Let see if we need to hook an attribute to an entity.
+        if ($object instanceof Attribute // It's an attribute.
+            && ($object->getSchema() || $object->getReference()) // It has a reference.
+            && !$object->getObject() // It isn't currently connected to a schema.
         ) {
             $reference = ($object->getReference() ?? $object->getSchema());
             $entity    = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference]);
@@ -79,8 +79,8 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if ($object instanceof Entity // Is it an entity
-            && $object->getReference() // Does it have a reference
+        if ($object instanceof Entity // Is it an entity.
+            && $object->getReference() // Does it have a reference.
         ) {
             $attributes = $this->entityManager->getRepository('App:Attribute')->findBy(['schema' => $object->getReference()]);
             foreach ($attributes as $attribute) {
