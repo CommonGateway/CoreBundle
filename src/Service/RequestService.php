@@ -315,45 +315,43 @@ class RequestService
     /**
      * Get the ID from given parameters.
      *
-     * @param array $object
-     *
      * @return string|false
      */
-    public function getId(array $object)
+    public function getId()
     {
-        // Try to grap an id
-        if (isset($this->data['path']['{id}'])) {
+        // Try to grab an id
+        if (isset($this->data['path']['{id}']) === true) {
             return $this->data['path']['{id}'];
         }
 
-        if (isset($this->data['path']['[id]'])) {
+        if (isset($this->data['path']['[id]']) === true) {
             return $this->data['path']['[id]'];
         }
 
-        if (isset($this->data['query']['id'])) {
+        if (isset($this->data['query']['id']) === true) {
             return $this->data['query']['id'];
         }
 
-        if (isset($this->data['path']['id'])) {
+        if (isset($this->data['path']['id']) === true) {
             return$this->data['path']['id'];
         }
 
-        if (isset($this->data['path']['{uuid}'])) {
+        if (isset($this->data['path']['{uuid}']) === true) {
             return $this->data['path']['{uuid}'];
         }
 
-        if (isset($this->data['query']['uuid'])) {
+        if (isset($this->data['query']['uuid']) === true) {
             return$this->data['query']['uuid'];
         }
 
-        if (isset($this->content['id'])) {
-            // the id might also be passed trough the object itself
+        if (isset($this->content['id']) === true) {
+            // the id might also be passed through the object itself
             return $this->content['id'];
         }
 
-        if (isset($this->content['uuid'])) {
+        if (isset($this->content['uuid']) === true) {
             return $this->content['uuid'];
-        }//end if
+        }
 
         return false;
 
@@ -572,7 +570,7 @@ class RequestService
         }
 
         // Get the ID.
-        $this->identification = $this->getId($this->data);
+        $this->identification = $this->getId();
 
         // If we have an ID we can get an entity to work with (except on gets we handle those from cache).
         if (isset($this->identification) === true && $this->identification && $this->data['method'] != 'GET') {
