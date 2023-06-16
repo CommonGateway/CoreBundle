@@ -13,7 +13,7 @@ jobs:
           php_version: "7.4"
           php_extensions: redis exif
           version: 2.x
-          command: require symfony/tests-pack
+          command: require symfony/test-pack
       - name: ls all
         run: ls -la vendor
       - name: Run tests
