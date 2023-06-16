@@ -14,5 +14,15 @@ jobs:
           php_extensions: redis exif
           version: 2.x
           command: require symfony/test-pack
+      - name: Create results folder
+        run: mkdir tests/results
       - name: Run tests
-        run: php bin/phpunit --coverage-text
+        run: php vendor/bin/phpunit --coverage-text=tests/results/phpunit.txt
+      - name: ls all
+        run: ls -la tests/results
+      - name: Output the run Details
+        if: (success() || failure())
+        uses: actions/upload-artifact@v2
+        with:
+          name: RunReports
+          path: tests/results

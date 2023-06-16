@@ -12,6 +12,7 @@ use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Client;
+use MongoDB\Collection;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
@@ -217,7 +218,7 @@ class CacheService
     }//end warmup()
 
 
-    private function removeDataFromCache(\MongoDB\Collection $collection, string $type): void
+    private function removeDataFromCache(Collection $collection, string $type): void
     {
         $endpoints = $collection->find()->toArray();
         foreach ($endpoints as $endpoint) {
@@ -588,7 +589,7 @@ class CacheService
     private function handleFilterArray($key, &$value): bool
     {
         // Lets check for the methods like in
-        if (is_array($value)) {
+        if (is_array($value) === true) {
             // int_compare
             if (array_key_exists('int_compare', $value) === true && is_array($value['int_compare']) === true) {
                 $value = array_map('intval', $value['int_compare']);
@@ -716,7 +717,7 @@ class CacheService
             }
 
             // case_sensitive
-            if (array_key_exists('case_sensitive', $value) && is_array($value['case_sensitive'])) {
+            if (array_key_exists('case_sensitive', $value) === true && is_array($value['case_sensitive']) === true) {
                 // $value = array_map('like', $value['like']); @todo
             } else if (array_key_exists('case_sensitive', $value)) {
                 $value = ['$regex' => $value['case_sensitive']];
@@ -819,20 +820,20 @@ class CacheService
             $message       = 'Please give an attribute to order on. Like this: ?_order[attributeName]=desc/asc. Supported order query parameters: '.$orderCheckStr;
         }
 
-        if (is_array($order) && count($order) > 1) {
+        if (is_array($order) === true && count($order) > 1) {
             $message = 'Only one order query param at the time is allowed.';
         }
 
-        if (is_array($order) && in_array(strtoupper(array_values($order)[0]), ['DESC', 'ASC']) === false) {
+        if (is_array($order) === true && in_array(strtoupper(array_values($order)[0]), ['DESC', 'ASC']) === false) {
             $message = 'Please use desc or asc as value for your order query param, not: '.array_values($order)[0];
         }
 
-        if (is_array($order) && in_array(array_keys($order)[0], $orderCheck) === false) {
+        if (is_array($order) === true && in_array(array_keys($order)[0], $orderCheck) === false) {
             $orderCheckStr = implode(', ', $orderCheck);
             $message       = 'Unsupported order query parameter ('.array_keys($order)[0].'). Supported order query parameters: '.$orderCheckStr;
         }
 
-        if (isset($message)) {
+        if (isset($message) === true) {
             return $message;
         }
 
