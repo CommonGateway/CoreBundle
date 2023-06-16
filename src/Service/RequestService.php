@@ -537,7 +537,7 @@ class RequestService
         // Get the ID.
         $this->identification = $this->getId($this->data);
 
-        // If we have an ID we can get an entity to work with (except on gets we handle those from cache).
+        // If we have an ID we can get an Object to work with (except on gets we handle those from cache).
         if (isset($this->identification) === true && $this->identification && $this->data['method'] != 'GET') {
             $this->object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->identification]);
         }
@@ -623,7 +623,7 @@ class RequestService
         switch ($this->data['method']) {
         case 'GET':
             // We have an id (so single object).
-            if (isset($this->identification) === true) {
+            if (isset($this->identification) === true && empty($this->identification) === false) {
                 $this->session->set('object', $this->identification);
                 $result = $this->cacheService->getObject($this->identification);
 
