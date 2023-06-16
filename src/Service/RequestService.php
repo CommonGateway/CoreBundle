@@ -711,14 +711,14 @@ class RequestService
                     $this->entityManager->persist($this->object);
                     $this->entityManager->flush();
                     $this->session->set('object', $this->object->getId()->toString());
-                    $this->cacheService->cacheObject($this->object);
                     // @todo this is hacky, the above should already do this
+                    $this->cacheService->cacheObject($this->object);
                     $this->entityManager->flush();
                 } else {
                     $this->entityManager->persist($this->object);
                     $this->session->set('object', $this->object->getId()->toString());
-                    $this->cacheService->cacheObject($this->object);
                     // @todo this is hacky, the above should already do this
+                    $this->cacheService->cacheObject($this->object);
                 }
             } else {
                 // Use validation to throw an error.
@@ -928,10 +928,10 @@ class RequestService
             if (array_key_exists('global', $applicationConfig) === true && array_key_exists($type, $applicationConfig['global'])) {
                 // Do global last, so that we allow overwriting the global options for specific endpoints ^.
                 $appEndpointConfig[$type] = $applicationConfig['global'][$type];
-                continue;
             }
         }
-
+    
+        return $appEndpointConfig;
     }//end getConfigInOutOrGlobal()
 
     /**
@@ -1037,9 +1037,7 @@ class RequestService
                 foreach ($result['results'] as $key => $item) {
                     $result['results'][$key] = $this->checkEmbedded($item);
                 }
-            }
-
-            if (isset($result['results']) === false) {
+            } else {
                 $result = $this->checkEmbedded($result);
             }
         }//end if
@@ -1119,69 +1117,6 @@ class RequestService
         $result['_self'] = $resultMetadataSelf;
 
     }//end handleMetadataSelf()
-
-    /**
-     * @TODO use and fix/clean-up this function or just remove this function?
-     *
-     * @param array $data          The data from the call
-     * @param array $configuration The configuration from the call
-     *
-     * @return array The modified data
-     */
-    public function itemRequestHandler(array $data, array $configuration): array
-    {
-        $this->data          = $data;
-        $this->configuration = $configuration;
-
-        $method  = $this->data['request']->getMethod();
-        $content = $this->data['request']->getContent();
-
-        // Lets see if we have an object
-        if (array_key_exists('id', $this->data) === true) {
-            $this->identification = $data['id'];
-            $object               = $this->cacheService->getObject($data['id']);
-            if ($object === null) {
-                // Throw not found
-                return [];
-            }
-
-            $this->object = $object;
-        }//end if
-
-        switch ($method) {
-        case 'GET':
-            break;
-        case 'PUT':
-            if ($validation = $this->object->validate($content) && $this->object->hydrate($content, true)) {
-                $this->entityManager->persist($this->object);
-                break;
-            }
-
-            // @TODO Use validation to throw an error
-            break;
-            break;
-        case 'PATCH':
-            if ($this->object->hydrate($content) && $validation = $this->object->validate()) {
-                $this->entityManager->persist($this->object);
-                break;
-            }
-
-            // @TODO Use validation to throw an error
-            break;
-        case 'DELETE':
-            $this->entityManager->remove($this->object);
-
-            return new Response('', '202');
-            break;
-        default:
-            break;
-        }//end switch
-
-        $this->entityManager->flush();
-
-        return $this->createResponse($this->object);
-
-    }//end itemRequestHandler()
 
     /**
      * Determines the proxy source from configuration, then use proxy handler to proxy the request.
