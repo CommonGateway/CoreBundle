@@ -91,6 +91,12 @@ Calls a source according to given configuration.
 
 
 
+**Throws Exceptions**
+
+
+`\Exception`
+
+
 <hr />
 
 
