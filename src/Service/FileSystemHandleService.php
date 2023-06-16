@@ -192,15 +192,13 @@ class FileSystemHandleService
     {
         // @Todo: Also add handleEndpointsConfigOut?
         $fileSystem = $this->fscService->openFtpFilesystem($source);
-        $content = $this->getFileContents($fileSystem, $location);
+        $content    = $this->getFileContents($fileSystem, $location);
 
         if (isset($config['format']) === true) {
-
             return $this->handleEndpointsConfigIn($source, $location, $this->decodeFile($content, $location, $config['format']));
-        } 
-        
-        if (isset($config['format']) === false) {
+        }
 
+        if (isset($config['format']) === false) {
             return $this->handleEndpointsConfigIn($source, $location, $this->decodeFile($content, $location));
         }
 

@@ -306,7 +306,6 @@ class CallService
 
         // @todo reenable when calllogs are added reenabled
         // $startTimer = microtime(true);
-
         $this->callLogger->debug('Call configuration: ', $config);
         // Lets make the call
         try {
@@ -328,7 +327,6 @@ class CallService
         // @todo reenable when calllogs are added reenabled
         // $responseClone = clone $response;
         // $this->updateLog($log, $responseClone, $startTimer);
-
         $createCertificates && $this->removeFiles($config);
 
         return $this->handleEndpointsConfigIn($source, $endpoint, $response, null, null);
