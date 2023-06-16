@@ -25,7 +25,6 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
      */
     private EntityManagerInterface $entityManager;
 
-
     /**
      * __construct
      */
@@ -35,7 +34,6 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
         $this->entityManager = $entityManager;
 
     }//end __construct()
-
 
     /**
      * This method can only return the event names; you cannot define a,

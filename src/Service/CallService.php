@@ -177,7 +177,6 @@ class CallService
 
     }//end removeEmptyHeaders()
 
-
     /**
      * Handles the exception if the call triggered one.
      *

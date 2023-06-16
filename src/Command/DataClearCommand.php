@@ -35,7 +35,6 @@ class DataClearCommand extends Command
      */
     private ParameterBagInterface $parameterBagInterface;
 
-
     /**
      * __construct
      */
@@ -50,7 +49,6 @@ class DataClearCommand extends Command
 
     }//end __construct()
 
-
     /**
      * Configures this command.
      *
@@ -63,7 +61,6 @@ class DataClearCommand extends Command
             ->setHelp('use with care, or better don\'t use at all');
 
     }//end configure()
-
 
     /**
      * Executes this command.

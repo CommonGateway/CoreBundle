@@ -48,7 +48,6 @@ class AuthenticationService
      */
     private FileService $fileService;
 
-
     /**
      * __construct
      */

@@ -22,7 +22,6 @@ class CronjobLog
      */
     private $id;
 
-
     /**
      * Gets the id of this CronjobLog.
      *

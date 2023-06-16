@@ -30,7 +30,6 @@ class UninstallCommand extends Command
      */
     private InstallationService $installationService;
 
-
     /**
      * __construct
      */
@@ -41,7 +40,6 @@ class UninstallCommand extends Command
         parent::__construct();
 
     }//end __construct()
-
 
     /**
      * Configures this commmand.
@@ -58,7 +56,6 @@ class UninstallCommand extends Command
             ->setHelp('This command allows you to create a OAS files for your EAV entities');
 
     }//end configure()
-
 
     /**
      * Executes this commmand.

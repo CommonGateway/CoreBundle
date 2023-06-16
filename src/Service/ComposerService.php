@@ -479,7 +479,7 @@ class ComposerService
      *
      * @return array
      */
-    public function search(string $search=null): array
+    public function search(string $search = null): array
     {
         $query = ['tags' => 'common-gateway-plugin'];
         if ($search) {

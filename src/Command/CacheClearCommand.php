@@ -28,7 +28,6 @@ class CacheClearCommand extends Command
      */
     private CacheService $cacheService;
 
-
     /**
      * __construct
      */
@@ -38,7 +37,6 @@ class CacheClearCommand extends Command
         parent::__construct();
 
     }//end __construct()
-
 
     /**
      * Configures this command.
@@ -52,7 +50,6 @@ class CacheClearCommand extends Command
             ->setHelp('This command allows you to run further installation an configuration actions afther installing a plugin');
 
     }//end configure()
-
 
     /**
      * Executes this command.

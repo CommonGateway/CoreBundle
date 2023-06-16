@@ -784,7 +784,6 @@ class CacheService
 
     }//end handleEntities()
 
-
     // /**
     // * Will check if we are allowed to order with the given $order query param.
     // * Uses ObjectEntityRepository->getOrderParameters() to check if we are allowed to order, see eavService->handleSearch() $orderCheck.
@@ -848,7 +847,6 @@ class CacheService
     // }
     // return null;
     // }//end handleFilterCheck()
-
 
     /**
      * Adds search filter to the query on MongoDB. Will use given $search string to search on entire object, unless
@@ -1129,7 +1127,6 @@ class CacheService
         return $entity;
 
     }//end cacheShema()
-
 
     // /**
     // * Removes an Schema from the cache.
