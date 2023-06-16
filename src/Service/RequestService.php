@@ -257,7 +257,6 @@ class RequestService
     {
         $vars = [];
         if (strtolower($method) === 'get' && empty($this->data['querystring']) === true && empty($queryString) === true) {
-
             return $vars;
         }
 
@@ -276,6 +275,7 @@ class RequestService
         return $vars;
 
     }//end realRequestQueryAll()
+
 
     /**
      * This function adds a single query param to the given $vars array. ?$name=$value
@@ -296,11 +296,11 @@ class RequestService
     {
         $matchesCount = preg_match('/(\[[^[\]]*])/', $name, $matches);
         if ($matchesCount > 0) {
-            $key = $matches[0];
+            $key  = $matches[0];
             $name = str_replace($key, '', $name);
-            $key = trim($key, '[]');
+            $key  = trim($key, '[]');
             if (empty($key) === false) {
-                $vars[$nameKey] = $vars[$nameKey] ?? [];
+                $vars[$nameKey] = ($vars[$nameKey] ?? []);
                 $this->recursiveRequestQueryKey($vars[$nameKey], $name, $key, $value);
             } else {
                 $vars[$nameKey][] = $value;
@@ -308,8 +308,8 @@ class RequestService
         } else {
             $vars[$nameKey] = $value;
         }
-    }
 
+    }//end recursiveRequestQueryKey()
 
 
     /**
@@ -324,26 +324,33 @@ class RequestService
         // Try to grap an id
         if (isset($this->data['path']['{id}'])) {
             return $this->data['path']['{id}'];
-        } 
+        }
+
         if (isset($this->data['path']['[id]'])) {
             return $this->data['path']['[id]'];
-        } 
+        }
+
         if (isset($this->data['query']['id'])) {
             return $this->data['query']['id'];
-        } 
+        }
+
         if (isset($this->data['path']['id'])) {
             return$this->data['path']['id'];
-        } 
+        }
+
         if (isset($this->data['path']['{uuid}'])) {
             return $this->data['path']['{uuid}'];
-        } 
+        }
+
         if (isset($this->data['query']['uuid'])) {
             return$this->data['query']['uuid'];
-        } 
+        }
+
         if (isset($this->content['id'])) {
             // the id might also be passed trough the object itself
             return $this->content['id'];
-        } 
+        }
+
         if (isset($this->content['uuid'])) {
             return $this->content['uuid'];
         }//end if
@@ -500,6 +507,7 @@ class RequestService
 
         // And don so lets return what we have.
         return $response;
+
     }//end proxyHandler()
 
 
@@ -556,7 +564,6 @@ class RequestService
             // $value = $row[1];
             // $filters[$key] = $value;
             // }
-
             $filters = $this->realRequestQueryAll($this->data['method']);
 
             if (isset($appEndpointConfig['in']['query']) === true) {
@@ -913,12 +920,12 @@ class RequestService
 
         return $this->createResponse($result);
 
-    }//end requestHandler()    
-    
-    
+    }//end requestHandler()
+
+
     /**
      * Gets the application configuration 'in' and/or 'out' for the current endpoint.
-     * 
+     *
      * @param string $endpointRef       The reference of the current endpoint
      * @param string $endpoint          The current endpoint path
      * @param string $applicationConfig An item of the configuration of the application
@@ -934,18 +941,20 @@ class RequestService
                 $appEndpointConfig[$type] = $applicationConfig[$endpointRef][$type];
                 continue;
             }
+
             if (array_key_exists($endpoint, $applicationConfig) === true && array_key_exists($type, $applicationConfig[$endpoint])) {
                 $appEndpointConfig[$type] = $applicationConfig[$endpoint][$type];
                 continue;
-            } 
-            
+            }
+
             if (array_key_exists('global', $applicationConfig) === true && array_key_exists($type, $applicationConfig['global'])) {
                 // Do global last, so that we allow overwriting the global options for specific endpoints ^.
                 $appEndpointConfig[$type] = $applicationConfig['global'][$type];
                 continue;
             }
         }
-    }
+
+    }//end getConfigInOutOrGlobal()
 
 
     /**
@@ -967,7 +976,7 @@ class RequestService
         }
 
         $endpointRef = isset($this->data['endpoint']) === true ? $this->data['endpoint']->getReference() : '/';
-        $endpoint = $this->getCurrentEndpoint();
+        $endpoint    = $this->getCurrentEndpoint();
 
         $appEndpointConfig = [];
         foreach ($application->getConfiguration() as $applicationConfig) {
@@ -989,6 +998,7 @@ class RequestService
         if (isset($this->data['endpoint']) === false) {
             return '/';
         }
+
         $pathArray = $this->data['endpoint']->getPath();
 
         // Remove ending id from path to get the core/main endpoint.
@@ -1006,7 +1016,7 @@ class RequestService
      * If embedded should be shown or not.
      * Handle the Application Endpoint configuration for query params. If filters/query should be changed in any way.
      *
-     * @param array $filters The filters/query used for the current api-call.
+     * @param array $filters     The filters/query used for the current api-call.
      * @param array $queryConfig Application configuration ['in']['query']
      *
      * @return array The updated filters/query used for the current api-call.
@@ -1023,7 +1033,9 @@ class RequestService
         }
 
         return $filters;
-    }
+
+    }//end queryAppEndpointConfig()
+
 
     /**
      * Handle the Application Endpoint Configuration for embedded. If embedded should be shown or not.
@@ -1172,7 +1184,8 @@ class RequestService
             if ($validation = $this->object->validate($content) && $this->object->hydrate($content, true)) {
                 $this->entityManager->persist($this->object);
                 break;
-            } 
+            }
+
             // @TODO Use validation to throw an error
             break;
             break;
@@ -1180,7 +1193,8 @@ class RequestService
             if ($this->object->hydrate($content) && $validation = $this->object->validate()) {
                 $this->entityManager->persist($this->object);
                 break;
-            } 
+            }
+
             // @TODO Use validation to throw an error
             break;
         case 'DELETE':
