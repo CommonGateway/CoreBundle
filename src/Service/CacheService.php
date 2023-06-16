@@ -747,8 +747,7 @@ class CacheService
     {
         // @todo: reenable this when checking for allowed filters and ordering is reenabled.
         // $filterCheck = $filter;
-
-        $errorData   = [];
+        $errorData = [];
         foreach ($entities as $entity) {
             if (Uuid::isValid($entity) === true) {
                 // $filter['_self.schema.id'] = 'b92a3a39-3639-4bf5-b2af-c404bc2cb005';
@@ -769,7 +768,6 @@ class CacheService
             // Only allow ordering & filtering on attributes with sortable = true & searchable = true (respectively).
             // $orderError = $this->handleOrderCheck($entityObject, $completeFilter['_order'] ?? null);
             // $filterError = $this->handleFilterCheck($entityObject, $filterCheck ?? null);
-
             $orderError  = null;
             $filterError = null;
             if (empty($orderError) === true && empty($filterError) === true) {
