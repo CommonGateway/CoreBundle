@@ -602,7 +602,8 @@ class InstallationService
         }
 
         $type  = $matches[1];
-        $query = explode(',', ltrim($matches[2], '?'));
+        // @todo remove $query? its not being used.
+        // $query = explode(',', ltrim($matches[2], '?'));
 
         // Load it if we have it.
         if (array_key_exists('$id', $schema) === true) {
@@ -1122,7 +1123,7 @@ class InstallationService
     {
         $name = ucfirst($newEndpointData['path']);
         $newEndpoint->setName($newEndpoint->getName().' '.$name);
-        if (isset($subEndpointData['description']) === true) {
+        if (isset($newEndpointData['description']) === true) {
             $newEndpoint->setDescription($newEndpointData['description']);
         }
 
