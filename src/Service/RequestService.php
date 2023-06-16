@@ -930,8 +930,9 @@ class RequestService
                 $appEndpointConfig[$type] = $applicationConfig['global'][$type];
             }
         }
-    
+
         return $appEndpointConfig;
+
     }//end getConfigInOutOrGlobal()
 
     /**
