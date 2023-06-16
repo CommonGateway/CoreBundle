@@ -16,7 +16,6 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 |[getId](#requestservicegetid)|Get the ID from given parameters.|
 |[getSchema](#requestservicegetschema)|Get the schema from given parameters returns false if no schema could be established.|
 |[getScopes](#requestservicegetscopes)|Get a scopes array for the current user (or of the anonymus if no user s logged in).|
-|[itemRequestHandler](#requestserviceitemrequesthandler)||
 |[proxyHandler](#requestserviceproxyhandler)||
 |[proxyRequestHandler](#requestserviceproxyrequesthandler)|Determines the proxy source from configuration, then use proxy handler to proxy the request.|
 |[realRequestQueryAll](#requestservicerealrequestqueryall)|A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.|
@@ -42,8 +41,7 @@ The constructor sets al needed variables.
 **Parameters**
 
 * `(\EntityManagerInterface) $entityManager`
-* `(\CacheService) $cacheService`
-* `(\GatewayResourceService) $gatewayResourceService`
+* `(\GatewayResourceService) $resourceService`
 * `(\MappingService) $mappingService`
 * `(\CacheService) $cacheService`
 * `(\ResponseService) $responseService`
@@ -191,30 +189,6 @@ Get a scopes array for the current user (or of the anonymus if no user s logged 
 `array`
 
 
-
-
-<hr />
-
-
-### RequestService::itemRequestHandler  
-
-**Description**
-
-```php
- itemRequestHandler (void)
-```
-
- 
-
- 
-
-**Parameters**
-
-`This function has no parameters.`
-
-**Return Values**
-
-`void`
 
 
 <hr />
