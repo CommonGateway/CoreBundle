@@ -1,25 +1,16 @@
-# CommonGateway\CoreBundle\Service\FileSystemCreateService  
-
-
-
-
-
-
+# CommonGateway\CoreBundle\Service\FileSystemCreateService
 
 ## Methods
 
 | Name | Description |
 |------|-------------|
-|[__construct](#filesystemcreateservice__construct)|The class constructor.|
+|[\_\_construct](#filesystemcreateservice__construct)|The class constructor.|
 |[createZipFileFromContent](#filesystemcreateservicecreatezipfilefromcontent)|Writes a zip file in the local filesystem.|
 |[openFtpFilesystem](#filesystemcreateserviceopenftpfilesystem)|Connects to a Filesystem.|
 |[openZipFilesystem](#filesystemcreateserviceopenzipfilesystem)|Opens a zip filesystem.|
 |[removeZipFile](#filesystemcreateserviceremovezipfile)|Removes a zip file from the local filesystem.|
 
-
-
-
-### FileSystemCreateService::__construct  
+### FileSystemCreateService::\_\_construct
 
 **Description**
 
@@ -27,9 +18,7 @@
 public __construct (void)
 ```
 
-The class constructor. 
-
- 
+The class constructor.
 
 **Parameters**
 
@@ -39,11 +28,9 @@ The class constructor.
 
 `void`
 
-
 <hr />
 
-
-### FileSystemCreateService::createZipFileFromContent  
+### FileSystemCreateService::createZipFileFromContent
 
 **Description**
 
@@ -51,26 +38,20 @@ The class constructor.
 public createZipFileFromContent (string $content)
 ```
 
-Writes a zip file in the local filesystem. 
-
- 
+Writes a zip file in the local filesystem.
 
 **Parameters**
 
-* `(string) $content`
-: The string contents of the zip file.  
+*   `(string) $content`
+    : The string contents of the zip file.
 
 **Return Values**
 
 `string`
 
-
-
-
 <hr />
 
-
-### FileSystemCreateService::openFtpFilesystem  
+### FileSystemCreateService::openFtpFilesystem
 
 **Description**
 
@@ -78,14 +59,12 @@ Writes a zip file in the local filesystem.
 public openFtpFilesystem (\Source $source)
 ```
 
-Connects to a Filesystem. 
-
- 
+Connects to a Filesystem.
 
 **Parameters**
 
-* `(\Source) $source`
-: The Filesystem source to connect to.  
+*   `(\Source) $source`
+    : The Filesystem source to connect to.
 
 **Return Values**
 
@@ -93,17 +72,13 @@ Connects to a Filesystem.
 
 > The Filesystem Operator.
 
-
 **Throws Exceptions**
-
 
 `\Exception`
 
-
 <hr />
 
-
-### FileSystemCreateService::openZipFilesystem  
+### FileSystemCreateService::openZipFilesystem
 
 **Description**
 
@@ -111,14 +86,12 @@ Connects to a Filesystem.
 public openZipFilesystem (string $filename)
 ```
 
-Opens a zip filesystem. 
-
- 
+Opens a zip filesystem.
 
 **Parameters**
 
-* `(string) $filename`
-: The Filename of the zip file.  
+*   `(string) $filename`
+    : The Filename of the zip file.
 
 **Return Values**
 
@@ -126,17 +99,13 @@ Opens a zip filesystem.
 
 > The Filesystem Operator.
 
-
 **Throws Exceptions**
-
 
 `\Exception`
 
-
 <hr />
 
-
-### FileSystemCreateService::removeZipFile  
+### FileSystemCreateService::removeZipFile
 
 **Description**
 
@@ -144,21 +113,15 @@ Opens a zip filesystem.
 public removeZipFile (string $filename)
 ```
 
-Removes a zip file from the local filesystem. 
-
- 
+Removes a zip file from the local filesystem.
 
 **Parameters**
 
-* `(string) $filename`
-: The file to delete.  
+*   `(string) $filename`
+    : The file to delete.
 
 **Return Values**
 
 `void`
 
-
-
-
 <hr />
-
