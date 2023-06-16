@@ -1374,7 +1374,7 @@ class InstallationService
     {
         foreach ($overrides as $key => $override) {
             if (is_array($override) && $this->isAssociative($override)) {
-                $defaultConfig[$key] = $this->overrideConfig($defaultConfig[$key] ?? [], $override);
+                $defaultConfig[$key] = $this->overrideConfig(($defaultConfig[$key] ?? []), $override);
 
                 continue;
             }//end if
