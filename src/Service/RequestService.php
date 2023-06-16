@@ -24,8 +24,6 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Exception\NotAcceptableHttpException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
-use CommonGateway\CoreBundle\Service\MappingService;
-use CommonGateway\CoreBundle\Service\GatewayResourceService;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -141,8 +139,7 @@ class RequestService
      * The constructor sets al needed variables.
      *
      * @param EntityManagerInterface   $entityManager
-     * @param CacheService             $cacheService
-     * @param GatewayResourceService   $gatewayResourceService
+     * @param GatewayResourceService   $resourceService
      * @param MappingService           $mappingService
      * @param CacheService             $cacheService
      * @param ResponseService          $responseService
@@ -222,7 +219,7 @@ class RequestService
             $content = \Safe\json_encode($data);
         }
 
-        // @TODO: This is preparation for checking if the accept header is allowed by the endpoint
+        // @TODO: Preparation for checking if accept header is allowed. We probably should be doing this in the EndpointService instead?
         // if ($endpoint instanceof Endpoint
         // && empty($endpoint->getContentTypes()) === false
         // && in_array($accept, $endpoint->getContentTypes()) === false
@@ -546,13 +543,6 @@ class RequestService
 
         // Need to do something about the _
         if (isset($this->data['querystring']) === true) {
-            // $query = explode('&',$this->data['querystring']);
-            // foreach ($query as $row) {
-            // $row = explode('=', $row);
-            // $key = $row[0];
-            // $value = $row[1];
-            // $filters[$key] = $value;
-            // }
             $filters = $this->realRequestQueryAll($this->data['method']);
 
             if (isset($appEndpointConfig['in']['query']) === true) {
@@ -563,8 +553,8 @@ class RequestService
         // Get the ID.
         $this->identification = $this->getId();
 
-        // If we have an ID we can get an entity to work with (except on gets we handle those from cache).
-        if (isset($this->identification) === true && $this->identification && $this->data['method'] != 'GET') {
+        // If we have an ID we can get an Object to work with (except on gets we handle those from cache).
+        if (isset($this->identification) === true && empty($this->identification) === false && $this->data['method'] != 'GET') {
             $this->object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->identification]);
         }
 
@@ -592,11 +582,11 @@ class RequestService
             $this->session->set('schema', $this->schema->getId()->toString());
         }
 
-        // Bit os savety cleanup <- dit zou eigenlijk in de hydrator moeten gebeuren.
+        // Bit os safety cleanup <- dit zou eigenlijk in de hydrator moeten gebeuren.
         // unset($this->content['id']);
         unset($this->content['_id']);
-        unset($this->content['_self']);
         // todo: i don't think this does anything useful?
+        unset($this->content['_self']);
         unset($this->content['_schema']);
 
         // todo: make this a function, like eavService->getRequestExtend()
@@ -643,7 +633,7 @@ class RequestService
         switch ($this->data['method']) {
         case 'GET':
             // We have an id (so single object).
-            if (isset($this->identification) === true) {
+            if (isset($this->identification) === true && empty($this->identification) === false) {
                 $this->session->set('object', $this->identification);
                 $result = $this->cacheService->getObject($this->identification);
 
@@ -722,13 +712,13 @@ class RequestService
                     $this->entityManager->flush();
                     $this->session->set('object', $this->object->getId()->toString());
                     $this->cacheService->cacheObject($this->object);
-                    // @todo this is hacky, the above schould alredy do this
+                    // @todo this is hacky, the above should already do this
                     $this->entityManager->flush();
                 } else {
                     $this->entityManager->persist($this->object);
                     $this->session->set('object', $this->object->getId()->toString());
                     $this->cacheService->cacheObject($this->object);
-                    // @todo this is hacky, the above schould alredy do this
+                    // @todo this is hacky, the above should already do this
                 }
             } else {
                 // Use validation to throw an error.
