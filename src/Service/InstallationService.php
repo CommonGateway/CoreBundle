@@ -458,7 +458,7 @@ class InstallationService
             return false;
         }
 
-        // Todo: validateJsonMapping does not exist.
+        // @Todo: validateJsonMapping does not exist.
         // Check if it is a valid schema.
         // $mappingSchema = $this->validateJsonMapping($mappingSchema);
         // if ($this->validateJsonMapping($mappingSchema) === true) {

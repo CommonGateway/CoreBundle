@@ -362,11 +362,9 @@ class ComposerService
      *
      * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
      *
-     * @param array $options
-     *
      * @return array
      */
-    public function getAll(array $options=[]): array
+    public function getAll(): array
     {
         $lockFile = $this->getLockFile();
         $plugins  = [];
@@ -460,7 +458,7 @@ class ComposerService
                 $plugin['update'] = false;
 
                 // Lets see if we have newer versions than currently installer.
-                foreach ($plugin['versions']  as $version => $versionDetails) {
+                foreach (array_keys($plugin['versions'])  as $version) {
                     if (version_compare($plugin['version'], $version) < 0) {
                         if (!$plugin['update']) {
                             $plugin['update'] = $version;
@@ -488,13 +486,11 @@ class ComposerService
      * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
      *
      * @param string|null $search
-     * @param array       $options
      *
      * @return array
      */
-    public function search(string $search=null, array $options=[]): array
+    public function search(string $search=null): array
     {
-        $url   = 'https://packagist.org/search.json';
         $query = ['tags' => 'common-gateway-plugin'];
         if ($search) {
             $query['q'] = $search;

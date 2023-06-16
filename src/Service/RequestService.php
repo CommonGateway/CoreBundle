@@ -586,8 +586,9 @@ class RequestService
         foreach ($this->data['path'] as $key => $value) {
             if (strpos($key, '{') !== false) {
                 if ($key !== '{id}') {
-                    $keyExplodedFilter  = explode('{', $key);
-                    $keyFilter          = explode('}', $keyExplodedFilter[1]);
+                    // @todo unused code below, remove?
+                    // $keyExplodedFilter  = explode('{', $key);
+                    // $keyFilter          = explode('}', $keyExplodedFilter[1]);
                     $filters['_search'] = $value;
                 }
             }
@@ -1183,7 +1184,7 @@ class RequestService
         case 'GET':
             break;
         case 'PUT':
-            if ($validation = $this->object->validate($content) && $this->object->hydrate($content, true)) {
+            if ($this->object->validate($content) && $this->object->hydrate($content, true)) {
                 $this->entityManager->persist($this->object);
                 break;
             }
@@ -1192,7 +1193,7 @@ class RequestService
             break;
             break;
         case 'PATCH':
-            if ($this->object->hydrate($content) && $validation = $this->object->validate()) {
+            if ($this->object->hydrate($content) && $this->object->validate()) {
                 $this->entityManager->persist($this->object);
                 break;
             }

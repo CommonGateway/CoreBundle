@@ -43,7 +43,7 @@ class PluginController extends AbstractController
     public function installedAction()
     {
         $status  = 200;
-        $plugins = $this->composerService->getAll(['--installed'])['installed'];
+        $plugins = $this->composerService->getAll()['installed'];
 
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
 
@@ -72,7 +72,7 @@ class PluginController extends AbstractController
 
         $search = $request->query->get('search', 'a');
 
-        $plugins = $this->composerService->search($search, ['--type=common-gateway-plugin']);
+        $plugins = $this->composerService->search($search);
 
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
 

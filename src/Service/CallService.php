@@ -645,7 +645,6 @@ class CallService
                     break;
                 }
 
-                $decodedResponses[] = $decodedResponse;
                 $previousResult     = $decodedResponse;
             } catch (Exception $exception) {
                 $errorCount++;
