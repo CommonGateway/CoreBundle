@@ -116,7 +116,6 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         if ($object instanceof Entity) {
             // @todo finish this function.
             // $this->cacheService->removeSchema($object);
-
             return;
         }
 
