@@ -1164,38 +1164,40 @@ class CacheService
     }//end cacheShema()
 
 
-    /**
-     * Removes an Schema from the cache.
-     *
-     * @param Entity $entity
-     *
-     * @return void
-     */
-    public function removeSchema(Entity $entity): void
-    {
-        // Backwards compatablity
-        if (isset($this->client) === false) {
-            return;
-        }
+    // /**
+    //  * Removes an Schema from the cache.
+    //  *
+    //  * @param Entity $entity
+    //  *
+    //  * @return void
+    //  */
+    // public function removeSchema(Entity $entity): void
+    // {
+    //     // @TODO remove entity from cache.
+    //     // Backwards compatablity
+    //     if (isset($this->client) === false) {
+    //         return;
+    //     }
 
-    }//end removeSchema()
+    // }//end removeSchema()
 
 
-    /**
-     * Get a single schema from the cache.
-     *
-     * @param Uuid $identification
-     *
-     * @return array|null
-     */
-    public function getSchema(Uuid $identification): ?array
-    {
-        // Backwards compatablity
-        if (isset($this->client) === false) {
-            return [];
-        }
+    // /**
+    //  * Get a single schema from the cache.
+    //  *
+    //  * @param Uuid $identification
+    //  *
+    //  * @return array|null
+    //  */
+    // public function getSchema(Uuid $identification): ?array
+    // {
+    //     // @TODO get entity from cache.
+    //     // Backwards compatablity
+    //     if (isset($this->client) === false) {
+    //         return [];
+    //     }
 
-    }//end getSchema()
+    // }//end getSchema()
 
 
 }//end class
