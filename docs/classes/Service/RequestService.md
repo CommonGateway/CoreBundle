@@ -23,7 +23,7 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 |[requestHandler](#requestservicerequesthandler)|Handles incomming requests and is responsible for generating a response.|
 |[searchRequestHandler](#requestservicesearchrequesthandler)|This function searches all the objectEntities and formats the data.|
 |[serializeData](#requestserviceserializedata)|Determines the right content type and serializes the data accordingly.|
-|[shouldWeUnsetEmbedded](#requestserviceshouldweunsetembedded)|If embedded should be shown or not.|
+|[shouldWeUnsetEmbedded](#requestserviceshouldweunsetembedded)|Handle the Application Endpoint Configuration for embedded. If embedded should be shown or not.|
 
 
 
@@ -33,7 +33,7 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 **Description**
 
 ```php
-public __construct (\EntityManagerInterface $entityManager, \CacheService $cacheService, \ResponseService $responseService, \ObjectEntityService $objectEntityService, \LogService $logService, \CallService $callService, \Security $security, \EventDispatcherInterface $eventDispatcher, \SerializerInterface $serializer, \SessionInterface $session, \LoggerInterface $requestLogger, \DownloadService $downloadService)
+public __construct (\EntityManagerInterface $entityManager, \CacheService $cacheService, \GatewayResourceService $resourceService, \MappingService $mappingService, \ResponseService $responseService, \ObjectEntityService $objectEntityService, \LogService $logService, \CallService $callService, \Security $security, \EventDispatcherInterface $eventDispatcher, \SerializerInterface $serializer, \SessionInterface $session, \LoggerInterface $requestLogger, \DownloadService $downloadService)
 ```
 
 The constructor sets al needed variables. 
@@ -44,6 +44,8 @@ The constructor sets al needed variables.
 
 * `(\EntityManagerInterface) $entityManager`
 * `(\CacheService) $cacheService`
+* `(\GatewayResourceService) $resourceService`
+* `(\MappingService) $mappingService`
 * `(\ResponseService) $responseService`
 * `(\ObjectEntityService) $objectEntityService`
 * `(\LogService) $logService`
@@ -401,7 +403,7 @@ Determines the right content type and serializes the data accordingly.
 public shouldWeUnsetEmbedded (object|array $result, array $embeddedConfig)
 ```
 
-If embedded should be shown or not. 
+Handle the Application Endpoint Configuration for embedded. If embedded should be shown or not. 
 
 Configuration Example: ['global']['out']['embedded']['unset'] = true  
 Configuration Example 2: ['global']['out']['embedded']['unset']['except'] = ['application/json+ld', 'application/ld+json']. 
@@ -417,7 +419,7 @@ Configuration Example 2: ['global']['out']['embedded']['unset']['except'] = ['ap
 
 `array|null`
 
-
+> The updated result.
 
 
 <hr />

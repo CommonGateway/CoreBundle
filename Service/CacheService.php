@@ -426,7 +426,6 @@ class CacheService
     public function retrieveObjectsFromCache(array $filter, array $options, array $completeFilter = []): ?array
     {
         $collection = $this->client->objects->json;
-
         $results = $collection->find($filter, $options)->toArray();
         $total = $collection->count($filter);
 
@@ -473,6 +472,14 @@ class CacheService
 
         // Handle filters that expect $value to be an array
         if ($this->handleFilterArray($key, $value)) {
+            return;
+        }
+
+        // If the value is a boolean we need a other format.
+        if (is_bool($value) === true) {
+            // Set as key '$eq' with the value.
+            $value = ['$eq' => $value];
+
             return;
         }
 
