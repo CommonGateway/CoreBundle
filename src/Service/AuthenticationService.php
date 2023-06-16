@@ -229,7 +229,10 @@ class AuthenticationService
         $jwsBuilder       = new JWSBuilder($algorithmManager);
 
         $jwk      = $this->getJWK($algorithm, $source);
-        $clientId = $this->getApplicationId($source);
+
+        // @todo clientId not being used. Remove line below?
+        // $clientId = $this->getApplicationId($source);
+
         $payload  = $this->getJwtPayload($source);
 
         $jws = $jwsBuilder
