@@ -14,5 +14,7 @@ jobs:
           php_extensions: redis exif
           version: 2.x
           command: require symfony/test-pack
+      - name: ls all
+        run: ls -la
       - name: Run tests
         run: php bin/phpunit --coverage-text
