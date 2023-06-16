@@ -475,8 +475,8 @@ class CacheService
     public function retrieveObjectsFromCache(array $filter, array $options, array $completeFilter=[]): ?array
     {
         $collection = $this->client->objects->json;
-        $results = $collection->find($filter, $options)->toArray();
-        $total   = $collection->count($filter);
+        $results    = $collection->find($filter, $options)->toArray();
+        $total      = $collection->count($filter);
 
         return $this->handleResultPagination($completeFilter, $results, $total);
 
