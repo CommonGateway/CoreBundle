@@ -2,7 +2,7 @@
 
 The mapping service handles the mapping (or transformation) of array A (input) to array B (output).
 
-More information on how to write your own mappings can be found at [/docs/mapping.md](/docs/mapping.md).  
+More information on how to write your own mappings can be found at [/docs/Mappings.md](/docs/Mappings.md).  
 
 
 
