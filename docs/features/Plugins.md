@@ -5,7 +5,7 @@
 
 Plugins are a neat way of separating concerns and making sure that client specific code doesn't get into the core. You can read a bit more about why we use plugin under [code quality](Code_quality.md).
 
-The Common Gateway is easily extendable through a plugin structure. The structure is based on the (Symfony bundle system)[https://symfony.com/doc/current/bundles.html] in other words, all Common Gateway plugins are Symfony bundles, and Symfony bundles can be Common Gateway plugins.
+The Common Gateway is easily extendable through a plugin structure. The structure is based on the (Symfony bundle system)\[https://symfony.com/doc/current/bundles.html] in other words, all Common Gateway plugins are Symfony bundles, and Symfony bundles can be Common Gateway plugins.
 You can consider a plugin for the Common Gateway as a configuration set to extend a base Gateway's functionality. The plugin structure is based on the [Symfony bundle system](https://symfony.com/doc/current/bundles.html). In other words, all Common Gateway plugins are Symfony bundles, and Symfony bundles can be Common Gateway plugins.
 
 If you want to develop your own plugin, we suggest using the Pet store plugin as a starting point.
@@ -18,9 +18,10 @@ The Common Gateway finds plugins to install with packagist. It does this entirel
 
 The plugins are installed, updated, and removed with the composer CLI. While this feature still exists for developers, we recommend using the user interface see plugins for installing plugins.
 
-
 ## Creating plugins
-If you want to develop your plugin, we recommend using the [PetStoreBundle](https://github.com/CommonGateway/PetStoreBundle. This method ensures all necessary steps are taken, and the plugin will be found and installable through the method described above.
+
+If you want to develop your plugin, we recommend using the \[PetStoreBundle]\(https://github.com/CommonGateway/PetStoreBundle. This method ensures all necessary steps are taken, and the plugin will be found and installable through the method described above.
+
 ## Updating and removing plugins
 
 In case you want to update or remove a plugin, go to “Plugins” in the Gateway UI main menu and select “Installed”. Click on the plugin that you want to update or remove and press the Update or Remove button in the top right of the screen.
@@ -46,15 +47,13 @@ Keep in mind that you will need to properly set the $schema of the object in ord
 
 [Here](https://github.com/CommonGateway/CoreBundle/blob/master/Schema/example.json) is an example. The $id and $schema properties are needed for the Gateway to find the plugin. The version property's value helps the Gateway decide whether an update is required and will update automatically.
 
-
 ## Adding test data or fixtures to your plugin
 
 You can include both fixtures and test data in your plugin. The difference is that fixtures are required for your plugin to work, and test data is optional. You can include both data sets as .json files in the in the folder at the root of your plugin repository. An example is shown here.
 
-Datasets are categorized by name, e.g., data.json in the data folder will be considered a fixture, whereas [anything else].json will be regarded as test or optional data (and not loaded  by default).
+Datasets are categorized by name, e.g., data.json in the data folder will be considered a fixture, whereas \[anything else].json will be regarded as test or optional data (and not loaded  by default).
 
 As a fixture, anything in data.json is always loaded on a plugin installation or update. The other files are never loaded on a plugin install or update. However, the user can load the files manually from the plugin details page in the gateway UI.
-
 
 All files should follow the following convention in their structure
 1 - A primary array indexes on schema refs,
@@ -98,6 +97,3 @@ Sometimes, you should be more specific about how you want your plugin to be conf
 
 For this, you can add PHP scripts to your plugin that run whenever your plugin is installed, updated, or removed. While you can technically have the code anywhere in your codebase, optimally, it's made as a service. There is an example shown here (#todo). You will need an installer to make it work for the Gateway.
 For this, you can add PHP scripts to your plugin that are run whenever your plugin is installed, updated or removed. To include an installation script create a new service in the service folder of your plugin (convention is calling it InstallationService
-
-
-

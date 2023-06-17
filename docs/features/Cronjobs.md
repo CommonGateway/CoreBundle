@@ -14,4 +14,3 @@ For instance, a handler might subscribe to a "BackupComplete" event. When a cron
 In conclusion, cron jobs in the Common Gateway are a versatile tool, enabling task scheduling and data transmission through events. The true potential is unlocked when other elements, such as action handlers, subscribe to these events, providing a reliable way to automate complex tasks and procedures.
 
 To further explore and experiment with cron jobs, you can use an online [crontab editor](https://crontab.guru/).
-

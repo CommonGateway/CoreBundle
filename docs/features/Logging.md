@@ -1,4 +1,4 @@
-#Logging
+\#Logging
 
 > **Warning**
 > This file is maintained at the Conduction [Google Drive](https://docs.google.com/document/d/1niVyNcIiOiAbq_lgbczPlfbNj-9yTdCpdkMDEXEGgnc/edit). Please make any suggestions or alterations there.
@@ -6,6 +6,7 @@
 The gateway uses symfony’s [monolog bundle](https://symfony.com/doc/current/logging.html) for logging, and provides several channels for logs.
 
 ## Channels
+
 By default the following channels are provided by the gateway, but plugins might add their own channels by including a `monolog.yaml` in their configuration. Channels represent the part of the gateway that has created the log and are used to separate logs by category.
 endpoint
 request
@@ -22,7 +23,7 @@ call
 
 ## Error levels
 
-The gateway uses the following error levels conform [RFC 54240](https://www.rfc-editor.org/rfc/rfc54240
+The gateway uses the following error levels conform \[RFC 54240]\(https://www.rfc-editor.org/rfc/rfc54240
 DEBUG: Detailed debugging information.
 INFO: Handles normal events. Example: SQL logs
 NOTICE: Handles normal events, but with more important events
@@ -33,6 +34,7 @@ ALERT: Immediate action should be exercised. This should trigger some alerts and
 EMERGENCY: It is used when the system is unusable.
 
 ## Data
+
 The gateway uses an [dataprocessor](https://symfony.com/doc/current/logging/processors.html) to add additional data to a log. The following data is automatically added (if available through the session object).
 session: The session id
 user: The user that made the request
@@ -53,12 +55,15 @@ The plugin identifier is not automatically added to logs, but plugins are requir
 Normally speaking a call should be started by either a cronjob,command or endpoint,
 
 ## Storage
+
 By default the gateway stores logs to `{channel name}.log` files in the log directory of the gateway, prints logs out to STD out and saves them to the Mongo database. When storing the logs to mongoDB all logs are stored to a single collection to make them easily searchable.
 
 ## Retrieving logs
+
 Logs can be retrieved through the `admin/logs` endpoint that provides them from the mongo database.
 
 ## Creating logs from your plugin
+
 You might feel the need to create additional logging for your plugin because it does some extremely important stuff that just *might* go wrong and then needs to be fixed. There are basically 3 ways of going about this
 
 1 - There is an appropriate channel (for example actions for an action handler that you have built). Use that! Conforming yourself to existing logging means that your logs will be automatically available through the gateways tool like the admin ui and grafana.
@@ -91,7 +96,7 @@ use Psr\Log\LoggerInterface
     }
 ```
 
-After this creating a log is rather easy, just use  `$this->logger->{level}({message}) e.g.
+After this creating a log is rather easy, just use  \`$this->logger->{level}({message}) e.g.
 
 ```php
 	$this->logger->info('I just got the logger');
@@ -106,4 +111,4 @@ Keep in mind that if you want your logs to be findable and accessible through th
 
 ```
 
-**note:** It is actually possible to register your logs under the wrong plugin, don’t. First of all it will confuse your users and be traceable through the proceed id. secondly it will be flagged as a code injection attract and reported. 
+**note:** It is actually possible to register your logs under the wrong plugin, don’t. First of all it will confuse your users and be traceable through the proceed id. secondly it will be flagged as a code injection attract and reported.

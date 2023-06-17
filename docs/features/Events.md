@@ -5,8 +5,8 @@
 
 The Common Gateway is based on event driven architecture, meaning that all code and functionality is loosely coupled (see booth architecture and code quality). That means that at no point during execution of business logic a functionality should directly call a different functionality. This might seem complicated (and at time it is) but it provides two important benefits:
 
-- It allows us to divide the work of executing code among several “worker” containers (read more). Providing an extreme performance boost on production environments on heavy load business logic.
-- It allows all interested parties to develop plugins for the Common Gateway that directly hook into and extend the core functionality.
+*   It allows us to divide the work of executing code among several “worker” containers (read more). Providing an extreme performance boost on production environments on heavy load business logic.
+*   It allows all interested parties to develop plugins for the Common Gateway that directly hook into and extend the core functionality.
 
 ## Triggers
 
@@ -16,7 +16,7 @@ Object changes(e.g., CRUD actions)changes in objects (e.g. CRUD actions).
 
 ## Actions
 
-Actions are preconfigured sets of business logic that “listen” for one or more events to be thrown and then execute code.The (actionhandler)[] contains the executable code.
+Actions are preconfigured sets of business logic that “listen” for one or more events to be thrown and then execute code.The (actionhandler)\[] contains the executable code.
 
 Actions primarily consists of three things:
 The events it listens to
@@ -40,27 +40,25 @@ The gateway subscribes to the following events by default.
 
 | Name | When | Data |
 | --- | --- | --- |
-| commongateway.object.pre.create | Before an object is created in the database | ["object"=>{array representation of object},"entity"=>{uuid of the objects entity}] |
-| commongateway.object.post.create | After an object is created in the database | ["object"=>{array representation of object},"entity"=>{uuid of the objects entity}] |
-| commongateway.object.post.read | After an object is read from the database | ["object"=>{array representation of object},"entity"=>{uuid of the objects entity}] |
-| commongateway.object.pre.update | Before an object is updated in the database | ["object"=>{array representation of object},"entity"=>{uuid of the objects entity}] |
-| commongateway.object.post.update | After an object is updated in the database | ["object"=>{array representation of object},"entity"=>{uuid of the objects entity}] |
-| commongateway.object.pre.delete | Before an object is deleted in the database | ["object"=>{array representation of object},"entity"=>{uuid of the objects entity}] |
-| commongateway.object.post.delete | After an object is deleted in the database | [] |
-| commongateway.object.pre.flush | Before the work of the entity manager is transferred to the database | [] |
-| commongateway.object.post.flush | After the work of the entity manager is transferred to the database | [] |
-| commongateway.installer.pre.upgrade | Before the installer upgrades | [] |
-| commongateway.installer.post.upgrade | After the installer upgrades | [] |
-| commongateway.initilizer.pre.upgrade | Before the initializer upgrades | [] |
-| commongateway.initilizer.post.upgrade | After the initializer upgrades | [] |
-| commongateway.plugin.pre.install | Before the plugin is installed | [] |
-| commongateway.plugin.post.install | After the plugin is installed | [] |
-| commongateway.plugin.pre.upgrade | Before the plugin is upgraded | [] |
-| commongateway.plugin.post.upgrade | After the plugin is upgraded | [] |
-| commongateway.plugin.pre.remove | Before the plugin is removed | [] |
-| commongateway.plugin.post.remove | After the plugin is removed | [] |
-
-
+| commongateway.object.pre.create | Before an object is created in the database | \["object"=>{array representation of object},"entity"=>{uuid of the objects entity}] |
+| commongateway.object.post.create | After an object is created in the database | \["object"=>{array representation of object},"entity"=>{uuid of the objects entity}] |
+| commongateway.object.post.read | After an object is read from the database | \["object"=>{array representation of object},"entity"=>{uuid of the objects entity}] |
+| commongateway.object.pre.update | Before an object is updated in the database | \["object"=>{array representation of object},"entity"=>{uuid of the objects entity}] |
+| commongateway.object.post.update | After an object is updated in the database | \["object"=>{array representation of object},"entity"=>{uuid of the objects entity}] |
+| commongateway.object.pre.delete | Before an object is deleted in the database | \["object"=>{array representation of object},"entity"=>{uuid of the objects entity}] |
+| commongateway.object.post.delete | After an object is deleted in the database | \[] |
+| commongateway.object.pre.flush | Before the work of the entity manager is transferred to the database | \[] |
+| commongateway.object.post.flush | After the work of the entity manager is transferred to the database | \[] |
+| commongateway.installer.pre.upgrade | Before the installer upgrades | \[] |
+| commongateway.installer.post.upgrade | After the installer upgrades | \[] |
+| commongateway.initilizer.pre.upgrade | Before the initializer upgrades | \[] |
+| commongateway.initilizer.post.upgrade | After the initializer upgrades | \[] |
+| commongateway.plugin.pre.install | Before the plugin is installed | \[] |
+| commongateway.plugin.post.install | After the plugin is installed | \[] |
+| commongateway.plugin.pre.upgrade | Before the plugin is upgraded | \[] |
+| commongateway.plugin.post.upgrade | After the plugin is upgraded | \[] |
+| commongateway.plugin.pre.remove | Before the plugin is removed | \[] |
+| commongateway.plugin.post.remove | After the plugin is removed | \[] |
 
 ## Design your own triggers, events, actions and action handlers
 
@@ -74,10 +72,8 @@ When adding your own flavor to the common gateway you should always follow separ
 
 In other words keep flows small, don’t try to do to much from a single flow and keep you actionHandles minimal. If things get more complex consider using several chained action handlers.
 
-***ALWAYS** use the [vendor].[plugin].[action].[sub action] naming pattern for your events to prevent conflictsthem conflicting with other events. When adding events on an installation or app basis use:
-either the app (e.g app..[action].[sub action])
-or cron (e.g. cron.[action].[sub action])
+\***ALWAYS** use the \[vendor].\[plugin].\[action].\[sub action] naming pattern for your events to prevent conflictsthem conflicting with other events. When adding events on an installation or app basis use:
+either the app (e.g app..\[action].\[sub action])
+or cron (e.g. cron.\[action].\[sub action])
 
-
-namespace patterns to keep your events recognisable. 
-
+namespace patterns to keep your events recognisable.
