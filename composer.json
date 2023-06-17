@@ -41,7 +41,7 @@
 	},
 	"autoload" : {
 		"psr-4" : {
-			"CommonGateway\\CoreBundle\\" : ""
+			"CommonGateway\\CoreBundle\\" : "src/"
 		},
 		"exclude-from-classmap" : [
 			"/Tests/"

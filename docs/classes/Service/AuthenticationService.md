@@ -16,13 +16,13 @@
 |[checkRS256](#authenticationservicecheckrs256)|Decides if the provided JWT token is signed with the HS256 Algorithm.|
 |[checkRS512](#authenticationservicecheckrs512)|Decides if the provided JWT token is signed with the RS512 Algorithm.|
 |[convertRSAKeyToJWK](#authenticationserviceconvertrsakeytojwk)|Converts a string RSA key to a JWK via the filesystem.|
-|[convertRSAtoJWK](#authenticationserviceconvertrsatojwk)|Converts a RSA private key to a JWK.|
+|[convertRSAtoJWK](#authenticationserviceconvertrsatojwk)|Converts an RSA private key to a JWK.|
 |[createJwtToken](#authenticationservicecreatejwttoken)|Creates a JWT token to identify with on the application.|
 |[getAlgorithm](#authenticationservicegetalgorithm)|Determines the algorithm for the JWT token to create from the source.|
 |[getApplicationId](#authenticationservicegetapplicationid)|Gets an application id for a source.|
-|[getAuthentication](#authenticationservicegetauthentication)||
+|[getAuthentication](#authenticationservicegetauthentication)|Gets the authentication values through various checks.|
 |[getCertificate](#authenticationservicegetcertificate)|Writes the certificate and ssl keys to disk, returns the filenames.|
-|[getHmacToken](#authenticationservicegethmactoken)||
+|[getHmacToken](#authenticationservicegethmactoken)|Gets a hmac token.|
 |[getJWK](#authenticationservicegetjwk)|Gets a JWK for a source based on the algorithm of the source.|
 |[getJwtPayload](#authenticationservicegetjwtpayload)|Creates the JWT payload to identify at an external source.|
 |[getJwtToken](#authenticationservicegetjwttoken)|Create a JWT token from Component settings.|
@@ -203,7 +203,7 @@ Converts a string RSA key to a JWK via the filesystem.
 public convertRSAtoJWK (\Source $source)
 ```
 
-Converts a RSA private key to a JWK. 
+Converts an RSA private key to a JWK. 
 
  
 
@@ -309,10 +309,10 @@ Gets an application id for a source.
 **Description**
 
 ```php
- getAuthentication (void)
+public getAuthentication (void)
 ```
 
- 
+Gets the authentication values through various checks. 
 
  
 
@@ -360,10 +360,10 @@ Writes the certificate and ssl keys to disk, returns the filenames.
 **Description**
 
 ```php
- getHmacToken (void)
+public getHmacToken (void)
 ```
 
- 
+Gets a hmac token. 
 
  
 
@@ -479,7 +479,7 @@ Checks from which type of auth we need to fetch a token from.
 
 **Return Values**
 
-`string`
+`string|null`
 
 > Fetched JWT token.
 

@@ -12,7 +12,7 @@ This service provides a guzzle wrapper to work with sources in the common gatewa
 
 | Name | Description |
 |------|-------------|
-|[__construct](#callservice__construct)||
+|[__construct](#callservice__construct)|The constructor sets al needed variables.|
 |[call](#callservicecall)|Calls a source according to given configuration.|
 |[decodeResponse](#callservicedecoderesponse)|Decodes a response based on the source it belongs to.|
 |[getAllResults](#callservicegetallresults)|Fetches all pages for a source and merges the result arrays to one array.|
@@ -27,16 +27,27 @@ This service provides a guzzle wrapper to work with sources in the common gatewa
 **Description**
 
 ```php
- __construct (void)
+public __construct (\AuthenticationService $authenticationService, \EntityManagerInterface $entityManager, \FileService $fileService, \MappingService $mappingService, \SessionInterface $session, \LoggerInterface $callLogger)
 ```
 
- 
+The constructor sets al needed variables. 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(\AuthenticationService) $authenticationService`
+: The authentication service  
+* `(\EntityManagerInterface) $entityManager`
+: The entity manager  
+* `(\FileService) $fileService`
+: The file service  
+* `(\MappingService) $mappingService`
+: The mapping service  
+* `(\SessionInterface) $session`
+: The current session.  
+* `(\LoggerInterface) $callLogger`
+: The logger for the call channel.  
 
 **Return Values**
 
@@ -78,6 +89,12 @@ Calls a source according to given configuration.
 `\Response`
 
 
+
+
+**Throws Exceptions**
+
+
+`\Exception`
 
 
 <hr />
