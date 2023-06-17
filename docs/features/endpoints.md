@@ -1,6 +1,5 @@
 # Endpoints
 
-
 > **Warning**
 > This file is maintained at the Conduction [Google Drive](https://docs.google.com/document/d/1b0yGB1Q_IR27ik8XUurdFq9VUFqTWC62P-ZhZZF62EI/edit). Please make any suggestions or alterations there.
 
@@ -12,15 +11,16 @@ The common gateway uses endpoint to allow applications to access it, it splits a
 /api for user created endpoints
 
 **Index**
-1. [Defining an endpoint](#defining-an-endpoint)
+
+1.  [Defining an endpoint](#defining-an-endpoint)
 
 ## Defining an endpoint
 
 The Common Gateway stores,imports and exports endpoints as JSON mapping objects. Bellow you can find an example endpoint object
 
 ```json
-
 ```
+
 Endpoint objects MUST follow the bellow specifications
 
 | Property     | Required | Usage                                                                                                                                                                                                                                             | Allowed Value                                                                                                                                           |
@@ -33,28 +33,28 @@ Endpoint objects MUST follow the bellow specifications
 | pathRegex    | no       | The regex used by the Gateway to find the endpoint. For the above  example, that would be `^pets`, but the regex could also allow for variable parts like `^pets/?([a-z0-9-]+)?$`. The pathRegex **MUST** be unique within a Gateway installation |                                                                                                                                                         |
 | path         | no       | An array of the items in the path that are separated by` /` in the endpoint. For the above example that would be `[‘pets’,’id’]`. Path parts **MUST** exist of letters and numbers.                                                               |                                                                                                                                                         |
 | pathParts    | no       | An array containing the parts of the path for setting variables for later processes to use later on. Based on their index in the path array and the variable’s name that should be created. For the above example, that would be `[‘1’=>’id’]`    |                                                                                                                                                         |
-| methods      | no       | Determins the HTTP methods suported by this endpoint                                                                                                                                                                                              | An array of the methods that are allowed on this path, for example [‘GET’,’PUT’,’POST’,’PATCH’,’DELETE’]. An endpoint **must** have at least one method |
+| methods      | no       | Determins the HTTP methods suported by this endpoint                                                                                                                                                                                              | An array of the methods that are allowed on this path, for example \[‘GET’,’PUT’,’POST’,’PATCH’,’DELETE’]. An endpoint **must** have at least one method |
 | source       | no       | Turns the endpoint into a proxy for a differend API                                                                                                                                                                                               | ONE external source that is proxied by the endpoint (see Proxy)                                                                                                                                                        |
 | schemas      | no       | Any schemas provided by the endpoint (see schema’s)                                                                                                                                                                                               | Array of schema's                                                                                                                                       |
 | throws       | no       | Any events thrown by the endpoint (see event-driven)                                                                                                                                                                                              | Array of events thrown when the endpoint is called                                                                                                      |
 
-
-
 ## Handling incoming traffic
 
-Once an endpoint is called by an external application  calls an endpoint(or user, a browser is also an application), the endpoint will handle the following actions in the following order. 
+Once an endpoint is called by an external application  calls an endpoint(or user, a browser is also an application), the endpoint will handle the following actions in the following order.
 
 ![request.svg](request.svg)
 
 As you can see can see there are three basic alternatives
-1. An endpoint is linked to a source (becoming a proxy for that source)
-2. An endpoint is linked to one or more schema's
-3. An endpoint is not linked to sources or schema's
+
+1.  An endpoint is linked to a source (becoming a proxy for that source)
+2.  An endpoint is linked to one or more schema's
+3.  An endpoint is not linked to sources or schema's
 
 > **Note**
-> - When a proxy (source) is set on an endpoint the schema fase wil be skipped
-> - Events are always thrown (in all three cases)
-> - If an endpoint is not linked to a source, schema's AND dosn't contain event it wil always return an error
+>
+> *   When a proxy (source) is set on an endpoint the schema fase wil be skipped
+> *   Events are always thrown (in all three cases)
+> *   If an endpoint is not linked to a source, schema's AND dosn't contain event it wil always return an error
 
 ## Proxy
 
@@ -67,60 +67,68 @@ sent to the endpoint. Keep in mind that it will only do so if the method used is
 
 Suppose the endpoint path contains an endpoint parameter in the path regex e.g. `example`. In that case, it will also forward that message to that specific endpoint on the external source. So `gateway.com/api/petstore/pets` would be forwarded to   `petstore.com/pets`.
 
-![request_proxy.svg](request_proxy.svg)
+![request\_proxy.svg](request_proxy.svg)
 
 Keep in mind that a proxy does not transform or translate data, it simply forwards the received request to a source and then returns the response of that source. If you require more functionality (e.g. data transformation or translations) you should setup a schema.
 
 ## Schema's
 
-If an endpoint connects is connected to one or more schemas, it will try to handle the traffic based on the requested service. 
+If an endpoint connects is connected to one or more schemas, it will try to handle the traffic based on the requested service.
 
 > **Note**
-> - If an endpoint is hooked to schema(‘s) it will automatically create an API and appropriate Redoc based on its settings. See API for more information on the API.
-> - It is possible to hook an endpoint to multiple schemas. When hooked to multiple schemas, the endpoint can still handle POST requests, BUT a POST request must include a valid _self.scheme.id or _self. scheme.ref that refers to the appropriate schema so that the endpoint understands what schema you are trying to create.
-> - If an endpoint is hooked to more than one entity, it will render search results from all linked entities based on supplied queries.
+>
+> *   If an endpoint is hooked to schema(‘s) it will automatically create an API and appropriate Redoc based on its settings. See API for more information on the API.
+> *   It is possible to hook an endpoint to multiple schemas. When hooked to multiple schemas, the endpoint can still handle POST requests, BUT a POST request must include a valid \_self.scheme.id or \_self. scheme.ref that refers to the appropriate schema so that the endpoint understands what schema you are trying to create.
+> *   If an endpoint is hooked to more than one entity, it will render search results from all linked entities based on supplied queries.
 
 ### GET
-![request_get.svg](request_get.svg)
+
+![request\_get.svg](request_get.svg)
 
 ### POST
-![request_post.svg](request_post.svg)
+
+![request\_post.svg](request_post.svg)
 
 ### PUT
-Put request are handled roughly  the same as an POST request, with one exception. 
-1. On a PUT request an exisiting object wil be entirely replaced by the new object. Values that where present in the original object but are not present in the new object wil be DELETED.
 
-![request_put.svg](request_put.svg)
+Put request are handled roughly  the same as an POST request, with one exception.
+
+1.  On a PUT request an exisiting object wil be entirely replaced by the new object. Values that where present in the original object but are not present in the new object wil be DELETED.
+
+![request\_put.svg](request_put.svg)
 
 ### PATCH
-Put request are handled roughly the same as an PUT request, with two exception. 
-1. On a PATCH request an exisiting object wil be updated  by the new object. Values that where present in the original object but are not present in the new object wil be KEPT.
-2. Validity will of the request will be determend afther merging the original and new object. e.g. a required value dosn't need to be pressent in an patch request if it was already present in the original object. Assuming that the orignal object already had al required values (or else it could note have been created) a patch requests only required value should be it's id (excpetion being that the object definition could have been changed afther the original object was created)
 
-![request_patch.svg](request_patch.svg)
+Put request are handled roughly the same as an PUT request, with two exception.
+
+1.  On a PATCH request an exisiting object wil be updated  by the new object. Values that where present in the original object but are not present in the new object wil be KEPT.
+2.  Validity will of the request will be determend afther merging the original and new object. e.g. a required value dosn't need to be pressent in an patch request if it was already present in the original object. Assuming that the orignal object already had al required values (or else it could note have been created) a patch requests only required value should be it's id (excpetion being that the object definition could have been changed afther the original object was created)
+
+![request\_patch.svg](request_patch.svg)
 
 ### DELETE
-![request_delete.svg](request_delete.svg)
+
+![request\_delete.svg](request_delete.svg)
 
 ## Throwing Events
+
 As a final step the endpoint will ALWAYS fire any events that are defined under throws. You can read more about events under [events](events.md).
 
-![request_throws.svg](request_throws.svg)
+![request\_throws.svg](request_throws.svg)
 
 When the endpoint throws events, it generates a response in the call cache. After handling all the throws ,are handled it will return the response to the user. The response starts as a `200 OK` “your request has been processed”, but may be altered by any action that subscribed to a thrown event may alter it.
 
 > **Note**
-> - Any action can subscribe to an event thrown by an endpoint, but common examples are proxy en request actions. These fulfill the same functionality as the direct proxy or event link but allow additional configuration, such as mapping.
-> - It recomended to ALWAYS fire event asynchronysly
-
+>
+> *   Any action can subscribe to an event thrown by an endpoint, but common examples are proxy en request actions. These fulfill the same functionality as the direct proxy or event link but allow additional configuration, such as mapping.
+> *   It recomended to ALWAYS fire event asynchronysly
 
 ## Serialization
 
 ## Return an error
+
 The endpoint will return an error if no proxy, entities, or throws are defined.
 
 ## Security
-Endpoints MAY be secured by assigning them to user groups. This is done on the basis of methods.  
 
-
-
+Endpoints MAY be secured by assigning them to user groups. This is done on the basis of methods.
