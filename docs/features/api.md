@@ -1,73 +1,187 @@
-# Security
+# Providing APIs (Application programming interface)
 
-We believe in integrating security into the core of our development process. We employ automated penetration testing and scanning as part of our Continuous Integration and Continuous Deployment (CI/CD) pipeline. This approach allows us to identify and address potential security vulnerabilities early, during the development phase, rather than later in the production phase.
+> **Warning**
+> This file is maintained at Conduction’s [Google Drive](https://docs.google.com/document/d/1LMm7OCoJrghHLWv9mRztXiWkzIQZuACq6uOFI8XV2ys/edit) Please make any suggestions of alterations there.
 
-## Automated Penetration Testing
+The gateway provides an API for other applications to use and consume APIs from sources in a way that gateway acts both as a provider and consumer of APIs. How to consume APIs from the gateway is further detailed under the Sources chapters. This chapter deals with providing APIs from the gateway to other applications
 
-Automated penetration testing tools are integrated into our CI/CD pipeline to simulate attacks on our systems and identify security weaknesses. These tools conduct a series of tests to check for common vulnerabilities, including those listed in the OWASP Top 10.
+## Endpoints
+Each api consists of an [collection]() of [endpoints](Endpoints.md). These provide the basis location that an call can be made to e.g. `/api/pets`.
 
-The results from these tests are then used to inform our development and security teams about potential vulnerabilities. This process enables us to address these vulnerabilities before the software is deployed to production.
+## Contex
+The gateway always views each call to an endpoint in its own context determined by three main aspects.
 
-## Scanning
+- ([User](Authentication.md)) Who is making the call? e.g. User John
+- ([Application]Applications.md) How is he making the call? e.g. from the front desk applications
+- (Process) For which process is he making the call? e.g. client registration
 
-Our CI/CD pipeline also includes automated scanning tools that check our source code, containers, and cloud infrastructure for security issues.
+The call is then handled by the [request service]().
 
-Source code scanners analyze our code to find security weaknesses such as those in the OWASP Top 10 list of common security risks.
-Container scanners inspect our Docker and other container images for vulnerabilities, misconfigurations, and compliance with best practices. This is in line with our commitment to adhere to the top ten containerization security tips.
-Cloud security scanners ensure that our cloud infrastructure is configured securely, following the principle of least privilege and other cloud security best practices.
-Adhering to the Top Ten Containerization Security Tips
-In our commitment to maintain robust security, we adhere to the top ten containerization security tips. Here are some of the practices we follow:
+## Generic API Functionality
 
-*   **Use minimal base images:** We only include the necessary services and components in our container images to reduce the attack surface.
-*   **Manage secrets securely:** We don't store sensitive information like passwords, API keys, or secret tokens in our container images. Instead, we use secure secrets management tools.
-*   **Use containers with non-root privileges:** We run our containers as non-root users whenever possible to limit the potential damage if a container is compromised.
-*   **Regularly update and patch containers:** We keep our containers up to date with the latest security patches.
-*   **Scan images for vulnerabilities:** As mentioned above, we use automated tools to scan our container images for known vulnerabilities.
-*   **Limit resource usage:** We use container runtime security features to limit the amount of system resources a container can use.
-*   **Use network segmentation:** We isolate our containers in separate network segments to limit lateral movement in case of a breach.
-*   **Implement strong authentication and authorization controls:** We ensure that only authorized individuals can access our containers and the data within them.
-*   **Monitor and log container activity:** We collect and analyze logs from our containers to detect any suspicious activity.
-*   **Ensure immutability and maintain an effective CI/CD pipeline:** Our containers are designed to be immutable, meaning they are not updated or patched once they are deployed. Instead, changes are made to the container image and a new version of the container is deployed through our CI/CD pipeline.
+A normal filter:
+{propertyName}={searchValue} e.g. `firstname=john`
 
-By integrating security into our development process, we aim to create a secure, reliable environment for our software and services.
+A property is IN array filter:
+{propertyName}[]={searchValue1} e.g. ‘firstname[]=john’
+{propertyName}[]={searchValue2} e.g. ‘firstname[]=harry’
 
-## User Authentication
+or
 
-We implement user authentication through oAuth or Active Directory Federation Services (ADFS). ADFS is a software component developed by Microsoft that provides users with single-sign-on access to systems and applications located across organizational boundaries.
 
-Users first authenticate through oAuth/ADFS, which then produces a series of claims identifying the user. These claims are then used by the Open Catalogi application, which uses them to decide whether to grant the user access and roles (See RBAC). This system simplifies the login process for users and allows for secure authentication across different systems and applications.
+A normal filter with method:
+{propertyNema}[method]={searchValue} e.g. ‘firstname[case_insensitive]=john’
 
-## Identification Based on Two-Way SSL
+A property is IN array filter with method:
+{propertyNema}[method][]={searchValue1} e.g. ‘number[int_compare][]=2’
+{propertyNema}[method][]={searchValue2} e.g. ‘number[int_compare][]=5’
+Note that not every method can be used like this
 
-Identification of other catalogs in our federative network is based on two-way SSL (Secure Sockets Layer) certificates, specifically adhering to the Dutch PKI (Public Key Infrastructure) system. This approach ensures a secure and trusted communication channel between the software and the catalog.
+All functional query parameters always start with an _ to prevent collisions with property names e.g. _order
 
-The two-way SSL authentication mechanism requires both the client and the server to present and accept each other's public certificates before any communication can take place. This process guarantees the identity of both the client and server, ensuring a high level of security and trust in the communication.
 
-## Role-Based Access Control (RBAC)
+## Methods
 
-Our system implements Role-Based Access Control (RBAC) to manage both user and application rights. RBAC is a method of regulating access to computer or network resources based on the roles of individual users within the organization.
+method less queries (e.g. `firstname=john`) are treated as exact methods `firstname[exact]=john`
 
-In RBAC, permissions are associated with roles (and configured in our software), and users and other appliations are assigned appropriate roles. This setup simplifies managing user privileges and helps to ensure that only authorized users and applications can access certain resources or perform certain operations.
+- **[exact] (default) exact match**
+  Only usable on properties of the type `text`,  `integer` or `datetime`. Seea
 
-## Data Security Levels
+- **[case_insensitive] (default) case insensitive searching**
+  Only usable on properties of the type `text`, uses the regex function under the hood in a case insensitive way.
 
-Our system handles various types of data, each requiring different levels of security:
+- **[case_sensitive] case sensitive searching**
+  Only usable on properties of the type `text`, uses the regex function under the hood in a case sensitive way.
 
-*   **Public Data:** This data is available to all users and doesn't contain any sensitive information. Even though it's public, we still take measures to ensure its integrity and availability.
-*   **Data Available to Specified Organizations:** Some data is only accessible to certain organizations. We implement strict access controls and authentication methods to ensure that only authorized organizations can access this data.
-*   **Data Available Only to the Own Organization:** Certain data is strictly internal and only accessible by our organization. This data is protected by multiple layers of security and can only be accessed by authenticated and authorized personnel within our organization.
-*   **User-Specific Data:** Some data is personalized and only available to specific users. This data is protected by strong access controls and encryption. Only the specific user and authorized personnel within our organization can access this data.
+- **[like] wildcard search**
+  Only usable on properties of the following types:
+  `text`,
+  `integer`
+  `datetime`
+  These types work the same as a regex search, but wraps the value in `.*` creating `.*$value.*` and sets the matching pattern to case insensitive and multi-line.This means you can search for single words in sentences or text. Keep in mind that `like` will search for complete occurrences zo $name[like] =John Doe will only return hits on “John Doe” and not records containing either John OR  Doe.
 
-We take data security very seriously and have implemented robust measures to ensure the safety, confidentiality, integrity, and availability of all data in our system.
+- **[>=] equal or greater than**
+  Only usable on properties of the type `integer`, will automatically cast the searched value to integer to make the comparison
 
-## Seperating Landingzone, Executionzone and Data
+- **[>] greater than**
+  Only usable on properties of the type `integer`, will automatically cast the searched value to an integer to make the comparison
 
-In our setup, we utilize NGINX and PHP containers to ensure a clean separation of concerns between internet/network access, code execution, and data storage. This design facilitates robust security and improved manageability of our applications and services.
+- **[<=] equal or smaller than**
+  Only usable on properties of the type `integer`, will automatically cast the searched value to an integer to make the comparison
 
-*   **NGINX Containers as Landing Zone:** The first layer of our architecture involves NGINX containers serving as a landing zone. NGINX is a popular open-source software used for web serving, reverse proxying, caching, load balancing, and media streaming, among other things. In our context, we use it primarily as a reverse proxy and load balancer.  When a request arrives from the internet, it first hits the NGINX container. The role of this container is to handle network traffic from the internet, perform necessary load balancing, and forward requests to appropriate application containers in a secure manner. This arrangement shields our application containers from direct exposure to the internet, enhancing our security posture.
+- **[<] smaller than**
+  Only usable on properties of the type `integer`, will automatically cast the searched value to an integer to make the comparison
 
-*   **PHP Containers as Execution Zone:** Once a request has been forwarded by the NGINX container, it lands in the appropriate PHP container for processing. These containers serve as our execution zone, where application logic is executed.  Each PHP container runs an instance of our application. By isolating the execution environment in this way, we can ensure that any issues or vulnerabilities within one container don't affect others. This encapsulation provides a significant security advantage and makes it easier to manage and scale individual components of our application.
+- **[after] equal or greater than**
+  Only usable on properties of the type `date` or `datetime`
 
-*   **Data Storage Outside of the Cluster:** For data storage, we follow a strategy of keeping data outside the cluster. This approach separates data from the execution environment and the network access layer, providing an additional layer of security. Data stored outside the cluster can be thoroughly protected with specific security controls, encryption, and backup procedures, independent of the application and network layers.
+- **[strictly_after] greater than**
+  Only usable on properties of the type `date` or `datetime`
 
-This three-tiered approach – NGINX containers for network access, PHP containers for code execution, and external storage for data – provides us with a secure, scalable, and resilient architecture. It allows us to isolate potential issues and manage each layer independently, thereby enhancing our ability to maintain and secure our services.
+- **[before] equal or smaller than**
+  Only usable on properties of the type `date` or `datetime`
+
+- **[strictly_before] smaller than**
+  Only usable on properties of the type `date` or `datetime`
+
+- **[regex] compare the values based on regex**
+  Only usable on properties of the type `string`
+
+- **[int_compare] will cast the value of your filter to an integer before we filter with it.**
+  Useful when the stored value in the gateway cache is an integer, but by default you are searching in your query with a string “1012”.
+  Works with the property IN array filter like this:
+  {propertyNema}[int_compare][]={searchValue1}
+
+- **[bool_compare] will cast the value of your filter to a boolean before filtering.**
+  Useful when the stored value in the gateway cache is a boolean, but by default you are searching in your query with a string “true”.
+  Works with the property IN array filter like this:
+  {propertyNema}[bool_compare][]={searchValue1}
+
+> **Note**
+> When comparing dates we use the PHP [dateTime($value)](https://www.php.net/manual/en/class.datetime.php) function to cast the strings to dates. That means that you can also input strings like `now`.`yesterday` see the full list of [relative formats](https://www.php.net/manual/en/datetime.formats.relative.php).
+
+## Ordering the results
+
+_order[propertyName] = desc/asc
+
+> **Note**
+> The `_search`order property currently also supports `order` for backwards compatibility
+
+## Working with pagination
+Requests to collections (e.g. more then one object) are encapsulated in an response object, the gateway automatically paginates results on 30. You can set the amount of items per page through the `_limit` query parameter. There is no upper limit to this parameter, so if desired, you could request 10000 objects in one go. This does however come with a performance drain because of the size of the returned response in bytes where the main throttle is the internet connection speed of the transfer combined with the size of individual objects.  We therefore suggest not to user limits greater than 100 in frontend applications.
+
+````json
+{
+  "total":100,
+  "limit":30,
+  "pages":4,
+  "page":1,
+  "results":[]
+}
+````
+
+- **_limit**
+- **_page**
+- **_start**
+
+
+
+> **Note**
+> The pagination properties currently also support backwards compatibility by removing the _ part. Meaning that they may also be used as `limit`,`page` and `start`
+
+
+## The search index
+The Common Gateway automatically creates a search index of all objects based on the text value of their properties (non-text valuesare ignored). This search index can be used when approaching API endpoints through the special `_search` query parameter.  Search functions as a wildcard.
+
+e.g. `_search=keyword`
+
+By default the search query searches in all fields. If you want to search specific properties you can do so by defining them as methods. You can search properties fields (in an OR configuration) by separating them through a comma, and supplying them in the method.You can also search in sub properties  e.g.  `_search[property1,property2.subProperty]=keyword`.
+
+> **Note**
+> The `_search` property currently also supports `search` for backwards compatibility
+
+## Limiting the return data
+In some cases you either don’t need or want a complete object. In those cases it's good practice for the consuming application to limit the field in its return call. This makes the return messages smaller (and therefore faster), but it is also more secure, because it prevents the sending and retention of unnecessary data.
+
+The returned data can be limited using the _fields query parameter. This parameter is expected to be an array containing the name of the requested properties. It’s possible to include nested properties using dot notation. Let’s take a look at the following example.  We have a person object containing the following data:
+
+```json
+{
+  "firstname":"John",
+  "lastname":"Doe",
+  "born":{
+    "city":"Amsterdam",
+    "country":"Netherlands",
+    "date":"1985-07-27"	
+  }
+}
+```
+Of we then query using ` _fields[]=firstname&_fields[]=born.date` we would expect the following object to be returned:
+
+```json
+{
+  "firstname":"John",
+  "born":{
+    "date":"1985-07-27"	
+  }
+}
+```
+
+> **Note**
+> The _fields property may be aliased as _properties
+
+_remove is specific unset
+
+## Specifying the data format
+The gateway can deliver data from its data layer in several formats. Those formats are independent from their original source, e.g. A source where the gateway consumes information from might be XML based, but the gateway could then provide that information in JSON format to a different application.
+
+The data format is defined by the application requesting the data through the `Accept` header.
+
+## Mapping the data (transformation)
+It is also possible to transform incoming data by providing a mapping object, more information about creating mapping objects can be found under [mappings](Mappings.md).
+
+Mappings can be passed through the gateway by url encoding the desired mapping and passing it trough the _mappings query parameter.
+
+> **Note**
+> It is discouraged to use mappings in this context since it makes the API restFull.
+

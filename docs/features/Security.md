@@ -1,5 +1,8 @@
 # Security
 
+> **Warning**
+> This file is maintained at the Conduction [Google Drive](https://docs.google.com/document/d/1dGqnB0Wdbj8BXT9yqYkGVZpfsTQ88T-ta_tk0iz11p0/edit). Please make any suggestions or alterations there.
+
 We believe in integrating security into the core of our development process. We employ automated penetration testing and scanning as part of our Continuous Integration and Continuous Deployment (CI/CD) pipeline. This approach allows us to identify and address potential security vulnerabilities early, during the development phase, rather than later in the production phase.
 
 ## Automated Penetration Testing
@@ -71,3 +74,4 @@ In our setup, we utilize NGINX and PHP containers to ensure a clean separation o
 *   **Data Storage Outside of the Cluster:** For data storage, we follow a strategy of keeping data outside the cluster. This approach separates data from the execution environment and the network access layer, providing an additional layer of security. Data stored outside the cluster can be thoroughly protected with specific security controls, encryption, and backup procedures, independent of the application and network layers.
 
 This three-tiered approach – NGINX containers for network access, PHP containers for code execution, and external storage for data – provides us with a secure, scalable, and resilient architecture. It allows us to isolate potential issues and manage each layer independently, thereby enhancing our ability to maintain and secure our services.
+
