@@ -1,0 +1,50 @@
+@startuml
+title Determining the Current State of Data
+footer: Common Gateway | Synchronizations
+header: Synchronizations
+
+[*] --> ObjectNotExistsInSource : Object only exists on Datalayer
+
+ObjectNotExistsInSource : decide if the object\nshould be deleted from Gateway\nor added to source
+
+ObjectNotExistsInSource --> ObjectSync : Object added to source
+
+ObjectNotExistsInSource --> [*] : Object deleted from Gateway
+
+[*] --> ObjectNotExistsInGateway : Object only exists on source
+
+ObjectNotExistsInGateway : add the object to Gateway
+
+ObjectNotExistsInGateway --> ObjectSync : Object added to Gateway
+
+[*] --> ObjectExistsBoth : Object exists on both
+
+ObjectExistsBoth : establish which version is newer
+
+ObjectExistsBoth --> GatewayVersionNewer : Gateway version is newer
+
+GatewayVersionNewer : update source with Gateway's version
+
+GatewayVersionNewer --> ObjectSync : Source updated
+
+ObjectExistsBoth --> SourceVersionNewer : Source version is newer
+
+SourceVersionNewer : update Gateway with source's version
+
+SourceVersionNewer --> ObjectSync : Gateway updated
+
+ObjectExistsBoth --> VersionsSame : Versions are the same
+
+VersionsSame --> ObjectSync : No action required
+
+ObjectExistsBoth --> CannotDetermineVersion : Can't determine newer version
+
+CannotDetermineVersion : assume which party is "right"\nand determine source of truth
+
+CannotDetermineVersion --> ObjectSync : Source of truth determined
+
+state ObjectSync {
+  [*] --> ObjectSynced
+  ObjectSynced : Objects are synchronized
+}
+@enduml
