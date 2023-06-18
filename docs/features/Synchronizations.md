@@ -17,7 +17,7 @@ The initial step in the synchronization process involves determining the current
     *   The versions are the same: No action is required.
     *   In instances where we can't establish which version is newer, we must assume which party is "right" and determine a source of truth. Typically, this would be the source, but it can be configured to be the Gateway.
 
-![synchronizations.svg](synchronizations.svg)
+![synchronization.svg](synchronization.svg)
 
 ## Creation of a Synchronization Object
 
