@@ -9,26 +9,29 @@ In a more traditional way, schema’s can be viewed as the “tables” of the d
 Where each data set, that would normally be a row, becomes an object. The main difference between tables and objects is that objects are multidimensional(a value can be another object)  and  table rows are flat (each column containing one value). An object can contain an array, objects or arrays of objects. Objects present us with a vastly superior way of serving data.
 
 An example object could be
-````json
+
+```json
 
 {
   "id": 1,
   "name": "doggie",
   "status": "available"
 }
-````
+```
 
 Schema's define objects by giving us the properties they contain and conditional validations for the value of each property.
 
 ## Creating or updating a schema
+
 Schema’s can be modeled from the schema page in the Admin UI or through the `/admin/schema` endpoint. To create a new schema go to “Schemas” in the menu, and press “Add schema”. Just fill in the name “PET and hit save (a schema needs to be created before you can add properties). After the schema is created you are automatically redirected to the edit page of that schema.
 
 ## Adding properties to a schema
+
 Go to the properties tab and press “Add property” to add a property to your schema. When adding a property
 
 ## Adding objects
-After adding properties to a schema
 
+After adding properties to a schema
 
 ## Downloading schema’s
 
@@ -48,9 +51,8 @@ The old schema has a set version number and the new schema does not have a set v
 
 Lets take a look at an example. We have a weather plugin that contains a weather schema.
 
-
-
 ## Properties
+
 An entity consists of the following properties that can be configured
 
 | Property | Required | Description |
@@ -63,17 +65,17 @@ An entity consists of the following properties that can be configured
 |extend| no | Whether or not the properties of the original object are automatically included|
 
 ### Properties
+
 Properties represent variables on objects. In the following object from the petstore api id, name, and status are properties.
 
-````json
+```json
 
 {
   "id": 1,
   "name": "doggie",
   "status": "available"
 }
-````
-
+```
 
 that you want to communicate to underlying sources. In a normal setup and attribute should at least apply the same restrictions as the underlying property (e.g. required) to prevent errors when pushing the entity to its source. It can however provide additional validations to a property, for example the source AIU might simply require the property ‘email’  to be a unique string, but you could set the form to ‘email’ causing the input to be validated as an ISO compatible email address.
 
@@ -97,10 +99,11 @@ that you want to communicate to underlying sources. In a normal setup and attrib
 |persistToSource|  no |`boolean` Setting this property to true will force the property to be saved in the gateway endpoint (default behavior is saving in the EAV)|
 |searchable|  no |`boolean` Whether or not this property is searchable|
 |cascade|  no |`boolean`  Whether or not this property can be used to create new entities (versus when it can only be used to link existing entities)|
+
 > **Warning**
 > To prevent collisions with json-ld, json-hall, graphql and inner gateway workings property names aren't allowed to start with the following characters `_`,`@`,`$` additionally you can’t add a property called `id` to your schema’s. When importing schema’s all properties in violation of the above will be ignored without warning.
 
-####Types
+\####Types
 The type of attribute provides basic validations and a way for the gateway to store and cash values in an efficient manner. Types are derived from the OAS3 specification. Current available types are:
 
 | Format | Description |
@@ -115,11 +118,10 @@ The type of attribute provides basic validations and a way for the gateway to st
 |object|Used to nest a Entity as attribute of another Entity, read more about [nesting]()|
 |file|Used to handle file uploads, an Entity SHOULD only contain one attribute of the type file, read more about [handling file uploads]() |
 
-* you are allowed to use integer instead of int, boolean instead of bool, date-time or dateTime instead of datetime,
+*   you are allowed to use integer instead of int, boolean instead of bool, date-time or dateTime instead of datetime,
 
-####Formats
+\####Formats
 A format defines a way a value should be formatted, and is directly connected to a type, for example a string MAY BE a format of email, but an integer cannot be a valid email. Formats are derived from the OAS3 specification, but supplemented with formats that are generally needed in governmental applications (like BSN) . Current available formats are:
-
 
 General formats
 
@@ -129,7 +131,7 @@ General formats
 |alpha|         |Validates whether the input contains only alphabetic characters|
 |numeric|         |Validates whether the input contains only numeric characters|
 |uuid|string||
-|base| 	|Validate numbers in any base, even with non regular bases.| 
+|base| 	|Validate numbers in any base, even with non regular bases.|
 |base64|	| Validate if a string is Base64-encoded.|
 |countryCode|string|Validates whether the input is a country code in ISO 3166-1 standard.|
 |creditCard|string|Validates a credit card number.|
@@ -154,7 +156,7 @@ General formats
 |macAddress|string|Validates whether the input is a valid MAC address.|
 |nfeAccessKey|string|Validates the access key of the Brazilian electronic invoice (NFe).|
 
-* Phone numbers should ALWAYS be treated as a string since they MAY contain a leading zero.
+*   Phone numbers should ALWAYS be treated as a string since they MAY contain a leading zero.
 
 *Country specific formats*
 
@@ -162,25 +164,22 @@ General formats
 |--------|---------|-------------|
 |bsn|string|Dutch social security number (BSN)|
 |nip|string, integer|Polish VAT identification number (NIP)|
-|nif|string, integer|Spanish fiscal identification number (NIF)| 
+|nif|string, integer|Spanish fiscal identification number (NIF)|
 |cnh|string, integer|Brazilian driver’s license|
 |cpf|string, integer| Validates a Brazilian CPF number |
-|cnpj|string, integer|Validates if the input is a Brazilian National Registry of Legal Entities (CNPJ) number | 
+|cnpj|string, integer|Validates if the input is a Brazilian National Registry of Legal Entities (CNPJ) number |
 
-* Dutch BSN numbers should ALWAYS be treated as a string since they MAY contain a leading zero.
+*   Dutch BSN numbers should ALWAYS be treated as a string since they MAY contain a leading zero.
 
-
-####Validations
+\####Validations
 Besides validations on type and string you can also use specific validations, these are contained in the validation array. Validation might be specific to certain types or formats e.g. minValue can only be applied to values that can be turned into numeric values. And other validations might be of a more general nature e.g. required.
-
-
 
 | Validation | value | Description |
 |--------|---------|-------------|
 |between| |Validates whether the input is between two other values.|
 |boolType| |Validates whether the type of the input is boolean.|
 |boolVal| |Validates if the input results in a boolean value.|
-|call| |Validates the return of a [callable][] for a given input.|
+|call| |Validates the return of a \[callable]\[] for a given input.|
 |callableType| |Validates whether the pseudo-type of the input is callable.|
 |callback| |Validates the input using the return of a given callable.|
 |charset| |Validates if a string is in a specific charset.|
@@ -208,7 +207,7 @@ Besides validations on type and string you can also use specific validations, th
 |falseVal| | Validates if a value is considered as false.|
 |file| | Validates whether file input is as a regular filename.|
 |image| | Validates if the file is a valid image by checking its MIME type.|
-|filterVar| | Validates the input with the PHP’s filter_var() function.|
+|filterVar| | Validates the input with the PHP’s filter\_var() function.|
 |finite| | Validates if the input is a firtine number.|
 |floatType| | Validates whether the type of the input is float.|
 |floatVal| |Validate whether the input value is float.|
@@ -243,14 +242,11 @@ Besides validations on type and string you can also use specific validations, th
 |negative| |Validates whether the input is a negative number.|
 
 # Objects
+
 An object is a data set conforming to schema, e.g for the schema pet we might have an object pluto.
 
 ## Metadata
 
-
-
 ## Hydration
-The process of transforming incoming data to objects is called hydration. 
 
-
-
+The process of transforming incoming data to objects is called hydration.
