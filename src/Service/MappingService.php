@@ -65,7 +65,7 @@ class MappingService
      *
      * @return array The array with encoded array keys
      */
-    private function encodeArrayKeys(array $array, string $toReplace, string $replacement): array
+    public function encodeArrayKeys(array $array, string $toReplace, string $replacement): array
     {
         $result = [];
         foreach ($array as $key => $value) {

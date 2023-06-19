@@ -1,6 +1,6 @@
 <?php
 
-namespace Service;
+namespace CommonGateway\CoreBundle\Service;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Style\SymfonyStyle;
