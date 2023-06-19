@@ -58,7 +58,7 @@ As you can see can see there are three basic alternatives
 
 ## Proxy
 
-An endpoint MAY be a proxy for another (external) source. In this case, the endpoint will forward all traffic to the external source (and attach authorisation if required by that source). It will also pass along:
+An endpoint MAY be a proxy for another (external) source. In this case, the endpoint will forward all traffic to the external source (and attach Authorization if required by that source). It will also pass along:
 any headers
 , query parameters
 , body

@@ -3,11 +3,12 @@
 > **Warning**
 > This file is maintained at the Conduction [Google Drive](https://docs.google.com/document/d/165-ggXkjTwWt17Zyb3mJNuJEPPMlNRXN25kMXoYB49U/edit). Please make any suggestions of alterations there.
 
+
 Authentication is an essential part of securing the gateway. It involves validating the identity of a client—whether that's a user, a device, or another application—before allowing it to access the system's resources. There are several ways for applications to authenticate themselves to the gateway, each with its own use cases and security considerations.
 
 ## Uses Classes
 
-*   [AuthenticationService](./classes/Service/AuthenticationService.md)
+- [AuthenticationService](./classes/Service/AuthenticationService.md)
 
 ## Applications
 
@@ -19,7 +20,7 @@ Application keys provide a simple and straightforward method for authenticating 
 
 JWT (JSON Web Token) is a compact and URL-safe means of representing claims to be transferred between two parties​1​. The claims in a JWT are encoded as a JSON object that is used as the payload of a JSON Web Signature (JWS) structure or as the plaintext of a JSON Web Encryption (JWE) structure, enabling the claims to be digitally signed or integrity-protected with a Message Authentication Code (MAC) and/or encrypted.
 
-JWT tokens should be included calls using the “Authorisation” header en prefixed with bearer.
+JWT tokens should be included calls using the “Authorization” header en prefixed with bearer.
 
 ### ZGW JWT Token
 
@@ -34,6 +35,7 @@ Two-way SSL, also known as mutual SSL, is a process in which both the client and
 IP whitelisting is a security feature that restricts access to a network or a system only to trusted users. If you are using the gateway in an API Gateway setup, you can set up IP whitelisting to only accept calls from an application if they originate from either a specific IP address or an IP address range.
 
 > **Warning**
+
 > IP Whitelisting should never be used alone as IP addresses can be easily spoofed. Instead, it should be used as an additional authentication requirement in a machine-to-machine context. In a Web gateway context, IP Whitelisting can lead to undesired results due to the dynamic nature of client IP addresses in such contexts.
 
 ### Domain Whitelisting
@@ -47,7 +49,6 @@ Domain whitelisting is a security feature that allows access to a system only fr
 ## Users
 
 ### Integrated Identity Provider
-
 An Integrated Identity Provider (IdP) is a system entity that creates, maintains, and manages identity information for principals and provides principal authentication to other service providers within a federation. This authentication process involves validating user credentials and providing identity data to applications for authorization decisions.
 
 ### External Identity Provider
@@ -55,3 +56,4 @@ An Integrated Identity Provider (IdP) is a system entity that creates, maintains
 An External Identity Provider is an authentication service that is built, hosted, and managed by a third-party service provider. It allows users to authenticate using a single set of credentials stored externally, without the need for additional passwords or usernames.
 
 One common protocol used for this purpose is OAuth 2.0. OAuth 2.0 is an authorization protocol that enables applications to obtain limited access to user accounts on an HTTP service, such as Facebook, GitHub, and DigitalOcean. It works by delegating user authentication to the service that hosts authentication data.
+

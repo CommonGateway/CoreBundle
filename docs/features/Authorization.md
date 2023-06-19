@@ -7,7 +7,7 @@ This document explains how authorization is managed in the Common Gateway projec
 
 ## Uses Classes
 
-*   [RequestService](./classes/Service/RequestService.md)
+- [RequestService](./classes/Service/RequestService.md)
 
 ## Role-Based Access Control (RBAC)
 
@@ -21,13 +21,13 @@ A key feature of our RBAC implementation is that groups can inherit scopes from 
 
 Here is an example to illustrate the inheritance of scopes in our RBAC system:
 
-*   **Anonymous**: This group has the most basic set of scopes. It represents users or applications that have not been authenticated.
+- **Anonymous**: This group has the most basic set of scopes. It represents users or applications that have not been authenticated.
 
-*   **User**: This group inherits all scopes from the Anonymous group. In addition, it has additional scopes that are specific to authenticated users.
+- **User**: This group inherits all scopes from the Anonymous group. In addition, it has additional scopes that are specific to authenticated users.
 
-*   **Manager**: This group inherits all scopes from the User group. It has additional scopes that enable management functions.
+- **Manager**: This group inherits all scopes from the User group. It has additional scopes that enable management functions.
 
-*   **Administrator**: This group inherits all scopes from the Manager group. As the group with the highest level of access, it has all available scopes.
+- **Administrator**: This group inherits all scopes from the Manager group. As the group with the highest level of access, it has all available scopes.
 
 This hierarchy allows for a clear and manageable organization of scopes. It ensures that each user or application has only the permissions it needs to perform its tasks, in line with the principle of least privilege.
 
@@ -37,7 +37,7 @@ In the Common Gateway project, we establish a hierarchy of groups, each inheriti
 
 ## Scopes Definition
 
-Scopes within the Common Gateway are defined based on the CRUD (Create, Read, Update, Delete) operations. A scope can be applied to an entire system aspect (e.g., 'cronjobs.READ') or to a specific object (e.g., '\[uuid].read').
+Scopes within the Common Gateway are defined based on the CRUD (Create, Read, Update, Delete) operations. A scope can be applied to an entire system aspect (e.g., 'cronjobs.READ') or to a specific object (e.g., '[uuid].read').
 
 Below is a breakdown of system aspects and their possible scopes:
 
@@ -65,8 +65,8 @@ This scope inheritance and definition mechanism provides a flexible and robust s
 
 There are also some special scopes
 **Cronjobs/Actions:RUN** The ability to manually run an action or cronjob
-\*\*Objects :REVERT \*\* The ability to manually revert an object to an earlier version
-\*\*Plugins :UPDATE  \*\* The ability to manually update a plugin to a newer version
+**Objects :REVERT ** The ability to manually revert an object to an earlier version
+**Plugins :UPDATE  ** The ability to manually update a plugin to a newer version
 
 # Common Gateway: Ownership and Creation
 
@@ -82,9 +82,9 @@ In addition to these rights, the owner also has the unique authority to transfer
 
 ### Creator
 
-The 'Creator' of an object, on the other hand, has no rights. It is merely an transactional log of the user or application that created an object in the first place. In most cases the creator becomes the owner when creating an object.
+The 'Creator' of an object, on the other hand, has no rights. It is merely a transactional log of the user or application that created an object in the first place. In most cases the creator becomes the owner when creating an object.
 
-## Multitenancy in Common Gateway
+## Multitenancy in the Common Gateway
 
 Multitenancy is a key concept in the Common Gateway project. It allows multiple independent instances of users and applications to operate within the same environment, while maintaining distinct, secure access to their respective objects. In this project, multitenancy is implemented at the organization level, meaning that all objects are tied to an organization, and users and applications can only interact with objects that belong to the same organization.
 
@@ -100,12 +100,14 @@ If a user is a part of multiple organizations, they must manually switch between
 
 For example, if a user belongs to both Organization A and Organization B, they would initially have access to the objects of Organization A. If they want to access the objects of Organization B, they would need to switch their active organization to Organization B. This ensures that data is securely partitioned between organizations, preserving the integrity and security of each organization's data.
 
-### Maintaining Multi Tenancy
+### Maintaining Multitenancy
 
 Multitenancy is maintained through one of two methods:
 
-*   **Single Database Setup:** In a single database setup, the organization is always added as a query parameter in the database operations. This ensures that only the data corresponding to the active organization is fetched, maintaining data separation between different organizations.
+- **Single Database Setup:** In a single database setup, the organization is always added as a query parameter in the database operations. This ensures that only the data corresponding to the active organization is fetched, maintaining data separation between different organizations.
 
-*   **Multiple Database Setup:** In a multiple database setup, each organization has its own separate database. Traffic is routed to the specific database that corresponds to the active organization. This is the preferred setup because it provides a higher level of data isolation and can better handle the scale of large organizations.
+- **Multiple Database Setup:** In a multiple database setup, each organization has its own separate database. Traffic is routed to the specific database that corresponds to the active organization. This is the preferred setup because it provides a higher level of data isolation and can better handle the scale of large organizations.
 
 In both cases, the principle of multi tenancy is preserved. Users and applications only have access to their own organization's data, ensuring data security and privacy across all organizations in the Common Gateway environment.
+
+
