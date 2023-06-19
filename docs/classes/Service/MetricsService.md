@@ -1,18 +1,25 @@
-# CommonGateway\CoreBundle\Service\MetricsService
+# CommonGateway\CoreBundle\Service\MetricsService  
 
 Creates arrays for prometheus.
+
+
+
+
 
 ## Methods
 
 | Name | Description |
 |------|-------------|
-|[\_\_construct](#metricsservice__construct)|The constructor sets al needed variables.|
+|[__construct](#metricsservice__construct)|The constructor sets al needed variables.|
 |[getAll](#metricsservicegetall)|Search for a given term.|
 |[getErrors](#metricsservicegeterrors)|Get metrics concerning errors.|
 |[getObjects](#metricsservicegetobjects)|Get metrics concerning objects.|
 |[getPlugins](#metricsservicegetplugins)|Get metrics concerning plugins.|
 
-### MetricsService::\_\_construct
+
+
+
+### MetricsService::__construct  
 
 **Description**
 
@@ -20,24 +27,28 @@ Creates arrays for prometheus.
 public __construct (\ComposerService $composerService, \EntityManagerInterface $entityManager, \ParameterBagInterface $parameters)
 ```
 
-The constructor sets al needed variables.
+The constructor sets al needed variables. 
+
+ 
 
 **Parameters**
 
-*   `(\ComposerService) $composerService`
-    : The Composer service
-*   `(\EntityManagerInterface) $entityManager`
-    : The entity manager
-*   `(\ParameterBagInterface) $parameters`
-    : The Parameter bag
+* `(\ComposerService) $composerService`
+: The Composer service  
+* `(\EntityManagerInterface) $entityManager`
+: The entity manager  
+* `(\ParameterBagInterface) $parameters`
+: The Parameter bag  
 
 **Return Values**
 
 `void`
 
+
 <hr />
 
-### MetricsService::getAll
+
+### MetricsService::getAll  
 
 **Description**
 
@@ -45,9 +56,9 @@ The constructor sets al needed variables.
 public getAll (void)
 ```
 
-Search for a given term.
+Search for a given term. 
 
-See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function 
 
 **Parameters**
 
@@ -57,9 +68,13 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 
 `array`
 
+
+
+
 <hr />
 
-### MetricsService::getErrors
+
+### MetricsService::getErrors  
 
 **Description**
 
@@ -67,7 +82,9 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 public getErrors (void)
 ```
 
-Get metrics concerning errors.
+Get metrics concerning errors. 
+
+ 
 
 **Parameters**
 
@@ -77,9 +94,13 @@ Get metrics concerning errors.
 
 `array`
 
+
+
+
 <hr />
 
-### MetricsService::getObjects
+
+### MetricsService::getObjects  
 
 **Description**
 
@@ -87,7 +108,9 @@ Get metrics concerning errors.
 public getObjects (void)
 ```
 
-Get metrics concerning objects.
+Get metrics concerning objects. 
+
+ 
 
 **Parameters**
 
@@ -97,9 +120,13 @@ Get metrics concerning objects.
 
 `array`
 
+
+
+
 <hr />
 
-### MetricsService::getPlugins
+
+### MetricsService::getPlugins  
 
 **Description**
 
@@ -107,7 +134,9 @@ Get metrics concerning objects.
 public getPlugins (void)
 ```
 
-Get metrics concerning plugins.
+Get metrics concerning plugins. 
+
+ 
 
 **Parameters**
 
@@ -117,4 +146,8 @@ Get metrics concerning plugins.
 
 `array`
 
+
+
+
 <hr />
+
