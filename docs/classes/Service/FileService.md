@@ -1,4 +1,10 @@
-# CommonGateway\CoreBundle\Service\FileService
+# CommonGateway\CoreBundle\Service\FileService  
+
+
+
+
+
+
 
 ## Methods
 
@@ -7,7 +13,10 @@
 |[removeFile](#fileserviceremovefile)||
 |[writeFile](#fileservicewritefile)||
 
-### FileService::removeFile
+
+
+
+### FileService::removeFile  
 
 **Description**
 
@@ -15,6 +24,10 @@
  removeFile (void)
 ```
 
+ 
+
+ 
+
 **Parameters**
 
 `This function has no parameters.`
@@ -23,9 +36,11 @@
 
 `void`
 
+
 <hr />
 
-### FileService::writeFile
+
+### FileService::writeFile  
 
 **Description**
 
@@ -33,6 +48,10 @@
  writeFile (void)
 ```
 
+ 
+
+ 
+
 **Parameters**
 
 `This function has no parameters.`
@@ -41,4 +60,6 @@
 
 `void`
 
+
 <hr />
+
