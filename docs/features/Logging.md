@@ -7,7 +7,7 @@ The gateway uses symfony’s [monolog bundle](https://symfony.com/doc/current/lo
 
 ## Channels
 
-By default the following channels are provided by the gateway, but plugins might add their own channels by including a `monolog.yaml` in their configuration. Channels represent the part of the gateway that has created the log and are used to separate logs by category.
+By default, the following channels are provided by the gateway, but plugins might add their own channels by including a `monolog.yaml` in their configuration. Channels represent the part of the gateway that has created the log and are used to separate logs by category.
 endpoint
 request
 schema
@@ -35,12 +35,12 @@ EMERGENCY: It is used when the system is unusable.
 
 ## Data
 
-The gateway uses an [dataprocessor](https://symfony.com/doc/current/logging/processors.html) to add additional data to a log. The following data is automatically added (if available through the session object).
+The gateway uses a [dataprocessor](https://symfony.com/doc/current/logging/processors.html) to add additional data to a log. The following data is automatically added (if available through the session object).
 session: The session id
 user: The user that made the request
 application: The application that made the request
 organization: The organization of that application
-source: The source that was accessed by the procces
+source: The source that was accessed by the process
 endpoint: The id of the endpoint where the call landed
 schema: The schema that was used during the session
 action: The currently running action
@@ -56,7 +56,7 @@ Normally speaking a call should be started by either a cronjob,command or endpoi
 
 ## Storage
 
-By default the gateway stores logs to `{channel name}.log` files in the log directory of the gateway, prints logs out to STD out and saves them to the Mongo database. When storing the logs to mongoDB all logs are stored to a single collection to make them easily searchable.
+By default, the gateway stores logs to `{channel name}.log` files in the log directory of the gateway, prints logs out to STD out and saves them to the Mongo database. When storing the logs to mongoDB all logs are stored to a single collection to make them easily searchable.
 
 ## Retrieving logs
 
@@ -68,7 +68,7 @@ You might feel the need to create additional logging for your plugin because it 
 
 1 - There is an appropriate channel (for example actions for an action handler that you have built). Use that! Conforming yourself to existing logging means that your logs will be automatically available through the gateways tool like the admin ui and grafana.
 2 - Use the plugin channel, that is what it is for, anny undefined logs can be stored there.
-3 - Create your own channel by expanding monolog.yaml from your plugin, this is almost never the preferred option. It gives you great flexibility in how to use the logs but it leaves the context of the gateway making your logs unpredictable for those who need them the most, your users.
+3 - Create your own channel by expanding monolog.yaml from your plugin, this is almost never the preferred option. It gives you great flexibility in how to use the logs, but it leaves the context of the gateway making your logs unpredictable for those who need them the most, your users.
 
 You **SHOULD** always log from services, not just because it is easter, but because following separation of concern your business logic(and therefore the stuff you want to log) should be contained there anyway. It does however also make it very easy to add logging to your service trough [autowiring](https://symfony.com/doc/current/logging/channels_handlers.html#monolog-autowire-channels). When adding a logger to your action handlers you can for example include the action channel like:
 
@@ -77,10 +77,10 @@ You **SHOULD** always log from services, not just because it is easter, but beca
 use Psr\Log\LoggerInterface
 … 
 
-     public function __construct(LoggerInterface $ActionLogger)
-    {
-        $this->logger = $ActionLogger;
-    }
+public function __construct(LoggerInterface $ActionLogger)
+{
+    $this->logger = $ActionLogger;
+}
 ```
 
 Or when using the generic plugin channel
@@ -90,16 +90,16 @@ Or when using the generic plugin channel
 use Psr\Log\LoggerInterface
 … 
 
-     public function __construct(LoggerInterface $PluginLogger)
-    {
-        $this->logger = $PluginLogger;
-    }
+public function __construct(LoggerInterface $PluginLogger)
+{
+    $this->logger = $PluginLogger;
+}
 ```
 
 After this creating a log is rather easy, just use  \`$this->logger->{level}({message}) e.g.
 
 ```php
-	$this->logger->info('I just got the logger');
+$this->logger->info('I just got the logger');
 $this->logger->error('An error occurred');
 
 ```
@@ -107,8 +107,8 @@ $this->logger->error('An error occurred');
 Keep in mind that if you want your logs to be findable and accessible through the admin ui you should also include your plugin package name as an extra value e.g.
 
 ```php
-	$this->logger->info('I just got the logger',[“plugin”=>”common-gateway/pet-store-bundle”]);
+$this->logger->info('I just got the logger',[“plugin”=>”common-gateway/pet-store-bundle”]);
 
 ```
 
-**note:** It is actually possible to register your logs under the wrong plugin, don’t. First of all it will confuse your users and be traceable through the proceed id. secondly it will be flagged as a code injection attract and reported.
+**note:** It is actually possible to register your logs under the wrong plugin, don’t. First of all it will confuse your users and be traceable through the process id. Secondly it will be flagged as a code injection attract and reported.
