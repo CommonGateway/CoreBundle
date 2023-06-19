@@ -1,26 +1,19 @@
-# CommonGateway\CoreBundle\Service\MappingService  
+# CommonGateway\CoreBundle\Service\MappingService
 
 The mapping service handles the mapping (or transformation) of array A (input) to array B (output).
 
-More information on how to write your own mappings can be found at [/docs/Mappings.md](/docs/Mappings.md).  
-
-
-
-
+More information on how to write your own mappings can be found at [/docs/Mappings.md](/docs/Mappings.md).
 
 ## Methods
 
 | Name | Description |
 |------|-------------|
-|[__construct](#mappingservice__construct)|Setting up the base class with required services.|
+|[\_\_construct](#mappingservice__construct)|Setting up the base class with required services.|
 |[coordinateStringToArray](#mappingservicecoordinatestringtoarray)|Converts a coordinate string to an array of coordinates.|
 |[mapping](#mappingservicemapping)|Maps (transforms) an array (input) to a different array (output).|
 |[setStyle](#mappingservicesetstyle)|Set symfony style in order to output to the console.|
 
-
-
-
-### MappingService::__construct  
+### MappingService::\_\_construct
 
 **Description**
 
@@ -28,23 +21,19 @@ More information on how to write your own mappings can be found at [/docs/Mappin
 public __construct (\Environment $twig)
 ```
 
-Setting up the base class with required services. 
-
- 
+Setting up the base class with required services.
 
 **Parameters**
 
-* `(\Environment) $twig`
+*   `(\Environment) $twig`
 
 **Return Values**
 
 `void`
 
-
 <hr />
 
-
-### MappingService::coordinateStringToArray  
+### MappingService::coordinateStringToArray
 
 **Description**
 
@@ -52,14 +41,12 @@ Setting up the base class with required services.
 public coordinateStringToArray (string $coordinates)
 ```
 
-Converts a coordinate string to an array of coordinates. 
-
- 
+Converts a coordinate string to an array of coordinates.
 
 **Parameters**
 
-* `(string) $coordinates`
-: A string containing coordinates.  
+*   `(string) $coordinates`
+    : A string containing coordinates.
 
 **Return Values**
 
@@ -67,11 +54,9 @@ Converts a coordinate string to an array of coordinates.
 
 > An array of coordinates.
 
-
 <hr />
 
-
-### MappingService::mapping  
+### MappingService::mapping
 
 **Description**
 
@@ -79,18 +64,16 @@ Converts a coordinate string to an array of coordinates.
 public mapping (\Mapping $mappingObject, array $input, bool $list)
 ```
 
-Maps (transforms) an array (input) to a different array (output). 
-
- 
+Maps (transforms) an array (input) to a different array (output).
 
 **Parameters**
 
-* `(\Mapping) $mappingObject`
-: The mapping object that forms the recipe for the mapping  
-* `(array) $input`
-: The array that need to be mapped (transformed) otherwise known as input  
-* `(bool) $list`
-: Wheter we want a list instead of a sngle item  
+*   `(\Mapping) $mappingObject`
+    : The mapping object that forms the recipe for the mapping
+*   `(array) $input`
+    : The array that need to be mapped (transformed) otherwise known as input
+*   `(bool) $list`
+    : Wheter we want a list instead of a sngle item
 
 **Return Values**
 
@@ -98,17 +81,15 @@ Maps (transforms) an array (input) to a different array (output).
 
 > The result (output) of the mapping process
 
-
 **Throws Exceptions**
 
-
 `\LoaderError|\SyntaxError`
+
 > Twig Exceptions
 
 <hr />
 
-
-### MappingService::setStyle  
+### MappingService::setStyle
 
 **Description**
 
@@ -116,20 +97,14 @@ Maps (transforms) an array (input) to a different array (output).
 public setStyle (\SymfonyStyle $io)
 ```
 
-Set symfony style in order to output to the console. 
-
- 
+Set symfony style in order to output to the console.
 
 **Parameters**
 
-* `(\SymfonyStyle) $io`
+*   `(\SymfonyStyle) $io`
 
 **Return Values**
 
 `self`
 
-
-
-
 <hr />
-
