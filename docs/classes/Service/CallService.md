@@ -1,21 +1,28 @@
-# CommonGateway\CoreBundle\Service\CallService
+# CommonGateway\CoreBundle\Service\CallService  
 
 Service to call external sources.
 
-This service provides a guzzle wrapper to work with sources in the common gateway.
+This service provides a guzzle wrapper to work with sources in the common gateway.  
+
+
+
+
 
 ## Methods
 
 | Name | Description |
 |------|-------------|
-|[\_\_construct](#callservice__construct)|The constructor sets al needed variables.|
+|[__construct](#callservice__construct)|The constructor sets al needed variables.|
 |[call](#callservicecall)|Calls a source according to given configuration.|
 |[decodeResponse](#callservicedecoderesponse)|Decodes a response based on the source it belongs to.|
 |[getAllResults](#callservicegetallresults)|Fetches all pages for a source and merges the result arrays to one array.|
 |[getCertificate](#callservicegetcertificate)|Writes the certificate and ssl keys to disk, returns the filenames.|
 |[removeFiles](#callserviceremovefiles)|Removes certificates and private keys from disk if they are not necessary anymore.|
 
-### CallService::\_\_construct
+
+
+
+### CallService::__construct  
 
 **Description**
 
@@ -23,30 +30,34 @@ This service provides a guzzle wrapper to work with sources in the common gatewa
 public __construct (\AuthenticationService $authenticationService, \EntityManagerInterface $entityManager, \FileService $fileService, \MappingService $mappingService, \SessionInterface $session, \LoggerInterface $callLogger)
 ```
 
-The constructor sets al needed variables.
+The constructor sets al needed variables. 
+
+ 
 
 **Parameters**
 
-*   `(\AuthenticationService) $authenticationService`
-    : The authentication service
-*   `(\EntityManagerInterface) $entityManager`
-    : The entity manager
-*   `(\FileService) $fileService`
-    : The file service
-*   `(\MappingService) $mappingService`
-    : The mapping service
-*   `(\SessionInterface) $session`
-    : The current session.
-*   `(\LoggerInterface) $callLogger`
-    : The logger for the call channel.
+* `(\AuthenticationService) $authenticationService`
+: The authentication service  
+* `(\EntityManagerInterface) $entityManager`
+: The entity manager  
+* `(\FileService) $fileService`
+: The file service  
+* `(\MappingService) $mappingService`
+: The mapping service  
+* `(\SessionInterface) $session`
+: The current session.  
+* `(\LoggerInterface) $callLogger`
+: The logger for the call channel.  
 
 **Return Values**
 
 `void`
 
+
 <hr />
 
-### CallService::call
+
+### CallService::call  
 
 **Description**
 
@@ -54,34 +65,42 @@ The constructor sets al needed variables.
 public call (\Source $source, string $endpoint, string $method, array $config, bool $asynchronous, bool $createCertificates)
 ```
 
-Calls a source according to given configuration.
+Calls a source according to given configuration. 
+
+ 
 
 **Parameters**
 
-*   `(\Source) $source`
-    : The source to call.
-*   `(string) $endpoint`
-    : The endpoint on the source to call.
-*   `(string) $method`
-    : The method on which to call the source.
-*   `(array) $config`
-    : The additional configuration to call the source.
-*   `(bool) $asynchronous`
-    : Whether or not to call the source asynchronously.
-*   `(bool) $createCertificates`
-    : Whether or not to create certificates for this source.
+* `(\Source) $source`
+: The source to call.  
+* `(string) $endpoint`
+: The endpoint on the source to call.  
+* `(string) $method`
+: The method on which to call the source.  
+* `(array) $config`
+: The additional configuration to call the source.  
+* `(bool) $asynchronous`
+: Whether or not to call the source asynchronously.  
+* `(bool) $createCertificates`
+: Whether or not to create certificates for this source.  
 
 **Return Values**
 
 `\Response`
 
+
+
+
 **Throws Exceptions**
+
 
 `\Exception`
 
+
 <hr />
 
-### CallService::decodeResponse
+
+### CallService::decodeResponse  
 
 **Description**
 
@@ -89,14 +108,16 @@ Calls a source according to given configuration.
 public decodeResponse (\Source $source, \Response $response)
 ```
 
-Decodes a response based on the source it belongs to.
+Decodes a response based on the source it belongs to. 
+
+ 
 
 **Parameters**
 
-*   `(\Source) $source`
-    : The source that has been called
-*   `(\Response) $response`
-    : The response to decode
+* `(\Source) $source`
+: The source that has been called  
+* `(\Response) $response`
+: The response to decode  
 
 **Return Values**
 
@@ -104,15 +125,17 @@ Decodes a response based on the source it belongs to.
 
 > The decoded response
 
+
 **Throws Exceptions**
 
-`\Exception`
 
+`\Exception`
 > Thrown if the response does not fit any supported content type
 
 <hr />
 
-### CallService::getAllResults
+
+### CallService::getAllResults  
 
 **Description**
 
@@ -120,16 +143,18 @@ Decodes a response based on the source it belongs to.
 public getAllResults (\Source $source, string $endpoint, array $config)
 ```
 
-Fetches all pages for a source and merges the result arrays to one array.
+Fetches all pages for a source and merges the result arrays to one array. 
+
+ 
 
 **Parameters**
 
-*   `(\Source) $source`
-    : The source to call
-*   `(string) $endpoint`
-    : The endpoint on the source to call
-*   `(array) $config`
-    : The additional configuration to call the source
+* `(\Source) $source`
+: The source to call  
+* `(string) $endpoint`
+: The endpoint on the source to call  
+* `(array) $config`
+: The additional configuration to call the source  
 
 **Return Values**
 
@@ -137,9 +162,11 @@ Fetches all pages for a source and merges the result arrays to one array.
 
 > The array of results
 
+
 <hr />
 
-### CallService::getCertificate
+
+### CallService::getCertificate  
 
 **Description**
 
@@ -147,20 +174,26 @@ Fetches all pages for a source and merges the result arrays to one array.
 public getCertificate (array $config)
 ```
 
-Writes the certificate and ssl keys to disk, returns the filenames.
+Writes the certificate and ssl keys to disk, returns the filenames. 
+
+ 
 
 **Parameters**
 
-*   `(array) $config`
-    : The configuration as stored in the source
+* `(array) $config`
+: The configuration as stored in the source  
 
 **Return Values**
 
 `void`
 
+
+
+
 <hr />
 
-### CallService::removeFiles
+
+### CallService::removeFiles  
 
 **Description**
 
@@ -168,15 +201,21 @@ Writes the certificate and ssl keys to disk, returns the filenames.
 public removeFiles (array $config)
 ```
 
-Removes certificates and private keys from disk if they are not necessary anymore.
+Removes certificates and private keys from disk if they are not necessary anymore. 
+
+ 
 
 **Parameters**
 
-*   `(array) $config`
-    : The configuration with filenames
+* `(array) $config`
+: The configuration with filenames  
 
 **Return Values**
 
 `void`
 
+
+
+
 <hr />
+
