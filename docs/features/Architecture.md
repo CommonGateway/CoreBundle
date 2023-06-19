@@ -29,6 +29,16 @@ Main request components
 4.  [Request Service](../classes/services/)
 5.  [Events](Events.md)
 
+## Two codebases to rule them all
+As part of our ongoing efforts to improve and streamline our development process, we're transitioning from a single codebase setup to a library-based one. This shift involves migrating code from the existing repository at [ConductionNL/commonground-gateway](https://github.com/ConductionNL/commonground-gateway) to a new repository at [CommonGateway/CoreBundle](https://github.com/CommonGateway/CoreBundle).
+
+This transition is not just about moving code; it's about enhancing the quality of our codebase. We're taking this opportunity to clean up both our code and documentation and to increase the coverage of our unit tests. However, this is a significant undertaking, and we're not finished yet. As of now, Entities, Controllers, and some workflows, including unit testing, are still located in the old repository. We expect the migration to be completed by summer 2023.
+
+An integral part of this transition is the decoupling of client-specific code from the core codebase. This code will now reside in separate plugin repositories. This separation of concerns ensures a cleaner, more maintainable codebase, and allows for more customizable client implementations.
+
+Please bear with us during this period of transition. We're confident that these changes will result in a more robust and efficient gateway, and we appreciate your understanding and patience during this time.
+
+
 ## Design Decisions
 
 ### API First
