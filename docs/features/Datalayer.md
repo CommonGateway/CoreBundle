@@ -7,7 +7,7 @@ The data layer in the Common Gateway project is an innovative feature designed t
 
 ## Data Normalization
 
-Our data layer accomplishes this functionality by using schemas as Entity-Attribute-Value (EAV) objects, and normalizing data from different sources within these structures. The advantage of this method is that it provides a uniform view of data regardless of its original source or format, making it easier to search and analyze.
+Our data layer accomplishes this functionality by using [schemas](Schemas.md) as Entity-Attribute-Value (EAV) objects, and normalizing data from different sources within these structures. The advantage of this method is that it provides a uniform view of data regardless of its original source or format, making it easier to search and analyze.
 
 ## Source of Truth
 

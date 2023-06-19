@@ -82,9 +82,9 @@ In addition to these rights, the owner also has the unique authority to transfer
 
 ### Creator
 
-The 'Creator' of an object, on the other hand, has no rights. It is merely an transactional log of the user or application that created an object in the first place. In most cases the creator becomes the owner when creating an object.
+The 'Creator' of an object, on the other hand, has no rights. It is merely a transactional log of the user or application that created an object in the first place. In most cases the creator becomes the owner when creating an object.
 
-## Multitenancy in Common Gateway
+## Multitenancy in the Common Gateway
 
 Multitenancy is a key concept in the Common Gateway project. It allows multiple independent instances of users and applications to operate within the same environment, while maintaining distinct, secure access to their respective objects. In this project, multitenancy is implemented at the organization level, meaning that all objects are tied to an organization, and users and applications can only interact with objects that belong to the same organization.
 
@@ -100,7 +100,7 @@ If a user is a part of multiple organizations, they must manually switch between
 
 For example, if a user belongs to both Organization A and Organization B, they would initially have access to the objects of Organization A. If they want to access the objects of Organization B, they would need to switch their active organization to Organization B. This ensures that data is securely partitioned between organizations, preserving the integrity and security of each organization's data.
 
-### Maintaining Multi Tenancy
+### Maintaining Multitenancy
 
 Multitenancy is maintained through one of two methods:
 

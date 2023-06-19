@@ -1,10 +1,9 @@
 # Code Quality
 
+> **Warning**
+> This file is maintained at the Conduction [Google Drive](https://docs.google.com/document/d/1KYnCd4O-wvdV7Z0fgWhXyi4hjTsy-8VBnNnLsZpNMTQ/edit). Please make any suggestions of alterations there.
+
 Code quality is a central pillar of our development philosophy. For us, it signifies easy-to-interpret, well-documented, and maintainable code. This means that we aim to reduce cyclomatic complexity and cognitive strain, while clearly defining units of code for specific tasks and nothing more. High-quality code is essential for rapid development, especially when code needs to be revisited months later.
-
-## Uses Classes
-
-n.a.
 
 ## Writing good code
 

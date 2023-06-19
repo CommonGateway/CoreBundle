@@ -19,7 +19,7 @@ Application keys provide a simple and straightforward method for authenticating 
 
 JWT (JSON Web Token) is a compact and URL-safe means of representing claims to be transferred between two parties​1​. The claims in a JWT are encoded as a JSON object that is used as the payload of a JSON Web Signature (JWS) structure or as the plaintext of a JSON Web Encryption (JWE) structure, enabling the claims to be digitally signed or integrity-protected with a Message Authentication Code (MAC) and/or encrypted.
 
-JWT tokens should be included calls using the “Authorisation” header en prefixed with bearer.
+JWT tokens should be included calls using the “Authorization” header en prefixed with bearer.
 
 ### ZGW JWT Token
 
@@ -34,6 +34,7 @@ Two-way SSL, also known as mutual SSL, is a process in which both the client and
 IP whitelisting is a security feature that restricts access to a network or a system only to trusted users. If you are using the gateway in an API Gateway setup, you can set up IP whitelisting to only accept calls from an application if they originate from either a specific IP address or an IP address range.
 
 > **Warning**
+
 > IP Whitelisting should never be used alone as IP addresses can be easily spoofed. Instead, it should be used as an additional authentication requirement in a machine-to-machine context. In a Web gateway context, IP Whitelisting can lead to undesired results due to the dynamic nature of client IP addresses in such contexts.
 
 ### Domain Whitelisting

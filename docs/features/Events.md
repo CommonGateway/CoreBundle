@@ -16,7 +16,7 @@ Object changes(e.g., CRUD actions)changes in objects (e.g. CRUD actions).
 
 ## Actions
 
-Actions are preconfigured sets of business logic that “listen” for one or more events to be thrown and then execute code.The (actionhandler)\[] contains the executable code.
+Actions are preconfigured sets of business logic that “listen” for one or more events to be thrown and then execute code.The [ActionHandler](Action_handlers.md) contains the executable code.
 
 Actions primarily consists of three things:
 The events it listens to
@@ -65,7 +65,7 @@ The gateway subscribes to the following events by default.
 When adding your customizations to the Common Gateway, you should always follow the separation of concerns:
 
 keep flows small (don’t try to do too much in one flow)
-keep functionality (actionHandlers) minimal
+keep functionality ([actionHandlers](Action_handlers.md)) minimal
 
 For complex scenarios, consider using several chained actionHandlers.
 When adding your own flavor to the common gateway you should always follow separation of concerns.

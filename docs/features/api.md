@@ -7,7 +7,7 @@ The gateway provides an API for other applications to use and consume APIs from 
 
 ## Endpoints
 
-Each api consists of an [collection]() of [endpoints](Endpoints.md). These provide the basis location that an call can be made to e.g. `/api/pets`.
+Each api consists of an [collection]() of [endpoints](Endpoints.md). These provide the basis location that a call can be made to e.g. `/api/pets`.
 
 ## Contex
 
@@ -130,7 +130,7 @@ Requests to collections (e.g. more then one object) are encapsulated in an respo
 
 ## The search index
 
-The Common Gateway automatically creates a search index of all objects based on the text value of their properties (non-text valuesare ignored). This search index can be used when approaching API endpoints through the special `_search` query parameter.  Search functions as a wildcard.
+The Common Gateway automatically creates a search index of all objects based on the text value of their properties (non-text values are ignored). This search index can be used when approaching API endpoints through the special `_search` query parameter.  Search functions as a wildcard.
 
 e.g. `_search=keyword`
 
