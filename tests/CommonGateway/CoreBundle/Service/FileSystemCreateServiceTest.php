@@ -48,7 +48,6 @@ class FileSystemCreateServiceTest extends TestCase
      */
     public function testRemoveZipFile(string $filename): void
     {
-        var_dump($filename);
 
         // Execute the method under test
         $this->fileSystemService->removeZipFile($filename);
