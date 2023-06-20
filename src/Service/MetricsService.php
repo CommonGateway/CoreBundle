@@ -48,11 +48,13 @@ class MetricsService
      * @param ComposerService        $composerService The Composer service
      * @param EntityManagerInterface $entityManager   The entity manager
      * @param ParameterBagInterface  $parameters      The Parameter bag
+     * @param Client|null            $client          The mongodb client
      */
     public function __construct(
         ComposerService $composerService,
         EntityManagerInterface $entityManager,
-        ParameterBagInterface $parameters
+        ParameterBagInterface $parameters,
+        ?Client $client = null
     ) {
         $this->composerService = $composerService;
         $this->entityManager   = $entityManager;
@@ -60,6 +62,8 @@ class MetricsService
 
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
+        } else {
+            $this->client = $client;
         }
 
     }//end __construct()
