@@ -100,8 +100,8 @@ class ObjectSyncService
         try {
             $result = $this->callService->call(
                 $data['source'],
-                $configuration['path'],
                 // @todo Check if this is the right way to do this
+                $configuration['path'],
                 'POST',
                 [
                     'body'    => json_encode($objectArray),
