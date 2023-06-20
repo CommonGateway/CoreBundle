@@ -98,9 +98,9 @@ class EavService
      */
     public function deleteAllObjects(?Entity $entity): int
     {
-        $objects = [];
+        $objects       = [];
         $deleteObjects = 0;
-        
+
         // Get all the objects for a specific entity
         if ($entity !== null) {
             $objects = $this->entityManager->getRepository('App:ObjectEntity')->findBy(['entity' => $entity]);
