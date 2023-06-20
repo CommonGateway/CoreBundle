@@ -90,31 +90,36 @@ class EavService
     }//end checkAttributeforEntity()
 
     /**
-     * Removes all object entities from the database (should obviusly not be used in production).
+     * Removes all object entities from the database (should obviously not be used in production).
      *
-     * @param Entity|null $entity An optionall entity to remove all the objects from
+     * @param Entity|null $entity An optional entity to remove all the objects from
      *
-     * @return bool True is succesfull or false otherwise
+     * @return int The amount of objects deleted.
      */
-    public function deleteAllObjects(Entity $entity): bool
+    public function deleteAllObjects(?Entity $entity): int
     {
-        // Get al the objects for a specifi entity
-        if (isset($entity) === true) {
+        $objects       = [];
+        $deleteObjects = 0;
+
+        // Get all the objects for a specific entity
+        if ($entity !== null) {
             $objects = $this->entityManager->getRepository('App:ObjectEntity')->findBy(['entity' => $entity]);
         }
 
         // Or just get all the objects
-        if (isset($entity) === false) {
+        if ($entity === null) {
             // $objects = $this->entityManager->getRepository('App:ObjectEntity')->findAll();.
         }
 
-        // Annnnnnd lets delete them
+        // And lets delete them
+        // TODO: we should use a function from RequestService specific for deleting objects, in case we ever add custom BL for deletion.
         foreach ($objects as $object) {
             $this->entityManager->remove($object);
             $this->entityManager->flush();
+            $deleteObjects++;
         }
 
-        return true;
+        return $deleteObjects;
 
     }//end deleteAllObjects()
 }//end class
