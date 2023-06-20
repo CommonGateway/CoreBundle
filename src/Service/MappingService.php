@@ -149,31 +149,35 @@ class MappingService
         }
 
         // Unset unwanted key's
-        foreach ($mappingObject->getUnset() as $unset) {
-            if (!$dotArray->has($unset)) {
-                isset($this->io) && $this->io->debug("Trying to unset an property that doesn't exist during mapping");
-                continue;
-            }
+        if($mappingObject->getUnset() !== null) {
+            foreach ($mappingObject->getUnset() as $unset) {
+                if (!$dotArray->has($unset)) {
+                    isset($this->io) && $this->io->debug("Trying to unset an property that doesn't exist during mapping");
+                    continue;
+                }
 
-            $dotArray->delete($unset);
+                $dotArray->delete($unset);
+            }
         }
 
         // Cast values to a specific type
-        foreach ($mappingObject->getCast() as $key => $cast) {
-            if (!$dotArray->has($key)) {
-                isset($this->io) && $this->io->debug("Trying to cast an property that doesn't exist during mapping");
-                continue;
-            }
-
-            if (is_array($cast)) {
-                foreach ($cast as $singleCast) {
-                    $this->handleCast($dotArray, $key, $singleCast);
+        if($mappingObject->getCast()) {
+            foreach ($mappingObject->getCast() as $key => $cast) {
+                if (!$dotArray->has($key)) {
+                    isset($this->io) && $this->io->debug("Trying to cast an property that doesn't exist during mapping");
+                    continue;
                 }
 
-                continue;
-            }
+                if (is_array($cast)) {
+                    foreach ($cast as $singleCast) {
+                        $this->handleCast($dotArray, $key, $singleCast);
+                    }
 
-            $this->handleCast($dotArray, $key, $cast);
+                    continue;
+                }
+
+                $this->handleCast($dotArray, $key, $cast);
+            }
         }
 
         // Back to array
@@ -223,45 +227,45 @@ class MappingService
 
         // Todo: Add more casts
         switch ($cast) {
-        case 'int':
-        case 'integer':
-            $value = (int) $value;
-            break;
-        case 'bool':
-        case 'boolean':
-            if ((int) $value === 1 || $value === 'true' || $value === 'True' || $value === 'TRUE') {
-                $value = true;
+            case 'int':
+            case 'integer':
+                $value = (int) $value;
                 break;
-            }
+            case 'bool':
+            case 'boolean':
+                if ((int) $value === 1 || $value === 'true' || $value === 'True' || $value === 'TRUE') {
+                    $value = true;
+                    break;
+                }
 
-            $value = false;
-            break;
-        case 'string':
-            echo 'i equals 2';
-            break;
-        case 'keyCantBeValue':
-            if ($key == $value) {
-                $dotArray->delete($key);
-            }
-            break;
-        case 'unsetIfValue':
-            if (isset($unsetIfValue) === true
-                && $value == $unsetIfValue
-                || ($unsetIfValue === '' && empty($value))
-            ) {
-                $dotArray->delete($key);
-            }
-            break;
-        case 'jsonToArray':
-            $value = str_replace(['&quot;', '&amp;quot;'], '"', $value);
-            $value = json_decode($value, true);
-            break;
-        case 'coordinateStringToArray':
-            $value = $this->coordinateStringToArray($value);
-            break;
-        default:
-            isset($this->io) && $this->io->debug('Trying to cast to an unsupported cast type: '.$cast);
-            break;
+                $value = false;
+                break;
+            case 'string':
+                echo 'i equals 2';
+                break;
+            case 'keyCantBeValue':
+                if ($key == $value) {
+                    $dotArray->delete($key);
+                }
+                break;
+            case 'unsetIfValue':
+                if (isset($unsetIfValue) === true
+                    && $value == $unsetIfValue
+                    || ($unsetIfValue === '' && empty($value))
+                ) {
+                    $dotArray->delete($key);
+                }
+                break;
+            case 'jsonToArray':
+                $value = str_replace(['&quot;', '&amp;quot;'], '"', $value);
+                $value = json_decode($value, true);
+                break;
+            case 'coordinateStringToArray':
+                $value = $this->coordinateStringToArray($value);
+                break;
+            default:
+                isset($this->io) && $this->io->debug('Trying to cast to an unsupported cast type: '.$cast);
+                break;
         }//end switch
 
         // Don't reset key that was deleted on purpose
