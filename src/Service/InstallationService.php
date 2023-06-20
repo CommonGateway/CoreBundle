@@ -1492,9 +1492,7 @@ class InstallationService
             }
         }//end foreach
 
-        if (empty($applicationsData) === false) {
-            $applications = $this->handleObjectType('https://docs.commongateway.nl/schemas/Application.schema.json', $applicationsData);
-        }
+        $applications = $this->handleObjectType('https://docs.commongateway.nl/schemas/Application.schema.json', $applicationsData);
 
         $this->logger->info(count($applications).' Applications Created');
 
