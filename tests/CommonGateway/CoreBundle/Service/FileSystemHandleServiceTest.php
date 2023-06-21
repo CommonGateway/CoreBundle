@@ -33,6 +33,11 @@ class FileSystemHandleServiceTest extends TestCase
         $this->fscService = $this->createMock(FileSystemCreateService::class);
     }
 
+    /**
+     * Tests the getFileContents method on an existing file returning content.
+     *
+     * @return void
+     */
     public function testGetFileContents_ExistingFile_ReturnsContent()
     {
         // Arrange
@@ -64,6 +69,11 @@ class FileSystemHandleServiceTest extends TestCase
         $this->assertEquals($content, $result);
     }
 
+    /**
+     * Tests the getFileContents method on an non-existing file returning no content.
+     *
+     * @return void
+     */
     public function testGetFileContents_NonExistingFile_ReturnsNull()
     {
         // Arrange
@@ -89,6 +99,12 @@ class FileSystemHandleServiceTest extends TestCase
         $this->assertNull($result);
     }
 
+    /**
+     * Tests the decodeFile function with a json content.
+     *
+     * @return void
+     * @throws \Exception
+     */
     public function testDecodeFile_WithJsonContent_ReturnsDecodedArray()
     {
         // Arrange
@@ -108,6 +124,12 @@ class FileSystemHandleServiceTest extends TestCase
         $this->assertEquals(['key' => 'value'], $result);
     }
 
+    /**
+     * Tests the decodeFile function with a yaml content.
+     *
+     * @return void
+     * @throws \Exception
+     */
     public function testDecodeFile_WithYamlContent_ReturnsDecodedArray()
     {
         // Arrange
@@ -127,6 +149,12 @@ class FileSystemHandleServiceTest extends TestCase
         $this->assertEquals(['key' => 'value'], $result);
     }
 
+    /**
+     * Tests the decodeFile function with a xml content.
+     *
+     * @return void
+     * @throws \Exception
+     */
     public function testDecodeFile_WithXmlContent_ReturnsDecodedArray()
     {
         // Arrange
@@ -146,6 +174,12 @@ class FileSystemHandleServiceTest extends TestCase
         $this->assertEquals(['key' => 'value'], $result);
     }
 
+    /**
+     * Tests the getContentFromAllFiles function.
+     *
+     * @return void
+     * @throws \Exception
+     */
     public function testGetContentFromAllFiles_ReturnsArrayWithContents()
     {
         // Arrange
@@ -184,6 +218,11 @@ class FileSystemHandleServiceTest extends TestCase
         $filesystemCreateService->removeZipFile($filename);
     }
 
+    /**
+     * Tests the call function with format config.
+     *
+     * @return void
+     */
     public function testCall_WithFormatConfig_ReturnsDecodedResponse()
     {
         // Arrange
