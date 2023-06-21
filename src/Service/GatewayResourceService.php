@@ -9,7 +9,7 @@
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
  * @package commongateway/corebundle
- *
+ * 
  * @category Service
  */
 
@@ -25,7 +25,6 @@ use Psr\Log\LoggerInterface;
 
 class GatewayResourceService
 {
-
     /**
      * @var EntityManagerInterface
      */
@@ -45,9 +44,8 @@ class GatewayResourceService
     public function __construct(EntityManagerInterface $entityManager, LoggerInterface $pluginLogger)
     {
         $this->entityManager = $entityManager;
-        $this->pluginLogger  = $pluginLogger;
-
-    }//end __construct()
+        $this->pluginLogger = $pluginLogger;
+    }
 
     /**
      * Get a schema by reference.
@@ -65,7 +63,6 @@ class GatewayResourceService
         }//end if
 
         return $entity;
-
     }//end getSchema()
 
     /**
@@ -84,7 +81,6 @@ class GatewayResourceService
         }//end if
 
         return $mapping;
-
     }//end getMapping()
 
     /**
@@ -103,7 +99,6 @@ class GatewayResourceService
         }//end if
 
         return $source;
-
     }//end getSource()
 
     /**
@@ -117,7 +112,7 @@ class GatewayResourceService
      */
     public function findSourcesForUrl(string $url, string $pluginName): ?array
     {
-        $sources    = [];
+        $sources = [];
         $allSources = $this->entityManager->getRepository('App:Gateway')->findAll();
 
         foreach ($allSources as $source) {
@@ -132,7 +127,6 @@ class GatewayResourceService
         }//end if
 
         return $sources;
-
     }//end findSourcesForUrl()
 
     /**
@@ -151,7 +145,6 @@ class GatewayResourceService
         }//end if
 
         return $endpoint;
-
     }//end getEndpoint()
 
     /**
@@ -166,10 +159,9 @@ class GatewayResourceService
     {
         $action = $this->entityManager->getRepository('App:Action')->findOneBy(['reference' => $reference]);
         if ($action === null) {
-            $this->logger->error("No action found for $reference.", ['plugin' => $pluginName]);
+            $this->pluginLogger->error("No action found for $reference.", ['plugin' => $pluginName]);
         }//end if
 
         return $action;
-
     }//end getAction()
-}//end class
+}
