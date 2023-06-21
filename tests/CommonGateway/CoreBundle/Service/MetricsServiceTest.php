@@ -32,6 +32,11 @@ class MetricsServiceTest extends TestCase
         $this->parameterBagMock = $this->createMock(ParameterBagInterface::class);
     }
 
+    /**
+     * Tests the getAll function of the metrics service.
+     *
+     * @return void
+     */
     public function testGetAll()
     {
         // Set up test data
@@ -298,8 +303,12 @@ class MetricsServiceTest extends TestCase
         $this->assertEquals($expectedMetrics, $metrics);
     }
 
-    // Add more test methods for the other methods in the MetricsService class
 
+    /**
+     * Tests the getErrors function of the metrics service.
+     *
+     * @return void
+     */
     public function testGetErrors()
     {
         // Set up test data
@@ -395,6 +404,11 @@ class MetricsServiceTest extends TestCase
         $this->assertEquals($expectedMetrics, $metrics);
     }
 
+    /**
+     * Tests the getPlugins function of the MetricsService
+     *
+     * @return void
+     */
     public function testGetPlugins()
     {
         // Set up test data
@@ -472,6 +486,11 @@ class MetricsServiceTest extends TestCase
         $this->assertEquals($expectedMetrics, $metrics);
     }
 
+    /**
+     * Tests the getObjects function of the metrics service.
+     *
+     * @return void
+     */
     public function testGetObjects()
     {
 
