@@ -52,3 +52,5 @@ We host technical documentation on Read the Doc's and general user information o
 ### Common Ground
 
 All applications are developed following the Common Ground standards on how a data exchange system should be: modular and open-source. More information on Common Ground can be found [here](https://commonground.nl/)
+
+
