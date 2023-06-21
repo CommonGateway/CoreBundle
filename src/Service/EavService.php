@@ -98,7 +98,7 @@ class EavService
      */
     public function deleteAllObjects(?Entity $entity): int
     {
-        $objects = [];
+        $objects       = [];
         $deleteObjects = 0;
 
         // Get all the objects for a specific entity
@@ -121,5 +121,5 @@ class EavService
 
         return $deleteObjects;
 
-    }
+    }//end deleteAllObjects()
 }//end class
