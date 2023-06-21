@@ -49,6 +49,8 @@ class AuthenticationService
 
     }//end __construct()
 
+    }//end testDeleteMe()
+
     /**
      * Converts a string RSA key to a JWK via the filesystem.
      *
