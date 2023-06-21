@@ -487,7 +487,7 @@ class MetricsServiceTest extends TestCase
     }
 
     /**
-     * Tests the getObjects service of the metrics service.
+     * Tests the getObjects function of the metrics service.
      *
      * @return void
      */
