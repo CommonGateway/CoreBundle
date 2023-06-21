@@ -48,7 +48,7 @@ class AuthenticationService
         $this->fileService  = new FileService();
 
     }//end __construct()
-    
+
     /**
      * Test remark-lint workflow, remove this after
      *
@@ -57,7 +57,8 @@ class AuthenticationService
     private function testDeleteMe()
     {
         return null;
-    }
+
+    }//end testDeleteMe()
 
     /**
      * Converts a string RSA key to a JWK via the filesystem.
