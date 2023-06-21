@@ -27,6 +27,11 @@ class FileSystemCreateServiceTest extends TestCase
         $this->fileSystemService = new FileSystemCreateService();
     }
 
+    /**
+     * Tests the createZipFileFromContent function of the FileSystemCreateService.
+     *
+     * @return string The created file, will  be used in the next function to delete the file again.
+     */
     public function testCreateZipFileFromContent(): string
     {
         // Set up test data
@@ -42,7 +47,10 @@ class FileSystemCreateServiceTest extends TestCase
     }
 
     /**
-     * @param string $filename
+     * Tests the removeZipFile function of the FileSystemCreateService.
+     *
+     * @param string $filename The filename of the file created in the previous function so it can be removed.
+     *
      * @return void
      * @depends testCreateZipFileFromContent
      */
@@ -55,6 +63,12 @@ class FileSystemCreateServiceTest extends TestCase
         $this->assertFileDoesNotExist($filename);
     }
 
+    /**
+     * Tests the OpenFtpFilesystem function of the FileSystemCreateService
+     *
+     * @return void
+     * @throws \Exception
+     */
     public function testOpenFtpFilesystem(): void
     {
         // Set up test data
@@ -70,6 +84,12 @@ class FileSystemCreateServiceTest extends TestCase
         $this->assertInstanceOf(Filesystem::class, $result);
     }
 
+    /**
+     * Tests the openZipFilesystem function of the FileSystemCreateService.
+     *
+     * @return void
+     * @throws \Exception
+     */
     public function testOpenZipFilesystem(): void
     {
         // Set up test data
