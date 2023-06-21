@@ -157,7 +157,7 @@ class NotificationService
      *
      * @return Source The Source we found.
      */
-    private function findSource(string $url): Source
+    public function findSource(string $url): Source
     {
         $sources = $this->resourceService->findSourcesForUrl($url, 'commongateway/corebundle');
 
