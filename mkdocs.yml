@@ -21,6 +21,7 @@ nav:
     - ComposerService: "./classes/Service/ComposerService.md"
     - DownloadService: "./classes/Service/DownloadService.md"
     - EavService: "./classes/Service/EavService.md"
+    - EndpointService: "./classes/Service/EndpointService.md"
     - FileService: "./classes/Service/FileService.md"
     - FileSystemCreateService: "./classes/Service/FileSystemCreateService.md"
     - FileSystemHandleService: "./classes/Service/FileSystemHandleService.md"
@@ -30,10 +31,12 @@ nav:
     - MetricsService: "./classes/Service/MetricsService.md"
     - NotificationService: "./classes/Service/NotificationService.md"
     - OasService: "./classes/Service/OasService.md"
+    - ObjectSyncService: "./classes/Service/ObjectSyncService.md"
     - RequestService: "./classes/Service/RequestService.md"
     - SchemaService: "./classes/Service/SchemaService.md"
   - Features: 
     - Action_handlers: "./features/Action_handlers.md"
+    - Api: "./features/Api.md"
     - Architecture: "./features/Architecture.md"
     - Authentication: "./features/Authentication.md"
     - Authorization: "./features/Authorization.md"
@@ -44,7 +47,7 @@ nav:
     - Design-decisions: "./features/Design-decisions.md"
     - Endpoints: "./features/Endpoints.md"
     - Events: "./features/Events.md"
-    - features: "./features/features.md"
+    - Features: "./features/Features.md"
     - Federalization: "./features/Federalization.md"
     - Logging: "./features/Logging.md"
     - Mappings: "./features/Mappings.md"
@@ -56,7 +59,6 @@ nav:
     - Sources: "./features/Sources.md"
     - Synchronizations: "./features/Synchronizations.md"
     - Twig: "./features/Twig.md"
-    - Api: "./features/Api.md"
 
 
   
