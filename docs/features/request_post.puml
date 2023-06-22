@@ -1,0 +1,21 @@
+@startuml
+title: Handling POST requests
+footer: Common Gateway | Endpoints
+header: POST Request
+autonumber
+
+boundary    Endpoint         as Endpoint
+collections RequestService   as RequestService
+control     Authorization    as Authorization
+control     Validation       as Validation
+database    Datalayer        as Datalayer
+
+Endpoint -> RequestService: Request
+RequestService -> Authorization  : Authorization
+Authorization -> RequestService  : Authorization
+RequestService -> Validation : Validate Request
+Validation -> RequestService : Validation Result
+RequestService -> Datalayer : Create object('s)
+Datalayer -> RequestService : Object('s)
+RequestService --> Endpoint: Response
+@enduml

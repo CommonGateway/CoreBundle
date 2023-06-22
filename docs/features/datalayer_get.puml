@@ -1,0 +1,9 @@
+@startuml
+title: Getting data from the datalayer
+Request -> Datalayer: Request
+Datalayer-> Cache: Update object('s)
+Cache--> Datalayer: Object('s)
+Datalayer-> Database : Update object('s)
+Database --> Datalayer: Object('s)
+Datalayer--> Requester: Reponse
+@enduml

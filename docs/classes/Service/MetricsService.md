@@ -24,7 +24,7 @@ Creates arrays for prometheus.
 **Description**
 
 ```php
-public __construct (\ComposerService $composerService, \EntityManagerInterface $entityManager, \ParameterBagInterface $parameters)
+public __construct (\ComposerService $composerService, \EntityManagerInterface $entityManager, \ParameterBagInterface $parameters, \Client|null $client)
 ```
 
 The constructor sets al needed variables. 
@@ -39,6 +39,8 @@ The constructor sets al needed variables.
 : The entity manager  
 * `(\ParameterBagInterface) $parameters`
 : The Parameter bag  
+* `(\Client|null) $client`
+: The mongodb client  
 
 **Return Values**
 

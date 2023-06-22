@@ -2,7 +2,7 @@
 
 The mapping service handles the mapping (or transformation) of array A (input) to array B (output).
 
-More information on how to write your own mappings can be found at [/docs/mapping.md](/docs/mapping.md).  
+More information on how to write your own mappings can be found at [Mappings](/docs/features/Mappings.md).  
 
 
 
@@ -14,6 +14,7 @@ More information on how to write your own mappings can be found at [/docs/mappin
 |------|-------------|
 |[__construct](#mappingservice__construct)|Setting up the base class with required services.|
 |[coordinateStringToArray](#mappingservicecoordinatestringtoarray)|Converts a coordinate string to an array of coordinates.|
+|[encodeArrayKeys](#mappingserviceencodearraykeys)|Replaces strings in array keys, helpful for characters like . in array keys.|
 |[mapping](#mappingservicemapping)|Maps (transforms) an array (input) to a different array (output).|
 |[setStyle](#mappingservicesetstyle)|Set symfony style in order to output to the console.|
 
@@ -71,6 +72,37 @@ Converts a coordinate string to an array of coordinates.
 <hr />
 
 
+### MappingService::encodeArrayKeys  
+
+**Description**
+
+```php
+public encodeArrayKeys (array $array, string $toReplace, string $replacement)
+```
+
+Replaces strings in array keys, helpful for characters like . in array keys. 
+
+ 
+
+**Parameters**
+
+* `(array) $array`
+: The array to encode the array keys for.  
+* `(string) $toReplace`
+: The character to encode.  
+* `(string) $replacement`
+: The encoded character.  
+
+**Return Values**
+
+`array`
+
+> The array with encoded array keys
+
+
+<hr />
+
+
 ### MappingService::mapping  
 
 **Description**
@@ -122,7 +154,7 @@ Set symfony style in order to output to the console.
 
 **Parameters**
 
-* `(\SymfonyStyle) $style`
+* `(\SymfonyStyle) $io`
 
 **Return Values**
 

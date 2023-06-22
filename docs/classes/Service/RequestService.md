@@ -189,7 +189,12 @@ Get a scopes array for the current user (or of the anonymus if no user s logged 
 `array`
 
 
-### RequestService::proxyHandler
+
+
+<hr />
+
+
+### RequestService::proxyHandler  
 
 **Description**
 

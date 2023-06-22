@@ -154,8 +154,6 @@ Remove non-existing items from the cache.
 
 `void`
 
-> Nothing.
-
 
 <hr />
 
@@ -236,6 +234,30 @@ Get a single object from the cache.
 <hr />
 
 
+### CacheService::getSchema  
+
+**Description**
+
+<hr />
+
+Get a single schema from the cache. 
+
+ 
+
+**Parameters**
+
+* `(\Uuid) $identification`
+
+**Return Values**
+
+`array|null`
+
+
+
+
+<hr />
+
+
 ### CacheService::handleResultPagination  
 
 **Description**
@@ -305,6 +327,30 @@ Removes an object from the cache.
 **Parameters**
 
 * `(\ObjectEntity) $objectEntity`
+
+**Return Values**
+
+`void`
+
+
+
+
+<hr />
+
+
+### CacheService::removeSchema  
+
+**Description**
+
+<hr />
+
+Removes an Schema from the cache. 
+
+ 
+
+**Parameters**
+
+* `(\Entity) $entity`
 
 **Return Values**
 
@@ -457,8 +503,6 @@ Throws all available objects into the cache.
 **Return Values**
 
 `int`
-
-
 
 
 <hr />

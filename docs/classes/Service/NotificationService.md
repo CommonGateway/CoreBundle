@@ -11,6 +11,7 @@ Handles incoming notification api-calls by finding or creating a synchronization
 | Name | Description |
 |------|-------------|
 |[__construct](#notificationservice__construct)|The constructor sets al needed variables.|
+|[findSource](#notificationservicefindsource)|Tries to find a source using the url of the object a notification was created for.|
 |[notificationHandler](#notificationservicenotificationhandler)|Handles incoming notification api-call and is responsible for generating a response.|
 
 
@@ -43,6 +44,39 @@ The constructor sets al needed variables.
 
 `void`
 
+
+<hr />
+
+
+### NotificationService::findSource  
+
+**Description**
+
+```php
+public findSource (string $url)
+```
+
+Tries to find a source using the url of the object a notification was created for. 
+
+ 
+
+**Parameters**
+
+* `(string) $url`
+: The url we are trying to find a matching Source for.  
+
+**Return Values**
+
+`\Source`
+
+> The Source we found.
+
+
+**Throws Exceptions**
+
+
+`\Exception`
+> If we did not find one Source we throw an exception.
 
 <hr />
 
