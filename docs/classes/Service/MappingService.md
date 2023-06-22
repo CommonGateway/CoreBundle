@@ -154,7 +154,7 @@ Set symfony style in order to output to the console.
 
 **Parameters**
 
-* `(\SymfonyStyle) $io`
+* `(\SymfonyStyle) $style`
 
 **Return Values**
 

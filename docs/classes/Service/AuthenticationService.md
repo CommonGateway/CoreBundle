@@ -10,7 +10,7 @@
 
 | Name | Description |
 |------|-------------|
-|[__construct](#authenticationservice__construct)||
+|[__construct](#authenticationservice__construct)|__construct|
 |[checkHS256](#authenticationservicecheckhs256)|Decides if the provided JWT token is signed with the HS256 Algorithm.|
 |[checkHeadersAndGetJWK](#authenticationservicecheckheadersandgetjwk)|Checks the algorithm of the JWT token and decides how to generate a JWK from the provided public key.|
 |[checkRS256](#authenticationservicecheckrs256)|Decides if the provided JWT token is signed with the HS256 Algorithm.|
@@ -42,7 +42,7 @@
 public __construct (void)
 ```
 
- 
+__construct 
 
  
 
@@ -73,7 +73,7 @@ Decides if the provided JWT token is signed with the HS256 Algorithm.
 **Parameters**
 
 * `(\JWT) $token`
-: The token provided by the user  
+: The token provided by the user.  
 
 **Return Values**
 
@@ -129,7 +129,7 @@ Decides if the provided JWT token is signed with the HS256 Algorithm.
 **Parameters**
 
 * `(\JWT) $token`
-: The token provided by the user  
+: The token provided by the user.  
 
 **Return Values**
 
@@ -156,7 +156,7 @@ Decides if the provided JWT token is signed with the RS512 Algorithm.
 **Parameters**
 
 * `(\JWT) $token`
-: The token provided by the user  
+: The token provided by the user.  
 
 **Return Values**
 

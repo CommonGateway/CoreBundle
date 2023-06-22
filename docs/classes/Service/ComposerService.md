@@ -62,7 +62,7 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 
 **Parameters**
 
-* `(array) $options`
+`This function has no parameters.`
 
 **Return Values**
 
@@ -115,7 +115,6 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 **Parameters**
 
 * `(string) $package`
-* `(array) $options`
 
 **Return Values**
 
@@ -196,7 +195,6 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 **Parameters**
 
 * `(string|null) $search`
-* `(array) $options`
 
 **Return Values**
 
