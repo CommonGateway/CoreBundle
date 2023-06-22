@@ -1,6 +1,6 @@
 <?php
 
-namespace CommonGateway\CoreBundle\src\Service;
+namespace CommonGateway\CoreBundle\Service;
 
 /**
  * @Author Robert Zondervan <robert@conduction.nl>

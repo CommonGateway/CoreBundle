@@ -1,8 +1,8 @@
 <?php
 
-namespace CommonGateway\Corebundle\ActionHandler;
+namespace CommonGateway\CoreBundle\ActionHandler;
 
-use CommonGateway\Corebundle\Service\RequestService;
+use CommonGateway\CoreBundle\Service\RequestService;
 
 class RequestSearchHandler implements ActionHandlerInterface
 {
