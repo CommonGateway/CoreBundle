@@ -1,0 +1,6 @@
+# Notifications
+
+> **Warning**
+> This file is maintained at Conduction’s [Google Drive](https://docs.google.com/document/d/1O5mSTaCFdlQykypylFs_Tkx53aBf2UgddJTtD9g3aVw/edit) Please make any suggestions of alterations there.
+
+CloudEvents is a specification that enables consistent description of event data across diverse services, platforms, and systems. This uniformity addresses the challenge of different event producers describing events in varying ways, which often requires developers to continuously learn how to consume these events. The existence of a common event description can enhance the utility of libraries, tools, and infrastructure designed to facilitate the delivery of event data across different environments, such as SDKs, event routers, and tracing systems. By promoting interoperability, CloudEvents increases the potential for data portability and productivity. The specification has attracted considerable interest from various industry players, including major cloud providers and popular SaaS companies. Hosted by the Cloud Native Computing Foundation (CNCF), CloudEvents was approved as a Cloud Native sandbox level project on May 15, 2018, and as an incubator project on October 24, 2019​1​.
