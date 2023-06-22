@@ -12,7 +12,7 @@ use Twig\Error\SyntaxError;
 /**
  * The mapping service handles the mapping (or transformation) of array A (input) to array B (output).
  *
- * More information on how to write your own mappings can be found at [/docs/Mappings.md](/docs/Mappings.md).
+ * More information on how to write your own mappings can be found at [Mappings](/docs/features/Mappings.md).
  *
  * @Author Ruben van der Linde <ruben@conduction.nl>, Sarai Misidjan <sarai@conduction.nl>, Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
  *
