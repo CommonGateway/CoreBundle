@@ -27,7 +27,7 @@ use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
- * Handles incomming request from endpoints or controllers that relate to the gateways object structure (eav).
+ * Handles incoming request from endpoints or controllers that relate to the gateways object structure (eav).
  *
  * @Author Ruben van der Linde <ruben@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>, Robert Zondervan <robert@conduction.nl>, Barry Brands <barry@conduction.nl>
  *

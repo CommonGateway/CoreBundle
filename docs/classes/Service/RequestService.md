@@ -1,6 +1,6 @@
 # CommonGateway\CoreBundle\Service\RequestService  
 
-Handles incomming request from endpoints or controllers that relate to the gateways object structure (eav).
+Handles incoming request from endpoints or controllers that relate to the gateways object structure (eav).
 
 
 
@@ -189,12 +189,7 @@ Get a scopes array for the current user (or of the anonymus if no user s logged 
 `array`
 
 
-
-
-<hr />
-
-
-### RequestService::proxyHandler  
+### RequestService::proxyHandler
 
 **Description**
 

@@ -65,7 +65,7 @@ class MappingService
      *
      * @return array The array with encoded array keys
      */
-    private function encodeArrayKeys(array $array, string $toReplace, string $replacement): array
+    public function encodeArrayKeys(array $array, string $toReplace, string $replacement): array
     {
         $result = [];
         foreach ($array as $key => $value) {
@@ -149,17 +149,17 @@ class MappingService
         }
 
         // Unset unwanted key's.
-        foreach ($mappingObject->getUnset() as $unset) {
+        $unsets = $mappingObject->getUnset() ?? [];
+        foreach ($unsets as $unset) {
             if ($dotArray->has($unset) === false) {
                 isset($this->style) === true && $this->style->debug("Trying to unset an property that doesn't exist during mapping");
                 continue;
             }
-
-            $dotArray->delete($unset);
         }
 
         // Cast values to a specific type.
-        foreach ($mappingObject->getCast() as $key => $cast) {
+        $casts = $mappingObject->getCast() ?? [];
+        foreach ($casts as $key => $cast) {
             if ($dotArray->has($key) === false) {
                 isset($this->style) === true && $this->style->debug("Trying to cast an property that doesn't exist during mapping");
                 continue;
@@ -170,10 +170,8 @@ class MappingService
                     $this->handleCast($dotArray, $key, $singleCast);
                 }
 
-                continue;
+                $this->handleCast($dotArray, $key, $cast);
             }
-
-            $this->handleCast($dotArray, $key, $cast);
         }
 
         // Back to array.
