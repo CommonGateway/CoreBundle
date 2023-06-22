@@ -360,7 +360,7 @@ Writes the certificate and ssl keys to disk, returns the filenames.
 **Description**
 
 ```php
-public getHmacToken (void)
+public getHmacToken (array $requestOptions, \Source $source)
 ```
 
 Gets a hmac token. 
@@ -369,11 +369,16 @@ Gets a hmac token.
 
 **Parameters**
 
-`This function has no parameters.`
+* `(array) $requestOptions`
+: Array of request options like method, url & body.  
+* `(\Source) $source`
+: A Source.  
 
 **Return Values**
 
-`void`
+`string`
+
+> The hmac token.
 
 
 <hr />
