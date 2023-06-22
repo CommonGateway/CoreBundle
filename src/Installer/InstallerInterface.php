@@ -6,16 +6,22 @@ interface InstallerInterface
 {
     /**
      * Install
+     *
+     * @return void Nothing.
      */
-    public function install();
+    public function install(): void;
 
     /**
      * Update
+     *
+     * @return void Nothing.
      */
-    public function update();
+    public function update(): void;
 
     /**
      * Uninstall
+     *
+     * @return void Nothing.
      */
-    public function uninstall();
+    public function uninstall(): void;
 }//end interface

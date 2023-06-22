@@ -230,8 +230,6 @@ class AuthenticationService
 
         $jwk = $this->getJWK($algorithm, $source);
 
-        // @todo clientId not being used. Remove line below?
-        // $clientId = $this->getApplicationId($source);
         $payload = $this->getJwtPayload($source);
 
         $jws = $jwsBuilder
@@ -417,21 +415,32 @@ class AuthenticationService
         return null;
 
     }//end getTokenFromUrl()
-
+    
     /**
      * Gets a hmac token.
+     *
+     * @param array $requestOptions Array of request options like method, url & body.
+     * @param Source $source A Source.
+     *
+     * @return string The hmac token.
      */
     public function getHmacToken(array $requestOptions, Source $source): string
     {
-        // @Todo: what if we don't have a body, method or url in $requestOptions?
+        if (isset($requestOptions['method']) === false || isset($requestOptions['url']) === false) {
+            return "";
+        }
+        
         switch ($requestOptions['method']) {
         case 'POST':
+            if (isset($requestOptions['body']) === false) {
+                return "";
+            }
             $md5  = md5($requestOptions['body'], true);
             $post = \Safe\base64_encode($md5);
             break;
         case 'GET':
-        default:
             // @Todo: what about a get call?
+        default:
             $get  = 'not a UTF-8 string';
             $post = \Safe\base64_encode($get);
             break;

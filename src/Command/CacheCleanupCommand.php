@@ -24,6 +24,8 @@ class CacheCleanupCommand extends Command
     protected static $defaultName = 'commongateway:cache:cleanup';
 
     /**
+     * The CacheService
+     *
      * @var CacheService $cacheService
      */
     private CacheService $cacheService;

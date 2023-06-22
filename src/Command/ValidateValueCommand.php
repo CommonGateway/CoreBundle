@@ -24,6 +24,8 @@ class ValidateValueCommand extends Command
     protected static $defaultName = 'commongateway:validate:value';
 
     /**
+     * The InstallationService.
+     *
      * @var InstallationService $installationService
      */
     private InstallationService $installationService;
@@ -54,8 +56,8 @@ class ValidateValueCommand extends Command
     /**
      * Executes this commnand.
      *
-     * @param InputInterface  $input
-     * @param OutputInterface $output
+     * @param InputInterface  $input The input interface.
+     * @param OutputInterface $output The output interface.
      *
      * @return int 1 is successfully executed, else 0.
      */

@@ -24,6 +24,8 @@ class CacheClearCommand extends Command
     protected static $defaultName = 'commongateway:cache:clear';
 
     /**
+     * The CacheService
+     *
      * @var CacheService $cacheService
      */
     private CacheService $cacheService;
@@ -54,8 +56,8 @@ class CacheClearCommand extends Command
     /**
      * Executes this command.
      *
-     * @param InputInterface  $input
-     * @param OutputInterface $output
+     * @param InputInterface  $input The input interface.
+     * @param OutputInterface $output The output interface.
      *
      * @return int 1 is successfully executed, else 0.
      */

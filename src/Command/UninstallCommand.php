@@ -26,6 +26,8 @@ class UninstallCommand extends Command
     protected static $defaultName = 'commongateway:uninstall';
 
     /**
+     * The InstallationService.
+     *
      * @var InstallationService $installationService
      */
     private InstallationService $installationService;
@@ -60,8 +62,8 @@ class UninstallCommand extends Command
     /**
      * Executes this commmand.
      *
-     * @param InputInterface  $input
-     * @param OutputInterface $output
+     * @param InputInterface  $input The input interface.
+     * @param OutputInterface $output The output interface.
      *
      * @return int 1 if successfully executed, else 0.
      */

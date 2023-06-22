@@ -153,7 +153,7 @@ class CacheService
 
         // Backwards compatablity.
         if (isset($this->client) === false) {
-            isset($this->style) ? $this->style->writeln('No cache client found, halting warmup') : '';
+            isset($this->style) === true && $this->style->writeln('No cache client found, halting warmup');
 
             return Command::SUCCESS;
         }
@@ -521,7 +521,7 @@ class CacheService
         }
 
         // Handle filters that expect $value to be an array.
-        if ($this->handleFilterArray($value)) {
+        if ($this->handleFilterArray($value) === true) {
             return;
         }
 

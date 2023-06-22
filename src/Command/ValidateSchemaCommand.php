@@ -24,9 +24,11 @@ class ValidateSchemaCommand extends Command
     protected static $defaultName = 'commongateway:validate:schema';
 
     /**
+     * The InstallationService.
+     *
      * @var InstallationService $installationService
      */
-    private $installationService;
+    private InstallationService $installationService;
 
     /**
      * __construct
@@ -54,8 +56,8 @@ class ValidateSchemaCommand extends Command
     /**
      * Executes this command.
      *
-     * @param InputInterface  $input
-     * @param OutputInterface $output
+     * @param InputInterface  $input The input interface.
+     * @param OutputInterface $output The output interface.
      *
      * @return int 1 for success, 0 for failure.
      */

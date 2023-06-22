@@ -24,6 +24,8 @@ class CacheWarmupCommand extends Command
     protected static $defaultName = 'commongateway:cache:warmup';
 
     /**
+     * The CacheService
+     *
      * @var CacheService $cacheService
      */
     private CacheService $cacheService;
@@ -54,8 +56,8 @@ class CacheWarmupCommand extends Command
     /**
      * Executes this commnand.
      *
-     * @param InputInterface  $input
-     * @param OutputInterface $output
+     * @param InputInterface  $input The input interface.
+     * @param OutputInterface $output The output interface.
      *
      * @return int 1 is successfully executed, else 0.
      */

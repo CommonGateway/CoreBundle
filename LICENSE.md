@@ -6,10 +6,10 @@ Licensed under the EUPL
 
 ## Table of Contents
 
-*   [Licence](#licence)
-    *   [Table of Contents](#table-of-contents)
-    *   [EUPL text in English](#eupl-text-in-english)
-    *   [EUPL text in Dutch](#eupl-text-in-dutch)
+* [Licence](#licence)
+  * [Table of Contents](#table-of-contents)
+  * [EUPL text in English](#eupl-text-in-english)
+  * [EUPL text in Dutch](#eupl-text-in-dutch)
 
 ## EUPL text in English
 

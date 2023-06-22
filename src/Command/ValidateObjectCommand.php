@@ -24,6 +24,8 @@ class ValidateObjectCommand extends Command
     protected static $defaultName = 'commongateway:validate:object';
 
     /**
+     * The InstallationService.
+     *
      * @var InstallationService $installationService
      */
     private InstallationService $installationService;
@@ -54,8 +56,8 @@ class ValidateObjectCommand extends Command
     /**
      * Executes this command.
      *
-     * @param InputInterface  $input
-     * @param OutputInterface $output
+     * @param InputInterface  $input The input interface.
+     * @param OutputInterface $output The output interface.
      *
      * @return int 1 if successfully executed, otherwise 0.
      */

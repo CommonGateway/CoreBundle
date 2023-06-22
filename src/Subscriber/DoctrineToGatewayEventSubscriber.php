@@ -32,6 +32,8 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
 {
 
     /**
+     * The CacheService
+     *
      * @var CacheService $cacheService
      */
     private CacheService $cacheService;
