@@ -13,7 +13,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Twig\Environment;
 
 /**
- * A test case for the DownloadService.
+ * A test case for the MappingService.
  *
  * @Author Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
  *
@@ -38,7 +38,12 @@ class MappingServiceTest extends TestCase
         $twigMock = $this->createMock(Environment::class);
         $this->mappingService = new MappingService($twigMock);
     }
-
+    
+    /**
+     * Tests the encodeArrayKeys function of the MappingService.
+     *
+     * @return void
+     */
     public function testEncodeArrayKeys(): void
     {
         $array = [
@@ -60,7 +65,12 @@ class MappingServiceTest extends TestCase
 
         $this->assertEquals($expectedArray, $encodedArray);
     }
-
+    
+    /**
+     * Tests the mapping function of the MappingService with casts & unsets.
+     *
+     * @return void
+     */
     public function testMapping(): void
     {
         // Mock the Mapping object
@@ -109,7 +119,12 @@ class MappingServiceTest extends TestCase
         $this->assertEquals($expectedOutput, $output);
         // Add your assertions for the output
     }
-
+    
+    /**
+     * Tests the coordinateStringToArray function of the MappingService.
+     *
+     * @return void
+     */
     public function testCoordinateStringToArray(): void
     {
         $coordinates = '1.234 5.678 9.012';
@@ -122,7 +137,12 @@ class MappingServiceTest extends TestCase
 
         $this->assertEquals($expectedArray, $resultArray);
     }
-
+    
+    /**
+     * Tests the setStyle function of the MappingService.
+     *
+     * @return void
+     */
     public function testSetStyle(): void
     {
         $result = $this->mappingService->setStyle(new SymfonyStyle(new ArrayInput(['bla' => 'bla']), new BufferedOutput()));

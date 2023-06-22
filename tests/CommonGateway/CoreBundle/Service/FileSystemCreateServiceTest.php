@@ -16,7 +16,7 @@ use Ramsey\Uuid\Uuid;
 use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
 
 /**
- * A test case for the DownloadService.
+ * A test case for the FileSystemCreateService.
  *
  * @Author Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
  *
@@ -80,8 +80,9 @@ class FileSystemCreateServiceTest extends TestCase
     /**
      * Tests the OpenFtpFilesystem function of the FileSystemCreateService.
      *
-     * @return void
      * @throws Exception
+     *
+     * @return void
      */
     public function testOpenFtpFilesystem(): void
     {
@@ -101,15 +102,14 @@ class FileSystemCreateServiceTest extends TestCase
     /**
      * Tests the openZipFilesystem function of the FileSystemCreateService.
      *
-     * @return void
      * @throws Exception
+     *
+     * @return void
      */
     public function testOpenZipFilesystem(): void
     {
         // Set up test data
         $filename = "/var/tmp/sample.zip";
-
-        $provider = new FilesystemZipArchiveProvider($filename);
 
         // Execute the method under test
         $result = $this->fileSystemService->openZipFilesystem($filename);

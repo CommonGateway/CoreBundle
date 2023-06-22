@@ -3,8 +3,11 @@
 namespace App\Tests\CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
+use CommonGateway\CoreBundle\Service\FileSystemCreateService;
 use CommonGateway\CoreBundle\Service\FileSystemHandleService;
+use CommonGateway\CoreBundle\Service\MappingService;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use League\Flysystem\Config;
 use League\Flysystem\DirectoryListing;
 use League\Flysystem\Filesystem;
@@ -19,7 +22,7 @@ use Symfony\Component\Serializer\Encoder\YamlEncoder;
 use Symfony\Component\Filesystem\Filesystem as SymfonyFileSystem;
 
 /**
- * A test case for the DownloadService.
+ * A test case for the FileSystemHandleService.
  *
  * @Author Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
  *
@@ -29,10 +32,25 @@ use Symfony\Component\Filesystem\Filesystem as SymfonyFileSystem;
  */
 class FileSystemHandleServiceTest extends TestCase
 {
-    private $entityManager;
-    private $mappingService;
-    private $callLogger;
-    private $fscService;
+    /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
+    
+    /**
+     * @var MappingService
+     */
+    private MappingService $mappingService;
+    
+    /**
+     * @var LoggerInterface
+     */
+    private LoggerInterface $callLogger;
+    
+    /**
+     * @var FileSystemCreateService
+     */
+    private FileSystemCreateService $fscService;
     
     /**
      * Set up mock data.
@@ -48,7 +66,7 @@ class FileSystemHandleServiceTest extends TestCase
     }
 
     /**
-     * Tests the getFileContents method on an existing file returning content.
+     * Tests the getFileContents function of the FileSystemHandleService on an existing file, returning content.
      *
      * @return void
      */
@@ -84,7 +102,7 @@ class FileSystemHandleServiceTest extends TestCase
     }
 
     /**
-     * Tests the getFileContents method on an non-existing file returning no content.
+     * Tests the getFileContents function of the FileSystemHandleService on a non-existing file, returning no content.
      *
      * @return void
      */
@@ -114,10 +132,11 @@ class FileSystemHandleServiceTest extends TestCase
     }
 
     /**
-     * Tests the decodeFile function with a json content.
+     * Tests the decodeFile function of the FileSystemHandleService with json content.
+     *
+     * @throws Exception
      *
      * @return void
-     * @throws \Exception
      */
     public function testDecodeFile_WithJsonContent_ReturnsDecodedArray()
     {
@@ -139,10 +158,11 @@ class FileSystemHandleServiceTest extends TestCase
     }
 
     /**
-     * Tests the decodeFile function with a yaml content.
+     * Tests the decodeFile function of the FileSystemHandleService with yaml content.
+     *
+     * @throws Exception
      *
      * @return void
-     * @throws \Exception
      */
     public function testDecodeFile_WithYamlContent_ReturnsDecodedArray()
     {
@@ -164,10 +184,11 @@ class FileSystemHandleServiceTest extends TestCase
     }
 
     /**
-     * Tests the decodeFile function with a xml content.
+     * Tests the decodeFile function of the FileSystemHandleService with xml content.
+     *
+     * @throws Exception
      *
      * @return void
-     * @throws \Exception
      */
     public function testDecodeFile_WithXmlContent_ReturnsDecodedArray()
     {
@@ -189,15 +210,15 @@ class FileSystemHandleServiceTest extends TestCase
     }
 
     /**
-     * Tests the getContentFromAllFiles function.
+     * Tests the getContentFromAllFiles function of the FileSystemHandleService.
+     *
+     * @throws Exception
      *
      * @return void
-     * @throws \Exception
      */
     public function testGetContentFromAllFiles_ReturnsArrayWithContents()
     {
         // Arrange
-        $filesystemMock = $this->createMock(Filesystem::class);
         $filesystemCreateService = new FileSystemCreateService();
 
         $id = Uuid::uuid4();
@@ -233,7 +254,7 @@ class FileSystemHandleServiceTest extends TestCase
     }
 
     /**
-     * Tests the call function with format config.
+     * Tests the call function of the FileSystemHandleService with config, format json.
      *
      * @return void
      */

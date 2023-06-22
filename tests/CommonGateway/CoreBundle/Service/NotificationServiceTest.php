@@ -15,7 +15,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * A test case for the DownloadService.
+ * A test case for the NotificationService.
  *
  * @Author Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
  *
@@ -71,7 +71,7 @@ class NotificationServiceTest extends TestCase
     }
 
     /**
-     * Tests the notificationHandler with get method.
+     * Tests the notificationHandler function of the NotificationService with method = GET.
      *
      * @return void
      */
@@ -89,7 +89,7 @@ class NotificationServiceTest extends TestCase
     }
 
     /**
-     * Tests the notificationHandler with post method finding and syncing an object.
+     * Tests the notificationHandler function of the NotificationService method = POST, also finding and syncing an object.
      *
      * @return void
      */
@@ -144,7 +144,7 @@ class NotificationServiceTest extends TestCase
     }
 
     /**
-     * Tests the notificationHandler resulting in an exception, returns the error response.
+     * Tests the notificationHandler function of the NotificationService resulting in an exception, returns the error response.
      *
      * @return void
      */
@@ -193,10 +193,11 @@ class NotificationServiceTest extends TestCase
     }
 
     /**
-     * Tests the findSource function without an existing source, throwing an exception.
+     * Tests the findSource function of the NotificationService without an existing source, throwing an exception.
+     *
+     * @throws Exception
      *
      * @return void
-     * @throws Exception
      */
     public function testFindSource_WithNoSource_ThrowsException()
     {
@@ -217,10 +218,11 @@ class NotificationServiceTest extends TestCase
     }
 
     /**
-     * Tests the findSource function finding multiple sources, throwing an exception.
+     * Tests the findSource function of the NotificationService finding multiple sources, throwing an exception.
+     *
+     * @throws Exception
      *
      * @return void
-     * @throws Exception
      */
     public function testFindSource_WithMultipleSources_ThrowsException()
     {
@@ -242,10 +244,11 @@ class NotificationServiceTest extends TestCase
     }
 
     /**
-     * Tests the findSource function returning a single source, returning the source.
+     * Tests the findSource function of the NotificationService returning a single source.
+     *
+     * @throws Exception
      *
      * @return void
-     * @throws Exception
      */
     public function testFindSource_WithSingleSource_ReturnsSource()
     {
