@@ -27,6 +27,7 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class EndpointService
 {
+
     /**
      * @var EntityManagerInterface
      */
@@ -78,12 +79,13 @@ class EndpointService
         SessionInterface $session,
         LoggerInterface $endpointLogger
     ) {
-        $this->entityManager = $entityManager;
-        $this->serializer = $serializer;
-        $this->requestService = $requestService;
+        $this->entityManager   = $entityManager;
+        $this->serializer      = $serializer;
+        $this->requestService  = $requestService;
         $this->eventDispatcher = $eventDispatcher;
-        $this->session = $session;
-        $this->logger = $endpointLogger;
+        $this->session         = $session;
+        $this->logger          = $endpointLogger;
+
     }//end __construct()
 
     /**
@@ -109,10 +111,10 @@ class EndpointService
 
         // Get the parameters.
         $this->logger->debug('Determine parameters for request');
-        $parameters = $this->getParametersFromRequest();
+        $parameters             = $this->getParametersFromRequest();
         $parameters['endpoint'] = $endpoint;
-        $parameters['accept'] = $accept;
-        $parameters['body'] = $this->decodeBody();
+        $parameters['accept']   = $accept;
+        $parameters['body']     = $this->decodeBody();
 
         if (json_decode($request->get('payload'), true)) {
             $parameters['payload'] = json_decode($request->get('payload'), true);
@@ -156,6 +158,7 @@ class EndpointService
         $this->logger->error('No proxy, schema or events could be established for this endpoint');
 
         throw new Exception('No proxy, schema or events could be established for this endpoint');
+
     }//end handleRequest()
 
     /**
@@ -179,37 +182,37 @@ class EndpointService
         // Determine the accept type.
         $this->logger->debug('Determine accept type from accept header');
         switch ($acceptHeader) {
-            case 'application/json':
-                return 'json';
-            case 'application/json+hal':
-            case 'application/hal+json':
-                return 'jsonhal';
-            case 'application/json+ld':
-            case 'application/ld+json':
-                return 'jsonld';
-            case 'application/json+fromio':
-            case 'application/formio+json':
-                return 'formio';
-            case 'application/json+schema':
-            case 'application/schema+json':
-                return 'schema';
-            case 'application/json+graphql':
-            case 'application/graphql+json':
-                return 'graphql';
-            case 'text/xml':
-            case 'application/xml':
-                return 'xml';
+        case 'application/json':
+            return 'json';
+        case 'application/json+hal':
+        case 'application/hal+json':
+            return 'jsonhal';
+        case 'application/json+ld':
+        case 'application/ld+json':
+            return 'jsonld';
+        case 'application/json+fromio':
+        case 'application/formio+json':
+            return 'formio';
+        case 'application/json+schema':
+        case 'application/schema+json':
+            return 'schema';
+        case 'application/json+graphql':
+        case 'application/graphql+json':
+            return 'graphql';
+        case 'text/xml':
+        case 'application/xml':
+            return 'xml';
         }//end switch
 
         // As a backup we look at any file extenstion.
         $this->logger->debug('Determine accept type from path extension');
-        $path = $this->request->getPathInfo();
+        $path      = $this->request->getPathInfo();
         $pathparts = explode('.', $path);
         if (count($pathparts) >= 2) {
             $extension = end($pathparts);
             switch ($extension) {
-                case 'pdf':
-                    return 'pdf';
+            case 'pdf':
+                return 'pdf';
             }//end switch
         }
 
@@ -217,6 +220,7 @@ class EndpointService
         $this->logger->error('No proper accept could be determined');
 
         throw new BadRequestHttpException('No proper accept could be determined');
+
     }//end getAcceptType()
 
     /**
@@ -226,7 +230,7 @@ class EndpointService
      */
     public function decodeBody(): ?array
     {
-        if(empty($this->request->getContent()) === true) {
+        if (empty($this->request->getContent()) === true) {
             return [];
         }
 
@@ -239,15 +243,16 @@ class EndpointService
 
         // Decode the body.
         switch ($contentType) {
-            case 'text/xml':
-            case 'application/xml':
-            case 'xml':
-                $xmlEncoder = new XmlEncoder();
+        case 'text/xml':
+        case 'application/xml':
+        case 'xml':
+            $xmlEncoder = new XmlEncoder();
 
-                return $xmlEncoder->decode($this->request->getContent(), 'xml');
-            default:
-                return json_decode($this->request->getContent(), true);
+            return $xmlEncoder->decode($this->request->getContent(), 'xml');
+        default:
+            return json_decode($this->request->getContent(), true);
         }//end switch
+
     }//end decodeBody()
 
     /**
@@ -259,8 +264,8 @@ class EndpointService
      */
     public function getEndpoint(): Endpoint
     {
-        $path = $this->request->getPathInfo();
-        $path = substr($path, 5);
+        $path     = $this->request->getPathInfo();
+        $path     = substr($path, 5);
         $endpoint = $this->entityManager->getRepository('App:Endpoint')->findByMethodRegex($this->request->getMethod(), $path);
 
         if ($endpoint !== null) {
@@ -268,6 +273,7 @@ class EndpointService
         }//end if
 
         throw new NotFoundHttpException('No proper endpoint could be determined');
+
     }//end getEndpoint()
 
     /**
@@ -307,7 +313,7 @@ class EndpointService
 
         $this->logger->debug('Get general request information');
         $parameters['method'] = $this->request->getMethod();
-        $parameters['query'] = $this->request->query->all();
+        $parameters['query']  = $this->request->query->all();
 
         // Lets get all the headers.
         $parameters['headers'] = $this->request->headers->all();
@@ -316,5 +322,6 @@ class EndpointService
         $parameters['post'] = $this->request->request->all();
 
         return $parameters;
+
     }//end getParametersFromRequest()
 }//end class
