@@ -4,7 +4,7 @@ return (object)[
     'destDirectory' => 'docs/classes',
     'format' => 'github',
     'classes' => [
-        '\CommonGateway\CoreBundle\src\Service\AuthenticationService',
+        '\CommonGateway\CoreBundle\Service\AuthenticationService',
         '\CommonGateway\CoreBundle\Service\CacheService',
         '\CommonGateway\CoreBundle\Service\CallService',
         '\CommonGateway\CoreBundle\Service\ComposerService',
