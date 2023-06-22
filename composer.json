@@ -92,48 +92,28 @@
     "symfony/phpunit-bridge": "^6.1",
     "symfony/stopwatch": "5.3.*"
   },
-  "config": {
-    "optimize-autoloader": true,
-    "preferred-install": {
-      "*": "dist"
-    },
-    "sort-packages": true,
-    "allow-plugins": {
-      "symfony/flex": true,
-      "symfony/runtime": true,
-      "endroid/installer": true
-    },
-    "extra": {
-      "symfony": {
-        "allow-contrib": false,
-        "require": "5.3.*"
-      }
-    },
-    "conflict": {
-      "doctrine/dbal": "<2.5",
-      "symfony/dependency-injection": "<3.4",
-      "symfony/var-dumper": "<3.4"
-    },
-    "autoload": {
-      "psr-4": {
-        "CommonGateway\\CoreBundle\\": "src/"
-      },
-      "exclude-from-classmap": [
-        "/Tests/"
-      ]
-    },
-    "minimum-stability": "alpha",
-    "support": {
-      "email": "info@conduction.nl",
-      "issues": "https://github.com/CommonGateway/CoreBundle/issues",
-      "source": "https://github.com/CommonGateway/CoreBundle"
-    },
-    "repositories": [
-      {
-        "type": "git",
-        "url": "https://github.com/CommonGateway/CoreBundle",
-        "name": "source"
-      }
-    ]
-  }
+  "conflict": {
+    "doctrine/dbal": "<2.5",
+    "symfony/dependency-injection": "<3.4",
+    "symfony/var-dumper": "<3.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "CommonGateway\\CoreBundle\\": "src"
+    }
+  },
+  "minimum-stability": "alpha",
+  "support": {
+    "email": "info@conduction.nl",
+    "issues": "https://github.com/CommonGateway/CoreBundle/issues",
+    "source": "https://github.com/CommonGateway/CoreBundle"
+  },
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/CommonGateway/CoreBundle",
+      "name": "source"
+    }
+  ]
+}
 }
