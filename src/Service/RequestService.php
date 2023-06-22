@@ -250,12 +250,12 @@ class RequestService
     public function realRequestQueryAll(string $method = 'get', ?string $queryString = ''): array
     {
         $vars = [];
-
-        if (empty($queryString) === true && empty($_SERVER['QUERY_STRING']) === true) {
-            return $vars;
+        
+        if (empty($queryString) === true && empty($this->data['querystring']) === false) {
+            $queryString = $this->data['querystring'];
         }
-
-        if (strtolower($method) === 'get' && empty($this->data['querystring']) === true && empty($queryString) === true) {
+        
+        if (empty($queryString) === true && empty($_SERVER['QUERY_STRING']) === true) {
             return $vars;
         }
 
@@ -444,15 +444,15 @@ class RequestService
 
             if ($proxy instanceof Source && ($proxy->getIsEnabled() === null || $proxy->getEnabled() === false)) {
                 return new Response(
-                    $this->serializeData(['Message' => "This Source is not enabled: {$proxy->getName()}", $contentType]),
+                    $this->serializeData(['Message' => "This Source is not enabled: {$proxy->getName()}"], $contentType),
                     Response::HTTP_OK,
                     // This should be ok, so we can disable Sources without creating error responses?
                     ['Content-type' => $contentType]
                 );
             }
         }//end if
-
-        // Get clean query parameters without all the symfony shizzle.
+    
+        // Work around the _ with a custom function for getting clean query parameters from a request
         $this->data['query'] = $this->realRequestQueryAll($this->data['method']);
         if (isset($data['path']['{route}']) === true) {
             $this->data['path'] = '/'.$data['path']['{route}'];
@@ -545,14 +545,13 @@ class RequestService
         if ($this->session->get('application') !== null) {
             $appEndpointConfig = $this->getAppEndpointConfig();
         }
-
-        // Need to do something about the _
-        if (isset($this->data['querystring']) === true) {
-            $filters = $this->realRequestQueryAll($this->data['method']);
-
-            if (isset($appEndpointConfig['in']['query']) === true) {
-                $filters = $this->queryAppEndpointConfig($filters, $appEndpointConfig['in']['query']);
-            }
+    
+        // Work around the _ with a custom function for getting clean query parameters from a request
+        $filters = $this->realRequestQueryAll($this->data['method']);
+        
+        // Handle mapping for query parameters
+        if (isset($appEndpointConfig['in']['query']) === true) {
+            $filters = $this->queryAppEndpointConfig($filters, $appEndpointConfig['in']['query']);
         }
 
         // Get the ID.
