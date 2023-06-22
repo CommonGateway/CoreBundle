@@ -1,6 +1,6 @@
 <?php
 
-namespace CommonGateway\CoreBundle\Service;
+namespace App\Tests\CommonGateway\CoreBundle\Service;
 
 use App\Repository\ApplicationRepository;
 use App\Repository\EntityRepository;
@@ -17,13 +17,27 @@ use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
+/**
+ * A test case for the DownloadService.
+ *
+ * @Author Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category TestCase
+ */
 class MetricsServiceTest extends TestCase
 {
     private $clientMock;
     private $composerServiceMock;
     private $entityManagerMock;
     private $parameterBagMock;
-
+    
+    /**
+     * Set up mock data.
+     *
+     * @return void
+     */
     protected function setUp(): void
     {
         $this->clientMock = $this->createMock(Client::class);

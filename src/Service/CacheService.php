@@ -29,8 +29,6 @@ use Symfony\Component\Serializer\SerializerInterface;
  *
  * @Author Ruben van der Linde <ruben@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>, Robert Zondervan <robert@conduction.nl>
  *
- * @TODO add all backend developers here?
- *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
  * @category Service

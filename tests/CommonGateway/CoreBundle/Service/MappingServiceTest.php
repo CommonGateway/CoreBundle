@@ -12,10 +12,27 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Twig\Environment;
 
+/**
+ * A test case for the DownloadService.
+ *
+ * @Author Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category TestCase
+ */
 class MappingServiceTest extends TestCase
 {
-    private $mappingService;
-
+    /**
+     * @var MappingService
+     */
+    private MappingService $mappingService;
+    
+    /**
+     * Set up mock data.
+     *
+     * @return void
+     */
     protected function setUp(): void
     {
         $twigMock = $this->createMock(Environment::class);

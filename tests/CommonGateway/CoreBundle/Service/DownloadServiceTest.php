@@ -9,28 +9,58 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Dompdf;
+use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Twig\Environment;
 use Twig\Loader\ArrayLoader;
 
-class DownloadServiceTest extends \PHPUnit\Framework\TestCase
+/**
+ * A test case for the DownloadService.
+ *
+ * @Author Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category TestCase
+ */
+class DownloadServiceTest extends TestCase
 {
-    private $entityManager;
-    private $logger;
-    private $twig;
-    private $downloadService;
-
+    /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
+    
+    /**
+     * @var LoggerInterface
+     */
+    private LoggerInterface $logger;
+    
+    /**
+     * @var DownloadService
+     */
+    private DownloadService $downloadService;
+    
+    /**
+     * Set up mock data.
+     *
+     * @return void
+     */
     protected function setUp(): void
     {
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
-        $this->twig = new Environment(new ArrayLoader([]));
+        $twig = new Environment(new ArrayLoader([]));
 
-        $this->downloadService = new DownloadService($this->entityManager, $this->logger, $this->twig);
+        $this->downloadService = new DownloadService($this->entityManager, $this->logger, $twig);
     }
-
+    
+    /**
+     * Tests the render function of the download service with a valid template.
+     *
+     * @return void
+     */
     public function testRenderWithValidTemplate(): void
     {
         $template = new Template();
@@ -49,10 +79,6 @@ class DownloadServiceTest extends \PHPUnit\Framework\TestCase
             ],
         ];
 
-
-        $criteria = Criteria::create()
-            ->where(Criteria::expr()->memberOf('supportedSchemas', 'template_id'));
-
         $templates = [$template];
 
         $templateRepository = $this->createMock(TemplateRepository::class);
@@ -68,7 +94,12 @@ class DownloadServiceTest extends \PHPUnit\Framework\TestCase
 
         $this->downloadService->render($data);
     }
-
+    
+    /**
+     * Tests the render function of the download service with a many templates.
+     *
+     * @return void
+     */
     public function testRenderWithManyTemplates(): void
     {
         $template = new Template();
@@ -87,10 +118,6 @@ class DownloadServiceTest extends \PHPUnit\Framework\TestCase
             ],
         ];
 
-
-        $criteria = Criteria::create()
-            ->where(Criteria::expr()->memberOf('supportedSchemas', 'template_id'));
-
         $template2 = clone $template;
 
         $templates = [$template, $template2];
@@ -108,7 +135,12 @@ class DownloadServiceTest extends \PHPUnit\Framework\TestCase
 
         $this->downloadService->render($data);
     }
-
+    
+    /**
+     * Tests the render function of the download service with an invalid template.
+     *
+     * @return void
+     */
     public function testRenderWithInvalidTemplate(): void
     {
         $data = [
@@ -120,12 +152,8 @@ class DownloadServiceTest extends \PHPUnit\Framework\TestCase
         ];
 
         $emptyArray = [];
-        $templates = $this->createMock(ArrayCollection::class);
 
         $templateRepository = $this->createMock(TemplateRepository::class);
-
-        $criteria = Criteria::create()
-            ->where(Criteria::expr()->memberOf('supportedSchemas', 'template_id'));
 
         $this->entityManager->expects($this->once())
             ->method('getRepository')
@@ -136,11 +164,6 @@ class DownloadServiceTest extends \PHPUnit\Framework\TestCase
             ->method('findAll')
             ->willReturn($emptyArray);
 
-//        $templates->expects($this->once())
-//            ->method('matching')
-//            ->with($criteria)
-//            ->willReturn($templates);
-
         $this->logger->expects($this->once())
             ->method('error')
             ->with('There is no render template for this type of object.');
@@ -149,7 +172,12 @@ class DownloadServiceTest extends \PHPUnit\Framework\TestCase
 
         $this->downloadService->render($data);
     }
-
+    
+    /**
+     * Tests the downloadPdf function of the download service.
+     *
+     * @return void
+     */
     public function testDownloadPdf(): void
     {
         $template = new Template();

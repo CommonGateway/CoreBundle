@@ -14,14 +14,47 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * A test case for the DownloadService.
+ *
+ * @Author Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category TestCase
+ */
 class NotificationServiceTest extends TestCase
 {
-    private $entityManager;
-    private $logger;
-    private $syncService;
-    private $resourceService;
-    private $notificationService;
-
+    /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
+    
+    /**
+     * @var LoggerInterface
+     */
+    private LoggerInterface $logger;
+    
+    /**
+     * @var SynchronizationService
+     */
+    private SynchronizationService $syncService;
+    
+    /**
+     * @var GatewayResourceService
+     */
+    private GatewayResourceService $resourceService;
+    
+    /**
+     * @var NotificationService
+     */
+    private NotificationService $notificationService;
+    
+    /**
+     * Set up mock data.
+     *
+     * @return void
+     */
     protected function setUp(): void
     {
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
@@ -209,7 +242,7 @@ class NotificationServiceTest extends TestCase
     }
 
     /**
-     * Tests the findSource function returing a single source, returning the source.
+     * Tests the findSource function returning a single source, returning the source.
      *
      * @return void
      * @throws Exception

@@ -1,6 +1,6 @@
 <?php
 
-namespace CommonGateway\CoreBundle\Service;
+namespace App\Tests\CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
 use CommonGateway\CoreBundle\Service\FileSystemHandleService;
@@ -18,13 +18,27 @@ use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
 use Symfony\Component\Filesystem\Filesystem as SymfonyFileSystem;
 
+/**
+ * A test case for the DownloadService.
+ *
+ * @Author Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category TestCase
+ */
 class FileSystemHandleServiceTest extends TestCase
 {
     private $entityManager;
     private $mappingService;
     private $callLogger;
     private $fscService;
-
+    
+    /**
+     * Set up mock data.
+     *
+     * @return void
+     */
     protected function setUp(): void
     {
         $this->entityManager = $this->createMock(EntityManagerInterface::class);

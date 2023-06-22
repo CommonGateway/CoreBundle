@@ -4,6 +4,7 @@ namespace App\Tests\CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
 use CommonGateway\CoreBundle\Service\FileSystemCreateService;
+use Exception;
 use League\Flysystem\Filesystem;
 use League\Flysystem\Ftp\FtpAdapter;
 use League\Flysystem\Ftp\FtpConnectionOptions;
@@ -14,14 +15,28 @@ use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
 
+/**
+ * A test case for the DownloadService.
+ *
+ * @Author Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category TestCase
+ */
 class FileSystemCreateServiceTest extends TestCase
 {
-    /** @var FileSystemCreateService */
-    private $fileSystemService;
-
-    /** @var string|null */
-    private ?string $fileName = null;
-
+    
+    /**
+     * @var FileSystemCreateService
+     */
+    private FileSystemCreateService $fileSystemService;
+    
+    /**
+     * Set up mock data.
+     *
+     * @return void
+     */
     protected function setUp(): void
     {
         $this->fileSystemService = new FileSystemCreateService();
@@ -56,7 +71,6 @@ class FileSystemCreateServiceTest extends TestCase
      */
     public function testRemoveZipFile(string $filename): void
     {
-
         // Execute the method under test
         $this->fileSystemService->removeZipFile($filename);
 
@@ -64,10 +78,10 @@ class FileSystemCreateServiceTest extends TestCase
     }
 
     /**
-     * Tests the OpenFtpFilesystem function of the FileSystemCreateService
+     * Tests the OpenFtpFilesystem function of the FileSystemCreateService.
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function testOpenFtpFilesystem(): void
     {
@@ -88,7 +102,7 @@ class FileSystemCreateServiceTest extends TestCase
      * Tests the openZipFilesystem function of the FileSystemCreateService.
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function testOpenZipFilesystem(): void
     {
@@ -96,7 +110,6 @@ class FileSystemCreateServiceTest extends TestCase
         $filename = "/var/tmp/sample.zip";
 
         $provider = new FilesystemZipArchiveProvider($filename);
-        $adapter = new ZipArchiveAdapter($provider);
 
         // Execute the method under test
         $result = $this->fileSystemService->openZipFilesystem($filename);
