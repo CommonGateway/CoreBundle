@@ -250,6 +250,11 @@ class RequestService
     public function realRequestQueryAll(string $method = 'get', ?string $queryString = ''): array
     {
         $vars = [];
+        
+        if (empty($queryString) === true && empty($_SERVER['QUERY_STRING']) === true) {
+            return $vars;
+        }
+        
         if (strtolower($method) === 'get' && empty($this->data['querystring']) === true && empty($queryString) === true) {
             return $vars;
         }
