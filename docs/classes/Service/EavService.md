@@ -75,12 +75,12 @@ Checks an entity to see if there are anny atributtes waiting for it.
 public deleteAllObjects (\Entity|null $entity)
 ```
 
-Removes all object entities from the database (should obviously not be used in production). 
+Removes all object entities from the database (should obviously not be used in production).
 
 **Parameters**
 
-* `(\Entity|null) $entity`
-: An optional entity to remove all the objects from  
+*   `(\Entity|null) $entity`
+    : An optional entity to remove all the objects from
 
 **Return Values**
 
