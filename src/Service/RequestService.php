@@ -250,11 +250,11 @@ class RequestService
     public function realRequestQueryAll(string $method = 'get', ?string $queryString = ''): array
     {
         $vars = [];
-        
+
         if (empty($queryString) === true && empty($this->data['querystring']) === false) {
             $queryString = $this->data['querystring'];
         }
-        
+
         if (empty($queryString) === true && empty($_SERVER['QUERY_STRING']) === true) {
             return $vars;
         }
@@ -451,7 +451,7 @@ class RequestService
                 );
             }
         }//end if
-    
+
         // Work around the _ with a custom function for getting clean query parameters from a request
         $this->data['query'] = $this->realRequestQueryAll($this->data['method']);
         if (isset($data['path']['{route}']) === true) {
@@ -545,10 +545,10 @@ class RequestService
         if ($this->session->get('application') !== null) {
             $appEndpointConfig = $this->getAppEndpointConfig();
         }
-    
+
         // Work around the _ with a custom function for getting clean query parameters from a request
         $filters = $this->realRequestQueryAll($this->data['method']);
-        
+
         // Handle mapping for query parameters
         if (isset($appEndpointConfig['in']['query']) === true) {
             $filters = $this->queryAppEndpointConfig($filters, $appEndpointConfig['in']['query']);
