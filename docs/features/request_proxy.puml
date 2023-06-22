@@ -1,0 +1,20 @@
+@startuml
+title: Handling Proxy
+footer: Common Gateway | Endpoints
+header: Proxy
+
+autonumber
+
+boundary    Endpoint         as Endpoint
+collections RequestService   as RequestService
+control     Authorization    as Authorization
+entity      Source           as Source
+
+Endpoint -> RequestService: Request
+RequestService -> Authorization  : Authorization
+Authorization --> RequestService  : Authorization
+RequestService -> RequestService : Set authorization for source
+RequestService -> Source : Pass Request
+Source --> RequestService: Pass Response
+RequestService --> Endpoint: Response
+@enduml

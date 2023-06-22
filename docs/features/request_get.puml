@@ -1,0 +1,18 @@
+@startuml
+title: Handling GET requests
+footer: Common Gateway | Endpoints
+header: GET Request
+autonumber
+
+boundary    Endpoint         as Endpoint
+collections RequestService   as RequestService
+control     Authorization    as Authorization
+database    Datalayer        as Datalayer
+
+Endpoint -> RequestService: Request
+RequestService -> Authorization  : Authorization
+Authorization --> RequestService  : Authorization
+RequestService -> Datalayer : Search object('s)
+Datalayer --> RequestService: Object('s)
+RequestService --> Endpoint: Response
+@enduml

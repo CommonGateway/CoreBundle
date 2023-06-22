@@ -1,0 +1,21 @@
+@startuml
+title: Throw events
+footer: Common Gateway | Endpoints
+header: Events
+
+autonumber
+
+boundary    Endpoint         as Endpoint
+queue       Events           as Events
+
+Endpoint -> Endpoint: Create Responce
+loop for eacht throw fire an event
+Endpoint -> Events: Event + Reponce
+alt synchronous events
+Events -> Actions: Fire action handelers
+Actions --> Events: Alter reponce
+end
+Events -> Endpoint: Update Responce
+end
+note over Endpoint: Ready to return the responce to the requester
+@enduml
