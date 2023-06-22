@@ -92,6 +92,13 @@
     "symfony/phpunit-bridge": "^6.1",
     "symfony/stopwatch": "5.3.*"
   },
+  "config": {
+    "allow-plugins": {
+      "symfony/flex": true,
+      "symfony/runtime": true,
+      "endroid/installer": true
+    }
+  },
   "conflict": {
     "doctrine/dbal": "<2.5",
     "symfony/dependency-injection": "<3.4",
