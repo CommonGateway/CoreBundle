@@ -1,16 +1,12 @@
-# CommonGateway\CoreBundle\Service\SchemaService  
+# CommonGateway\CoreBundle\Service\SchemaService
 
 The schema service is used to validate schema's.
-
-
-
-
 
 ## Methods
 
 | Name | Description |
 |------|-------------|
-|[__construct](#schemaservice__construct)||
+|[\_\_construct](#schemaservice__construct)||
 |[hydrate](#schemaservicehydrate)|Handles forced id's on object entities.|
 |[validateAtribute](#schemaservicevalidateatribute)|Validates a single atribute.|
 |[validateObjects](#schemaservicevalidateobjects)|Validates the objects in the EAV setup.|
@@ -18,10 +14,7 @@ The schema service is used to validate schema's.
 |[validateSchemas](#schemaservicevalidateschemas)|Validates the schemas in the EAV setup.|
 |[validateValues](#schemaservicevalidatevalues)|Validates the objects in the EAV setup.|
 
-
-
-
-### SchemaService::__construct  
+### SchemaService::\_\_construct
 
 **Description**
 
@@ -29,10 +22,6 @@ The schema service is used to validate schema's.
  __construct (void)
 ```
 
- 
-
- 
-
 **Parameters**
 
 `This function has no parameters.`
@@ -41,11 +30,9 @@ The schema service is used to validate schema's.
 
 `void`
 
-
 <hr />
 
-
-### SchemaService::hydrate  
+### SchemaService::hydrate
 
 **Description**
 
@@ -53,16 +40,14 @@ The schema service is used to validate schema's.
 public hydrate (\ObjectEntity $objectEntity, array $hydrate)
 ```
 
-Handles forced id's on object entities. 
-
- 
+Handles forced id's on object entities.
 
 **Parameters**
 
-* `(\ObjectEntity) $objectEntity`
-: The object entity on wich to force an id  
-* `(array) $hydrate`
-: The data to hydrate  
+*   `(\ObjectEntity) $objectEntity`
+    : The object entity on wich to force an id
+*   `(array) $hydrate`
+    : The data to hydrate
 
 **Return Values**
 
@@ -70,11 +55,9 @@ Handles forced id's on object entities.
 
 > The PERSISTED object entity on the forced id
 
-
 <hr />
 
-
-### SchemaService::validateAtribute  
+### SchemaService::validateAtribute
 
 **Description**
 
@@ -82,26 +65,20 @@ Handles forced id's on object entities.
 public validateAtribute (\Attribute $attribute)
 ```
 
-Validates a single atribute. 
-
- 
+Validates a single atribute.
 
 **Parameters**
 
-* `(\Attribute) $attribute`
-: The atribute to validate  
+*   `(\Attribute) $attribute`
+    : The atribute to validate
 
 **Return Values**
 
 `bool`
 
-
-
-
 <hr />
 
-
-### SchemaService::validateObjects  
+### SchemaService::validateObjects
 
 **Description**
 
@@ -109,9 +86,7 @@ Validates a single atribute.
 public validateObjects (void)
 ```
 
-Validates the objects in the EAV setup. 
-
- 
+Validates the objects in the EAV setup.
 
 **Parameters**
 
@@ -121,13 +96,9 @@ Validates the objects in the EAV setup.
 
 `void`
 
-
-
-
 <hr />
 
-
-### SchemaService::validateSchema  
+### SchemaService::validateSchema
 
 **Description**
 
@@ -135,26 +106,20 @@ Validates the objects in the EAV setup.
 public validateSchema (\Entity $schema)
 ```
 
-Validates a single schema. 
-
- 
+Validates a single schema.
 
 **Parameters**
 
-* `(\Entity) $schema`
-: The schema to validate  
+*   `(\Entity) $schema`
+    : The schema to validate
 
 **Return Values**
 
 `bool`
 
-
-
-
 <hr />
 
-
-### SchemaService::validateSchemas  
+### SchemaService::validateSchemas
 
 **Description**
 
@@ -162,9 +127,7 @@ Validates a single schema.
 public validateSchemas (void)
 ```
 
-Validates the schemas in the EAV setup. 
-
- 
+Validates the schemas in the EAV setup.
 
 **Parameters**
 
@@ -174,13 +137,9 @@ Validates the schemas in the EAV setup.
 
 `void`
 
-
-
-
 <hr />
 
-
-### SchemaService::validateValues  
+### SchemaService::validateValues
 
 **Description**
 
@@ -188,9 +147,7 @@ Validates the schemas in the EAV setup.
 public validateValues (void)
 ```
 
-Validates the objects in the EAV setup. 
-
- 
+Validates the objects in the EAV setup.
 
 **Parameters**
 
@@ -200,8 +157,4 @@ Validates the objects in the EAV setup.
 
 `void`
 
-
-
-
 <hr />
-
