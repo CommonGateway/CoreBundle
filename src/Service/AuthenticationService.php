@@ -89,9 +89,9 @@ class AuthenticationService
     public function convertRSAtoJWK(Source $source): JWK
     {
         if ($source->getPrivateKey()) {
-            $rsa = base64_decode($source->getPrivateKey());
+            $rsa = \Safe\base64_decode($source->getPrivateKey());
         } else {
-            $rsa = base64_decode($this->parameterBag->get('jwt.privateKey'));
+            $rsa = \Safe\base64_decode($this->parameterBag->get('jwt.privateKey'));
         }//end if
 
         $filename = $this->fileService->writeFile('privateKey', $rsa);
@@ -137,7 +137,7 @@ class AuthenticationService
             return new JWK(
                 [
                     'kty' => 'oct',
-                    'k'   => base64_encode(addslashes($source->getSecret())),
+                    'k'   => \Safe\base64_encode(addslashes($source->getSecret())),
                 ]
             );
         } else {
@@ -427,13 +427,13 @@ class AuthenticationService
         switch ($requestOptions['method']) {
         case 'POST':
             $md5  = md5($requestOptions['body'], true);
-            $post = base64_encode($md5);
+            $post = \Safe\base64_encode($md5);
             break;
         case 'GET':
         default:
             // @Todo: what about a get call?
             $get  = 'not a UTF-8 string';
-            $post = base64_encode($get);
+            $post = \Safe\base64_encode($get);
             break;
         }
 
@@ -444,7 +444,7 @@ class AuthenticationService
 
         $hmac = $websiteKey.$requestOptions['method'].$uri.$time.$nonce.$post;
         $hash = hash_hmac('sha256', $hmac, $source->getSecret(), true);
-        $hmac = base64_encode($hash);
+        $hmac = \Safe\base64_encode($hash);
 
         return 'hmac '.$websiteKey.':'.$hmac.':'.$nonce.':'.$time;
 
