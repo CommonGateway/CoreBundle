@@ -15,11 +15,12 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 class EavService
 {
+
     /**
      * @param EntityManagerInterface $entityManager
      */
     private EntityManagerInterface $entityManager;
-    
+
     /**
      * The constructor sets al needed variables.
      *
