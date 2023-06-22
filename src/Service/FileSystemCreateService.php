@@ -13,7 +13,7 @@
  * @category Service
  */
 
-namespace CommonGateway\CoreBundle\src\Service;
+namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
 use League\Flysystem\Filesystem;
@@ -26,6 +26,7 @@ use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
 
 class FileSystemCreateService
 {
+
     /**
      * The local filesystem.
      *
@@ -39,6 +40,7 @@ class FileSystemCreateService
     public function __construct()
     {
         $this->filesystem = new SymfonyFilesystem();
+
     }//end __construct()
 
     /**
@@ -51,12 +53,13 @@ class FileSystemCreateService
     public function createZipFileFromContent(string $content): string
     {
         // Let's create a temporary file.
-        $fileId = new Uuid();
+        $fileId   = Uuid::uuid4();
         $filename = "/var/tmp/tmp-{$fileId->toString()}.zip";
         $this->filesystem->touch($filename);
         $this->filesystem->appendToFile($filename, $content);
 
         return $filename;
+
     }//end createZipFileFromContent()
 
     /**
@@ -69,6 +72,7 @@ class FileSystemCreateService
     public function removeZipFile(string $filename): void
     {
         $this->filesystem->remove($filename);
+
     }//end removeZipFile()
 
     /**
@@ -96,7 +100,7 @@ class FileSystemCreateService
 
         $connectionOptions = new FtpConnectionOptions(
             $url['host'],
-            $url['path'] ?? '/',
+            ($url['path'] ?? '/'),
             $source->getUsername(),
             $source->getPassword(),
             $url['port'],
@@ -106,6 +110,7 @@ class FileSystemCreateService
         $adapter = new FtpAdapter($connectionOptions);
 
         return new Filesystem($adapter);
+
     }//end openFtpFilesystem()
 
     /**
@@ -121,8 +126,9 @@ class FileSystemCreateService
     {
         // Open the zip file.
         $provider = new FilesystemZipArchiveProvider($filename);
-        $adapter = new ZipArchiveAdapter($provider);
+        $adapter  = new ZipArchiveAdapter($provider);
 
         return new Filesystem($adapter);
+
     }//end openZipFilesystem()
 }//end class

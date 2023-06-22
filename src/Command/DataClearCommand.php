@@ -1,8 +1,8 @@
 <?php
 
-namespace CommonGateway\CoreBundle\src\Command;
+namespace CommonGateway\CoreBundle\Command;
 
-use CommonGateway\CoreBundle\src\Service\CacheService;
+use CommonGateway\CoreBundle\Service\CacheService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -20,9 +20,13 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  */
 class DataClearCommand extends Command
 {
+
     protected static $defaultName = 'commongateway:data:clear';
+
     private $cacheService;
+
     private EntityManagerInterface $entityManagerInterface;
+
     private ParameterBagInterface $parameterBagInterface;
 
     public function __construct(
@@ -30,43 +34,47 @@ class DataClearCommand extends Command
         EntityManagerInterface $entityManagerInterface,
         ParameterBagInterface $parameterBagInterface
     ) {
-        $this->cacheService = $cacheService;
-        $this->entitymanager = $entityManagerInterface;
+        $this->cacheService          = $cacheService;
+        $this->entitymanager         = $entityManagerInterface;
         $this->parameterBagInterface = $parameterBagInterface;
 
         parent::__construct();
-    }
+
+    }//end __construct()
 
     protected function configure(): void
     {
         $this
             ->setDescription('This command removes all objects from the datbase')
             ->setHelp('use with care, or better don\'t use at all');
-    }
+
+    }//end configure()
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $env = $this->parameterBagInterface->get('app_env');
-        $io = new SymfonyStyle($input, $output);
+        $env          = $this->parameterBagInterface->get('app_env');
+        $symfonyStyle = new SymfonyStyle($input, $output);
 
-        $io->writeln([
-            '',
-            '<info>Common Gateway Data Remover</info>',
-            '============',
-            '',
-            'Trying to remove all data from environment: <comment> '.$env.' </comment>',
-            '',
-        ]);
+        $symfonyStyle->writeln(
+            [
+                '',
+                '<info>Common Gateway Data Remover</info>',
+                '============',
+                '',
+                'Trying to remove all data from environment: <comment> '.$env.' </comment>',
+                '',
+            ]
+        );
 
         if ($env != 'dev') {
-            $io->error('Could not remove the data bescouse the environment is not in dev mode');
+            $symfonyStyle->error('Could not remove the data bescouse the environment is not in dev mode');
 
             return Command::FAILURE;
         }
 
         $objects = $this->entitymanager->getRepository('App:ObjectEntity')->findAll();
 
-        $io->writeln('Found '.count($objects).' objects');
+        $symfonyStyle->writeln('Found '.count($objects).' objects');
 
         // creates a new progress bar (50 units)
         $progressBar = new ProgressBar($output, count($objects));
@@ -86,9 +94,10 @@ class DataClearCommand extends Command
         $progressBar->finish();
         $this->entitymanager->flush();
 
-        $io->writeln('');
-        $io->success('All done');
+        $symfonyStyle->writeln('');
+        $symfonyStyle->success('All done');
 
         return Command::SUCCESS;
-    }
-}
+
+    }//end execute()
+}//end class

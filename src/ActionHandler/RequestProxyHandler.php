@@ -1,11 +1,12 @@
 <?php
 
-namespace CommonGateway\Corebundle\ActionHandler;
+namespace CommonGateway\CoreBundle\ActionHandler;
 
-use CommonGateway\Corebundle\Service\RequestService;
+use CommonGateway\CoreBundle\Service\RequestService;
 
 class RequestProxyHandler implements ActionHandlerInterface
 {
+
     /**
      * @var RequestService
      */
@@ -17,6 +18,7 @@ class RequestProxyHandler implements ActionHandlerInterface
     public function __construct(RequestService $requestService)
     {
         $this->requestService = $requestService;
+
     }//end __construct()
 
     /**
@@ -27,8 +29,8 @@ class RequestProxyHandler implements ActionHandlerInterface
     public function getConfiguration(): array
     {
         return [
-            '$id'        => 'https://common-gateway.nl/proxy.actionhandler.json',
-            '$schema'    => 'https://json-schema.org/draft/2020-12/schema',
+            '$id'        => 'https://commongateway.nl/ActionHandler/RequestProxyHandler.ActionHandler.json',
+            '$schema'    => 'https://docs.commongateway.nl/schemas/ActionHandler.schema.json',
             'title'      => 'SearchRequestHandler',
             'required'   => [],
             'properties' => [
@@ -40,6 +42,7 @@ class RequestProxyHandler implements ActionHandlerInterface
                 ],
             ],
         ];
+
     }//end getConfiguration()
 
     /**
@@ -53,5 +56,6 @@ class RequestProxyHandler implements ActionHandlerInterface
     public function run(array $data, array $configuration): array
     {
         return $this->requestService->proxyRequestHandler($data, $configuration);
+
     }//end run()
 }//end class

@@ -1,13 +1,12 @@
 <?php
 
 // src/Subscriber/DatabaseActivitySubscriber.php
-
-namespace CommonGateway\CoreBundle\src\Subscriber;
+namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\ObjectEntity;
-use CommonGateway\CoreBundle\src\Service\CacheService;
+use CommonGateway\CoreBundle\Service\CacheService;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
@@ -23,8 +22,11 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
  */
 class CacheDatabaseSubscriber implements EventSubscriberInterface
 {
+
     private CacheService $cacheService;
+
     private EntityManagerInterface $entityManager;
+
     private SessionInterface $session;
 
     public function __construct(
@@ -32,10 +34,11 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         EntityManagerInterface $entityManager,
         SessionInterface $session
     ) {
-        $this->cacheService = $cacheService;
+        $this->cacheService  = $cacheService;
         $this->entityManager = $entityManager;
-        $this->session = $session;
-    }
+        $this->session       = $session;
+
+    }//end __construct()
 
     // this method can only return the event names; you cannot define a
     // custom method name to execute when each event triggers
@@ -46,12 +49,14 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
             Events::preRemove,
             Events::postUpdate,
         ];
-    }
+
+    }//end getSubscribedEvents()
 
     public function postUpdate(LifecycleEventArgs $args): void
     {
         $this->postPersist($args);
-    }
+
+    }//end postUpdate()
 
     /**
      * Updates the chache whenever an object is put into the database.
@@ -65,25 +70,28 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         $object = $args->getObject();
         // if this subscriber only applies to certain entity types,
         if ($object instanceof ObjectEntity) {
-//            $this->updateParents($object);
+            // $this->updateParents($object);
             $this->cacheService->cacheObject($object);
 
             return;
         }
+
         if ($object instanceof Entity) {
             $this->cacheService->cacheShema($object);
 
             return;
         }
+
         if ($object instanceof Endpoint) {
             $this->cacheService->cacheEndpoint($object);
 
             return;
         }
-    }
+
+    }//end postPersist()
 
     /**
-     * Remove objects from the cache afther they are removed from the database.
+     * Remove objects from the cache after they are removed from the database.
      *
      * @param LifecycleEventArgs $args
      *
@@ -99,15 +107,18 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
 
             return;
         }
+
         if ($object instanceof Entity) {
             $this->cacheService->removeSchema($object);
 
             return;
         }
+
         if ($object instanceof Endpoint) {
             $this->cacheService->removeEndpoint($object);
 
             return;
         }
-    }
-}
+
+    }//end preRemove()
+}//end class

@@ -1,8 +1,9 @@
 <?php
 
-namespace CommonGateway\CoreBundle\src\Entity;
+namespace CommonGateway\CoreBundle\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ApiResource()
@@ -11,6 +12,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
  */
 class CronjobLog
 {
+
     /**
      * @ORM\Id
      *
@@ -23,5 +25,6 @@ class CronjobLog
     public function getId(): ?int
     {
         return $this->id;
-    }
-}
+
+    }//end getId()
+}//end class

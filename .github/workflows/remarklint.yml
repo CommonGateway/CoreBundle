@@ -1,0 +1,29 @@
+name: remark-lint
+
+on: [pull_request,push]
+
+env: # environment variables (available in any part of the action)
+  NODE_VERSION: 16
+
+jobs:
+  remark-lint:
+    name: runner / remark-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: install remark presets
+        run: npm install remark-cli remark-preset-lint-consistent remark-preset-lint-recommended remark-lint-list-item-indent
+        shell: bash
+      - name: run remark
+        run: npx remark . --output --use remark-preset-lint-consistent --use remark-preset-lint-recommended --use remark-lint-list-item-indent
+      - name: Git commit
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email ""
+          git add .
+          git reset package.json
+          git reset package-lock.json
+          git reset node_modules
+          git commit -m "Update src from remark-lint" || echo "No changes to commit"
+          git pull origin $(git rev-parse --abbrev-ref HEAD) --rebase --autostash
+          git push

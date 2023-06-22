@@ -1,0 +1,14 @@
+name: Generate publiccode.yaml and .env files
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  create:
+ 
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Uses the default file creation workflow from https://github.com/CommonGateway/workflows 
+jobs:
+  call-file-creation-workflow-from-default-workflows:
+    uses: CommonGateway/workflows/.github/workflows/generateFilesForBundle.yml@main

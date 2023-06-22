@@ -13,12 +13,9 @@
  * @category Service
  */
 
-namespace CommonGateway\CoreBundle\src\Service;
+namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
-use CommonGateway\CoreBundle\Service\Exception;
-use CommonGateway\CoreBundle\Service\FilesystemException;
-use CommonGateway\CoreBundle\Service\MappingServic;
 use Doctrine\ORM\EntityManagerInterface;
 use League\Flysystem\Filesystem;
 use Psr\Log\LoggerInterface;
@@ -29,6 +26,7 @@ use Twig\Error\SyntaxError;
 
 class FileSystemHandleService
 {
+
     /**
      * The entity manager.
      *
@@ -71,10 +69,11 @@ class FileSystemHandleService
         LoggerInterface $callLogger,
         FileSystemCreateService $fscService
     ) {
-        $this->entityManager = $entityManager;
+        $this->entityManager  = $entityManager;
         $this->mappingService = $mappingService;
-        $this->callLogger = $callLogger;
-        $this->fscService = $fscService;
+        $this->callLogger     = $callLogger;
+        $this->fscService     = $fscService;
+
     }//end __construct()
 
     /**
@@ -94,6 +93,7 @@ class FileSystemHandleService
         }
 
         return null;
+
     }//end getFileContents()
 
     /**
@@ -119,6 +119,7 @@ class FileSystemHandleService
         }
 
         return $contents;
+
     }//end getContentFromAllFiles()
 
     /**
@@ -143,33 +144,34 @@ class FileSystemHandleService
 
         if ($format === null) {
             $fileArray = explode('.', $location);
-            $format = end($fileArray);
+            $format    = end($fileArray);
         }
 
         switch ($format) {
-            case 'zip':
-                $zipFile = $this->fscService->createZipFileFromContent($content);
-                $filesystem = $this->fscService->openZipFilesystem($zipFile);
-                $content = $this->getContentFromAllFiles($filesystem);
-                $this->fscService->removeZipFile($zipFile);
+        case 'zip':
+            $zipFile    = $this->fscService->createZipFileFromContent($content);
+            $filesystem = $this->fscService->openZipFilesystem($zipFile);
+            $content    = $this->getContentFromAllFiles($filesystem);
+            $this->fscService->removeZipFile($zipFile);
 
-                return $content;
-            case 'yaml':
-                $yamlEncoder = new YamlEncoder();
+            return $content;
+        case 'yaml':
+            $yamlEncoder = new YamlEncoder();
 
-                return $yamlEncoder->decode($content, $format);
-            case 'xml':
-                $xmlEncoder = new XmlEncoder();
+            return $yamlEncoder->decode($content, $format);
+        case 'xml':
+            $xmlEncoder = new XmlEncoder();
 
-                return $xmlEncoder->decode($content, $format);
-            case 'json':
-            default:
-                try {
-                    return \Safe\json_decode($content, true);
-                } catch (\Exception $exception) {
-                    return [];
-                }
+            return $xmlEncoder->decode($content, $format);
+        case 'json':
+        default:
+            try {
+                return \Safe\json_decode($content, true);
+            } catch (\Exception $exception) {
+                return [];
+            }
         }//end switch
+
     }//end decodeFile()
 
     /**
@@ -190,11 +192,12 @@ class FileSystemHandleService
 
         if (isset($config['format']) === true) {
             $decodedFile = $this->decodeFile($content, $location, $config['format']);
-        } elseif (isset($config['format']) === false) {
+        } else if (isset($config['format']) === false) {
             $decodedFile = $this->decodeFile($content, $location);
         }
 
         return $this->handleEndpointsConfigIn($source, $location, $decodedFile);
+
     }//end call()
 
     /**
@@ -220,7 +223,7 @@ class FileSystemHandleService
             && array_key_exists('in', $endpointsConfig[$location]) === true
         ) {
             $endpointConfigIn = $endpointsConfig[$location]['in'];
-        } elseif (array_key_exists('global', $endpointsConfig) === true
+        } else if (array_key_exists('global', $endpointsConfig) === true
             && array_key_exists('in', $endpointsConfig['global']) === true
         ) {
             $endpointConfigIn = $endpointsConfig['global']['in'];
@@ -231,6 +234,7 @@ class FileSystemHandleService
         }
 
         return $decodedFile;
+
     }//end handleEndpointsConfigIn()
 
     /**
@@ -268,11 +272,12 @@ class FileSystemHandleService
                 }
 
                 $decodedFile[$key] = $this->mappingService->mapping($mapping, $decodedFile[$key]);
-            } catch (Exception|LoaderError|SyntaxError $exception) {
+            } catch (Exception | LoaderError | SyntaxError $exception) {
                 $this->callLogger->error("Could not map with mapping {$endpointConfigIn[$key]['mapping']} while handling $key EndpointConfigIn for a Filesystem Source. ".$exception->getMessage());
             }
         }
 
         return $decodedFile;
+
     }//end handleEndpointConfigIn()
 }//end class

@@ -4,16 +4,16 @@
  *
  * This service provides methods to find resources from the gateway by their reference.
  *
- * @Author Robert Zondervan <robert@conduction.nl>
+ * @Author Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
  * @package commongateway/corebundle
- * 
+ *
  * @category Service
  */
 
-namespace CommonGateway\CoreBundle\src\Service;
+namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Action;
 use App\Entity\Endpoint;
@@ -25,6 +25,7 @@ use Psr\Log\LoggerInterface;
 
 class GatewayResourceService
 {
+
     /**
      * @var EntityManagerInterface
      */
@@ -36,14 +37,17 @@ class GatewayResourceService
     private LoggerInterface $pluginLogger;
 
     /**
+     * The constructor sets al needed variables.
+     *
      * @param EntityManagerInterface $entityManager
      * @param LoggerInterface        $pluginLogger
      */
     public function __construct(EntityManagerInterface $entityManager, LoggerInterface $pluginLogger)
     {
         $this->entityManager = $entityManager;
-        $this->pluginLogger = $pluginLogger;
-    }
+        $this->pluginLogger  = $pluginLogger;
+
+    }//end __construct()
 
     /**
      * Get a schema by reference.
@@ -57,10 +61,11 @@ class GatewayResourceService
     {
         $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference]);
         if ($entity === null) {
-            $this->pluginLogger->error("No entity found for $reference.", ['plugin'=>$pluginName]);
+            $this->pluginLogger->error("No entity found for $reference.", ['plugin' => $pluginName]);
         }//end if
 
         return $entity;
+
     }//end getSchema()
 
     /**
@@ -75,10 +80,11 @@ class GatewayResourceService
     {
         $mapping = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $reference]);
         if ($mapping === null) {
-            $this->pluginLogger->error("No mapping found for $reference.", ['plugin'=>$pluginName]);
+            $this->pluginLogger->error("No mapping found for $reference.", ['plugin' => $pluginName]);
         }//end if
 
         return $mapping;
+
     }//end getMapping()
 
     /**
@@ -93,11 +99,41 @@ class GatewayResourceService
     {
         $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $reference]);
         if ($source === null) {
-            $this->pluginLogger->error("No source found for $reference.", ['plugin'=>$pluginName]);
+            $this->pluginLogger->error("No source found for $reference.", ['plugin' => $pluginName]);
         }//end if
 
         return $source;
+
     }//end getSource()
+
+    /**
+     * Find all sources that have a location that match the specified url.
+     * Todo: we should use a mongoDB filter instead of this, sources should exist in MongoDB.
+     *
+     * @param string $url        The url we are trying to find a matching source for.
+     * @param string $pluginName The name of the plugin that requests these resources.
+     *
+     * @return array|null
+     */
+    public function findSourcesForUrl(string $url, string $pluginName): ?array
+    {
+        $sources    = [];
+        $allSources = $this->entityManager->getRepository('App:Gateway')->findAll();
+
+        foreach ($allSources as $source) {
+            // Todo: This works, we should go to php 8.0 later.
+            if (empty($source->getLocation()) === false && str_contains($url, $source->getLocation()) === true) {
+                $sources[] = $source;
+            }
+        }
+
+        if (empty($sources) === true) {
+            $this->pluginLogger->error("No sources found for $url.", ['plugin' => $pluginName]);
+        }//end if
+
+        return $sources;
+
+    }//end findSourcesForUrl()
 
     /**
      * Get a endpoint by reference.
@@ -111,10 +147,11 @@ class GatewayResourceService
     {
         $endpoint = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $reference]);
         if ($endpoint === null) {
-            $this->pluginLogger->error("No endpoint found for $reference.", ['plugin'=>$pluginName]);
+            $this->pluginLogger->error("No endpoint found for $reference.", ['plugin' => $pluginName]);
         }//end if
 
         return $endpoint;
+
     }//end getEndpoint()
 
     /**
@@ -129,9 +166,10 @@ class GatewayResourceService
     {
         $action = $this->entityManager->getRepository('App:Action')->findOneBy(['reference' => $reference]);
         if ($action === null) {
-            $this->logger->error("No action found for $reference.", ['plugin'=>$pluginName]);
+            $this->logger->error("No action found for $reference.", ['plugin' => $pluginName]);
         }//end if
 
         return $action;
+
     }//end getAction()
-}
+}//end class

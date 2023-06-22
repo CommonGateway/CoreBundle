@@ -1,8 +1,8 @@
 <?php
 
-namespace CommonGateway\CoreBundle\src\Command;
+namespace CommonGateway\CoreBundle\Command;
 
-use CommonGateway\CoreBundle\src\Service\InstallationService;
+use CommonGateway\CoreBundle\Service\InstallationService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,15 +18,21 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class InstallCommand extends Command
 {
+
     protected static $defaultName = 'commongateway:install';
+
     private $installationService;
 
     public function __construct(InstallationService $installationService)
     {
         $this->installationService = $installationService;
         parent::__construct();
-    }
 
+    }//end __construct()
+
+    /**
+     * Configures the command.
+     */
     protected function configure(): void
     {
         $this
@@ -37,8 +43,12 @@ class InstallCommand extends Command
             ->addOption('unsafe', 'u', InputOption::VALUE_OPTIONAL, 'Update existing schema\'s and data sets', false)
             ->setDescription('This command runs the installation service on a commongateway bundle')
             ->setHelp('This command allows you to run further installation an configuration actions afther installing a plugin');
-    }
 
+    }//end configure()
+
+    /**
+     * Executes installation of a bundle.
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $bundle = $input->getArgument('bundle');
@@ -51,5 +61,6 @@ class InstallCommand extends Command
         ];
 
         return $this->installationService->install($bundle, $options);
-    }
-}
+
+    }//end execute()
+}//end class

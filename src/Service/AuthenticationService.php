@@ -1,10 +1,9 @@
 <?php
 
-namespace CommonGateway\CoreBundle\src\Service;
+namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
 use App\Entity\User;
-use CommonGateway\CoreBundle\Service\HttpException;
 use DateTime;
 use GuzzleHttp\Client;
 use Jose\Component\Checker\AlgorithmChecker;
@@ -23,6 +22,7 @@ use Jose\Component\Signature\JWSTokenSupport;
 use Jose\Component\Signature\JWSVerifier;
 use Jose\Component\Signature\Serializer\CompactSerializer;
 use Jose\Component\Signature\Serializer\JWSSerializerManager;
+use Safe\Exceptions\JsonException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -37,14 +37,17 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
  */
 class AuthenticationService
 {
+
     private ParameterBagInterface $parameterBag;
+
     private FileService $fileService;
 
     public function __construct(ParameterBagInterface $parameterBag)
     {
         $this->parameterBag = $parameterBag;
-        $this->fileService = new FileService();
-    }
+        $this->fileService  = new FileService();
+
+    }//end __construct()
 
     /**
      * Converts a string RSA key to a JWK via the filesystem.
@@ -56,16 +59,17 @@ class AuthenticationService
     public function convertRSAKeyToJWK(string $key): JWK
     {
         $filesystem = new Filesystem();
-        $filename = '/srv/api/var/privatekey'.microtime().getmypid();
+        $filename   = '/srv/api/var/privatekey'.microtime().getmypid();
         $filesystem->dumpFile($filename, $key);
         $jwk = JWKFactory::createFromKeyFile($filename, null, ['use' => 'sig']);
         $filesystem->remove([$filename]);
 
         return $jwk;
+
     }//end convertRSAKeyToJWK()
 
     /**
-     * Converts a RSA private key to a JWK.
+     * Converts an RSA private key to a JWK.
      *
      * @TODO: This can be merged with the function above by getting the key from the source earlier
      *
@@ -80,17 +84,17 @@ class AuthenticationService
         } else {
             $rsa = base64_decode($this->parameterBag->get('jwt.privateKey'));
         }//end if
+
         $filename = $this->fileService->writeFile('privateKey', $rsa);
-        $jwk = JWKFactory::createFromKeyFile(
+        $jwk      = JWKFactory::createFromKeyFile(
             $filename,
             null,
-            [
-                'use' => 'sig',
-            ]
+            ['use' => 'sig']
         );
         $this->fileService->removeFile($filename);
 
         return $jwk;
+
     }//end convertRSAtoJWK()
 
     /**
@@ -107,6 +111,7 @@ class AuthenticationService
         } else {
             return 'RS512';
         }
+
     }//end getAlgorithm()
 
     /**
@@ -120,13 +125,16 @@ class AuthenticationService
     public function getJWK(string $algorithm, Source $source): JWK
     {
         if ($algorithm == 'HS256') {
-            return new JWK([
-                'kty' => 'oct',
-                'k'   => base64_encode(addslashes($source->getSecret())),
-            ]);
+            return new JWK(
+                [
+                    'kty' => 'oct',
+                    'k'   => base64_encode(addslashes($source->getSecret())),
+                ]
+            );
         } else {
             return $this->convertRSAtoJWK($source);
         }
+
     }//end getJWK()
 
     /**
@@ -138,11 +146,12 @@ class AuthenticationService
      */
     public function getApplicationId(Source $source): string
     {
-        if ($source->getJwtId()) {
+        if ($source->getJwtId() !== null) {
             return $source->getJwtId();
-        } else {
-            return $source->getId();
         }
+
+        return $source->getId();
+
     }//end getApplicationId()
 
     /**
@@ -154,16 +163,19 @@ class AuthenticationService
      */
     public function getJwtPayload(Source $source): string
     {
-        $now = new DateTime('now');
+        $now      = new DateTime('now');
         $clientId = $this->getApplicationId($source);
 
-        return json_encode([
-            'iss'                 => $clientId,
-            'iat'                 => $now->getTimestamp(),
-            'client_id'           => $clientId,
-            'user_id'             => $this->parameterBag->get('app_name'),
-            'user_representation' => $this->parameterBag->get('app_name'),
-        ]);
+        return json_encode(
+            [
+                'iss'                 => $clientId,
+                'iat'                 => $now->getTimestamp(),
+                'client_id'           => $clientId,
+                'user_id'             => $this->parameterBag->get('app_name'),
+                'user_representation' => $this->parameterBag->get('app_name'),
+            ]
+        );
+
     }//end getJwtPayload()
 
     /**
@@ -179,11 +191,11 @@ class AuthenticationService
     public function createJwtToken(string $key, array $payload): string
     {
         $algorithmManager = new AlgorithmManager([new RS512()]);
-        $jwsBuilder = new JWSBuilder($algorithmManager);
+        $jwsBuilder       = new JWSBuilder($algorithmManager);
 
         $jwk = $this->convertRSAKeytoJWK($key);
 
-        $jws = $jwsBuilder
+        $jws           = $jwsBuilder
             ->create()
             ->withPayload(json_encode($payload))
             ->addSignature($jwk, ['alg' => 'RS512'])
@@ -191,6 +203,7 @@ class AuthenticationService
         $jwsSerializer = new CompactSerializer();
 
         return $jwsSerializer->serialize($jws, 0);
+
     }//end createJwtToken()
 
     /**
@@ -203,12 +216,12 @@ class AuthenticationService
     public function getJwtToken(Source $source): string
     {
         $algorithmManager = new AlgorithmManager([new HS256(), new RS512()]);
-        $algorithm = $this->getAlgorithm($source);
-        $jwsBuilder = new JWSBuilder($algorithmManager);
+        $algorithm        = $this->getAlgorithm($source);
+        $jwsBuilder       = new JWSBuilder($algorithmManager);
 
-        $jwk = $this->getJWK($algorithm, $source);
+        $jwk      = $this->getJWK($algorithm, $source);
         $clientId = $this->getApplicationId($source);
-        $payload = $this->getJwtPayload($source);
+        $payload  = $this->getJwtPayload($source);
 
         $jws = $jwsBuilder
             ->create()
@@ -219,6 +232,7 @@ class AuthenticationService
         $jwsSerializer = new CompactSerializer();
 
         return $jwsSerializer->serialize($jws, 0);
+
     }//end getJwtToken()
 
     /**
@@ -234,14 +248,17 @@ class AuthenticationService
         if (isset($config['cert'])) {
             $configs['cert'] = $this->fileService->writeFile('certificate', $config['cert']);
         }
+
         if (isset($config['ssl_key'])) {
             $configs['ssl_key'] = $this->fileService->writeFile('privateKey', $config['ssl_key']);
         }
+
         if (isset($config['verify']) && is_string($config['verify'])) {
             $configs['verify'] = $this->fileService->writeFile('verify', $config['ssl_key']);
         }
 
         return $configs;
+
     }//end getCertificate()
 
     /**
@@ -256,142 +273,219 @@ class AuthenticationService
         if (isset($config['cert'])) {
             $this->fileService->removeFile($config['cert']);
         }
+
         if (isset($config['ssl_key'])) {
             $this->fileService->removeFile($config['ssl_key']);
         }
+
         if (isset($config['verify']) && is_string($config['verify'])) {
             $this->fileService->removeFile($config['verify']);
         }
+
     }//end removeFiles()
 
     /**
      * Sends a post with auth info and certificate(s) to fetch a jwt token.
      *
-     * @param  Source $source
-     * 
+     * @param Source $source
+     *
      * @return string $body['access_token'] JWT token.
      */
     private function getVrijbrpToken(Source $source): string
     {
-        $guzzleConfig = array_merge($source->getConfiguration(), [
-            'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
-            'auth'    => [$source->getUsername(), $source->getPassword()],
-        ]);
+        $guzzleConfig = array_merge(
+            $source->getConfiguration(),
+            [
+                'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
+                'auth'    => [
+                    $source->getUsername(),
+                    $source->getPassword(),
+                ],
+            ]
+        );
         $guzzleConfig = array_merge($guzzleConfig, $this->getCertificate($guzzleConfig));
 
         $client = new Client($guzzleConfig);
 
         $response = $client->post($source->getLocation().'/oauth/token', ['form_params' => ['grant_type' => 'client_credentials', 'scope' => 'api']]);
-        $body = json_decode($response->getBody()->getContents(), true);
+        $body     = json_decode($response->getBody()->getContents(), true);
         $this->removeFiles($guzzleConfig);
 
         return $body['access_token'];
 
-    }//end getVrijbrpToken
+    }//end getVrijbrpToken()
 
     /**
      * Sends a post with auth info to fetch a jwt token.
      *
-     * @param  Source $source
-     * 
+     * @param Source $source
+     *
      * @return string accessToken which is a JWT token.
      */
     private function getPinkToken(Source $source): string
     {
         $guzzleConfig = $source->getConfiguration();
-        $client = new Client($guzzleConfig);
-        $response = $client->post($source->getLocation().'/v1/auth/token', ['form_params' => ['client_id' => $source->getUsername(), 'client_secret' => $source->getPassword()]]);
+        $client       = new Client($guzzleConfig);
+        $response     = $client->post($source->getLocation().'/v1/auth/token', ['form_params' => ['client_id' => $source->getUsername(), 'client_secret' => $source->getPassword()]]);
 
         return json_decode($response->getBody()->getContents(), true)['accessToken'];
 
-    }//end getPinkToken
+    }//end getPinkToken()
+
+    /**
+     * Sends a post with authentication info to an OAuth Token Endpoint to fetch an authentication token.
+     *
+     * @param Source $source The source to authenticate for.
+     *
+     * @throws JsonException Thrown if the result can not be json decoded.
+     *
+     * @return string The authentication token.
+     */
+    private function getOauthToken(Source $source): string
+    {
+        $authenticationConfig = $source->getAuthenticationConfig();
+
+        $credentials = [
+            'clientId'     => $source->getUsername(),
+            'clientSecret' => $source->getPassword(),
+        ];
+
+        if (isset($authenticationConfig['case']) === true && $authenticationConfig['case'] === 'snake_case') {
+            $credentials = [
+                'client_id'     => $source->getUsername(),
+                'client_secret' => $source->getPassword(),
+            ];
+        }
+
+        if (isset($authenticationConfig['additionalFields']) === true) {
+            $credentials = array_merge($credentials, $authenticationConfig['additionalFields']);
+        }
+
+        switch ($source->getAuthorizationPassthroughMethod()) {
+        case 'query':
+            $config['query'] = $credentials;
+            break;
+        case 'form_params':
+            $config['form_params'] = $credentials;
+            break;
+        case 'json':
+        default:
+            $config['body'] = \Safe\json_encode($credentials);
+            break;
+        }//end switch
+
+        $guzzleConfig = $source->getConfiguration();
+        $client       = new Client($guzzleConfig);
+        $response     = $client->post($authenticationConfig['tokenUrl'], $config);
+
+        $result = \Safe\json_decode($response->getBody()->getContents(), true);
+
+        return $result[$authenticationConfig['tokenField']];
+
+    }//end getOauthToken()
 
     /**
      * Checks from which type of auth we need to fetch a token from.
      *
-     * @param  Source $source
-     * @param  string $authType
-     * 
-     * @return string Fetched JWT token.
+     * @param Source $source
+     * @param string $authType
+     *
+     * @return string|null Fetched JWT token.
      */
-    public function getTokenFromUrl(Source $source, string $authType): string
+    public function getTokenFromUrl(Source $source, string $authType): ?string
     {
         switch ($authType) {
-            case 'vrijbrp-jwt':
-                return $this->getVrijbrpToken($source);
-            case 'pink-jwt':
-                return $this->getPinkToken($source);
+        case 'vrijbrp-jwt':
+            return $this->getVrijbrpToken($source);
+        case 'pink-jwt':
+            return $this->getPinkToken($source);
+        case 'oauth':
+            return $this->getOauthToken($source);
         }//end switch
 
-    }//end getTokenFromUrl
+        return null;
 
+    }//end getTokenFromUrl()
+
+    /**
+     * Gets a hmac token.
+     */
     public function getHmacToken(array $requestOptions, Source $source): string
     {
         // todo: what if we don't have a body, method or url in $requestOptions?
         switch ($requestOptions['method']) {
-            case 'POST':
-                $md5 = md5($requestOptions['body'], true);
-                $post = base64_encode($md5);
-                break;
-            case 'GET':
-            default:
-                // todo: what about a get call?
-                $get = 'not a UTF-8 string';
-                $post = base64_encode($get);
-                break;
+        case 'POST':
+            $md5  = md5($requestOptions['body'], true);
+            $post = base64_encode($md5);
+            break;
+        case 'GET':
+        default:
+            // todo: what about a get call?
+            $get  = 'not a UTF-8 string';
+            $post = base64_encode($get);
+            break;
         }
 
         $websiteKey = $source->getApikey();
-        $uri = strtolower(urlencode($requestOptions['url']));
-        $nonce = 'nonce_'.rand(0000000, 9999999);
-        $time = time();
+        $uri        = strtolower(urlencode($requestOptions['url']));
+        $nonce      = 'nonce_'.rand(0000000, 9999999);
+        $time       = time();
 
         $hmac = $websiteKey.$requestOptions['method'].$uri.$time.$nonce.$post;
-        $s = hash_hmac('sha256', $hmac, $source->getSecret(), true);
+        $s    = hash_hmac('sha256', $hmac, $source->getSecret(), true);
         $hmac = base64_encode($s);
 
         return 'hmac '.$websiteKey.':'.$hmac.':'.$nonce.':'.$time;
-    }
 
+    }//end getHmacToken()
+
+    /**
+     * Gets the authentication values through various checks.
+     */
     public function getAuthentication(Source $source): array
     {
         $requestOptions = [];
         switch ($source->getAuth()) {
-            case 'jwt-HS256':
-            case 'jwt-RS512':
-            case 'jwt':
-                $requestOptions['headers']['Authorization'] = 'Bearer '.$this->getJwtToken($source);
-                break;
-            case 'username-password':
-                $requestOptions['auth'] = [$source->getUsername(), $source->getPassword()];
-                break;
-            case 'vrijbrp-jwt':
-            case 'pink-jwt':
-                $requestOptions['headers']['Authorization'] = "Bearer {$this->getTokenFromUrl($source, $source->getAuth())}";
-                break;
-            case 'hmac':
-                $requestOptions['headers']['Authorization'] = $this->getHmacToken($requestOptions, $source);
-                break;
-            case 'apikey':
-                if ($source->getAuthorizationHeader()) {
-                    switch ($source->getAuthorizationPassthroughMethod()) {
-                        case 'query':
-                            $requestOptions['query'][$source->getAuthorizationHeader()] = $source->getApiKey();
-                            break;
-                        default:
-                            $requestOptions['headers'][$source->getAuthorizationHeader()] = $source->getApiKey();
-                            break;
-                    }
-                } else {
-                    $requestOptions['headers']['Authorization'] = $source->getApiKey();
+        case 'jwt-HS256':
+        case 'jwt-RS512':
+        case 'jwt':
+            $requestOptions['headers']['Authorization'] = 'Bearer '.$this->getJwtToken($source);
+            break;
+        case 'username-password':
+            $requestOptions['auth'] = [
+                $source->getUsername(),
+                $source->getPassword(),
+            ];
+            break;
+        case 'vrijbrp-jwt':
+        case 'pink-jwt':
+        case 'oauth':
+            $requestOptions['headers']['Authorization'] = "Bearer {$this->getTokenFromUrl($source, $source->getAuth())}";
+            break;
+        case 'hmac':
+            $requestOptions['headers']['Authorization'] = $this->getHmacToken($requestOptions, $source);
+            break;
+        case 'apikey':
+            if ($source->getAuthorizationHeader()) {
+                switch ($source->getAuthorizationPassthroughMethod()) {
+                case 'query':
+                    $requestOptions['query'][$source->getAuthorizationHeader()] = $source->getApiKey();
+                    break;
+                default:
+                    $requestOptions['headers'][$source->getAuthorizationHeader()] = $source->getApiKey();
+                    break;
                 }
-                break;
-            default:
-                break;
-        }
+            } else {
+                $requestOptions['headers']['Authorization'] = $source->getApiKey();
+            }
+            break;
+        default:
+            break;
+        }//end switch
 
         return $requestOptions;
-    }
+
+    }//end getAuthentication()
 
     /**
      * Decides if the provided JWT token is signed with the RS512 Algorithm.
@@ -411,6 +505,7 @@ class AuthenticationService
         } catch (InvalidHeaderException $exception) {
             return false;
         }
+
     }//end checkRS512()
 
     /**
@@ -431,6 +526,7 @@ class AuthenticationService
         } catch (InvalidHeaderException $exception) {
             return false;
         }
+
     }//end checkHS256()
 
     /**
@@ -451,6 +547,7 @@ class AuthenticationService
         } catch (InvalidHeaderException $exception) {
             return false;
         }
+
     }//end checkRS256()
 
     /**
@@ -473,15 +570,16 @@ class AuthenticationService
 
         if ($this->checkRS512($token)) {
             $publicKeyFile = $this->fileService->writeFile('publickey', $publicKey);
-            $jwk = new JWKSet([JWKFactory::createFromKeyFile($publicKeyFile, null, [])]);
+            $jwk           = new JWKSet([JWKFactory::createFromKeyFile($publicKeyFile, null, [])]);
             $this->fileService->removeFile($publicKeyFile);
 
             return $jwk;
-        } elseif ($this->checkHS256($token)) {
+        } else if ($this->checkHS256($token)) {
             return new JWKSet([JWKFactory::createFromSecret($publicKey, ['alg' => 'HS256', 'use' => 'sig'])]);
-        } elseif ($this->checkRS256($token)) {
+        } else if ($this->checkRS256($token)) {
             return JWKFactory::createFromJsonObject($publicKey);
         }
+
     }//end checkHeadersAndGetJWK()
 
     /**
@@ -496,8 +594,8 @@ class AuthenticationService
      */
     public function verifyJWTToken(string $token, string $publicKey): array
     {
-        $algorithmManager = new AlgorithmManager([new HS256(), new RS512(), new RS256()]);
-        $jwsVerifier = new JWSVerifier($algorithmManager);
+        $algorithmManager  = new AlgorithmManager([new HS256(), new RS512(), new RS256()]);
+        $jwsVerifier       = new JWSVerifier($algorithmManager);
         $serializerManager = new JWSSerializerManager([new CompactSerializer()]);
 
         $jws = $serializerManager->unserialize($token);
@@ -508,6 +606,7 @@ class AuthenticationService
         } else {
             throw new AuthenticationException('Unauthorized: The provided Authorization header is invalid', 401);
         }
+
     }//end verifyJWTToken()
 
     /**
@@ -520,7 +619,7 @@ class AuthenticationService
      */
     public function serializeUser(User $user, SessionInterface $session): array
     {
-        $time = new \DateTime();
+        $time   = new \DateTime();
         $expiry = new \DateTime("+{$this->parameterBag->get('app_session_duration')} seconds");
         $scopes = [];
         foreach ($user->getSecurityGroups() as $securityGroup) {
@@ -541,5 +640,6 @@ class AuthenticationService
         ];
 
         return $payload;
+
     }//end serializeUser()
 }//end class

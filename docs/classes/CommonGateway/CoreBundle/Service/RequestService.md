@@ -1,16 +1,12 @@
-# CommonGateway\CoreBundle\Service\RequestService  
+# CommonGateway\CoreBundle\Service\RequestService
 
 Handles incomming request from endpoints or controllers that relate to the gateways object structure (eav).
-
-
-
-
 
 ## Methods
 
 | Name | Description |
 |------|-------------|
-|[__construct](#requestservice__construct)||
+|[\_\_construct](#requestservice__construct)||
 |[checkEmbedded](#requestservicecheckembedded)|If embedded should be shown or not.|
 |[createResponse](#requestservicecreateresponse)|Creating the response object.|
 |[getId](#requestservicegetid)|Get the ID from given parameters.|
@@ -22,10 +18,7 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 |[searchRequestHandler](#requestservicesearchrequesthandler)|This function searches all the objectEntities and formats the data.|
 |[shouldWeUnsetEmbedded](#requestserviceshouldweunsetembedded)|If embedded should be shown or not.|
 
-
-
-
-### RequestService::__construct  
+### RequestService::\_\_construct
 
 **Description**
 
@@ -33,10 +26,6 @@ Handles incomming request from endpoints or controllers that relate to the gatew
  __construct (void)
 ```
 
- 
-
- 
-
 **Parameters**
 
 `This function has no parameters.`
@@ -45,11 +34,9 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 
 `void`
 
-
 <hr />
 
-
-### RequestService::checkEmbedded  
+### RequestService::checkEmbedded
 
 **Description**
 
@@ -57,26 +44,20 @@ Handles incomming request from endpoints or controllers that relate to the gatew
 public checkEmbedded (object|array $result)
 ```
 
-If embedded should be shown or not. 
-
- 
+If embedded should be shown or not.
 
 **Parameters**
 
-* `(object|array) $result`
-: fetched result  
+*   `(object|array) $result`
+    : fetched result
 
 **Return Values**
 
 `array|null`
 
-
-
-
 <hr />
 
-
-### RequestService::createResponse  
+### RequestService::createResponse
 
 **Description**
 
@@ -84,25 +65,19 @@ If embedded should be shown or not.
 public createResponse ( $data)
 ```
 
-Creating the response object. 
-
- 
+Creating the response object.
 
 **Parameters**
 
-* `() $data`
+*   `() $data`
 
 **Return Values**
 
 `\CommonGateway\CoreBundle\Service\Response`
 
-
-
-
 <hr />
 
-
-### RequestService::getId  
+### RequestService::getId
 
 **Description**
 
@@ -110,25 +85,19 @@ Creating the response object.
 public getId (array $object)
 ```
 
-Get the ID from given parameters. 
-
- 
+Get the ID from given parameters.
 
 **Parameters**
 
-* `(array) $object`
+*   `(array) $object`
 
 **Return Values**
 
 `string|false`
 
-
-
-
 <hr />
 
-
-### RequestService::getSchema  
+### RequestService::getSchema
 
 **Description**
 
@@ -136,25 +105,19 @@ Get the ID from given parameters.
 public getSchema (array $parameters)
 ```
 
-Get the schema from given parameters returns false if no schema could be established. 
-
- 
+Get the schema from given parameters returns false if no schema could be established.
 
 **Parameters**
 
-* `(array) $parameters`
+*   `(array) $parameters`
 
 **Return Values**
 
 `\Entity|false`
 
-
-
-
 <hr />
 
-
-### RequestService::itemRequestHandler  
+### RequestService::itemRequestHandler
 
 **Description**
 
@@ -162,10 +125,6 @@ Get the schema from given parameters returns false if no schema could be establi
  itemRequestHandler (void)
 ```
 
- 
-
- 
-
 **Parameters**
 
 `This function has no parameters.`
@@ -174,11 +133,9 @@ Get the schema from given parameters returns false if no schema could be establi
 
 `void`
 
-
 <hr />
 
-
-### RequestService::proxyHandler  
+### RequestService::proxyHandler
 
 **Description**
 
@@ -186,10 +143,6 @@ Get the schema from given parameters returns false if no schema could be establi
  proxyHandler (void)
 ```
 
- 
-
- 
-
 **Parameters**
 
 `This function has no parameters.`
@@ -198,11 +151,9 @@ Get the schema from given parameters returns false if no schema could be establi
 
 `void`
 
-
 <hr />
 
-
-### RequestService::realRequestQueryAll  
+### RequestService::realRequestQueryAll
 
 **Description**
 
@@ -210,14 +161,14 @@ Get the schema from given parameters returns false if no schema could be establi
 public realRequestQueryAll (string $method)
 ```
 
-A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore. 
+A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.
 
-This function will not. 
+This function will not.
 
 **Parameters**
 
-* `(string) $method`
-: The method of the Request  
+*   `(string) $method`
+    : The method of the Request
 
 **Return Values**
 
@@ -225,11 +176,9 @@ This function will not.
 
 > An array with all query parameters.
 
-
 <hr />
 
-
-### RequestService::requestHandler  
+### RequestService::requestHandler
 
 **Description**
 
@@ -237,16 +186,14 @@ This function will not.
 public requestHandler (array $data, array $configuration)
 ```
 
-Handles incomming requests and is responsible for generating a response. 
-
- 
+Handles incomming requests and is responsible for generating a response.
 
 **Parameters**
 
-* `(array) $data`
-: The data from the call  
-* `(array) $configuration`
-: The configuration from the call  
+*   `(array) $data`
+    : The data from the call
+*   `(array) $configuration`
+    : The configuration from the call
 
 **Return Values**
 
@@ -254,11 +201,9 @@ Handles incomming requests and is responsible for generating a response.
 
 > The modified data
 
-
 <hr />
 
-
-### RequestService::searchRequestHandler  
+### RequestService::searchRequestHandler
 
 **Description**
 
@@ -266,16 +211,14 @@ Handles incomming requests and is responsible for generating a response.
 public searchRequestHandler (array $data, array $configuration)
 ```
 
-This function searches all the objectEntities and formats the data. 
-
- 
+This function searches all the objectEntities and formats the data.
 
 **Parameters**
 
-* `(array) $data`
-: The data from the call  
-* `(array) $configuration`
-: The configuration from the call  
+*   `(array) $data`
+    : The data from the call
+*   `(array) $configuration`
+    : The configuration from the call
 
 **Return Values**
 
@@ -283,11 +226,9 @@ This function searches all the objectEntities and formats the data.
 
 > The modified data
 
-
 <hr />
 
-
-### RequestService::shouldWeUnsetEmbedded  
+### RequestService::shouldWeUnsetEmbedded
 
 **Description**
 
@@ -295,23 +236,17 @@ This function searches all the objectEntities and formats the data.
 public shouldWeUnsetEmbedded (object|array $result, ?array $accept)
 ```
 
-If embedded should be shown or not. 
-
- 
+If embedded should be shown or not.
 
 **Parameters**
 
-* `(object|array) $result`
-: fetched result  
-* `(?array) $accept`
-: accept header  
+*   `(object|array) $result`
+    : fetched result
+*   `(?array) $accept`
+    : accept header
 
 **Return Values**
 
 `array|null`
 
-
-
-
 <hr />
-

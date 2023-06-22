@@ -1,0 +1,4 @@
+# Configuratation for style ci, look at https://docs.styleci.io/fixers for more configuration options
+preset: recommended
+disabled:
+  - elseif

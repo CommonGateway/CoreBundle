@@ -9,4 +9,4 @@ interface InstallerInterface
     public function update();
 
     public function uninstall();
-}
+}//end interface

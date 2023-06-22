@@ -8,12 +8,12 @@ services:
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
     CommonGateway\CoreBundle\:
-        resource: '../../'
+        resource: '../../src/'
         exclude:
-            - '../../DependencyInjection/'
-            - '../../Entity/'
-            - '../../Resources/'
-            - '../../CoreBundle.php'
+            - '../../src/DependencyInjection/'
+            - '../../src/Entity/'
+            - '../../src/Resources/'
+            - '../../src/CoreBundle.php'
             
     # this config only applies to the services created by this file
     _instanceof:

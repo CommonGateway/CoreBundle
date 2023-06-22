@@ -1,8 +1,8 @@
 <?php
 
-namespace CommonGateway\CoreBundle\src\Command;
+namespace CommonGateway\CoreBundle\Command;
 
-use CommonGateway\CoreBundle\src\Service\InstallationService;
+use CommonGateway\CoreBundle\Service\InstallationService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,7 +19,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  */
 class UninstallCommand extends Command
 {
+
     protected static $defaultName = 'commongateway:uninstall';
+
     private InstallationService $installationService;
 
     public function __construct(InstallationService $installationService)
@@ -27,7 +29,8 @@ class UninstallCommand extends Command
         $this->installationService = $installationService;
 
         parent::__construct();
-    }
+
+    }//end __construct()
 
     protected function configure(): void
     {
@@ -37,17 +40,19 @@ class UninstallCommand extends Command
             ->addOption('--data', null, InputOption::VALUE_NONE, 'Also remove orphaned data')
             ->setDescription('This command runs the uninstall service on a commongateway bundle')
             ->setHelp('This command allows you to create a OAS files for your EAV entities');
-    }
+
+    }//end configure()
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        $io     = new SymfonyStyle($input, $output);
         $bundle = $input->getArgument('bundle');
-        $data = $input->getArgument('data');
+        $data   = $input->getArgument('data');
         $schema = $input->getOption('--no-schema');
 
         return $this->installationService->uninstall($io, $bundle, $data, $schema);
 
         return Command::SUCCESS;
-    }
-}
+
+    }//end execute()
+}//end class
