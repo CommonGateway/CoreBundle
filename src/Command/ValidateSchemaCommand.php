@@ -56,7 +56,7 @@ class ValidateSchemaCommand extends Command
     /**
      * Executes this command.
      *
-     * @param InputInterface  $input The input interface.
+     * @param InputInterface  $input  The input interface.
      * @param OutputInterface $output The output interface.
      *
      * @return int 1 for success, 0 for failure.

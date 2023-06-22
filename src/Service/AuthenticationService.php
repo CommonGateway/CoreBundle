@@ -415,12 +415,12 @@ class AuthenticationService
         return null;
 
     }//end getTokenFromUrl()
-    
+
     /**
      * Gets a hmac token.
      *
-     * @param array $requestOptions Array of request options like method, url & body.
-     * @param Source $source A Source.
+     * @param array  $requestOptions Array of request options like method, url & body.
+     * @param Source $source         A Source.
      *
      * @return string The hmac token.
      */
@@ -429,12 +429,13 @@ class AuthenticationService
         if (isset($requestOptions['method']) === false || isset($requestOptions['url']) === false) {
             return "";
         }
-        
+
         switch ($requestOptions['method']) {
         case 'POST':
             if (isset($requestOptions['body']) === false) {
                 return "";
             }
+
             $md5  = md5($requestOptions['body'], true);
             $post = \Safe\base64_encode($md5);
             break;

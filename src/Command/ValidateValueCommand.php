@@ -56,7 +56,7 @@ class ValidateValueCommand extends Command
     /**
      * Executes this commnand.
      *
-     * @param InputInterface  $input The input interface.
+     * @param InputInterface  $input  The input interface.
      * @param OutputInterface $output The output interface.
      *
      * @return int 1 is successfully executed, else 0.
