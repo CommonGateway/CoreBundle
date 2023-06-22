@@ -53,7 +53,7 @@ class FileSystemCreateService
     public function createZipFileFromContent(string $content): string
     {
         // Let's create a temporary file.
-        $fileId   = new Uuid();
+        $fileId   = Uuid::uuid4();
         $filename = "/var/tmp/tmp-{$fileId->toString()}.zip";
         $this->filesystem->touch($filename);
         $this->filesystem->appendToFile($filename, $content);
