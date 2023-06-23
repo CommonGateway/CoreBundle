@@ -48,7 +48,7 @@ class AuthenticationService
         $this->fileService  = new FileService();
 
     }//end __construct()
-    
+
     /**
      * TODO: DELETE THIS FUNCTION
      *
@@ -57,7 +57,8 @@ class AuthenticationService
     private function test()
     {
         return;
-    }
+
+    }//end test()
 
     /**
      * Converts a string RSA key to a JWK via the filesystem.
