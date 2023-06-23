@@ -36,22 +36,22 @@ class FileSystemHandleServiceTest extends TestCase
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
-    
+
     /**
      * @var MappingService
      */
     private MappingService $mappingService;
-    
+
     /**
      * @var LoggerInterface
      */
     private LoggerInterface $callLogger;
-    
+
     /**
      * @var FileSystemCreateService
      */
     private FileSystemCreateService $fscService;
-    
+
     /**
      * Set up mock data.
      *
@@ -64,7 +64,7 @@ class FileSystemHandleServiceTest extends TestCase
         $this->callLogger = $this->createMock(LoggerInterface::class);
         $this->fscService = $this->createMock(FileSystemCreateService::class);
     }
-    
+
     /**
      * Tests the getFileContents function of the FileSystemHandleService on an existing file, returning content.
      *
@@ -76,31 +76,31 @@ class FileSystemHandleServiceTest extends TestCase
         $filesystemMock = $this->createMock(Filesystem::class);
         $location = '/path/to/file.txt';
         $content = 'File content';
-        
+
         $filesystemMock->expects($this->once())
             ->method('fileExists')
             ->with($location)
             ->willReturn(true);
-        
+
         $filesystemMock->expects($this->once())
             ->method('read')
             ->with($location)
             ->willReturn($content);
-        
+
         $service = new FileSystemHandleService(
             $this->entityManager,
             $this->mappingService,
             $this->callLogger,
             $this->fscService
         );
-        
+
         // Act
         $result = $service->getFileContents($filesystemMock, $location);
-        
+
         // Assert
         $this->assertEquals($content, $result);
     }
-    
+
     /**
      * Tests the getFileContents function of the FileSystemHandleService on a non-existing file, returning no content.
      *
@@ -111,26 +111,26 @@ class FileSystemHandleServiceTest extends TestCase
         // Arrange
         $filesystemMock = $this->createMock(Filesystem::class);
         $location = '/path/to/file.txt';
-        
+
         $filesystemMock->expects($this->once())
             ->method('fileExists')
             ->with($location)
             ->willReturn(false);
-        
+
         $service = new FileSystemHandleService(
             $this->entityManager,
             $this->mappingService,
             $this->callLogger,
             $this->fscService
         );
-        
+
         // Act
         $result = $service->getFileContents($filesystemMock, $location);
-        
+
         // Assert
         $this->assertNull($result);
     }
-    
+
     /**
      * Tests the decodeFile function of the FileSystemHandleService with json content.
      *
@@ -142,21 +142,21 @@ class FileSystemHandleServiceTest extends TestCase
     {
         // Arrange
         $content = '{"key": "value"}';
-        
+
         $service = new FileSystemHandleService(
             $this->entityManager,
             $this->mappingService,
             $this->callLogger,
             $this->fscService
         );
-        
+
         // Act
         $result = $service->decodeFile($content, 'file.json');
-        
+
         // Assert
         $this->assertEquals(['key' => 'value'], $result);
     }
-    
+
     /**
      * Tests the decodeFile function of the FileSystemHandleService with yaml content.
      *
@@ -168,21 +168,21 @@ class FileSystemHandleServiceTest extends TestCase
     {
         // Arrange
         $content = 'key: value';
-        
+
         $service = new FileSystemHandleService(
             $this->entityManager,
             $this->mappingService,
             $this->callLogger,
             $this->fscService
         );
-        
+
         // Act
         $result = $service->decodeFile($content, 'file.yaml');
-        
+
         // Assert
         $this->assertEquals(['key' => 'value'], $result);
     }
-    
+
     /**
      * Tests the decodeFile function of the FileSystemHandleService with xml content.
      *
@@ -194,21 +194,21 @@ class FileSystemHandleServiceTest extends TestCase
     {
         // Arrange
         $content = '<root><key>value</key></root>';
-        
+
         $service = new FileSystemHandleService(
             $this->entityManager,
             $this->mappingService,
             $this->callLogger,
             $this->fscService
         );
-        
+
         // Act
         $result = $service->decodeFile($content, 'file.xml');
-        
+
         // Assert
         $this->assertEquals(['key' => 'value'], $result);
     }
-    
+
     /**
      * Tests the getContentFromAllFiles function of the FileSystemHandleService.
      *
@@ -220,39 +220,39 @@ class FileSystemHandleServiceTest extends TestCase
     {
         // Arrange
         $filesystemCreateService = new FileSystemCreateService();
-        
+
         $id = Uuid::uuid4();
         $filename = '/var/tmp/test-'.$id->toString();
         $zipArchiveAdapter = new ZipArchiveAdapter(new FilesystemZipArchiveProvider($filename));
-        
+
         $zipArchiveAdapter->write('file1.json', '{"content": "Content 1"}', new Config([]));
         $zipArchiveAdapter->write('file2.json', '{"content": "Content 2"}', new Config([]));
         $zipArchiveAdapter->write('file3.json', '{"content": "Content 3"}', new Config([]));
-        
+
         $fileSystem = new Filesystem($zipArchiveAdapter);
-        
+
         $fileContents = [
             'file1.json' => ['content' => 'Content 1'],
             'file2.json' => ['content' => 'Content 2'],
             'file3.json' => ['content' => 'Content 3'],
         ];
-        
+
         $service = new FileSystemHandleService(
             $this->entityManager,
             $this->mappingService,
             $this->callLogger,
             $this->fscService
         );
-        
+
         // Act
         $result = $service->getContentFromAllFiles($fileSystem);
-        
+
         // Assert
         $this->assertEquals($fileContents, $result);
-        
+
         $filesystemCreateService->removeZipFile($filename);
     }
-    
+
     /**
      * Tests the call function of the FileSystemHandleService with config, format json.
      *
@@ -266,36 +266,36 @@ class FileSystemHandleServiceTest extends TestCase
         $location = '/path/to/file.txt';
         $content = '{"key": "value"}';
         $decodedFile = ['key' => 'value'];
-        
+
         $sourceMock->expects($this->once())
             ->method('getEndpointsConfig')
             ->willReturn([]);
-        
+
         $this->fscService->expects($this->once())
             ->method('openFtpFilesystem')
             ->with($sourceMock)
             ->willReturn($filesystemMock);
-        
+
         $filesystemMock->expects($this->once())
             ->method('fileExists')
             ->with($location)
             ->willReturn(true);
-        
+
         $filesystemMock->expects($this->once())
             ->method('read')
             ->with($location)
             ->willReturn($content);
-        
+
         $service = new FileSystemHandleService(
             $this->entityManager,
             $this->mappingService,
             $this->callLogger,
             $this->fscService
         );
-        
+
         // Act
         $result = $service->call($sourceMock, $location, ['format' => 'json']);
-        
+
         // Assert
         $this->assertEquals($decodedFile, $result);
     }

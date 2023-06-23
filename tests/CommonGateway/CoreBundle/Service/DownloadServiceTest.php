@@ -31,17 +31,17 @@ class DownloadServiceTest extends TestCase
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
-    
+
     /**
      * @var LoggerInterface
      */
     private LoggerInterface $logger;
-    
+
     /**
      * @var DownloadService
      */
     private DownloadService $downloadService;
-    
+
     /**
      * Set up mock data.
      *
@@ -52,10 +52,10 @@ class DownloadServiceTest extends TestCase
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $twig = new Environment(new ArrayLoader([]));
-        
+
         $this->downloadService = new DownloadService($this->entityManager, $this->logger, $twig);
     }
-    
+
     /**
      * Tests the render function of the download service with a valid template.
      *
@@ -66,11 +66,11 @@ class DownloadServiceTest extends TestCase
         $template = new Template();
         $template->setId(Uuid::uuid4());
         $template->setSupportedSchemas(['template_id']);
-        
+
         $templateContent = '<html>{{ object.name }}</html>';
-        
+
         $template->setContent($templateContent);
-        
+
         $data = [
             '_self' => [
                 'schema' => [
@@ -78,23 +78,23 @@ class DownloadServiceTest extends TestCase
                 ],
             ],
         ];
-        
+
         $templates = [$template];
-        
+
         $templateRepository = $this->createMock(TemplateRepository::class);
-        
+
         $this->entityManager->expects($this->once())
             ->method('getRepository')
             ->with('App:Template')
             ->willReturn($templateRepository);
-        
+
         $templateRepository->expects($this->once())
             ->method('findAll')
             ->willReturn($templates);
-        
+
         $this->downloadService->render($data);
     }
-    
+
     /**
      * Tests the render function of the download service with a many templates.
      *
@@ -105,11 +105,11 @@ class DownloadServiceTest extends TestCase
         $template = new Template();
         $template->setId(Uuid::uuid4());
         $template->setSupportedSchemas(['template_id']);
-        
+
         $templateContent = '<html>{{ object.name }}</html>';
-        
+
         $template->setContent($templateContent);
-        
+
         $data = [
             '_self' => [
                 'schema' => [
@@ -117,25 +117,25 @@ class DownloadServiceTest extends TestCase
                 ],
             ],
         ];
-        
+
         $template2 = clone $template;
-        
+
         $templates = [$template, $template2];
-        
+
         $templateRepository = $this->createMock(TemplateRepository::class);
-        
+
         $this->entityManager->expects($this->once())
             ->method('getRepository')
             ->with('App:Template')
             ->willReturn($templateRepository);
-        
+
         $templateRepository->expects($this->once())
             ->method('findAll')
             ->willReturn($templates);
-        
+
         $this->downloadService->render($data);
     }
-    
+
     /**
      * Tests the render function of the download service with an invalid template.
      *
@@ -150,29 +150,29 @@ class DownloadServiceTest extends TestCase
                 ],
             ],
         ];
-        
+
         $emptyArray = [];
-        
+
         $templateRepository = $this->createMock(TemplateRepository::class);
-        
+
         $this->entityManager->expects($this->once())
             ->method('getRepository')
             ->with('App:Template')
             ->willReturn($templateRepository);
-        
+
         $templateRepository->expects($this->once())
             ->method('findAll')
             ->willReturn($emptyArray);
-        
+
         $this->logger->expects($this->once())
             ->method('error')
             ->with('There is no render template for this type of object.');
-        
+
         $this->expectException(BadRequestException::class);
-        
+
         $this->downloadService->render($data);
     }
-    
+
     /**
      * Tests the downloadPdf function of the download service.
      *
@@ -183,24 +183,24 @@ class DownloadServiceTest extends TestCase
         $template = new Template();
         $template->setId(Uuid::uuid4());
         $template->setSupportedSchemas(['template_id']);
-        
+
         $templateContent = '<html>{{ object.name }}</html>';
-        
+
         $template->setContent($templateContent);
-        
+
         $templates = [$template];
-        
+
         $templateRepository = $this->createMock(TemplateRepository::class);
-        
+
         $this->entityManager->expects($this->once())
             ->method('getRepository')
             ->with('App:Template')
             ->willReturn($templateRepository);
-        
+
         $templateRepository->expects($this->once())
             ->method('findAll')
             ->willReturn($templates);
-        
+
         $data = [
             '_self' => [
                 'schema' => [
@@ -208,7 +208,7 @@ class DownloadServiceTest extends TestCase
                 ],
             ],
         ];
-        
+
         $this->downloadService->downloadPdf($data);
     }
 }

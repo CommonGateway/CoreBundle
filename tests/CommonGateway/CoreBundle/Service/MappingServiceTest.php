@@ -27,7 +27,7 @@ class MappingServiceTest extends TestCase
      * @var MappingService
      */
     private MappingService $mappingService;
-    
+
     /**
      * Set up mock data.
      *
@@ -38,7 +38,7 @@ class MappingServiceTest extends TestCase
         $twigMock = $this->createMock(Environment::class);
         $this->mappingService = new MappingService($twigMock);
     }
-    
+
     /**
      * Tests the encodeArrayKeys function of the MappingService.
      *
@@ -54,7 +54,7 @@ class MappingServiceTest extends TestCase
             ]
         ];
         $encodedArray = $this->mappingService->encodeArrayKeys($array, '.', '&#46;');
-        
+
         $expectedArray = [
             'key&#46;one' => 'value1',
             'key&#46;two' => 'value2',
@@ -62,10 +62,10 @@ class MappingServiceTest extends TestCase
                 'key&#46;four' => 'value3'
             ]
         ];
-        
+
         $this->assertEquals($expectedArray, $encodedArray);
     }
-    
+
     /**
      * Tests the mapping function of the MappingService with casts & unsets.
      *
@@ -75,7 +75,7 @@ class MappingServiceTest extends TestCase
     {
         // Mock the Mapping object
         $mappingObjectMock = new Mapping();
-        
+
         $mappingObjectMock->setMapping([
             'firstKey'  => 'key1',
             'secondKey' => 'key2',
@@ -92,7 +92,7 @@ class MappingServiceTest extends TestCase
         ]);
         $mappingObjectMock->setUnset(['key1', 'key2']);
         $mappingObjectMock->setPassTrough(true);
-        
+
         // Mock the input array
         $input = [
             'key1' => 'value1',
@@ -104,7 +104,7 @@ class MappingServiceTest extends TestCase
             'key7' => '1.234 5.678',
             'key8' => 'true'
         ];
-        
+
         $expectedOutput = [
             'firstKey' => 'value1',
             'secondKey' => false,
@@ -113,13 +113,13 @@ class MappingServiceTest extends TestCase
             'key7' => [1.234, 5.678],
             'key8' => true
         ];
-        
+
         $output = $this->mappingService->mapping($mappingObjectMock, $input);
-        
+
         $this->assertEquals($expectedOutput, $output);
         // Add your assertions for the output
     }
-    
+
     /**
      * Tests the coordinateStringToArray function of the MappingService.
      *
@@ -132,12 +132,12 @@ class MappingServiceTest extends TestCase
             [1.234, 5.678],
             [9.012],
         ];
-        
+
         $resultArray = $this->mappingService->coordinateStringToArray($coordinates);
-        
+
         $this->assertEquals($expectedArray, $resultArray);
     }
-    
+
     /**
      * Tests the setStyle function of the MappingService.
      *
@@ -146,7 +146,7 @@ class MappingServiceTest extends TestCase
     public function testSetStyle(): void
     {
         $result = $this->mappingService->setStyle(new SymfonyStyle(new ArrayInput(['bla' => 'bla']), new BufferedOutput()));
-        
+
         $this->assertEquals($this->mappingService, $result);
     }
 }

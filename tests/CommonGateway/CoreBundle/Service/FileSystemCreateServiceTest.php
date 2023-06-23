@@ -26,12 +26,12 @@ use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
  */
 class FileSystemCreateServiceTest extends TestCase
 {
-    
+
     /**
      * @var FileSystemCreateService
      */
     private FileSystemCreateService $fileSystemService;
-    
+
     /**
      * Set up mock data.
      *
@@ -41,7 +41,7 @@ class FileSystemCreateServiceTest extends TestCase
     {
         $this->fileSystemService = new FileSystemCreateService();
     }
-    
+
     /**
      * Tests the createZipFileFromContent function of the FileSystemCreateService.
      *
@@ -51,16 +51,16 @@ class FileSystemCreateServiceTest extends TestCase
     {
         // Set up test data
         $content = 'Sample zip file content';
-        
+
         // Execute the method under test
         $result = $this->fileSystemService->createZipFileFromContent($content);
-        
+
         // Assertions
         $this->assertFileExists($result);
-        
+
         return $result;
     }
-    
+
     /**
      * Tests the removeZipFile function of the FileSystemCreateService.
      *
@@ -76,7 +76,7 @@ class FileSystemCreateServiceTest extends TestCase
         
         $this->assertFileDoesNotExist($filename);
     }
-    
+
     /**
      * Tests the OpenFtpFilesystem function of the FileSystemCreateService.
      *
@@ -91,14 +91,14 @@ class FileSystemCreateServiceTest extends TestCase
         $source->setLocation('ftp://example.com:22');
         $source->setUsername('user');
         $source->setPassword('password');
-        
+
         // Execute the method under test
         $result = $this->fileSystemService->openFtpFilesystem($source);
-        
+
         // Assertions
         $this->assertInstanceOf(Filesystem::class, $result);
     }
-    
+
     /**
      * Tests the openZipFilesystem function of the FileSystemCreateService.
      *
@@ -110,10 +110,10 @@ class FileSystemCreateServiceTest extends TestCase
     {
         // Set up test data
         $filename = "/var/tmp/sample.zip";
-        
+
         // Execute the method under test
         $result = $this->fileSystemService->openZipFilesystem($filename);
-        
+
         // Assertions
         $this->assertInstanceOf(Filesystem::class, $result);
     }
