@@ -240,13 +240,13 @@ class MetricsService
         $metrics[] = [
             'name'  => 'app_objects_count',
             'type'  => 'gauge',
-            'help'  => 'The amount objects in the data layer',
+            'help'  => 'The amount of objects in the data layer',
             'value' => $this->entityManager->getRepository('App:ObjectEntity')->count([]),
         ];
         $metrics[] = [
             'name'  => 'app_cached_objects_count',
             'type'  => 'gauge',
-            'help'  => 'The amount objects in the data layer that are stored in the MongoDB cache',
+            'help'  => 'The amount of objects in the data layer that are stored in the MongoDB cache',
             'value' => $collection->count([]),
         ];
         $metrics[] = [
