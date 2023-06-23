@@ -1539,11 +1539,11 @@ class InstallationService
         if (empty($usersData) === true) {
             return [];
         }
-    
+
         $users = $this->handleObjectType('https://docs.commongateway.nl/schemas/User.schema.json', $usersData);
-    
+
         $this->logger->info(count($users).' Users Created');
-    
+
         return $users;
 
     }//end createUsers()
