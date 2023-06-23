@@ -15,7 +15,7 @@ jobs:
           tools: cs2pr, phpcbf
 
       - name: Run phpcbf
-        run: phpcbf . --report-diff -vvv
+        run: phpcbf . -vv
         continue-on-error: true
       - name: Git commit
         run: |
