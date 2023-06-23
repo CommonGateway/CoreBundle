@@ -50,17 +50,6 @@ class AuthenticationService
     }//end __construct()
 
     /**
-     * TODO: DELETE THIS FUNCTION
-     *
-     * @return void
-     */
-    private function test()
-    {
-        return;
-
-    }//end test()
-
-    /**
      * Converts a string RSA key to a JWK via the filesystem.
      *
      * @param string $key The key to load
