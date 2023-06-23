@@ -242,15 +242,19 @@ class RequestService
      * A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.
      * This function will not.
      *
-     * @param string      $method      The method of the Request
      * @param string|null $queryString A queryString from a request if we want to give it to this function instead of using global var $_SERVER.
      *
      * @return array An array with all query parameters.
      */
-    public function realRequestQueryAll(string $method = 'get', ?string $queryString = ''): array
+    public function realRequestQueryAll(?string $queryString = ''): array
     {
         $vars = [];
-        if (strtolower($method) === 'get' && empty($this->data['querystring']) === true && empty($queryString) === true) {
+
+        if (empty($queryString) === true && empty($this->data['querystring']) === false) {
+            $queryString = $this->data['querystring'];
+        }
+
+        if (empty($queryString) === true && empty($_SERVER['QUERY_STRING']) === true) {
             return $vars;
         }
 
@@ -439,7 +443,7 @@ class RequestService
 
             if ($proxy instanceof Source && ($proxy->getIsEnabled() === null || $proxy->getEnabled() === false)) {
                 return new Response(
-                    $this->serializeData(['Message' => "This Source is not enabled: {$proxy->getName()}", $contentType]),
+                    $this->serializeData(['Message' => "This Source is not enabled: {$proxy->getName()}"], $contentType),
                     Response::HTTP_OK,
                     // This should be ok, so we can disable Sources without creating error responses?
                     ['Content-type' => $contentType]
@@ -447,8 +451,8 @@ class RequestService
             }
         }//end if
 
-        // Get clean query parameters without all the symfony shizzle.
-        $this->data['query'] = $this->realRequestQueryAll($this->data['method']);
+        // Work around the _ with a custom function for getting clean query parameters from a request
+        $this->data['query'] = $this->realRequestQueryAll();
         if (isset($data['path']['{route}']) === true) {
             $this->data['path'] = '/'.$data['path']['{route}'];
         } else {
@@ -541,13 +545,12 @@ class RequestService
             $appEndpointConfig = $this->getAppEndpointConfig();
         }
 
-        // Need to do something about the _
-        if (isset($this->data['querystring']) === true) {
-            $filters = $this->realRequestQueryAll($this->data['method']);
+        // Work around the _ with a custom function for getting clean query parameters from a request
+        $filters = $this->realRequestQueryAll();
 
-            if (isset($appEndpointConfig['in']['query']) === true) {
-                $filters = $this->queryAppEndpointConfig($filters, $appEndpointConfig['in']['query']);
-            }
+        // Handle mapping for query parameters
+        if (isset($appEndpointConfig['in']['query']) === true) {
+            $filters = $this->queryAppEndpointConfig($filters, $appEndpointConfig['in']['query']);
         }
 
         // Get the ID.
