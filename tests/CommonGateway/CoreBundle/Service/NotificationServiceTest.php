@@ -29,27 +29,27 @@ class NotificationServiceTest extends TestCase
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
-    
+
     /**
      * @var LoggerInterface
      */
     private LoggerInterface $logger;
-    
+
     /**
      * @var SynchronizationService
      */
     private SynchronizationService $syncService;
-    
+
     /**
      * @var GatewayResourceService
      */
     private GatewayResourceService $resourceService;
-    
+
     /**
      * @var NotificationService
      */
     private NotificationService $notificationService;
-    
+
     /**
      * Set up mock data.
      *
@@ -108,7 +108,6 @@ class NotificationServiceTest extends TestCase
         $source          = $this->createMock(Source::class);
         $schema          = $this->createMock(Entity::class);
 
-
         $this->resourceService->expects($this->once())
             ->method('findSourcesForUrl')
             ->with($data['url'])
@@ -151,7 +150,6 @@ class NotificationServiceTest extends TestCase
     public function testNotificationHandler_WithException_ReturnsErrorResponse()
     {
         // Arrange
-        // Arrange
         $data = [
             'method'      => 'POST',
             'url'         => 'https://example.com/api/v1/objects/1'
@@ -160,7 +158,6 @@ class NotificationServiceTest extends TestCase
             'entity' => 'https://example.com/example.schema.json',
             'urlLocation' => 'url',
         ];
-        $synchronization = $this->createMock(Synchronization::class);
         $source          = $this->createMock(Source::class);
 
         $this->resourceService->expects($this->once())
@@ -175,7 +172,6 @@ class NotificationServiceTest extends TestCase
 
         $errorMessage = "Could not find an Entity with this reference: {$configuration['entity']}";
         $errorCode = 500;
-        $exception = new Exception($errorMessage, $errorCode);
 
         $this->logger->expects($this->once())
             ->method('error')

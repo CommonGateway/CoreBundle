@@ -32,7 +32,7 @@ class MetricsServiceTest extends TestCase
     private $composerServiceMock;
     private $entityManagerMock;
     private $parameterBagMock;
-    
+
     /**
      * Set up mock data.
      *
@@ -150,8 +150,6 @@ class MetricsServiceTest extends TestCase
             ->method('getRepository')
             ->withConsecutive(['App:User'], ['App:Organization'], ['App:Application'], ['App:Entity'], ['App:ObjectEntity'])
             ->willReturnOnConsecutiveCalls($userRepositoryMock, $organizationRepositoryMock, $applicationRepositoryMock, $entityRepositoryMock, $objectEntityRepositoryMock);
-
-
 
         // Create the MetricsService instance
         $metricsService = new MetricsService(
@@ -316,7 +314,6 @@ class MetricsServiceTest extends TestCase
 
         $this->assertEquals($expectedMetrics, $metrics);
     }
-
 
     /**
      * Tests the getErrors function of the metrics service.

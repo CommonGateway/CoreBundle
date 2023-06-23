@@ -31,17 +31,17 @@ class DownloadServiceTest extends TestCase
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
-    
+
     /**
      * @var LoggerInterface
      */
     private LoggerInterface $logger;
-    
+
     /**
      * @var DownloadService
      */
     private DownloadService $downloadService;
-    
+
     /**
      * Set up mock data.
      *
@@ -55,7 +55,7 @@ class DownloadServiceTest extends TestCase
 
         $this->downloadService = new DownloadService($this->entityManager, $this->logger, $twig);
     }
-    
+
     /**
      * Tests the render function of the download service with a valid template.
      *
@@ -94,7 +94,7 @@ class DownloadServiceTest extends TestCase
 
         $this->downloadService->render($data);
     }
-    
+
     /**
      * Tests the render function of the download service with a many templates.
      *
@@ -135,7 +135,7 @@ class DownloadServiceTest extends TestCase
 
         $this->downloadService->render($data);
     }
-    
+
     /**
      * Tests the render function of the download service with an invalid template.
      *
@@ -172,7 +172,7 @@ class DownloadServiceTest extends TestCase
 
         $this->downloadService->render($data);
     }
-    
+
     /**
      * Tests the downloadPdf function of the download service.
      *

@@ -36,22 +36,22 @@ class FileSystemHandleServiceTest extends TestCase
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
-    
+
     /**
      * @var MappingService
      */
     private MappingService $mappingService;
-    
+
     /**
      * @var LoggerInterface
      */
     private LoggerInterface $callLogger;
-    
+
     /**
      * @var FileSystemCreateService
      */
     private FileSystemCreateService $fscService;
-    
+
     /**
      * Set up mock data.
      *

@@ -26,12 +26,12 @@ use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
  */
 class FileSystemCreateServiceTest extends TestCase
 {
-    
+
     /**
      * @var FileSystemCreateService
      */
     private FileSystemCreateService $fileSystemService;
-    
+
     /**
      * Set up mock data.
      *
