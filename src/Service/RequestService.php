@@ -242,12 +242,11 @@ class RequestService
      * A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.
      * This function will not.
      *
-     * @param string      $method      The method of the Request
      * @param string|null $queryString A queryString from a request if we want to give it to this function instead of using global var $_SERVER.
      *
      * @return array An array with all query parameters.
      */
-    public function realRequestQueryAll(string $method = 'get', ?string $queryString = ''): array
+    public function realRequestQueryAll(?string $queryString = ''): array
     {
         $vars = [];
 
@@ -453,7 +452,7 @@ class RequestService
         }//end if
 
         // Work around the _ with a custom function for getting clean query parameters from a request
-        $this->data['query'] = $this->realRequestQueryAll($this->data['method']);
+        $this->data['query'] = $this->realRequestQueryAll();
         if (isset($data['path']['{route}']) === true) {
             $this->data['path'] = '/'.$data['path']['{route}'];
         } else {
@@ -547,7 +546,7 @@ class RequestService
         }
 
         // Work around the _ with a custom function for getting clean query parameters from a request
-        $filters = $this->realRequestQueryAll($this->data['method']);
+        $filters = $this->realRequestQueryAll();
 
         // Handle mapping for query parameters
         if (isset($appEndpointConfig['in']['query']) === true) {

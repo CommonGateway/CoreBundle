@@ -61,6 +61,8 @@ Soon:
 * Resources               (SOON)
 * Subscriber              (SOON)
 
+The online Read the Docs can be found [here](https://commongateway.readthedocs.io)
+
 To have the Common Gateway CoreBundle documentation locally, please follow the instructions below:
 
 *   install [mkdocs](https://www.mkdocs.org/#installation)
