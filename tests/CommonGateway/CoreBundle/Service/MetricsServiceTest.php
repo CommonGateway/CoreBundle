@@ -1,6 +1,6 @@
 <?php
 
-namespace CommonGateway\CoreBundle\Service;
+namespace App\Tests\CommonGateway\CoreBundle\Service;
 
 use App\Repository\ApplicationRepository;
 use App\Repository\EntityRepository;
@@ -17,13 +17,27 @@ use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
+/**
+ * A test case for the MetricsService.
+ *
+ * @Author Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category TestCase
+ */
 class MetricsServiceTest extends TestCase
 {
     private $clientMock;
     private $composerServiceMock;
     private $entityManagerMock;
     private $parameterBagMock;
-
+    
+    /**
+     * Set up mock data.
+     *
+     * @return void
+     */
     protected function setUp(): void
     {
         $this->clientMock = $this->createMock(Client::class);
@@ -31,7 +45,7 @@ class MetricsServiceTest extends TestCase
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
         $this->parameterBagMock = $this->createMock(ParameterBagInterface::class);
     }
-
+    
     /**
      * Tests the getAll function of the metrics service.
      *
@@ -45,10 +59,10 @@ class MetricsServiceTest extends TestCase
             'name' => 'Core Bundle',
             'description' => 'Description of Core Bundle',
         ];
-
+        
         $uuid1 = Uuid::uuid4();
         $uuid2 = Uuid::uuid4();
-
+        
         $logsCollectionMock = $this->createMock(Collection::class);
         $logsCollectionMock->expects($this->exactly(6))
             ->method('count')
@@ -61,45 +75,45 @@ class MetricsServiceTest extends TestCase
                 [['level_name' => ['$in' => ['NOTICE']]]]
             )
             ->willReturnOnConsecutiveCalls(1, 2, 3, 4, 5, 6);
-
+        
         $logsDatabaseMock = $this->createMock(Database::class);
         $logsDatabaseMock->expects($this->once())
             ->method('__get')
             ->with('logs')
             ->willReturn($logsCollectionMock);
-
+        
         $jsonCollectionMock = $this->createMock(Collection::class);
         $jsonCollectionMock->expects($this->exactly(3))
             ->method('count')
             ->withConsecutive([], [['_self.schema.id' => $uuid1]], [['_self.schema.id' => $uuid2]])
             ->willReturnOnConsecutiveCalls(10, 1, 1);
-
+        
         $jsonDatabaseMock = $this->createMock(Database::class);
         $jsonDatabaseMock->expects($this->once())
             ->method('__get')
             ->with('json')
             ->willReturn($jsonCollectionMock);
-
+        
         $this->clientMock->expects($this->exactly(2))
             ->method('__get')
             ->withConsecutive(['logs'], ['objects'])
             ->willReturnOnConsecutiveCalls($logsDatabaseMock, $jsonDatabaseMock);
-
+        
         $userRepositoryMock = $this->createMock(UserRepository::class);
         $userRepositoryMock->expects($this->once())
             ->method('count')
             ->willReturn(10);
-
+        
         $organizationRepositoryMock = $this->createMock(OrganizationRepository::class);
         $organizationRepositoryMock->expects($this->once())
             ->method('count')
             ->willReturn(5);
-
+        
         $applicationRepositoryMock = $this->createMock(ApplicationRepository::class);
         $applicationRepositoryMock->expects($this->once())
             ->method('count')
             ->willReturn(3);
-
+        
         $entityRepositoryMock = $this->createMock(EntityRepository::class);
         $entityRepositoryMock->expects($this->once())
             ->method('findAllSelect')
@@ -120,25 +134,25 @@ class MetricsServiceTest extends TestCase
                     'version' => '2.0.0',
                 ],
             ]);
-
+        
         $objectEntityRepositoryMock = $this->createMock(ObjectEntityRepository::class);
         $objectEntityRepositoryMock->expects($this->once())
             ->method('count')
             ->with([])
             ->willReturn(10);
-
+        
         $this->composerServiceMock->expects($this->once())
             ->method('getSingle')
             ->with('commongateway/corebundle')
             ->willReturn($coreBundle);
-
+        
         $this->entityManagerMock->expects($this->exactly(5))
             ->method('getRepository')
             ->withConsecutive(['App:User'], ['App:Organization'], ['App:Application'], ['App:Entity'], ['App:ObjectEntity'])
             ->willReturnOnConsecutiveCalls($userRepositoryMock, $organizationRepositoryMock, $applicationRepositoryMock, $entityRepositoryMock, $objectEntityRepositoryMock);
-
-
-
+        
+        
+        
         // Create the MetricsService instance
         $metricsService = new MetricsService(
             $this->composerServiceMock,
@@ -146,13 +160,13 @@ class MetricsServiceTest extends TestCase
             $this->parameterBagMock,
             $this->clientMock
         );
-
+        
         // Execute the method under test
         $metrics = $metricsService->getAll();
-
+        
         // Assertions
         $this->assertCount(21, $metrics);
-
+        
         $expectedMetrics = [
             [
                 'name' => 'app_version',
@@ -299,11 +313,11 @@ class MetricsServiceTest extends TestCase
                 'value' => 1,
             ],
         ];
-
+        
         $this->assertEquals($expectedMetrics, $metrics);
     }
-
-
+    
+    
     /**
      * Tests the getErrors function of the metrics service.
      *
@@ -324,18 +338,18 @@ class MetricsServiceTest extends TestCase
                 [['level_name' => ['$in' => ['NOTICE']]]]
             )
             ->willReturnOnConsecutiveCalls(1, 2, 3, 4, 5, 6);
-
+        
         $logsDatabaseMock = $this->createMock(Database::class);
         $logsDatabaseMock->expects($this->once())
             ->method('__get')
             ->with('logs')
             ->willReturn($logsCollectionMock);
-
+        
         $this->clientMock->expects($this->once())
             ->method('__get')
             ->with('logs')
             ->willReturn($logsDatabaseMock);
-
+        
         // Create the MetricsService instance
         $metricsService = new MetricsService(
             $this->composerServiceMock,
@@ -343,13 +357,13 @@ class MetricsServiceTest extends TestCase
             $this->parameterBagMock,
             $this->clientMock
         );
-
+        
         // Execute the method under test
         $metrics = $metricsService->getErrors();
-
+        
         // Assertions
         $this->assertCount(7, $metrics);
-
+        
         $expectedMetrics = [
             [
                 'name' => 'app_error_count',
@@ -400,10 +414,10 @@ class MetricsServiceTest extends TestCase
                 'value' => 6,
             ],
         ];
-
+        
         $this->assertEquals($expectedMetrics, $metrics);
     }
-
+    
     /**
      * Tests the getPlugins function of the MetricsService
      *
@@ -426,30 +440,30 @@ class MetricsServiceTest extends TestCase
                 'version' => '2.0.0',
             ],
         ];
-
+        
         $this->composerServiceMock->expects($this->once())
             ->method('getAll')
             ->with(['--installed'])
             ->willReturn($plugins);
-
+        
         $this->parameterBagMock->expects($this->exactly(2))
             ->method('get')
             ->withConsecutive(['cache_url', false], ['cache_url'])
             ->willReturn('mongodb://api-platform:!ChangeMe!@mongodb');
-
+        
         // Create the MetricsService instance
         $metricsService = new MetricsService(
             $this->composerServiceMock,
             $this->entityManagerMock,
             $this->parameterBagMock
         );
-
+        
         // Execute the method under test
         $metrics = $metricsService->getPlugins();
-
+        
         // Assertions
         $this->assertCount(3, $metrics);
-
+        
         $expectedMetrics = [
             [
                 'name' => 'app_plugins_count',
@@ -482,10 +496,10 @@ class MetricsServiceTest extends TestCase
                 'value' => 1,
             ],
         ];
-
+        
         $this->assertEquals($expectedMetrics, $metrics);
     }
-
+    
     /**
      * Tests the getObjects function of the metrics service.
      *
@@ -493,28 +507,28 @@ class MetricsServiceTest extends TestCase
      */
     public function testGetObjects()
     {
-
+        
         // Set up test data
         $uuid1 = Uuid::uuid4();
         $uuid2 = Uuid::uuid4();
-
+        
         $jsonCollectionMock = $this->createMock(Collection::class);
         $jsonCollectionMock->expects($this->exactly(3))
             ->method('count')
             ->withConsecutive([], [['_self.schema.id' => $uuid1]], [['_self.schema.id' => $uuid2]])
             ->willReturnOnConsecutiveCalls(10, 1, 1);
-
+        
         $jsonDatabaseMock = $this->createMock(Database::class);
         $jsonDatabaseMock->expects($this->once())
             ->method('__get')
             ->with('json')
             ->willReturn($jsonCollectionMock);
-
+        
         $this->clientMock->expects($this->once())
             ->method('__get')
             ->with('objects')
             ->willReturn($jsonDatabaseMock);
-
+        
         $entityRepositoryMock = $this->createMock(EntityRepository::class);
         $entityRepositoryMock->expects($this->once())
             ->method('findAllSelect')
@@ -535,18 +549,18 @@ class MetricsServiceTest extends TestCase
                     'version' => '2.0.0',
                 ],
             ]);
-
+        
         $objectEntityRepositoryMock = $this->createMock(ObjectEntityRepository::class);
         $objectEntityRepositoryMock->expects($this->once())
             ->method('count')
             ->with([])
             ->willReturn(10);
-
+        
         $this->entityManagerMock->expects($this->exactly(2))
             ->method('getRepository')
             ->withConsecutive(['App:Entity'], ['App:ObjectEntity'])
             ->willReturn($entityRepositoryMock, $objectEntityRepositoryMock);
-
+        
         // Create the MetricsService instance
         $metricsService = new MetricsService(
             $this->composerServiceMock,
@@ -554,13 +568,13 @@ class MetricsServiceTest extends TestCase
             $this->parameterBagMock,
             $this->clientMock
         );
-
+        
         // Execute the method under test
         $metrics = $metricsService->getObjects();
-
+        
         // Assertions
         $this->assertCount(5, $metrics);
-
+        
         $expectedMetrics = [
             [
                 'name' => 'app_objects_count',
@@ -605,7 +619,7 @@ class MetricsServiceTest extends TestCase
                 'value' => 1,
             ],
         ];
-
+        
         $this->assertEquals($expectedMetrics, $metrics);
     }
 }
