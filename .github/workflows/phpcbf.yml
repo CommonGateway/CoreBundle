@@ -14,8 +14,8 @@ jobs:
           php-version: '8.2'
           tools: cs2pr, phpcbf
 
-      - name: Run phpcbf -vv
-        run: phpcbf .
+      - name: Run phpcbf
+        run: phpcbf . --report-diff -vvv
         continue-on-error: true
       - name: Git commit
         run: |
