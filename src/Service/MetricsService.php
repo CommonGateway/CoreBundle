@@ -125,7 +125,7 @@ class MetricsService
                 'name'  => 'app_requests',
                 // todo: should never get lower
                 'type'  => 'counter',
-                'help'  => 'The total amount of incomming requests handled by this gateway',
+                'help'  => 'The total amount of incoming requests handled by this gateway',
                 'value' => $requests,
             ],
             [

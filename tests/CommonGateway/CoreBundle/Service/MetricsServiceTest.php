@@ -271,7 +271,7 @@ class MetricsServiceTest extends TestCase
             [
                 'name' => 'app_objects_count',
                 'type' => 'gauge',
-                'help' => 'The amount of stored objects',
+                'help' => 'The amount objects in the data layer',
                 'value' => 10,
             ],
             [
@@ -576,7 +576,7 @@ class MetricsServiceTest extends TestCase
             [
                 'name' => 'app_objects_count',
                 'type' => 'gauge',
-                'help' => 'The amount of stored objects',
+                'help' => 'The amount objects in the data layer',
                 'value' => 10,
             ],
             [
