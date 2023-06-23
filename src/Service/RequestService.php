@@ -961,7 +961,9 @@ class RequestService
 
         $appEndpointConfig = [];
         foreach ($application->getConfiguration() as $applicationConfig) {
-            $appEndpointConfig = $this->getConfigInOutOrGlobal($endpointRef, $endpoint, $applicationConfig);
+            if ($appConfig = $this->getConfigInOutOrGlobal($endpointRef, $endpoint, $applicationConfig) !== []) {
+                $appEndpointConfig = $this->getConfigInOutOrGlobal($endpointRef, $endpoint, $applicationConfig);
+            }
         }
 
         return $appEndpointConfig;
