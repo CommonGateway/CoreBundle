@@ -12,16 +12,38 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Twig\Environment;
 
+/**
+ * A test case for the MappingService.
+ *
+ * @Author Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category TestCase
+ */
 class MappingServiceTest extends TestCase
 {
-    private $mappingService;
+    /**
+     * @var MappingService
+     */
+    private MappingService $mappingService;
 
+    /**
+     * Set up mock data.
+     *
+     * @return void
+     */
     protected function setUp(): void
     {
         $twigMock = $this->createMock(Environment::class);
         $this->mappingService = new MappingService($twigMock);
     }
 
+    /**
+     * Tests the encodeArrayKeys function of the MappingService.
+     *
+     * @return void
+     */
     public function testEncodeArrayKeys(): void
     {
         $array = [
@@ -44,6 +66,11 @@ class MappingServiceTest extends TestCase
         $this->assertEquals($expectedArray, $encodedArray);
     }
 
+    /**
+     * Tests the mapping function of the MappingService with casts & unsets.
+     *
+     * @return void
+     */
     public function testMapping(): void
     {
         // Mock the Mapping object
@@ -85,7 +112,7 @@ class MappingServiceTest extends TestCase
             'key6' => ['a' => 'b'],
             'key7' => [1.234, 5.678],
             'key8' => true
-            ];
+        ];
 
         $output = $this->mappingService->mapping($mappingObjectMock, $input);
 
@@ -93,6 +120,11 @@ class MappingServiceTest extends TestCase
         // Add your assertions for the output
     }
 
+    /**
+     * Tests the coordinateStringToArray function of the MappingService.
+     *
+     * @return void
+     */
     public function testCoordinateStringToArray(): void
     {
         $coordinates = '1.234 5.678 9.012';
@@ -106,6 +138,11 @@ class MappingServiceTest extends TestCase
         $this->assertEquals($expectedArray, $resultArray);
     }
 
+    /**
+     * Tests the setStyle function of the MappingService.
+     *
+     * @return void
+     */
     public function testSetStyle(): void
     {
         $result = $this->mappingService->setStyle(new SymfonyStyle(new ArrayInput(['bla' => 'bla']), new BufferedOutput()));

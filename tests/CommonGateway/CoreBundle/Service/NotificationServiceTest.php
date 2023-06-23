@@ -14,14 +14,47 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * A test case for the NotificationService.
+ *
+ * @Author Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category TestCase
+ */
 class NotificationServiceTest extends TestCase
 {
-    private $entityManager;
-    private $logger;
-    private $syncService;
-    private $resourceService;
-    private $notificationService;
+    /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
 
+    /**
+     * @var LoggerInterface
+     */
+    private LoggerInterface $logger;
+
+    /**
+     * @var SynchronizationService
+     */
+    private SynchronizationService $syncService;
+
+    /**
+     * @var GatewayResourceService
+     */
+    private GatewayResourceService $resourceService;
+
+    /**
+     * @var NotificationService
+     */
+    private NotificationService $notificationService;
+
+    /**
+     * Set up mock data.
+     *
+     * @return void
+     */
     protected function setUp(): void
     {
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
@@ -38,7 +71,7 @@ class NotificationServiceTest extends TestCase
     }
 
     /**
-     * Tests the notificationHandler with get method.
+     * Tests the notificationHandler function of the NotificationService with method = GET.
      *
      * @return void
      */
@@ -56,7 +89,7 @@ class NotificationServiceTest extends TestCase
     }
 
     /**
-     * Tests the notificationHandler with post method finding and syncing an object.
+     * Tests the notificationHandler function of the NotificationService method = POST, also finding and syncing an object.
      *
      * @return void
      */
@@ -74,7 +107,6 @@ class NotificationServiceTest extends TestCase
         $synchronization = $this->createMock(Synchronization::class);
         $source          = $this->createMock(Source::class);
         $schema          = $this->createMock(Entity::class);
-
 
         $this->resourceService->expects($this->once())
             ->method('findSourcesForUrl')
@@ -111,13 +143,12 @@ class NotificationServiceTest extends TestCase
     }
 
     /**
-     * Tests the notificationHandler resulting in an exception, returns the error response.
+     * Tests the notificationHandler function of the NotificationService resulting in an exception, returns the error response.
      *
      * @return void
      */
     public function testNotificationHandler_WithException_ReturnsErrorResponse()
     {
-        // Arrange
         // Arrange
         $data = [
             'method'      => 'POST',
@@ -127,7 +158,6 @@ class NotificationServiceTest extends TestCase
             'entity' => 'https://example.com/example.schema.json',
             'urlLocation' => 'url',
         ];
-        $synchronization = $this->createMock(Synchronization::class);
         $source          = $this->createMock(Source::class);
 
         $this->resourceService->expects($this->once())
@@ -142,7 +172,6 @@ class NotificationServiceTest extends TestCase
 
         $errorMessage = "Could not find an Entity with this reference: {$configuration['entity']}";
         $errorCode = 500;
-        $exception = new Exception($errorMessage, $errorCode);
 
         $this->logger->expects($this->once())
             ->method('error')
@@ -160,10 +189,11 @@ class NotificationServiceTest extends TestCase
     }
 
     /**
-     * Tests the findSource function without an existing source, throwing an exception.
+     * Tests the findSource function of the NotificationService without an existing source, throwing an exception.
+     *
+     * @throws Exception
      *
      * @return void
-     * @throws Exception
      */
     public function testFindSource_WithNoSource_ThrowsException()
     {
@@ -184,10 +214,11 @@ class NotificationServiceTest extends TestCase
     }
 
     /**
-     * Tests the findSource function finding multiple sources, throwing an exception.
+     * Tests the findSource function of the NotificationService finding multiple sources, throwing an exception.
+     *
+     * @throws Exception
      *
      * @return void
-     * @throws Exception
      */
     public function testFindSource_WithMultipleSources_ThrowsException()
     {
@@ -209,10 +240,11 @@ class NotificationServiceTest extends TestCase
     }
 
     /**
-     * Tests the findSource function returing a single source, returning the source.
+     * Tests the findSource function of the NotificationService returning a single source.
+     *
+     * @throws Exception
      *
      * @return void
-     * @throws Exception
      */
     public function testFindSource_WithSingleSource_ReturnsSource()
     {

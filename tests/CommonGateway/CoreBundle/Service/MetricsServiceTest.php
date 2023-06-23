@@ -1,6 +1,6 @@
 <?php
 
-namespace CommonGateway\CoreBundle\Service;
+namespace App\Tests\CommonGateway\CoreBundle\Service;
 
 use App\Repository\ApplicationRepository;
 use App\Repository\EntityRepository;
@@ -17,6 +17,15 @@ use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
+/**
+ * A test case for the MetricsService.
+ *
+ * @Author Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category TestCase
+ */
 class MetricsServiceTest extends TestCase
 {
     private $clientMock;
@@ -24,6 +33,11 @@ class MetricsServiceTest extends TestCase
     private $entityManagerMock;
     private $parameterBagMock;
 
+    /**
+     * Set up mock data.
+     *
+     * @return void
+     */
     protected function setUp(): void
     {
         $this->clientMock = $this->createMock(Client::class);
@@ -136,8 +150,6 @@ class MetricsServiceTest extends TestCase
             ->method('getRepository')
             ->withConsecutive(['App:User'], ['App:Organization'], ['App:Application'], ['App:Entity'], ['App:ObjectEntity'])
             ->willReturnOnConsecutiveCalls($userRepositoryMock, $organizationRepositoryMock, $applicationRepositoryMock, $entityRepositoryMock, $objectEntityRepositoryMock);
-
-
 
         // Create the MetricsService instance
         $metricsService = new MetricsService(
@@ -302,7 +314,6 @@ class MetricsServiceTest extends TestCase
 
         $this->assertEquals($expectedMetrics, $metrics);
     }
-
 
     /**
      * Tests the getErrors function of the metrics service.
