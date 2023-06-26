@@ -59,9 +59,9 @@ class RequestService
     private MappingService $mappingService;
 
     /**
-     * @var ValidatorService
+     * @var ValidationService
      */
-    private ValidatorService $validatorService;
+    private ValidationService $validatorService;
 
     /**
      * @var array
@@ -146,7 +146,7 @@ class RequestService
      * @param EntityManagerInterface   $entityManager
      * @param GatewayResourceService   $resourceService
      * @param MappingService           $mappingService
-     * @param ValidatorService         $validatorService
+     * @param ValidationService         $validatorService
      * @param CacheService             $cacheService
      * @param ResponseService          $responseService
      * @param ObjectEntityService      $objectEntityService
@@ -160,20 +160,20 @@ class RequestService
      * @param DownloadService          $downloadService
      */
     public function __construct(
-        EntityManagerInterface $entityManager,
-        GatewayResourceService $resourceService,
-        MappingService $mappingService,
-        ValidatorService $validatorService,
-        CacheService $cacheService,
-        ResponseService $responseService,
-        ObjectEntityService $objectEntityService,
-        LogService $logService,
-        CallService $callService,
-        Security $security,
+        EntityManagerInterface   $entityManager,
+        GatewayResourceService   $resourceService,
+        MappingService           $mappingService,
+        ValidationService        $validatorService,
+        CacheService             $cacheService,
+        ResponseService          $responseService,
+        ObjectEntityService      $objectEntityService,
+        LogService               $logService,
+        CallService              $callService,
+        Security                 $security,
         EventDispatcherInterface $eventDispatcher,
-        SerializerInterface $serializer,
-        SessionInterface $session,
-        LoggerInterface $requestLogger,
+        SerializerInterface      $serializer,
+        SessionInterface         $session,
+        LoggerInterface          $requestLogger,
         DownloadService $downloadService
     ) {
         $this->entityManager       = $entityManager;

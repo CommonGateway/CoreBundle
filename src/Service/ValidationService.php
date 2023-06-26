@@ -25,7 +25,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * @category Service
  */
-class ValidatorService
+class ValidationService
 {
 
     /**
