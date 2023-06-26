@@ -1,0 +1,99 @@
+@startuml
+title: Huwelijksplanner
+footer: Huwelijksplanner | Components
+header: Components
+
+actor "User" as user
+interface "User Interface (port 443)" as f5extern
+actor "Admin" as adminUser
+interface "Admin Interface  (port 443) " as f5intern
+
+
+cloud "Azure"{
+ [ADFS]  as identity
+}
+
+cloud "Netwerk"{
+interface "BRP (HC 1.4 / Stuf)" as brp
+interface "Facturatie (NLCIUS)" as factuur
+}
+
+
+cloud "Internet"{
+interface "Ingenico" as betalen
+}
+
+
+cloud "(Hardend) Kubernetes Namespace"{
+
+boundary "ingress" as ingress
+database loki
+database prometheus
+
+
+package "Layer 5 (interaction)" {
+package "React Container 1" {
+ [User Interface]  as ui
+}
+
+package "React Container 2" {
+ [Admin Interface]  as admin
+}
+}
+
+
+package "Layer 4 (Logic)" {
+package "NGINX Container" {
+ boundary "Nginx" as Nginx
+}
+
+package "Symfony Framework" {
+ [Huwlijksplanner Service] as hp
+ [Agenda Component] as agenda
+ [Producten Component] as producten
+ [Order Component] as order
+ [Web Gateway] as Gateway
+ [ORM] as ORM
+}
+
+package "RedisContainer" {
+ [Redis] as Redis
+}
+
+
+package "MongoDB Container" {
+ database  "MongoDB " as MognoDB
+}
+}
+
+}
+
+package "Layer 1 (data)" {
+cloud "Database Service"{
+ database  "Postgress/MsSQL/MySql/Oracle" as db
+}
+}
+
+user <..> f5extern: Browser ANONIEM/DigiD
+adminUser <..> f5intern : Browser ADFS/OAuth JWT Claim
+f5extern <..> ingress: RBAC
+f5intern <..> ingress: RBAC
+ingress <..> ui: Exposes
+ingress <..> admin: Exposes
+ingress <..> Nginx: Exposes
+Nginx  <..> Gateway: Runs
+Gateway <..> hp: Implements
+Gateway <..> agenda: Implements
+Gateway <..> order: Implements
+Gateway <..> producten: Implements
+Gateway <..> identity: Implements
+Gateway ..> loki: Logs to
+Gateway ..> prometheus: Reports to
+hp <..> brp: Get citizens
+hp <..> factuur: Log results
+hp <..> betalen: Get payment link
+Gateway ..> MognoDB: Index
+Gateway ..> Redis: Cache
+Gateway ..> ORM: Store
+ORM  ..> db: Persist
+@enduml
