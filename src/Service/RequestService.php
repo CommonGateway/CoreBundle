@@ -12,6 +12,7 @@ use App\Event\ActionEvent;
 use App\Service\LogService;
 use App\Service\ObjectEntityService;
 use App\Service\ResponseService;
+use App\Service\ValidatorService;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -57,6 +58,11 @@ class RequestService
      * @var MappingService
      */
     private MappingService $mappingService;
+    
+    /**
+     * @var ValidatorService
+     */
+    private ValidatorService $validatorService;
 
     /**
      * @var array
@@ -141,6 +147,7 @@ class RequestService
      * @param EntityManagerInterface   $entityManager
      * @param GatewayResourceService   $resourceService
      * @param MappingService           $mappingService
+     * @param ValidatorService         $validatorService
      * @param CacheService             $cacheService
      * @param ResponseService          $responseService
      * @param ObjectEntityService      $objectEntityService
@@ -157,6 +164,7 @@ class RequestService
         EntityManagerInterface $entityManager,
         GatewayResourceService $resourceService,
         MappingService $mappingService,
+        ValidatorService $validatorService,
         CacheService $cacheService,
         ResponseService $responseService,
         ObjectEntityService $objectEntityService,
@@ -173,6 +181,7 @@ class RequestService
         $this->cacheService        = $cacheService;
         $this->resourceService     = $resourceService;
         $this->mappingService      = $mappingService;
+        $this->validatorService    = $validatorService;
         $this->responseService     = $responseService;
         $this->objectEntityService = $objectEntityService;
         $this->logService          = $logService;
@@ -709,7 +718,8 @@ class RequestService
 
             $this->logger->debug('Hydrating object');
             // if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
-            if ($this->object->hydrate($this->content, true)) {
+            $validationErrors = $this->validatorService->validateData($this->content, $this->schema, 'POST');
+            if ($validationErrors === null && $this->object->hydrate($this->content, true)) {
                 if ($this->schema->getPersist() === true) {
                     $this->entityManager->persist($this->object);
                     $this->entityManager->flush();
@@ -723,8 +733,9 @@ class RequestService
                     // @todo this is hacky, the above should already do this
                     $this->cacheService->cacheObject($this->object);
                 }
-            } else {
-                // Use validation to throw an error.
+            } elseif ($validationErrors !== null) {
+                $result = $validationErrors; // todo: better error response and use correct http status code 404!
+                break;
             }
 
             $result = $this->cacheService->getObject($this->object->getId()->toString());
