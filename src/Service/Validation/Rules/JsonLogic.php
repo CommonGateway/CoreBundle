@@ -8,7 +8,8 @@ use Respect\Validation\Rules\AbstractRule;
 
 final class JsonLogic extends AbstractRule
 {
-    //todo getter setter
+    // todo getter setter
+
     /**
      * @var mixed
      */
@@ -20,7 +21,8 @@ final class JsonLogic extends AbstractRule
     public function __construct($jsonLogic)
     {
         $this->jsonLogic = $jsonLogic;
-    }
+
+    }//end __construct()
 
     /**
      * @inheritDoc
@@ -33,14 +35,16 @@ final class JsonLogic extends AbstractRule
             // todo, what if we can't cast $input to string? maybe use try catch?
             $this->jsonLogic = str_replace('{{input}}', (string) $input, $this->jsonLogic);
             $this->jsonLogic = json_decode($this->jsonLogic, true);
-            $input = null;
+            $input           = null;
         }
+
         if (is_array($this->jsonLogic) && jsonLogicLib::apply($this->jsonLogic, $input)) {
             return true;
         }
 
         return false;
-    }
+
+    }//end validate()
 
     /*
      * examples of how to use this Rule:
@@ -60,4 +64,4 @@ final class JsonLogic extends AbstractRule
      *   "int": 11
      * }
      */
-}
+}//end class

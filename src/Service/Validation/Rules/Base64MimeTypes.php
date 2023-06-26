@@ -8,6 +8,7 @@ use Respect\Validation\Validatable;
 
 final class Base64MimeTypes extends AbstractRule
 {
+
     /**
      * @var array
      */
@@ -28,7 +29,8 @@ final class Base64MimeTypes extends AbstractRule
     public function __construct(array $allowedTypes)
     {
         $this->allowedTypes = $allowedTypes;
-    }
+
+    }//end __construct()
 
     /**
      * @inheritDoc
@@ -36,15 +38,14 @@ final class Base64MimeTypes extends AbstractRule
     public function validate($input): bool
     {
         // todo: we could just move and merge all validations from here to the Base64String rule?
-
         // Get base64 from this input string
         $exploded_input = explode(',', $input);
-        $base64 = end($exploded_input);
+        $base64         = end($exploded_input);
 
         try {
             // Use the base64 to open a file and get the mimeType
             $fileData = base64_decode($base64);
-            $f = finfo_open();
+            $f        = finfo_open();
             $mimeType = finfo_buffer($f, $fileData, FILEINFO_MIME_TYPE);
             finfo_close($f);
         } catch (Exception $exception) {
@@ -54,7 +55,8 @@ final class Base64MimeTypes extends AbstractRule
         }
 
         return in_array($mimeType, $this->allowedTypes);
-    }
+
+    }//end validate()
 
     /**
      * @return array|null
@@ -62,7 +64,8 @@ final class Base64MimeTypes extends AbstractRule
     public function getAllowedTypes(): ?array
     {
         return $this->allowedTypes;
-    }
+
+    }//end getAllowedTypes()
 
     /**
      * @param array $allowedTypes
@@ -74,7 +77,8 @@ final class Base64MimeTypes extends AbstractRule
         $this->allowedTypes = $allowedTypes;
 
         return $this;
-    }
+
+    }//end setAllowedTypes()
 
     /**
      * @return string|null
@@ -82,7 +86,8 @@ final class Base64MimeTypes extends AbstractRule
     public function getExceptionMessage(): ?string
     {
         return $this->exceptionMessage;
-    }
+
+    }//end getExceptionMessage()
 
     /**
      * @param string $exceptionMessage
@@ -94,5 +99,6 @@ final class Base64MimeTypes extends AbstractRule
         $this->exceptionMessage = $exceptionMessage;
 
         return $this;
-    }
-}
+
+    }//end setExceptionMessage()
+}//end class

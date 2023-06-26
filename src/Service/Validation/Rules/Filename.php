@@ -7,7 +7,8 @@ use Respect\Validation\Validator;
 
 final class Filename extends AbstractRule
 {
-    //todo getter setter
+    // todo getter setter
+
     /**
      * @var string
      */
@@ -17,21 +18,24 @@ final class Filename extends AbstractRule
      * @param string|null $regex
      */
     public function __construct(?string $regex = '/^[\w,\s()~!@#$%^&*_+\-=\[\]{};\'.]{1,255}\.[A-Za-z0-9]{1,5}$/')
-//    public function __construct(?string $regex = '/^[^\\/:*?\"<>|]{1,255}\.[A-Za-z0-9]{1,5}$/') #todo:
+    // public function __construct(?string $regex = '/^[^\\/:*?\"<>|]{1,255}\.[A-Za-z0-9]{1,5}$/') #todo:
     {
         $this->regex = $regex;
-    }
+
+    }//end __construct()
 
     /**
      * @inheritDoc
      */
     public function validate($input): bool
     {
-        if (Validator::stringType()->validate($input) &&
-            Validator::regex($this->regex)->validate($input)) {
+        if (Validator::stringType()->validate($input)
+            && Validator::regex($this->regex)->validate($input)
+        ) {
             return true;
         }
 
         return false;
-    }
-}
+
+    }//end validate()
+}//end class

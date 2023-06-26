@@ -7,6 +7,7 @@ use Respect\Validation\Validatable;
 
 final class Base64Extension extends AbstractRule
 {
+
     /**
      * @var string|null
      */
@@ -26,9 +27,9 @@ final class Base64Extension extends AbstractRule
         if ($extension = array_key_exists('filename', $input) ? pathinfo($input['filename'], PATHINFO_EXTENSION) : null) {
             // Get mime_type from base64
             $explode_base64 = explode(',', $input['base64']);
-            $imgdata = base64_decode(end($explode_base64));
-            $f = finfo_open();
-            $mime_type = finfo_buffer($f, $imgdata, FILEINFO_MIME_TYPE);
+            $imgdata        = base64_decode(end($explode_base64));
+            $f              = finfo_open();
+            $mime_type      = finfo_buffer($f, $imgdata, FILEINFO_MIME_TYPE);
             finfo_close($f);
 
             // Validate if mime type and extension match
@@ -41,12 +42,13 @@ final class Base64Extension extends AbstractRule
         }
 
         return true;
-    }
+
+    }//end validate()
 
     /**
      * Converts a mime type to an extension (or find all mime_types with an extension).
      *
-     * @param      $mime
+     * @param $mime
      * @param null $ext
      *
      * @return array|false|string
@@ -252,7 +254,8 @@ final class Base64Extension extends AbstractRule
         }
 
         return $mime_map[$mime] ?? false;
-    }
+
+    }//end mimeToExt()
 
     /**
      * @return string|null
@@ -260,7 +263,8 @@ final class Base64Extension extends AbstractRule
     public function getExtension(): ?string
     {
         return $this->extension;
-    }
+
+    }//end getExtension()
 
     /**
      * @param string $extension
@@ -272,7 +276,8 @@ final class Base64Extension extends AbstractRule
         $this->extension = $extension;
 
         return $this;
-    }
+
+    }//end setExtension()
 
     /**
      * @return string|null
@@ -280,7 +285,8 @@ final class Base64Extension extends AbstractRule
     public function getMimeType(): ?string
     {
         return $this->mime_type;
-    }
+
+    }//end getMimeType()
 
     /**
      * @param string $mime_type
@@ -292,5 +298,6 @@ final class Base64Extension extends AbstractRule
         $this->mime_type = $mime_type;
 
         return $this;
-    }
-}
+
+    }//end setMimeType()
+}//end class

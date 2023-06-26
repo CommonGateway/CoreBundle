@@ -20,13 +20,14 @@ final class DutchPostalcode extends AbstractRule
         }
 
         return false;
-    }
+
+    }//end validate()
 
     private function getDutchPC4List(): array
     {
         $file = fopen(dirname(__FILE__).'../../../csv/dutch_pc4.csv', 'r');
 
-        $i = 0;
+        $i            = 0;
         $dutchPc4List = [];
         while (!feof($file)) {
             $line = fgetcsv($file);
@@ -34,12 +35,15 @@ final class DutchPostalcode extends AbstractRule
                 $i++;
                 continue;
             }
+
             if (isset($line[1])) {
                 $dutchPc4List[] = $line[1];
             }
+
             $i++;
         }
 
         return $dutchPc4List;
-    }
-}
+
+    }//end getDutchPC4List()
+}//end class

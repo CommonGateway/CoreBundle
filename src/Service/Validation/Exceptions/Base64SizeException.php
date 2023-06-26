@@ -6,15 +6,15 @@ use Respect\Validation\Exceptions\NestedValidationException;
 
 final class Base64SizeException extends NestedValidationException
 {
-    public const BOTH = 'both';
-    public const LOWER = 'lower';
+    public const BOTH    = 'both';
+    public const LOWER   = 'lower';
     public const GREATER = 'greater';
 
     /**
      * {@inheritDoc}
      */
     protected $defaultTemplates = [
-        self::MODE_DEFAULT => [
+        self::MODE_DEFAULT  => [
             self::BOTH    => '{{name}} must be a file size between {{minSize}} bytes and {{maxSize}} bytes',
             self::LOWER   => '{{name}} is to small, file size must be greater than {{minSize}} bytes',
             self::GREATER => '{{name}} is to big, file size must be lower than {{maxSize}} bytes',
@@ -40,5 +40,6 @@ final class Base64SizeException extends NestedValidationException
         }
 
         return self::BOTH;
-    }
-}
+
+    }//end chooseTemplate()
+}//end class

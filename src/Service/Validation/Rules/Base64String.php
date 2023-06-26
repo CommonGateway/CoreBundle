@@ -9,6 +9,7 @@ use Respect\Validation\Validator;
 
 final class Base64String extends AbstractRule
 {
+
     /**
      * Used for Base64StringException.
      *
@@ -22,7 +23,6 @@ final class Base64String extends AbstractRule
     public function validate($input): bool
     {
         // todo: split code in this function into multiple subFunctions
-
         // Example of a (full length) base64 string: data:text/plain;base64,ZGl0IGlzIGVlbiB0ZXN0IGRvY3VtZW50
         // Make sure we have a string as input
         if (!Validator::stringType()->validate($input)) {
@@ -33,7 +33,7 @@ final class Base64String extends AbstractRule
 
         // Get base64 from this input string and validate it
         $exploded_input = explode(',', $input);
-        $base64 = end($exploded_input);
+        $base64         = end($exploded_input);
         if (!Validator::base64()->validate($base64)) {
             $this->setExceptionMessage('This is not a valid base64.');
 
@@ -43,8 +43,8 @@ final class Base64String extends AbstractRule
         // Get mimeType using the base64 to open a file and compare it with the mimeType from the base64 input string
         try {
             // Use the base64 to open a file and get the mimeType
-            $fileData = base64_decode($base64);
-            $f = finfo_open();
+            $fileData  = base64_decode($base64);
+            $f         = finfo_open();
             $mimeType1 = finfo_buffer($f, $fileData, FILEINFO_MIME_TYPE);
             finfo_close($f);
         } catch (Exception $exception) {
@@ -73,7 +73,8 @@ final class Base64String extends AbstractRule
         }
 
         return true;
-    }
+
+    }//end validate()
 
     /**
      * @return string|null
@@ -81,7 +82,8 @@ final class Base64String extends AbstractRule
     public function getExceptionMessage(): ?string
     {
         return $this->exceptionMessage;
-    }
+
+    }//end getExceptionMessage()
 
     /**
      * @param string $exceptionMessage
@@ -93,5 +95,6 @@ final class Base64String extends AbstractRule
         $this->exceptionMessage = $exceptionMessage;
 
         return $this;
-    }
-}
+
+    }//end setExceptionMessage()
+}//end class

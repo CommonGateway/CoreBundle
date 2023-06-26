@@ -27,10 +27,13 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ValidatorService
 {
-    public CacheInterface $cache;
-    private string $method;
-    private array $maxDepth; // todo: find a better way to do this?
 
+    public CacheInterface $cache;
+
+    private string $method;
+
+    private array $maxDepth;
+    // todo: find a better way to do this?
     public function __construct(
         CacheInterface $cache
     ) {
@@ -40,7 +43,8 @@ class ValidatorService
                 ->withRuleNamespace('App\Service\Validation\Rules')
                 ->withExceptionNamespace('App\Service\Validation\Exceptions')
         );
-    }
+
+    }//end __construct()
 
     /**
      * Validates an array with data using the Validator for the given Entity.
@@ -71,23 +75,25 @@ class ValidatorService
                 ]
             );
         }
-        $this->method = $method; // This is used for the immutable and unsetable Rules later in addAttributeValidators().
+
+        $this->method = $method;
+        // This is used for the immutable and unsetable Rules later in addAttributeValidators().
         $validator = $this->getEntityValidator($entity);
 
         // TODO: what if we have fields in $data that do not exist on this Entity?
-
         try {
             $validator->assert($data);
         } catch (NestedValidationException $exception) {
             return $exception->getMessages();
         }
-    }
+
+    }//end validateData()
 
     /**
      * Gets a Validator for the given Entity, uses caching.
      *
      * @param Entity $entity
-     * @param int $level
+     * @param int    $level
      *
      * @throws CacheException|ComponentException|GatewayException|InvalidArgumentException
      *
@@ -97,14 +103,16 @@ class ValidatorService
     {
         // Max Depth, todo: find a better way to do this? something like depth level instead of this...
         if (in_array($entity->getId()->toString(), $this->maxDepth)) {
-            return new Validator(); // todo: make it so that if we reach max depth we throw an error if input is provided.
+            return new Validator();
+            // todo: make it so that if we reach max depth we throw an error if input is provided.
         }
+
         $this->maxDepth[] = $entity->getId()->toString();
 
         // Try and get a validator for this Entity(+method) from cache.
         $item = $this->cache->getItem('entityValidators_'.$entity->getId()->toString().'_'.$this->method);
         if ($item->isHit()) {
-//            return $item->get(); // TODO: put this back so that we use caching, after https://conduction.atlassian.net/browse/GW-183 is fixed.
+            // return $item->get(); // TODO: put this back so that we use caching, after https://conduction.atlassian.net/browse/GW-183 is fixed.
         }
 
         // No Validator found in cache for this Entity(+method), so create a new Validator and cache that.
@@ -112,13 +120,15 @@ class ValidatorService
         $validator = $this->addAttributeValidators($entity, $validator, $level);
 
         $item->set($validator);
-        $item->tag('entityValidator'); // Tag for all Entity Validators
-        $item->tag('entityValidator_'.$entity->getId()->toString()); // Tag for the Validators of this specific Entity.
-
+        $item->tag('entityValidator');
+        // Tag for all Entity Validators
+        $item->tag('entityValidator_'.$entity->getId()->toString());
+        // Tag for the Validators of this specific Entity.
         $this->cache->save($item);
 
         return $validator;
-    }
+
+    }//end getEntityValidator()
 
     /**
      * Adds Attribute Validators to an Entity Validator.
@@ -140,12 +150,14 @@ class ValidatorService
                 // Skip any other validations
                 continue;
             }
+
             if ($this->method == 'POST' && isset($attribute->getValidations()['unsetable']) && $attribute->getValidations()['unsetable']) {
                 // If unsetable this attribute should not be present when doing a POST.
                 $validator->addRule(new Rules\Not(new Rules\Key($attribute->getName())));
                 // Skip any other validations
                 continue;
             }
+
             if (isset($attribute->getValidations()['readOnly']) && $attribute->getValidations()['readOnly']) {
                 // If readOnly this attribute should not be present.
                 $validator->addRule(new Rules\Not(new Rules\Key($attribute->getName())));
@@ -159,15 +171,19 @@ class ValidatorService
             // If we need to check conditionals the $conditionals Rule above will do so in this When Rule below.
             $validator->addRule(
                 new Rules\When(
-                    $conditionals, // IF (the $conditionals Rule does not return any exceptions)
-                    $this->checkIfAttRequired($attribute, $level), // TRUE (continue with the required rule, incl inversedBy check)
-                    $conditionals // FALSE (return exception message from $conditionals Rule)
+                    $conditionals,
+                    // IF (the $conditionals Rule does not return any exceptions)
+                    $this->checkIfAttRequired($attribute, $level),
+                    // TRUE (continue with the required rule, incl inversedBy check)
+                    $conditionals
+                    // FALSE (return exception message from $conditionals Rule)
                 )
             );
-        }
+        }//end foreach
 
         return $validator;
-    }
+
+    }//end addAttributeValidators()
 
     /**
      * Returns an AllOf Rule with all conditional Rules for the given Attribute.
@@ -180,23 +196,31 @@ class ValidatorService
      */
     private function getConditionalsRule(Attribute $attribute): Rules\AllOf
     {
-        $requiredIf = new Rules\AlwaysValid(); // <- If (JsonLogic for) requiredIf isn't set
+        $requiredIf = new Rules\AlwaysValid();
+        // <- If (JsonLogic for) requiredIf isn't set
         if (isset($attribute->getValidations()['requiredIf']) && $attribute->getValidations()['requiredIf']) {
             // todo: this works but doesn't give a nice and clear error response why the rule is broken. ("x must be present")
             $requiredIf = new Rules\When(
-                new CustomRules\JsonLogic($attribute->getValidations()['requiredIf']), // IF (the requiredIf JsonLogic finds a match / is true)
-                new Rules\Key($attribute->getName()), // TRUE (attribute is required)
-                new Rules\AlwaysValid() // FALSE
+                new CustomRules\JsonLogic($attribute->getValidations()['requiredIf']),
+                // IF (the requiredIf JsonLogic finds a match / is true)
+                new Rules\Key($attribute->getName()),
+                // TRUE (attribute is required)
+                new Rules\AlwaysValid()
+                // FALSE
             );
         }
 
-        $forbiddenIf = new Rules\AlwaysValid(); // <- If JsonLogic for forbiddenIf isn't set
+        $forbiddenIf = new Rules\AlwaysValid();
+        // <- If JsonLogic for forbiddenIf isn't set
         if (isset($attribute->getValidations()['forbiddenIf']) && $attribute->getValidations()['forbiddenIf']) {
             // todo: this works but doesn't give a nice and clear error response why the rule is broken. ("x must not be present")
             $forbiddenIf = new Rules\When(
-                new CustomRules\JsonLogic($attribute->getValidations()['forbiddenIf']), // IF (the requiredIf JsonLogic finds a match / is true)
-                new Rules\Not(new Rules\Key($attribute->getName())), // TRUE (attribute should not be present)
-                new Rules\AlwaysValid() // FALSE
+                new CustomRules\JsonLogic($attribute->getValidations()['forbiddenIf']),
+                // IF (the requiredIf JsonLogic finds a match / is true)
+                new Rules\Not(new Rules\Key($attribute->getName())),
+                // TRUE (attribute should not be present)
+                new Rules\AlwaysValid()
+                // FALSE
             );
         }
 
@@ -205,7 +229,8 @@ class ValidatorService
             $requiredIf,
             $forbiddenIf
         );
-    }
+
+    }//end getConditionalsRule()
 
     /**
      * This function helps determine if we might want to skip the required check because of inversedBy.
@@ -216,15 +241,17 @@ class ValidatorService
      */
     private function checkInversedBy(Attribute $attribute): bool
     {
-        if ($attribute->getType() == 'object' &&
-            $attribute->getObject() &&
-            $attribute->getInversedBy()
-            && $attribute->getInversedBy()->getEntity() === $attribute->getObject()) {
+        if ($attribute->getType() == 'object'
+            && $attribute->getObject()
+            && $attribute->getInversedBy()
+            && $attribute->getInversedBy()->getEntity() === $attribute->getObject()
+        ) {
             return true;
         }
 
         return false;
-    }
+
+    }//end checkInversedBy()
 
     /**
      * Returns a Rule that makes sure an Attribute is present if it is required. Continues with the 'normal' / other Attribute validations after that.
@@ -244,34 +271,37 @@ class ValidatorService
             return new Rules\Key(
                 $attribute->getName(),
                 $this->getAttributeValidator($attribute, $level),
-                false // mandatory = required validation. False = not required.
+                false
+                // mandatory = required validation. False = not required.
             );
 
             // todo: JsonLogic needs to be able to check parent attributes/entities in the request body for this to work:
-            //            // Make sure we only make this attribute required if it is not getting auto connected because of inversedBy
-            //            // We can do this by checking if the Attribute->getInversedBy attribute is already present in the body.
-            //            return new Rules\When(
-            //                new CustomRules\JsonLogic(["var" => $attribute->getInversedBy()->getName()]), // IF
-            //                new Rules\Key(
-            //                    $attribute->getName(),
-            //                    $this->getAttributeValidator($attribute),
-            //                    false // mandatory = required validation. False = not required.
-            //                ), // TRUE
-            //                new Rules\Key(
-            //                    $attribute->getName(),
-            //                    $this->getAttributeValidator($attribute),
-            //                    true // mandatory = required validation. True = required.
-            //                ) // FALSE
-            //            );
-        }
+            // Make sure we only make this attribute required if it is not getting auto connected because of inversedBy
+            // We can do this by checking if the Attribute->getInversedBy attribute is already present in the body.
+            // return new Rules\When(
+            // new CustomRules\JsonLogic(["var" => $attribute->getInversedBy()->getName()]), // IF
+            // new Rules\Key(
+            // $attribute->getName(),
+            // $this->getAttributeValidator($attribute),
+            // false // mandatory = required validation. False = not required.
+            // ), // TRUE
+            // new Rules\Key(
+            // $attribute->getName(),
+            // $this->getAttributeValidator($attribute),
+            // true // mandatory = required validation. True = required.
+            // ) // FALSE
+            // );
+        }//end if
 
         // Else, continue with the 'normal' required validation.
         return new Rules\Key(
             $attribute->getName(),
             $this->getAttributeValidator($attribute, $level),
-            isset($attribute->getValidations()['required']) && $attribute->getValidations()['required'] === true // mandatory = required validation.
+            isset($attribute->getValidations()['required']) && $attribute->getValidations()['required'] === true
+            // mandatory = required validation.
         );
-    }
+
+    }//end checkIfAttRequired()
 
     /**
      * Gets a Validator for the given Attribute. This function is the point from where we start validating the actual value of an Attribute.
@@ -288,7 +318,8 @@ class ValidatorService
         $attributeValidator = new Validator();
 
         return $attributeValidator->addRule($this->checkIfAttNullable($attribute, $level));
-    }
+
+    }//end getAttributeValidator()
 
     /**
      * Checks if the attribute is nullable and adds the correct Rules for this if needed.
@@ -309,7 +340,8 @@ class ValidatorService
         }
 
         return $this->checkIfAttMultiple($attribute, $level);
-    }
+
+    }//end checkIfAttNullable()
 
     /**
      * Checks if the attribute is an array (multiple) and adds the correct Rules for this if needed.
@@ -330,7 +362,6 @@ class ValidatorService
         // Check if this attribute should be an array
         if (isset($attribute->getValidations()['multiple']) && $attribute->getValidations()['multiple'] === true) {
             // TODO: When we get a validation error we somehow need to get the index of that object in the array for in the error data...
-
             $multipleValidator = new Validator();
             $multipleValidator->addRule(new Rules\Each($attributeRulesValidator));
             if (isset($attribute->getValidations()['uniqueItems']) && $attribute->getValidations()['uniqueItems'] === true) {
@@ -341,7 +372,8 @@ class ValidatorService
         }
 
         return $attributeRulesValidator;
-    }
+
+    }//end checkIfAttMultiple()
 
     /**
      * Gets a Validator for the type of the given Attribute. (And format and other validations if type validation is true).
@@ -364,14 +396,18 @@ class ValidatorService
         // If attribute type is correct continue validation of attribute format
         $attributeTypeValidator->addRule(
             new Rules\When(
-                $attTypeRule, // IF
-                $this->getAttFormatValidator($attribute), // TRUE
-                $attTypeRule // FALSE
+                $attTypeRule,
+                // IF
+                $this->getAttFormatValidator($attribute),
+                // TRUE
+                $attTypeRule
+                // FALSE
             )
         );
 
         return $attributeTypeValidator;
-    }
+
+    }//end getAttTypeValidator()
 
     /**
      * Gets a Validator for the format of the given Attribute. (And other validations if format validation is true).
@@ -393,14 +429,18 @@ class ValidatorService
         // If attribute format is correct continue validation of other validationRules
         $attributeFormatValidator->addRule(
             new Rules\When(
-                $attFormatRule, // IF
-                $this->getAttValidationRulesValidator($attribute), // TRUE
-                $attFormatRule // FALSE
+                $attFormatRule,
+                // IF
+                $this->getAttValidationRulesValidator($attribute),
+                // TRUE
+                $attFormatRule
+                // FALSE
             )
         );
 
         return $attributeFormatValidator;
-    }
+
+    }//end getAttFormatValidator()
 
     /**
      * Gets the correct Rule(s) for the type of the given Attribute.
@@ -415,56 +455,57 @@ class ValidatorService
     private function getAttTypeRule(Attribute $attribute, int $level): Rules\AbstractRule
     {
         switch ($attribute->getType()) {
-            case 'string':
-            case 'text':
-                return new Rules\StringType();
-            case 'integer':
-            case 'int':
-                return new Rules\IntType();
-            case 'float':
-                return new Rules\FloatType();
-            case 'number':
-                return new Rules\Number();
-            case 'date':
-                return new Rules\OneOf(
-                    new Rules\Date('d-m-Y'),
-                    new Rules\Date('Y-m-d'),
-                );
-            case 'datetime':
-                // todo: make a custom rule that checks if we can do new DateTime() with the input value to allow multiple formats?
-                // default format for Rules\DateTime = 'c' = ISO standard -> Y-m-dTH:i:s+timezone(00:00)
-                return new Rules\OneOf(
-                    new Rules\DateTime('d-m-Y'),
-                    new Rules\DateTime('d-m-Y H:i:s'),
-                    new Rules\DateTime('d-m-YTH:i:s'),
-                    new Rules\DateTime('Y-m-d'),
-                    new Rules\DateTime('Y-m-d H:i:s'),
-                    new Rules\DateTime('Y-m-dTH:i:s'),
-                    new Rules\DateTime('Y-m-d\TH:i:s'),
-                    new Rules\DateTime('Y-m-d\U\T\CH:i:s'),
-                );
-            case 'array':
-                return new Rules\ArrayType();
-            case 'boolean':
-            case 'bool':
-                return new Rules\BoolType();
-            case 'file':
-                return new CustomRules\Base64File();
-            case 'object':
-                return $this->getObjectValidator($attribute, $level);
-            default:
-                throw new GatewayException(
-                    'Unknown attribute type.',
-                    null,
-                    null,
-                    [
-                        'data'         => $attribute->getType(),
-                        'path'         => $attribute->getEntity()->getName().'.'.$attribute->getName(),
-                        'responseType' => Response::HTTP_BAD_REQUEST,
-                    ]
-                );
-        }
-    }
+        case 'string':
+        case 'text':
+            return new Rules\StringType();
+        case 'integer':
+        case 'int':
+            return new Rules\IntType();
+        case 'float':
+            return new Rules\FloatType();
+        case 'number':
+            return new Rules\Number();
+        case 'date':
+            return new Rules\OneOf(
+                new Rules\Date('d-m-Y'),
+                new Rules\Date('Y-m-d'),
+            );
+        case 'datetime':
+            // todo: make a custom rule that checks if we can do new DateTime() with the input value to allow multiple formats?
+            // default format for Rules\DateTime = 'c' = ISO standard -> Y-m-dTH:i:s+timezone(00:00)
+            return new Rules\OneOf(
+                new Rules\DateTime('d-m-Y'),
+                new Rules\DateTime('d-m-Y H:i:s'),
+                new Rules\DateTime('d-m-YTH:i:s'),
+                new Rules\DateTime('Y-m-d'),
+                new Rules\DateTime('Y-m-d H:i:s'),
+                new Rules\DateTime('Y-m-dTH:i:s'),
+                new Rules\DateTime('Y-m-d\TH:i:s'),
+                new Rules\DateTime('Y-m-d\U\T\CH:i:s'),
+            );
+        case 'array':
+            return new Rules\ArrayType();
+        case 'boolean':
+        case 'bool':
+            return new Rules\BoolType();
+        case 'file':
+            return new CustomRules\Base64File();
+        case 'object':
+            return $this->getObjectValidator($attribute, $level);
+        default:
+            throw new GatewayException(
+                'Unknown attribute type.',
+                null,
+                null,
+                [
+                    'data'         => $attribute->getType(),
+                    'path'         => $attribute->getEntity()->getName().'.'.$attribute->getName(),
+                    'responseType' => Response::HTTP_BAD_REQUEST,
+                ]
+            );
+        }//end switch
+
+    }//end getAttTypeRule()
 
     /**
      * Gets a Validator for the object of the given Attribute with type = 'object'.
@@ -489,25 +530,31 @@ class ValidatorService
         // Validate for cascading
         if (isset($attribute->getValidations()['cascade']) && $attribute->getValidations()['cascade'] === true) {
             // Array or Uuid
-            $objectValidator->addRule(new Rules\OneOf(
-                new Rules\ArrayType(),
-                new Rules\Uuid()
-            ));
+            $objectValidator->addRule(
+                new Rules\OneOf(
+                    new Rules\ArrayType(),
+                    new Rules\Uuid()
+                )
+            );
             // If we are allowed to cascade and the input is an array, validate the input array for the Attribute->object Entity
             $objectValidator->addRule(
                 new Rules\When(
-                    new Rules\ArrayType(), // IF
-                    $this->getEntityValidator($attribute->getObject(), $level + 1), // TRUE
-                    new Rules\AlwaysValid() // FALSE
+                    new Rules\ArrayType(),
+                    // IF
+                    $this->getEntityValidator($attribute->getObject(), ($level + 1)),
+                    // TRUE
+                    new Rules\AlwaysValid()
+                    // FALSE
                 )
             );
         } else {
             // Uuid
             $objectValidator->addRule(new Rules\Uuid());
-        }
+        }//end if
 
         return $objectValidator;
-    }
+
+    }//end getObjectValidator()
 
     /**
      * Gets the correct Rule for the format of the given Attribute. If attribute has no format this will return alwaysValid.
@@ -526,57 +573,58 @@ class ValidatorService
         $format = str_replace(['telephone'], ['phone'], $format);
 
         switch ($format) {
-            case 'countryCode':
-                return new Rules\CountryCode();
-            case 'bsn':
-                return new Rules\Bsn();
-            case 'rsin':
-                return new CustomRules\Rsin();
-            case 'url':
-                return new Rules\Url();
-            case 'uuid':
-                return new Rules\Uuid();
-            case 'email':
-                return new Rules\Email();
-            case 'phone':
-                return new Rules\Phone();
-            case 'json':
-                return new Rules\Json();
-            case 'dutch_pc4':
-                return new CustomRules\DutchPostalcode();
-            case 'date':
-                // For now..
-            case 'duration':
-                // For now..
-            case 'uri':
-                // For now..
-            case 'int64':
-                // For now..
-            case 'byte':
-                // For now..
-            case 'urn':
-                // For now..
-            case 'reverse-dns':
-                // For now..
-            case 'Y-m-d\TH:i:s':
-            case 'Y-m-d':
-                // For now..
-            case null:
-                // If attribute has no format return alwaysValid
-                return new Rules\AlwaysValid();
-            default:
-                throw new GatewayException(
-                    'Unknown attribute format.',
-                    null,
-                    null,
-                    [
-                        'data'         => $format,
-                        'path'         => $attribute->getEntity()->getName().'.'.$attribute->getName(),
-                        'responseType' => Response::HTTP_BAD_REQUEST,
-                    ]
-                );
-        }
-    }
+        case 'countryCode':
+            return new Rules\CountryCode();
+        case 'bsn':
+            return new Rules\Bsn();
+        case 'rsin':
+            return new CustomRules\Rsin();
+        case 'url':
+            return new Rules\Url();
+        case 'uuid':
+            return new Rules\Uuid();
+        case 'email':
+            return new Rules\Email();
+        case 'phone':
+            return new Rules\Phone();
+        case 'json':
+            return new Rules\Json();
+        case 'dutch_pc4':
+            return new CustomRules\DutchPostalcode();
+        case 'date':
+            // For now..
+        case 'duration':
+            // For now..
+        case 'uri':
+            // For now..
+        case 'int64':
+            // For now..
+        case 'byte':
+            // For now..
+        case 'urn':
+            // For now..
+        case 'reverse-dns':
+            // For now..
+        case 'Y-m-d\TH:i:s':
+        case 'Y-m-d':
+            // For now..
+        case null:
+            // If attribute has no format return alwaysValid
+            return new Rules\AlwaysValid();
+        default:
+            throw new GatewayException(
+                'Unknown attribute format.',
+                null,
+                null,
+                [
+                    'data'         => $format,
+                    'path'         => $attribute->getEntity()->getName().'.'.$attribute->getName(),
+                    'responseType' => Response::HTTP_BAD_REQUEST,
+                ]
+            );
+        }//end switch
+
+    }//end getAttFormatRule()
 
     /**
      * Gets a Validator with the correct Rules for (almost) all the validations of the given Attribute.
@@ -594,26 +642,42 @@ class ValidatorService
         foreach ($attribute->getValidations() as $validation => $config) {
             // if we have no config or validation config == false continue without adding a new Rule.
             // And $ignoredValidations here are not done through this getValidationRule function, but somewhere else!
-            $ignoredValidations = ['required', 'nullable', 'multiple', 'uniqueItems', 'requiredIf', 'forbiddenIf', 'cascade', 'immutable', 'unsetable', 'defaultValue'];
+            $ignoredValidations = [
+                'required',
+                'nullable',
+                'multiple',
+                'uniqueItems',
+                'requiredIf',
+                'forbiddenIf',
+                'cascade',
+                'immutable',
+                'unsetable',
+                'defaultValue',
+            ];
             // todo: instead of this^ array we could also add these options to the switch in the getValidationRule function but return the AlwaysValid rule?
             // And $todoValidations here are not done yet anywhere, they still need to be added somewhere!
             // todo: ^^^
-            $todoValidations = ['mustBeUnique', 'pattern'];
+            $todoValidations = [
+                'mustBeUnique',
+                'pattern',
+            ];
             if (empty($config) || in_array($validation, $ignoredValidations) || in_array($validation, $todoValidations)) {
                 continue;
             }
+
             $validationRulesValidator->AddRule($this->getValidationRule($attribute, $validation, $config));
-        }
+        }//end foreach
 
         return $validationRulesValidator;
-    }
+
+    }//end getAttValidationRulesValidator()
 
     /**
      * Gets the correct Rule for a specific validation of the given Attribute.
      *
      * @param Attribute $attribute
-     * @param           $validation
-     * @param           $config
+     * @param $validation
+     * @param $config
      *
      * @throws ComponentException|GatewayException|Exception
      *
@@ -623,60 +687,60 @@ class ValidatorService
     {
         $validations = $attribute->getValidations();
         switch ($validation) {
-            case 'enum':
-                return new Rules\In($config);
-            case 'multipleOf':
-                return new Rules\Multiple($config);
-            case 'maximum':
-                return new Rules\Max($config);
-            case 'exclusiveMaximum':
-                return new Rules\LessThan($validations['maximum']);
-            case 'minimum':
-                return new Rules\Min($config);
-            case 'exclusiveMinimum':
-                return new Rules\GreaterThan($validations['minimum']);
-            case 'minLength':
-            case 'maxLength':
-                return new Rules\Length($validations['minLength'] ?? null, $validations['maxLength'] ?? null);
-            case 'maxItems':
-            case 'minItems':
-                return new Rules\Length($validations['minItems'] ?? null, $validations['maxItems'] ?? null);
-            case 'maxProperties':
-            case 'minProperties':
-                return new Rules\Length($validations['minProperties'] ?? null, $validations['maxProperties'] ?? null);
-            case 'minDate':
-                return new Rules\Min(new DateTime($config));
-            case 'maxDate':
-                return new Rules\Max(new DateTime($config));
-            case 'maxFileSize':
-            case 'minFileSize':
-                return new Rules\Key(
-                    'base64',
-                    new CustomRules\Base64Size($validations['minFileSize'] ?? null, $validations['maxFileSize'] ?? null),
-                    true
-                );
-            case 'fileTypes':
-                return new Rules\Key(
-                    'base64',
-                    new CustomRules\Base64MimeTypes($config),
-                    true
-                );
-            default:
-                // we should never end up here
-                if (is_array($config)) {
-                    $config = http_build_query($config, '', ', ');
-                }
+        case 'enum':
+            return new Rules\In($config);
+        case 'multipleOf':
+            return new Rules\Multiple($config);
+        case 'maximum':
+            return new Rules\Max($config);
+        case 'exclusiveMaximum':
+            return new Rules\LessThan($validations['maximum']);
+        case 'minimum':
+            return new Rules\Min($config);
+        case 'exclusiveMinimum':
+            return new Rules\GreaterThan($validations['minimum']);
+        case 'minLength':
+        case 'maxLength':
+            return new Rules\Length($validations['minLength'] ?? null, $validations['maxLength'] ?? null);
+        case 'maxItems':
+        case 'minItems':
+            return new Rules\Length($validations['minItems'] ?? null, $validations['maxItems'] ?? null);
+        case 'maxProperties':
+        case 'minProperties':
+            return new Rules\Length($validations['minProperties'] ?? null, $validations['maxProperties'] ?? null);
+        case 'minDate':
+            return new Rules\Min(new DateTime($config));
+        case 'maxDate':
+            return new Rules\Max(new DateTime($config));
+        case 'maxFileSize':
+        case 'minFileSize':
+            return new Rules\Key(
+                'base64',
+                new CustomRules\Base64Size($validations['minFileSize'] ?? null, $validations['maxFileSize'] ?? null),
+                true
+            );
+        case 'fileTypes':
+            return new Rules\Key(
+                'base64',
+                new CustomRules\Base64MimeTypes($config),
+                true
+            );
+        default:
+            // we should never end up here
+            if (is_array($config)) {
+                $config = http_build_query($config, '', ', ');
+            }
+            throw new GatewayException(
+                'Unknown validation.',
+                null,
+                null,
+                [
+                    'data'         => $validation.' set to '.$config,
+                    'path'         => $attribute->getEntity()->getName().'.'.$attribute->getName(),
+                    'responseType' => Response::HTTP_BAD_REQUEST,
+                ]
+            );
+        }//end switch
 
-                throw new GatewayException(
-                    'Unknown validation.',
-                    null,
-                    null,
-                    [
-                        'data'         => $validation.' set to '.$config,
-                        'path'         => $attribute->getEntity()->getName().'.'.$attribute->getName(),
-                        'responseType' => Response::HTTP_BAD_REQUEST,
-                    ]
-                );
-        }
-    }
-}
+    }//end getValidationRule()
+}//end class

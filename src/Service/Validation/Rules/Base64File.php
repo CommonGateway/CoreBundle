@@ -17,5 +17,6 @@ class Base64File extends Rules\AllOf
             new Rules\Key('base64', new Base64String(), true),
             new Base64Extension()
         );
-    }
-}
+
+    }//end __construct()
+}//end class

@@ -7,15 +7,17 @@ use Respect\Validation\Rules\AbstractRule;
 
 final class Base64Size extends AbstractRule
 {
-    //todo getter setter
+    // todo getter setter
+
     /**
-     * @var int|null
+     * @var integer|null
      */
     private ?int $minSize;
 
-    //todo getter setter
+    // todo getter setter
+
     /**
-     * @var int|null
+     * @var integer|null
      */
     private ?int $maxSize;
 
@@ -29,7 +31,8 @@ final class Base64Size extends AbstractRule
     {
         $this->minSize = $minSize;
         $this->maxSize = $maxSize;
-    }
+
+    }//end __construct()
 
     /**
      * @inheritDoc
@@ -37,14 +40,14 @@ final class Base64Size extends AbstractRule
     public function validate($input): bool
     {
         // todo: we could just move and merge all validations from here to the Base64String rule?
-
         $size = $this->getBase64Size($input);
         if ($this->isValidSize($size)) {
             return true;
         }
 
         return false;
-    }
+
+    }//end validate()
 
     /**
      * Gets the memory size of a base64 file in bytes.
@@ -54,18 +57,19 @@ final class Base64Size extends AbstractRule
      * @return Exception|float|int
      */
     private function getBase64Size($base64)
-    { //return memory size in B (KB, MB)
+    {
+        // return memory size in B (KB, MB)
         try {
             $size_in_bytes = (int) (strlen(rtrim($base64, '=')) * 3 / 4);
             // be careful when changing this!
-//            $size_in_kb = $size_in_bytes / 1024;
-//            $size_in_mb = $size_in_kb / 1024;
-
+            // $size_in_kb = $size_in_bytes / 1024;
+            // $size_in_mb = $size_in_kb / 1024;
             return $size_in_bytes;
         } catch (Exception $e) {
             return $e;
         }
-    }
+
+    }//end getBase64Size()
 
     /**
      * Checks if given size is a valid size compared to the min & max size.
@@ -85,5 +89,6 @@ final class Base64Size extends AbstractRule
         }
 
         return $size <= $this->maxSize;
-    }
-}
+
+    }//end isValidSize()
+}//end class
