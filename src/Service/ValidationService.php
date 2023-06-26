@@ -319,7 +319,7 @@ class ValidationService
             $attribute->getName(),
             $this->getAttributeValidator($attribute, $level),
             // mandatory = required validation.
-            isset($attribute->getValidations()['required']) && $attribute->getValidations()['required'] === true
+            $this->method !== 'PATCH' && isset($attribute->getValidations()['required']) && $attribute->getValidations()['required'] === true
         );
 
     }//end checkIfAttRequired()

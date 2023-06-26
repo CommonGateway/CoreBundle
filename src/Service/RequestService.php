@@ -61,7 +61,7 @@ class RequestService
     /**
      * @var ValidationService
      */
-    private ValidationService $validatorService;
+    private ValidationService $validationService;
 
     /**
      * @var array
@@ -146,7 +146,7 @@ class RequestService
      * @param EntityManagerInterface   $entityManager
      * @param GatewayResourceService   $resourceService
      * @param MappingService           $mappingService
-     * @param ValidationService        $validatorService
+     * @param ValidationService        $validationService
      * @param CacheService             $cacheService
      * @param ResponseService          $responseService
      * @param ObjectEntityService      $objectEntityService
@@ -160,16 +160,16 @@ class RequestService
      * @param DownloadService          $downloadService
      */
     public function __construct(
-        EntityManagerInterface $entityManager,
-        GatewayResourceService $resourceService,
-        MappingService $mappingService,
-        ValidationService $validatorService,
-        CacheService $cacheService,
-        ResponseService $responseService,
-        ObjectEntityService $objectEntityService,
-        LogService $logService,
-        CallService $callService,
-        Security $security,
+        EntityManagerInterface   $entityManager,
+        GatewayResourceService   $resourceService,
+        MappingService           $mappingService,
+        ValidationService        $validationService,
+        CacheService             $cacheService,
+        ResponseService          $responseService,
+        ObjectEntityService      $objectEntityService,
+        LogService               $logService,
+        CallService              $callService,
+        Security                 $security,
         EventDispatcherInterface $eventDispatcher,
         SerializerInterface $serializer,
         SessionInterface $session,
@@ -180,7 +180,7 @@ class RequestService
         $this->cacheService        = $cacheService;
         $this->resourceService     = $resourceService;
         $this->mappingService      = $mappingService;
-        $this->validatorService    = $validatorService;
+        $this->validationService   = $validationService;
         $this->responseService     = $responseService;
         $this->objectEntityService = $objectEntityService;
         $this->logService          = $logService;
@@ -717,7 +717,7 @@ class RequestService
 
             $this->logger->debug('Hydrating object');
             // if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
-            $validationErrors = $this->validatorService->validateData($this->content, $this->schema, 'POST');
+            $validationErrors = $this->validationService->validateData($this->content, $this->schema, 'POST');
             if ($validationErrors === null && $this->object->hydrate($this->content, true)) {
                 if ($this->schema->getPersist() === true) {
                     $this->entityManager->persist($this->object);
@@ -776,7 +776,8 @@ class RequestService
                 && key_exists('lock', $this->content) === true
                 && $this->object->getLock() === $this->content['lock']
             ) {
-                if ($this->object->hydrate($this->content, true)) {
+                $validationErrors = $this->validationService->validateData($this->content, $this->schema, 'PUT');
+                if ($validationErrors === null && $this->object->hydrate($this->content, true)) {
                     // This should be an unsafe hydration.
                     if (array_key_exists('@dateRead', $this->content) === true && $this->content['@dateRead'] == false) {
                         $this->objectEntityService->setUnread($this->object);
@@ -788,8 +789,10 @@ class RequestService
                         $this->cacheService->cacheObject($this->object);
                         $this->entityManager->flush();
                     }
-                } else {
-                    // Use validation to throw an error.
+                } else if ($validationErrors !== null) {
+                    $result = $validationErrors;
+                    // todo: better error response and use correct http status code 404!
+                    break;
                 }
             }
 
@@ -831,7 +834,8 @@ class RequestService
                 && key_exists('lock', $this->content)
                 && $this->object->getLock() === $this->content['lock']
             ) {
-                if ($this->object->hydrate($this->content)) {
+                $validationErrors = $this->validationService->validateData($this->content, $this->schema, 'PATCH');
+                if ($validationErrors === null && $this->object->hydrate($this->content)) {
                     if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
                         $this->objectEntityService->setUnread($this->object);
                     }
@@ -842,8 +846,10 @@ class RequestService
                         $this->cacheService->cacheObject($this->object);
                         $this->entityManager->flush();
                     }
-                } else {
-                    // Use validation to throw an error.
+                } else if ($validationErrors !== null) {
+                    $result = $validationErrors;
+                    // todo: better error response and use correct http status code 404!
+                    break;
                 }
             }
 
