@@ -58,7 +58,7 @@ class RequestService
      * @var MappingService
      */
     private MappingService $mappingService;
-    
+
     /**
      * @var ValidatorService
      */
@@ -733,8 +733,9 @@ class RequestService
                     // @todo this is hacky, the above should already do this
                     $this->cacheService->cacheObject($this->object);
                 }
-            } elseif ($validationErrors !== null) {
-                $result = $validationErrors; // todo: better error response and use correct http status code 404!
+            } else if ($validationErrors !== null) {
+                $result = $validationErrors;
+                // todo: better error response and use correct http status code 404!
                 break;
             }
 
