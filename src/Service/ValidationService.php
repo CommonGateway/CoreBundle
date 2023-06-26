@@ -39,13 +39,6 @@ class ValidationService
     private string $method;
 
     /**
-     * todo: find a better way to do this?
-     *
-     * @var array
-     */
-    private array $maxDepth;
-
-    /**
      * The constructor sets al needed variables.
      *
      * @param CacheInterface $cache
@@ -75,9 +68,6 @@ class ValidationService
      */
     public function validateData(array $data, Entity $entity, string $method)
     {
-        // Reset Max Depth check, todo: find a better way to do this?
-        $this->maxDepth = [];
-
         // We could use a different function to set the $method, but this way we can only validate data if we also have a method.
         if (!in_array($method, ['POST', 'PUT', 'PATCH'])) {
             throw new GatewayException(
@@ -117,13 +107,11 @@ class ValidationService
      */
     private function getEntityValidator(Entity $entity, int $level = 0): Validator
     {
-        // Max Depth, todo: find a better way to do this? something like depth level instead of this...
-        if (in_array($entity->getId()->toString(), $this->maxDepth)) {
+        // Max Depth
+        if ($level >= $entity->getMaxDepth()) {
             // todo: make it so that if we reach max depth we throw an error if input is provided.
             return new Validator();
         }
-
-        $this->maxDepth[] = $entity->getId()->toString();
 
         // Try and get a validator for this Entity(+method) from cache.
         $item = $this->cache->getItem('entityValidators_'.$entity->getId()->toString().'_'.$this->method);
