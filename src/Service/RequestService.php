@@ -12,7 +12,6 @@ use App\Event\ActionEvent;
 use App\Service\LogService;
 use App\Service\ObjectEntityService;
 use App\Service\ResponseService;
-use App\Service\ValidatorService;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
