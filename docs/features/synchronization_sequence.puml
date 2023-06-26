@@ -1,0 +1,44 @@
+@startuml
+title Determining the Current State of Data
+
+
+actor SynchronysationService
+database Datalayer
+database  Source
+
+== Creating Context ==
+Datalayer -> SynchronysationService: Get latest internal object
+Source -> SynchronysationService: Get latest external object
+SynchronysationService -> SynchronysationService: Determine changedate for external object and source of truth
+
+
+== Handling Synchronysation ==
+
+alt Object only exists on Datalayer
+alt Object is Deleted on source
+  SynchronysationService --> Datalayer: Delete Object
+else Object is not present on Source
+  SynchronysationService -> Source: POST Object to source
+end
+else Object only exists on Source
+alt Object is Deleted on Datalayer
+  SynchronysationService --> Source: Delete Object
+else Object is not present on Datalayer
+  SynchronysationService -> Datalayer: POST Object to Datalayer
+end
+else Object exists on Both
+alt Gateway version is newer
+  SynchronysationService -> Source: Update Source with Gateway's version
+else Source version is newer
+  SynchronysationService -> Datalayer: Update Gateway with Source's version
+else Versions are the same
+
+else Can't determine newer version
+  alt Datalayer is determined as truth
+    SynchronysationService -> Source: Update Source with Gateway's version
+  else Source is determined as truth
+    SynchronysationService -> Datalayer: Update Gateway with Source's version
+  end
+end
+end
+@enduml

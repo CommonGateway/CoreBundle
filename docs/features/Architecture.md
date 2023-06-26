@@ -25,7 +25,7 @@ Main request components
 
 1.  [Endpoint](Endpoints.md)
 2.  [Source](Sources.md)
-3.  [Datalayer](Datalayer.md)
+3.  [Datalayer](Datalyer.md)
 4.  [Request Service](../classes/services/RequestService.md)
 5.  [Events](Events.md)
 
