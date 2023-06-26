@@ -12,7 +12,7 @@ This class breaks complexity, methods and coupling rules. This could be solved b
 
 | Name | Description |
 |------|-------------|
-|[__construct](#installationservice__construct)|The constructor sets al needed variables.|
+|[__construct](#installationservice__construct)|The constructor sets al needed variables|
 |[addActionConfiguration](#installationserviceaddactionconfiguration)|This function creates default configuration for the action.|
 |[install](#installationserviceinstall)|Installs the files from a bundle.|
 |[overrideConfig](#installationserviceoverrideconfig)|Overrides the default configuration of an Action. Will also set entity and source to id if a reference is given.|
@@ -26,10 +26,10 @@ This class breaks complexity, methods and coupling rules. This could be solved b
 **Description**
 
 ```php
-public __construct (\ComposerService $composerService, \EntityManagerInterface $entityManager, \GatewayResourceService $resourceService, \Kernel $kernel, \LoggerInterface $installationLogger, \SchemaService $schemaService, \CacheService $cacheService)
+public __construct (\ComposerService $composerService, \EntityManagerInterface $entityManager, \Kernel $kernel, \LoggerInterface $installationLogger, \SchemaService $schemaService, \CacheService $cacheService)
 ```
 
-The constructor sets al needed variables. 
+The constructor sets al needed variables 
 
  
 
@@ -39,8 +39,6 @@ The constructor sets al needed variables.
 : The Composer service  
 * `(\EntityManagerInterface) $entityManager`
 : The entity manager  
-* `(\GatewayResourceService) $resourceService`
-: The resource service  
 * `(\Kernel) $kernel`
 : The kernel  
 * `(\LoggerInterface) $installationLogger`
@@ -95,7 +93,7 @@ public install (string $bundle, array $config)
 
 Installs the files from a bundle. 
 
-Based on the default action handler so schould supoprt a config parrameter even if we do not use it. 
+Based on the default action handler so schould supoprt a config parrameter even if we do not use it 
 
 **Parameters**
 
@@ -152,7 +150,7 @@ Overrides the default configuration of an Action. Will also set entity and sourc
 **Description**
 
 ```php
-public update (array $config, \SymfonyStyle|null $style)
+public update (array $config, \SymfonyStyle|null $io)
 ```
 
 Updates all commonground bundles on the common gateway installation. 
@@ -163,7 +161,7 @@ This functions serves as the jump of point for the `commengateway:plugins:update
 
 * `(array) $config`
 : The (optional) configuration  
-* `(\SymfonyStyle|null) $style`
+* `(\SymfonyStyle|null) $io`
 : In case we run update from the :initialize command and want cache:warmup to show IO messages.  
 
 **Return Values**

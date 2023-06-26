@@ -25,7 +25,7 @@ This service provides a guzzle wrapper to work with sources in the common gatewa
 |[removeEndpoint](#cacheserviceremoveendpoint)|Removes an endpoint from the cache.|
 |[removeObject](#cacheserviceremoveobject)|Removes an object from the cache.|
 |[removeSchema](#cacheserviceremoveschema)|Removes an Schema from the cache.|
-|[retrieveObjectsFromCache](#cacheserviceretrieveobjectsfromcache)|Retrieves objects from a cache collection.|
+|[retrieveObjectsFromCache](#cacheserviceretrieveobjectsfromcache)||
 |[searchObjects](#cacheservicesearchobjects)|Searches the object store for objects containing the search string.|
 |[setPagination](#cacheservicesetpagination)|Decides the pagination values.|
 |[setStyle](#cacheservicesetstyle)|Set symfony style in order to output to the console.|
@@ -165,7 +165,7 @@ Remove non-existing items from the cache.
 **Description**
 
 ```php
-public getEndpoint (\Uuid $identification)
+public getEndpoint (\Uuid $id)
 ```
 
 Get a single endpoint from the cache. 
@@ -174,7 +174,7 @@ Get a single endpoint from the cache.
 
 **Parameters**
 
-* `(\Uuid) $identification`
+* `(\Uuid) $id`
 
 **Return Values**
 
@@ -215,7 +215,7 @@ Get a single endpoint from the cache.
 **Description**
 
 ```php
-public getObject (string $identification)
+public getObject (string $id)
 ```
 
 Get a single object from the cache. 
@@ -224,7 +224,7 @@ Get a single object from the cache.
 
 **Parameters**
 
-* `(string) $identification`
+* `(string) $id`
 
 **Return Values**
 
@@ -241,7 +241,7 @@ Get a single object from the cache.
 **Description**
 
 ```php
-public getSchema (\Uuid $identification)
+public getSchema (\Uuid $id)
 ```
 
 Get a single schema from the cache. 
@@ -250,7 +250,7 @@ Get a single schema from the cache.
 
 **Parameters**
 
-* `(\Uuid) $identification`
+* `(\Uuid) $id`
 
 **Return Values**
 
@@ -373,24 +373,20 @@ Removes an Schema from the cache.
 **Description**
 
 ```php
-public retrieveObjectsFromCache (array $filter, array $options, array $completeFilter)
+ retrieveObjectsFromCache (void)
 ```
 
-Retrieves objects from a cache collection. 
+ 
 
  
 
 **Parameters**
 
-* `(array) $filter`
-* `(array) $options`
-* `(array) $completeFilter`
+`This function has no parameters.`
 
 **Return Values**
 
-`array|null`
-
-> $this->handleResultPagination()
+`void`
 
 
 <hr />
@@ -469,7 +465,7 @@ Decides the pagination values.
 **Description**
 
 ```php
-public setStyle (\SymfonyStyle $style)
+public setStyle (\SymfonyStyle $io)
 ```
 
 Set symfony style in order to output to the console. 
@@ -478,7 +474,7 @@ Set symfony style in order to output to the console.
 
 **Parameters**
 
-* `(\SymfonyStyle) $style`
+* `(\SymfonyStyle) $io`
 
 **Return Values**
 

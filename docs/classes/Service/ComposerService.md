@@ -92,9 +92,7 @@ Gets all installed plugins from the lock file.
 
 **Return Values**
 
-`array`
-
-
+`void`
 
 
 <hr />

@@ -10,7 +10,7 @@ This service handles calls on the ZZ endpoint (or in other words abstract routin
 
 | Name | Description |
 |------|-------------|
-|[__construct](#endpointservice__construct)|The constructor sets al needed variables.|
+|[__construct](#endpointservice__construct)||
 |[decodeBody](#endpointservicedecodebody)|Decodes the body of the request based upon the content-type header, accept header or endpoint default.|
 |[getAcceptType](#endpointservicegetaccepttype)|Gets the accept type based on the request.|
 |[getEndpoint](#endpointservicegetendpoint)|Gets the endpoint based on the request.|
@@ -24,23 +24,16 @@ This service handles calls on the ZZ endpoint (or in other words abstract routin
 **Description**
 
 ```php
-public __construct (\EntityManagerInterface $entityManager, \SerializerInterface $serializer, \RequestService $requestService, \EventDispatcherInterface $eventDispatcher)
+ __construct (void)
 ```
 
-The constructor sets al needed variables. 
+ 
 
  
 
 **Parameters**
 
-* `(\EntityManagerInterface) $entityManager`
-: The enitymanger  
-* `(\SerializerInterface) $serializer`
-: The serializer  
-* `(\RequestService) $requestService`
-: The request service  
-* `(\EventDispatcherInterface) $eventDispatcher`
-: The event dispatcher  
+`This function has no parameters.`
 
 **Return Values**
 
@@ -156,12 +149,6 @@ Handle the request afther it commes in through the ZZ controller.
 `\Response`
 
 
-
-
-**Throws Exceptions**
-
-
-`\Exception`
 
 
 <hr />
