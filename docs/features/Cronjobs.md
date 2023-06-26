@@ -3,7 +3,7 @@
 > **Warning**
 > This file is maintained at the Conduction [Google Drive](https://docs.google.com/document/d/1nXxbY7Rwk0gBYiUv6o-SoK5v6ToXUCGaAQ6J8KBGEzc/edit). Please make any suggestions of alterations there.
 
-Cron jobs are a central part of the Common Gateway’s [event system](Events.md), enabling scheduling of tasks and automating a myriad of routine procedures. By utilizing the crontab (cron table) file, you can schedule scripts or commands to run at a fixed time, date, or interval. This makes cron jobs a powerful tool for system administration, task automation, data manipulation, and more.
+Cronjobs are a central part of the Common Gateway’s [event system](Events.md), enabling scheduling of tasks and automating a myriad of routine procedures. By utilizing the crontab (cron table) file, you can schedule scripts or commands to run at a fixed time, date, or interval. This makes cron jobs a powerful tool for system administration, task automation, data manipulation, and more.
 
 These cron jobs throw events, which may carry an optional data set. The data set can comprise any information relevant to the task - from simple identifiers to complex data structures, depending on the event’s nature and the task at hand. This allows for great flexibility, facilitating tasks such as data backup, sending emails, or system maintenance.
 
@@ -14,3 +14,4 @@ For instance, a handler might subscribe to a "BackupComplete" event. When a cron
 In conclusion, cron jobs in the Common Gateway are a versatile tool, enabling task scheduling and data transmission through events. The true potential is unlocked when other elements, such as action handlers, subscribe to these events, providing a reliable way to automate complex tasks and procedures.
 
 To further explore and experiment with cron jobs, you can use an online [crontab editor](https://crontab.guru/).
+

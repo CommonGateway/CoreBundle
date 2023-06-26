@@ -1,12 +1,15 @@
 <?php
 
+// @TODO: this file looks like it is not finished and not sure if this is currently used anywhere
+
 /**
  * Fetches repository metadata from the GitHub API.
  *
  * @param string $token  The GitHub token
  * @return array The repository metadata
  */
-function get_repo_metadata($token) {
+function get_repo_metadata(string $token): array
+{
     $repo_slug = getenv('GITHUB_REPOSITORY');
     $api_url = "https://api.github.com/repos/$repo_slug";
 
@@ -26,7 +29,8 @@ function get_repo_metadata($token) {
  * @param array $metadata The repository metadata
  * @return array
  */
-function generatePubliccode($metadata) {
+function generatePubliccode(array $metadata): array
+{
     $publiccode = [
         'name' => $metadata['name'],
         'description' => [
@@ -65,7 +69,7 @@ function generatePubliccode($metadata) {
         $publiccode['softwareVersion'] = '0.1';
     }
     if(isset($publiccode['platforms']) === false) {
-        $publiccode['platforms'] = 'linux', 'windows', 'macos';
+        $publiccode['platforms'] = ['linux', 'windows', 'macos'];
     }
     if(isset($publiccode['url']) === false){
         $publiccode['url'] = $metadata['homepage'];
@@ -99,10 +103,11 @@ function generatePubliccode($metadata) {
 /**
  * Get the array content of the current yaml file or an empty array
  *
- * @param $filename
+ * @param string $filename
  * @return array
  */
-function getPubliccode($filename = '../publiccode.yml') {
+function getPubliccode(string $filename = '../publiccode.yml'): array
+{
     if (file_exists($filename)) {
         $yaml = yaml_parse_file($filename);
         if ($yaml === FALSE) {

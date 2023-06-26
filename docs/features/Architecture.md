@@ -25,8 +25,8 @@ Main request components
 
 1.  [Endpoint](Endpoints.md)
 2.  [Source](Sources.md)
-3.  [Datalayer](Datalyer.md)
-4.  [Request Service](../classes/services/RequestService.md)
+3.  [Datalayer](Datalayer.md)
+4.  [Request Service](../classes/Service/RequestService.md)
 5.  [Events](Events.md)
 
 ## Two codebases to rule them all
@@ -52,3 +52,5 @@ We host technical documentation on Read the Doc's and general user information o
 ### Common Ground
 
 All applications are developed following the Common Ground standards on how a data exchange system should be: modular and open-source. More information on Common Ground can be found [here](https://commonground.nl/)
+
+

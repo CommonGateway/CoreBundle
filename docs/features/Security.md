@@ -42,7 +42,7 @@ Users first authenticate through oAuth/ADFS, which then produces a series of cla
 
 ## Identification Based on Two-Way SSL
 
-Identification of other catalogs in our federative network is based on two-way SSL (Secure Sockets Layer) certificates, specifically adhering to the Dutch PKI (Public Key Infrastructure) system. This approach ensures a secure and trusted communication channel between the software and the catalog.
+Identification of other catalogs in our federated network is based on two-way SSL (Secure Sockets Layer) certificates, specifically adhering to the Dutch PKI (Public Key Infrastructure) system. This approach ensures a secure and trusted communication channel between the software and the catalog.
 
 The two-way SSL authentication mechanism requires both the client and the server to present and accept each other's public certificates before any communication can take place. This process guarantees the identity of both the client and server, ensuring a high level of security and trust in the communication.
 
@@ -50,7 +50,7 @@ The two-way SSL authentication mechanism requires both the client and the server
 
 Our system implements Role-Based Access Control (RBAC) to manage both user and application rights. RBAC is a method of regulating access to computer or network resources based on the roles of individual users within the organization.
 
-In RBAC, permissions are associated with roles (and configured in our software), and users and other appliations are assigned appropriate roles. This setup simplifies managing user privileges and helps to ensure that only authorized users and applications can access certain resources or perform certain operations.
+In RBAC, permissions are associated with roles (and configured in our software), and users and other applications are assigned appropriate roles. This setup simplifies managing user privileges and helps to ensure that only authorized users and applications can access certain resources or perform certain operations.
 
 ## Data Security Levels
 
@@ -63,7 +63,7 @@ Our system handles various types of data, each requiring different levels of sec
 
 We take data security very seriously and have implemented robust measures to ensure the safety, confidentiality, integrity, and availability of all data in our system.
 
-## Seperating Landingzone, Executionzone and Data
+## Seperating Landing Zone, Execution Zone and Data
 
 In our setup, we utilize NGINX and PHP containers to ensure a clean separation of concerns between internet/network access, code execution, and data storage. This design facilitates robust security and improved manageability of our applications and services.
 
@@ -71,6 +71,9 @@ In our setup, we utilize NGINX and PHP containers to ensure a clean separation o
 
 *   **PHP Containers as Execution Zone:** Once a request has been forwarded by the NGINX container, it lands in the appropriate PHP container for processing. These containers serve as our execution zone, where application logic is executed.  Each PHP container runs an instance of our application. By isolating the execution environment in this way, we can ensure that any issues or vulnerabilities within one container don't affect others. This encapsulation provides a significant security advantage and makes it easier to manage and scale individual components of our application.
 
-*   **Data Storage Outside of the Cluster:** For data storage, we follow a strategy of keeping data outside the cluster. This approach separates data from the execution environment and the network access layer, providing an additional layer of security. Data stored outside the cluster can be thoroughly protected with specific security controls, encryption, and backup procedures, independent of the application and network layers.
+*   **Data Storage Outside the Cluster:** For data storage, we follow a strategy of keeping data outside the cluster. This approach separates data from the execution environment and the network access layer, providing an additional layer of security. Data stored outside the cluster can be thoroughly protected with specific security controls, encryption, and backup procedures, independent of the application and network layers.
 
 This three-tiered approach – NGINX containers for network access, PHP containers for code execution, and external storage for data – provides us with a secure, scalable, and resilient architecture. It allows us to isolate potential issues and manage each layer independently, thereby enhancing our ability to maintain and secure our services.
+
+
+

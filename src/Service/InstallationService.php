@@ -1492,9 +1492,7 @@ class InstallationService
             }
         }//end foreach
 
-        if (empty($applicationsData) === false) {
-            $applications = $this->handleObjectType('https://docs.commongateway.nl/schemas/Application.schema.json', $applicationsData);
-        }
+        $applications = $this->handleObjectType('https://docs.commongateway.nl/schemas/Application.schema.json', $applicationsData);
 
         $this->logger->info(count($applications).' Applications Created');
 
@@ -1538,9 +1536,11 @@ class InstallationService
             }
         }//end foreach
 
-        if (empty($usersData) === false) {
-            $users = $this->handleObjectType('https://docs.commongateway.nl/schemas/User.schema.json', $usersData);
+        if (empty($usersData) === true) {
+            return [];
         }
+
+        $users = $this->handleObjectType('https://docs.commongateway.nl/schemas/User.schema.json', $usersData);
 
         $this->logger->info(count($users).' Users Created');
 
