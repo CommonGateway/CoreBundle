@@ -709,11 +709,11 @@ class RequestService
 
                 return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             }
-    
+
             // Let's see if we have a body.
             if (isset($this->content) === false || empty($this->content) === true) {
                 $this->logger->error('The body of your request is empty');
-        
+
                 return new Response('The body of your request is empty', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             }
 
@@ -743,11 +743,11 @@ class RequestService
             } else if ($validationErrors !== null) {
                 $result = [
                     "Message" => 'Validation errors',
-                    'data' => $validationErrors,
-                    'path' => $this->data['pathRaw']
+                    'data'    => $validationErrors,
+                    'path'    => $this->data['pathRaw'],
                 ];
                 break;
-            }
+            }//end if
 
             $result = $this->cacheService->getObject($this->object->getId()->toString());
             break;
@@ -776,11 +776,11 @@ class RequestService
 
                 return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             }
-    
+
             // Let's see if we have a body.
             if (isset($this->content) === false || empty($this->content) === true) {
                 $this->logger->error('The body of your request is empty');
-    
+
                 return new Response('The body of your request is empty', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             }
 
@@ -810,12 +810,12 @@ class RequestService
                 } else if ($validationErrors !== null) {
                     $result = [
                         "Message" => 'Validation errors',
-                        'data' => $validationErrors,
-                        'path' => $this->data['pathRaw']
+                        'data'    => $validationErrors,
+                        'path'    => $this->data['pathRaw'],
                     ];
                     break;
                 }
-            }
+            }//end if
 
             $result = $this->cacheService->getObject($this->object->getId());
             break;
@@ -844,11 +844,11 @@ class RequestService
 
                 return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             }
-    
+
             // Let's see if we have a body.
             if (isset($this->content) === false || empty($this->content) === true) {
                 $this->logger->error('The body of your request is empty');
-    
+
                 return new Response('The body of your request is empty', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             }
 
@@ -877,12 +877,12 @@ class RequestService
                 } else if ($validationErrors !== null) {
                     $result = [
                         "Message" => 'Validation errors',
-                        'data' => $validationErrors,
-                        'path' => $this->data['pathRaw']
+                        'data'    => $validationErrors,
+                        'path'    => $this->data['pathRaw'],
                     ];
                     break;
                 }
-            }
+            }//end if
 
             $result = $this->cacheService->getObject($this->object->getId());
             break;
@@ -921,15 +921,15 @@ class RequestService
 
             return new Response('Unkown method'.$this->data['method'], '404', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
         }//end switch
-    
+
         // Handle _self metadata, includes adding dateRead
         $this->handleMetadataSelf($result, $metadataSelf);
-    
+
         // Handle application configuration out for embedded if we need to do this for the current application and current endpoint.
         if (isset($appEndpointConfig['out']['embedded']) === true) {
             $result = $this->shouldWeUnsetEmbedded($result, $appEndpointConfig['out']['embedded']);
         }
-        
+
         if (isset($eventType) === true && isset($result) === true) {
             $event = new ActionEvent($eventType, ['response' => $result, 'entity' => ($this->object->getEntity()->getReference() ?? $this->object->getEntity()->getId()->toString()), 'parameters' => $this->data]);
             $this->eventDispatcher->dispatch($event, $event->getType());
@@ -942,7 +942,7 @@ class RequestService
                 $code = Response::HTTP_OK;
                 break;
             }
-            
+
             if (isset($validationErrors)) {
                 $code = Response::HTTP_BAD_REQUEST;
             }
