@@ -18,6 +18,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class ValueService
 {
+
     /**
      * @var EntityManagerInterface
      */
@@ -40,16 +41,17 @@ class ValueService
 
     /**
      * @param EntityManagerInterface $entityManager
-     * @param LoggerInterface $valueSubscriberLogger
+     * @param LoggerInterface        $valueSubscriberLogger
      * @param SynchronizationService $synchronizationService
-     * @param ParameterBagInterface $parameterBag
+     * @param ParameterBagInterface  $parameterBag
      */
     public function __construct(EntityManagerInterface $entityManager, LoggerInterface $valueSubscriberLogger, SynchronizationService $synchronizationService, ParameterBagInterface $parameterBag)
     {
-        $this->entityManager = $entityManager;
-        $this->logger = $valueSubscriberLogger;
+        $this->entityManager          = $entityManager;
+        $this->logger                 = $valueSubscriberLogger;
         $this->synchronizationService = $synchronizationService;
-        $this->parameterBag = $parameterBag;
+        $this->parameterBag           = $parameterBag;
+
     }//end __construct()
 
     /**
@@ -64,13 +66,14 @@ class ValueService
             Events::prePersist,
             Events::preRemove,
         ];
+
     }//end getSubscribedEvents()
 
     /**
      * Gets a subobject by uuid.
      *
-     * @param string $uuid The id of the subobject
-     * @param Value $valueObject The valueObject to add the subobject to
+     * @param string $uuid        The id of the subobject
+     * @param Value  $valueObject The valueObject to add the subobject to
      *
      * @return ObjectEntity|null The found subobject
      */
@@ -92,15 +95,15 @@ class ValueService
             $this->logger->error(
                 "No subObjectEntity found with uuid ($uuid) or with a synchronization with sourceId = uuid for ParentObject",
                 [
-                    'uuid' => $uuid,
+                    'uuid'         => $uuid,
                     'ParentObject' => [
-                        'id' => $parentObject->getId()->toString(),
+                        'id'     => $parentObject->getId()->toString(),
                         'entity' => $parentObject->getEntity() ? [
-                            'id' => $parentObject->getEntity()->getId()->toString(),
+                            'id'   => $parentObject->getEntity()->getId()->toString(),
                             'name' => $parentObject->getEntity()->getName(),
                         ] : null,
-                        '_self' => $parentObject->getSelf(),
-                        'name' => $parentObject->getName(),
+                        '_self'  => $parentObject->getSelf(),
+                        'name'   => $parentObject->getName(),
                     ],
                 ]
             );
@@ -109,13 +112,14 @@ class ValueService
         }//end if
 
         return $subObject;
+
     }//end getSubObjectById()
 
     /**
      * Gets a subobject by url.
      *
-     * @param string $url The url of the subobject
-     * @param Value $valueObject The value object to add the subobject to
+     * @param string $url         The url of the subobject
+     * @param Value  $valueObject The value object to add the subobject to
      *
      * @return ObjectEntity|null The resulting subobject
      */
@@ -129,7 +133,7 @@ class ValueService
         }
 
         // Then check if the url is internal.
-        $self = str_replace(rtrim($this->parameterBag->get('app_url'), '/'), '', $url);
+        $self         = str_replace(rtrim($this->parameterBag->get('app_url'), '/'), '', $url);
         $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['self' => $self]);
         if ($objectEntity !== null) {
             return $objectEntity;
@@ -142,13 +146,14 @@ class ValueService
         }
 
         return $this->synchronizationService->aquireObject($url, $valueObject->getAttribute()->getObject());
+
     }//end getSubObjectByUrl()
 
     /**
      * Finds subobjects by identifiers.
      *
-     * @param string $identifier The identifier to find the object for
-     * @param Value $valueObject The value object to add objects to
+     * @param string $identifier  The identifier to find the object for
+     * @param Value  $valueObject The value object to add objects to
      *
      * @return ObjectEntity|null The found object
      */
@@ -156,12 +161,13 @@ class ValueService
     {
         if (Uuid::isValid($identifier)) {
             return $this->getSubObjectById($identifier, $valueObject);
-        } elseif (filter_var($identifier, FILTER_VALIDATE_URL)) {
+        } else if (filter_var($identifier, FILTER_VALIDATE_URL)) {
             return $this->getSubObjectByUrl($identifier, $valueObject);
         }
 
         return null;
-    }//end findSubObject()
+
+    }//end findSubobject()
 
     public function getInverses(Coupler $coupler, Value $value, ObjectEntity &$object = null): ArrayCollection
     {
@@ -181,7 +187,8 @@ class ValueService
         $inverses = new ArrayCollection($inverseValue->getObjects()->toArray());
 
         return $inverses->matching($criteria);
-    }
+
+    }//end getInverses()
 
     public function inverseRelation(Value $value)
     {
@@ -198,10 +205,10 @@ class ValueService
                     $inverseValue->addObject($inverseCoupler);
                     $this->entityManager->persist($inverseValue);
                 }
-
             }
         }
-    }
+
+    }//end inverseRelation()
 
     public function removeInverses(Coupler $coupler, Value $value)
     {
@@ -211,5 +218,5 @@ class ValueService
             $this->entityManager->remove($inverse);
         }
 
-    }
-}
+    }//end removeInverses()
+}//end class

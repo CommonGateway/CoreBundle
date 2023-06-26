@@ -25,6 +25,7 @@ class ValueSubscriber implements EventSubscriberInterface
     public function __construct(ValueService $valueService)
     {
         $this->valueService = $valueService;
+
     }//end __construct()
 
     /**
@@ -39,6 +40,7 @@ class ValueSubscriber implements EventSubscriberInterface
             Events::prePersist,
             Events::preRemove,
         ];
+
     }//end getSubscribedEvents()
 
     /**
@@ -58,21 +60,25 @@ class ValueSubscriber implements EventSubscriberInterface
                         $valueObject->addObject(new Coupler($subobject));
                     }
                 }
+
                 $valueObject->setArrayValue([]);
-            } elseif ((Uuid::isValid($valueObject->getStringValue()) || filter_var($valueObject->getStringValue(), FILTER_VALIDATE_URL)) && $identifier = $valueObject->getStringValue()) {
+            } else if ((Uuid::isValid($valueObject->getStringValue()) || filter_var($valueObject->getStringValue(), FILTER_VALIDATE_URL)) && $identifier = $valueObject->getStringValue()) {
                 foreach ($valueObject->getObjects() as $object) {
                     $valueObject->removeObject($object);
                 }
+
                 $subobject = $this->valueService->findSubobject($identifier, $valueObject);
 
                 if ($subobject !== null) {
                     $valueObject->addObject(new Coupler($subobject));
                 }
             }
+
             $this->valueService->inverseRelation($valueObject);
 
             $valueObject->getObjectEntity()->setDateModified(new \DateTime());
-        }
+        }//end if
+
     }//end preUpdate()
 
     /**
@@ -83,6 +89,7 @@ class ValueSubscriber implements EventSubscriberInterface
     public function prePersist(LifecycleEventArgs $args): void
     {
         $this->preUpdate($args);
+
     }//end prePersist()
 
     public function preRemove(LifecycleEventArgs $value): void
@@ -93,10 +100,10 @@ class ValueSubscriber implements EventSubscriberInterface
             && $valueObject->getAttribute()->getType() === 'object'
             && $valueObject->getAttribute()->getInversedBy() !== null
         ) {
-
             foreach ($valueObject->getObjects() as $coupler) {
                 $this->valueService->removeInverses($coupler, $valueObject);
             }
         }
+
     }//end preRemove()
 }//end class
