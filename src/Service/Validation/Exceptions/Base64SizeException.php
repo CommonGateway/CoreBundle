@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\Validation\Exceptions;
+namespace CommonGateway\CoreBundle\Service\Validation\Exceptions;
 
 use Respect\Validation\Exceptions\NestedValidationException;
 

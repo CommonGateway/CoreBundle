@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\Validation\Rules;
+namespace CommonGateway\CoreBundle\Service\Validation\Rules;
 
 use Respect\Validation\Exceptions\ComponentException;
 use Respect\Validation\Rules;

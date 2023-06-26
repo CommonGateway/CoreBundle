@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\Validation\Rules;
+namespace CommonGateway\CoreBundle\Service\Validation\Rules;
 
 use Respect\Validation\Rules\AbstractRule;
 use Respect\Validation\Validator;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\Validation\Rules;
+namespace CommonGateway\CoreBundle\Service\Validation\Rules;
 
 use Exception;
 use JWadhams\JsonLogic as jsonLogicLib;
@@ -50,10 +50,10 @@ final class JsonLogic extends AbstractRule
      * examples of how to use this Rule:
      *
      * With $jsonLogic as a string, in this example $input should be equal to "apples"
-     * new App\Service\Validation\Rules\JsonLogic('{"==":["apples", "{{input}}"]}');
+     * new CommonGateway\CoreBundle\Service\Validation\Rules\JsonLogic('{"==":["apples", "{{input}}"]}');
      *
      * With $jsonLogic as an array, in this example $input should be an array that has the key "int" with the value 12
-     * new App\Service\Validation\Rules\JsonLogic(["==" => [ ["var" => "int"], 12 ]);
+     * new CommonGateway\CoreBundle\Service\Validation\Rules\JsonLogic(["==" => [ ["var" => "int"], 12 ]);
      * Input like this wil result in true:
      * {
      *   "test": "someRandomValue"
