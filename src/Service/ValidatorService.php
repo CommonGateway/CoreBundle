@@ -27,24 +27,24 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ValidatorService
 {
-    
+
     /**
      * @var CacheInterface
      */
     public CacheInterface $cache;
-    
+
     /**
      * @var string
      */
     private string $method;
-    
+
     /**
      * todo: find a better way to do this?
      *
      * @var array
      */
     private array $maxDepth;
-    
+
     /**
      * The constructor sets al needed variables.
      *
@@ -65,7 +65,7 @@ class ValidatorService
     /**
      * Validates an array with data using the Validator for the given Entity.
      *
-     * @param array  $data The data to validate.
+     * @param array  $data   The data to validate.
      * @param Entity $entity The entity used for validation.
      * @param string $method used to be able to use different validations for different methods.
      *
@@ -91,10 +91,10 @@ class ValidatorService
                 ]
             );
         }
-    
+
         // This method is used for the immutable and unsetable Rules later in addAttributeValidators().
         $this->method = $method;
-        $validator = $this->getEntityValidator($entity);
+        $validator    = $this->getEntityValidator($entity);
 
         // TODO: what if we have fields in $data that do not exist on this Entity?
         try {
@@ -225,7 +225,7 @@ class ValidatorService
                 new Rules\AlwaysValid()
             );
         }
-    
+
         // If JsonLogic for forbiddenIf isn't set;
         $forbiddenIf = new Rules\AlwaysValid();
         if (isset($attribute->getValidations()['forbiddenIf']) && $attribute->getValidations()['forbiddenIf']) {
@@ -294,24 +294,24 @@ class ValidatorService
             // todo: JsonLogic needs to be able to check parent attributes/entities in the request body for this to work:
             // Make sure we only make this attribute required if it is not getting auto connected because of inversedBy
             // We can do this by checking if the Attribute->getInversedBy attribute is already present in the body.
-//            return new Rules\When(
-//                // IF
-//                new CustomRules\JsonLogic(["var" => $attribute->getInversedBy()->getName()]),
-//                // TRUE
-//                new Rules\Key(
-//                    $attribute->getName(),
-//                    $this->getAttributeValidator($attribute),
-//                    // mandatory = required validation. False = not required.
-//                    false
-//                ),
-//                // FALSE
-//                new Rules\Key(
-//                    $attribute->getName(),
-//                    $this->getAttributeValidator($attribute),
-//                    // mandatory = required validation. True = required.
-//                    true
-//                )
-//            );
+            // return new Rules\When(
+            // IF
+            // new CustomRules\JsonLogic(["var" => $attribute->getInversedBy()->getName()]),
+            // TRUE
+            // new Rules\Key(
+            // $attribute->getName(),
+            // $this->getAttributeValidator($attribute),
+            // mandatory = required validation. False = not required.
+            // false
+            // ),
+            // FALSE
+            // new Rules\Key(
+            // $attribute->getName(),
+            // $this->getAttributeValidator($attribute),
+            // mandatory = required validation. True = required.
+            // true
+            // )
+            // );
         }//end if
 
         // Else, continue with the 'normal' required validation.
