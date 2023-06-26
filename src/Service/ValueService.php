@@ -80,6 +80,7 @@ class ValueService
         if (!$subObject = $this->entityManager->find(ObjectEntity::class, $uuid)) {
             try {
                 $subObject = $this->entityManager->getRepository(ObjectEntity::class)->findByAnyId($uuid);
+
             } catch (NonUniqueResultException $exception) {
                 $this->logger->error("Found more than one ObjectEntity with uuid = '$uuid' or with a synchronization with sourceId = '$uuid'");
 

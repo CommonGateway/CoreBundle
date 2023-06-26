@@ -18,6 +18,7 @@ use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -981,7 +982,7 @@ class CacheService
 
         $collection = $this->client->endpoints->json;
 
-        $endpointArray        = $this->serializer->normalize($endpoint);
+        $endpointArray        = $this->serializer->normalize($endpoint, null, [AbstractNormalizer::IGNORED_ATTRIBUTES => ['object', 'inversedBy']]);
         $endpointArray['_id'] = $endpointArray['id'];
 
         if ($collection->findOneAndReplace(
