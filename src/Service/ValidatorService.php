@@ -27,13 +27,29 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ValidatorService
 {
-
+    
+    /**
+     * @var CacheInterface
+     */
     public CacheInterface $cache;
-
+    
+    /**
+     * @var string
+     */
     private string $method;
-
+    
+    /**
+     * todo: find a better way to do this?
+     *
+     * @var array
+     */
     private array $maxDepth;
-    // todo: find a better way to do this?
+    
+    /**
+     * The constructor sets al needed variables.
+     *
+     * @param CacheInterface $cache
+     */
     public function __construct(
         CacheInterface $cache
     ) {
@@ -49,8 +65,8 @@ class ValidatorService
     /**
      * Validates an array with data using the Validator for the given Entity.
      *
-     * @param array  $data
-     * @param Entity $entity
+     * @param array  $data The data to validate.
+     * @param Entity $entity The entity used for validation.
      * @param string $method used to be able to use different validations for different methods.
      *
      * @throws CacheException|GatewayException|InvalidArgumentException|ComponentException
@@ -75,9 +91,9 @@ class ValidatorService
                 ]
             );
         }
-
+    
+        // This method is used for the immutable and unsetable Rules later in addAttributeValidators().
         $this->method = $method;
-        // This is used for the immutable and unsetable Rules later in addAttributeValidators().
         $validator = $this->getEntityValidator($entity);
 
         // TODO: what if we have fields in $data that do not exist on this Entity?
@@ -103,8 +119,8 @@ class ValidatorService
     {
         // Max Depth, todo: find a better way to do this? something like depth level instead of this...
         if (in_array($entity->getId()->toString(), $this->maxDepth)) {
-            return new Validator();
             // todo: make it so that if we reach max depth we throw an error if input is provided.
+            return new Validator();
         }
 
         $this->maxDepth[] = $entity->getId()->toString();
@@ -120,10 +136,10 @@ class ValidatorService
         $validator = $this->addAttributeValidators($entity, $validator, $level);
 
         $item->set($validator);
-        $item->tag('entityValidator');
         // Tag for all Entity Validators
-        $item->tag('entityValidator_'.$entity->getId()->toString());
+        $item->tag('entityValidator');
         // Tag for the Validators of this specific Entity.
+        $item->tag('entityValidator_'.$entity->getId()->toString());
         $this->cache->save($item);
 
         return $validator;
@@ -171,12 +187,12 @@ class ValidatorService
             // If we need to check conditionals the $conditionals Rule above will do so in this When Rule below.
             $validator->addRule(
                 new Rules\When(
-                    $conditionals,
                     // IF (the $conditionals Rule does not return any exceptions)
-                    $this->checkIfAttRequired($attribute, $level),
+                    $conditionals,
                     // TRUE (continue with the required rule, incl inversedBy check)
-                    $conditionals
+                    $this->checkIfAttRequired($attribute, $level),
                     // FALSE (return exception message from $conditionals Rule)
+                    $conditionals
                 )
             );
         }//end foreach
@@ -196,31 +212,31 @@ class ValidatorService
      */
     private function getConditionalsRule(Attribute $attribute): Rules\AllOf
     {
+        // If (JsonLogic for) requiredIf isn't set;
         $requiredIf = new Rules\AlwaysValid();
-        // <- If (JsonLogic for) requiredIf isn't set
         if (isset($attribute->getValidations()['requiredIf']) && $attribute->getValidations()['requiredIf']) {
             // todo: this works but doesn't give a nice and clear error response why the rule is broken. ("x must be present")
             $requiredIf = new Rules\When(
-                new CustomRules\JsonLogic($attribute->getValidations()['requiredIf']),
                 // IF (the requiredIf JsonLogic finds a match / is true)
-                new Rules\Key($attribute->getName()),
+                new CustomRules\JsonLogic($attribute->getValidations()['requiredIf']),
                 // TRUE (attribute is required)
-                new Rules\AlwaysValid()
+                new Rules\Key($attribute->getName()),
                 // FALSE
+                new Rules\AlwaysValid()
             );
         }
-
+    
+        // If JsonLogic for forbiddenIf isn't set;
         $forbiddenIf = new Rules\AlwaysValid();
-        // <- If JsonLogic for forbiddenIf isn't set
         if (isset($attribute->getValidations()['forbiddenIf']) && $attribute->getValidations()['forbiddenIf']) {
             // todo: this works but doesn't give a nice and clear error response why the rule is broken. ("x must not be present")
             $forbiddenIf = new Rules\When(
-                new CustomRules\JsonLogic($attribute->getValidations()['forbiddenIf']),
                 // IF (the requiredIf JsonLogic finds a match / is true)
-                new Rules\Not(new Rules\Key($attribute->getName())),
+                new CustomRules\JsonLogic($attribute->getValidations()['forbiddenIf']),
                 // TRUE (attribute should not be present)
-                new Rules\AlwaysValid()
+                new Rules\Not(new Rules\Key($attribute->getName())),
                 // FALSE
+                new Rules\AlwaysValid()
             );
         }
 
@@ -271,34 +287,39 @@ class ValidatorService
             return new Rules\Key(
                 $attribute->getName(),
                 $this->getAttributeValidator($attribute, $level),
-                false
                 // mandatory = required validation. False = not required.
+                false
             );
 
             // todo: JsonLogic needs to be able to check parent attributes/entities in the request body for this to work:
             // Make sure we only make this attribute required if it is not getting auto connected because of inversedBy
             // We can do this by checking if the Attribute->getInversedBy attribute is already present in the body.
-            // return new Rules\When(
-            // new CustomRules\JsonLogic(["var" => $attribute->getInversedBy()->getName()]), // IF
-            // new Rules\Key(
-            // $attribute->getName(),
-            // $this->getAttributeValidator($attribute),
-            // false // mandatory = required validation. False = not required.
-            // ), // TRUE
-            // new Rules\Key(
-            // $attribute->getName(),
-            // $this->getAttributeValidator($attribute),
-            // true // mandatory = required validation. True = required.
-            // ) // FALSE
-            // );
+//            return new Rules\When(
+//                // IF
+//                new CustomRules\JsonLogic(["var" => $attribute->getInversedBy()->getName()]),
+//                // TRUE
+//                new Rules\Key(
+//                    $attribute->getName(),
+//                    $this->getAttributeValidator($attribute),
+//                    // mandatory = required validation. False = not required.
+//                    false
+//                ),
+//                // FALSE
+//                new Rules\Key(
+//                    $attribute->getName(),
+//                    $this->getAttributeValidator($attribute),
+//                    // mandatory = required validation. True = required.
+//                    true
+//                )
+//            );
         }//end if
 
         // Else, continue with the 'normal' required validation.
         return new Rules\Key(
             $attribute->getName(),
             $this->getAttributeValidator($attribute, $level),
-            isset($attribute->getValidations()['required']) && $attribute->getValidations()['required'] === true
             // mandatory = required validation.
+            isset($attribute->getValidations()['required']) && $attribute->getValidations()['required'] === true
         );
 
     }//end checkIfAttRequired()
@@ -396,12 +417,12 @@ class ValidatorService
         // If attribute type is correct continue validation of attribute format
         $attributeTypeValidator->addRule(
             new Rules\When(
-                $attTypeRule,
                 // IF
-                $this->getAttFormatValidator($attribute),
+                $attTypeRule,
                 // TRUE
-                $attTypeRule
+                $this->getAttFormatValidator($attribute),
                 // FALSE
+                $attTypeRule
             )
         );
 
@@ -429,12 +450,12 @@ class ValidatorService
         // If attribute format is correct continue validation of other validationRules
         $attributeFormatValidator->addRule(
             new Rules\When(
-                $attFormatRule,
                 // IF
-                $this->getAttValidationRulesValidator($attribute),
+                $attFormatRule,
                 // TRUE
-                $attFormatRule
+                $this->getAttValidationRulesValidator($attribute),
                 // FALSE
+                $attFormatRule
             )
         );
 
@@ -539,12 +560,12 @@ class ValidatorService
             // If we are allowed to cascade and the input is an array, validate the input array for the Attribute->object Entity
             $objectValidator->addRule(
                 new Rules\When(
-                    new Rules\ArrayType(),
                     // IF
-                    $this->getEntityValidator($attribute->getObject(), ($level + 1)),
+                    new Rules\ArrayType(),
                     // TRUE
-                    new Rules\AlwaysValid()
+                    $this->getEntityValidator($attribute->getObject(), ($level + 1)),
                     // FALSE
+                    new Rules\AlwaysValid()
                 )
             );
         } else {
