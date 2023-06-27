@@ -6,6 +6,9 @@ use Exception;
 use Respect\Validation\Rules\AbstractRule;
 use Respect\Validation\Validatable;
 
+/**
+ * @author Wilco Louwerse <wilco@conduction.nl>
+ */
 final class Base64MimeTypes extends AbstractRule
 {
 
@@ -31,20 +34,24 @@ final class Base64MimeTypes extends AbstractRule
         $this->allowedTypes = $allowedTypes;
 
     }//end __construct()
-
+    
     /**
      * @inheritDoc
+     *
+     * @param mixed $input The input.
+     *
+     * @return bool True if mime type is allowed, false if it is not allowed or if we catched an exception.
      */
     public function validate($input): bool
     {
-        // todo: we could just move and merge all validations from here to the Base64String rule?
+        // Todo: We could just move and merge all validations from here to the Base64String rule?
         // Get base64 from this input string
         $exploded_input = explode(',', $input);
         $base64         = end($exploded_input);
 
         try {
             // Use the base64 to open a file and get the mimeType
-            $fileData = base64_decode($base64);
+            $fileData = \Safe\base64_decode($base64);
             $f        = finfo_open();
             $mimeType = finfo_buffer($f, $fileData, FILEINFO_MIME_TYPE);
             finfo_close($f);

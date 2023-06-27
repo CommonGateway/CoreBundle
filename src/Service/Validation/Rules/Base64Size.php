@@ -5,16 +5,19 @@ namespace CommonGateway\CoreBundle\Service\Validation\Rules;
 use Exception;
 use Respect\Validation\Rules\AbstractRule;
 
+/**
+ * @author Wilco Louwerse <wilco@conduction.nl>
+ */
 final class Base64Size extends AbstractRule
 {
-    // todo getter setter
+    // Todo: Getter setter.
 
     /**
      * @var integer|null
      */
     private ?int $minSize;
 
-    // todo getter setter
+    // Todo: Getter setter.
 
     /**
      * @var integer|null
@@ -24,8 +27,8 @@ final class Base64Size extends AbstractRule
     /**
      * It is recommended to use the Base64String validation rule before using this rule.
      *
-     * @param int|null $minSize
-     * @param int|null $maxSize
+     * @param int|null $minSize Minimum allowed size.
+     * @param int|null $maxSize Maximum allowed size.
      */
     public function __construct(?int $minSize, ?int $maxSize)
     {
@@ -33,19 +36,19 @@ final class Base64Size extends AbstractRule
         $this->maxSize = $maxSize;
 
     }//end __construct()
-
+    
     /**
      * @inheritDoc
+     *
+     * @param mixed $input The input.
+     * @return bool True if the size is allowed (in min/max range).
      */
     public function validate($input): bool
     {
-        // todo: we could just move and merge all validations from here to the Base64String rule?
+        // Todo: We could just move and merge all validations from here to the Base64String rule?
         $size = $this->getBase64Size($input);
-        if ($this->isValidSize($size)) {
-            return true;
-        }
 
-        return false;
+        return $this->isValidSize($size);
 
     }//end validate()
 
@@ -58,10 +61,10 @@ final class Base64Size extends AbstractRule
      */
     private function getBase64Size($base64)
     {
-        // return memory size in B (KB, MB)
+        // Return memory size in B (KB, MB).
         try {
             $size_in_bytes = (int) (strlen(rtrim($base64, '=')) * 3 / 4);
-            // be careful when changing this!
+            // Be careful when changing this!
             // $size_in_kb = $size_in_bytes / 1024;
             // $size_in_mb = $size_in_kb / 1024;
             return $size_in_bytes;
@@ -74,9 +77,9 @@ final class Base64Size extends AbstractRule
     /**
      * Checks if given size is a valid size compared to the min & max size.
      *
-     * @param int $size
+     * @param int $size The size to check.
      *
-     * @return bool
+     * @return bool True if size is allowed, false if not.
      */
     private function isValidSize(int $size): bool
     {

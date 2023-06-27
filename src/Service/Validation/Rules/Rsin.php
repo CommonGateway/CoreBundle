@@ -9,15 +9,22 @@ use function mb_strlen;
 
 /**
  * Copy from BSN Rule.
+ *
+ * @author Wilco Louwerse <wilco@conduction.nl>
  */
 final class Rsin extends AbstractRule
 {
+    
     /**
      * {@inheritDoc}
+     *
+     * @param mixed $input The input.
+     *
+     * @return bool True if input is a valid rsin. False if not.
      */
     public function validate($input): bool
     {
-        if (!ctype_digit($input)) {
+        if (ctype_digit($input) === false) {
             return false;
         }
 

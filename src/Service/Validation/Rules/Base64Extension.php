@@ -5,6 +5,9 @@ namespace CommonGateway\CoreBundle\Service\Validation\Rules;
 use Respect\Validation\Rules\AbstractRule;
 use Respect\Validation\Validatable;
 
+/**
+ * @author Wilco Louwerse <wilco@conduction.nl>
+ */
 final class Base64Extension extends AbstractRule
 {
 
@@ -17,28 +20,37 @@ final class Base64Extension extends AbstractRule
      * @var string|null
      */
     private ?string $mime_type;
-
+    
     /**
      * @inheritDoc
+     *
+     * @param mixed $input The input.
+     *
+     * @return bool False if extension and mime type do not match. Else true.
      */
     public function validate($input): bool
     {
-        // Get extension from filename if the filename is present
-        if ($extension = array_key_exists('filename', $input) ? pathinfo($input['filename'], PATHINFO_EXTENSION) : null) {
-            // Get mime_type from base64
-            $explode_base64 = explode(',', $input['base64']);
-            $imgdata        = base64_decode(end($explode_base64));
-            $f              = finfo_open();
-            $mime_type      = finfo_buffer($f, $imgdata, FILEINFO_MIME_TYPE);
-            finfo_close($f);
-
-            // Validate if mime type and extension match
-            if ($this->mimeToExt($mime_type) != $extension) {
-                $this->setExtension($extension);
-                $this->setMimeType($mime_type);
-
-                return false;
-            }
+        if (array_key_exists('filename', $input) === false || array_key_exists('base64', $input) === false) {
+            // Base64File.php will return an exception on one of these keys missing.
+            return true;
+        }
+        
+        // Get extension from filename if the filename is present.
+        $extension = pathinfo($input['filename'], PATHINFO_EXTENSION);
+    
+        // Get mime_type from base64.
+        $explode_base64 = explode(',', $input['base64']);
+        $imgdata        = \Safe\base64_decode(end($explode_base64));
+        $f              = finfo_open();
+        $mime_type      = finfo_buffer($f, $imgdata, FILEINFO_MIME_TYPE);
+        finfo_close($f);
+    
+        // Validate if mime type and extension match.
+        if ($this->mimeToExt($mime_type) !== $extension) {
+            $this->setExtension($extension);
+            $this->setMimeType($mime_type);
+        
+            return false;
         }
 
         return true;
@@ -48,8 +60,8 @@ final class Base64Extension extends AbstractRule
     /**
      * Converts a mime type to an extension (or find all mime_types with an extension).
      *
-     * @param $mime
-     * @param null $ext
+     * @param mixed $mime Mime type.
+     * @param null $ext Extension
      *
      * @return array|false|string
      */
@@ -242,7 +254,7 @@ final class Base64Extension extends AbstractRule
             'text/x-scriptzsh'                                                          => 'zsh',
         ];
 
-        if ($ext) {
+        if (empty($ext) === false) {
             $mime_types = [];
             foreach ($mime_map as $mime_type => $extension) {
                 if ($extension == $ext) {
@@ -267,7 +279,7 @@ final class Base64Extension extends AbstractRule
     }//end getExtension()
 
     /**
-     * @param string $extension
+     * @param string $extension An extension.
      *
      * @return Validatable
      */
@@ -289,7 +301,7 @@ final class Base64Extension extends AbstractRule
     }//end getMimeType()
 
     /**
-     * @param string $mime_type
+     * @param string $mime_type A mime type.
      *
      * @return Validatable
      */

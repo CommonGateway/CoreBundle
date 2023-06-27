@@ -5,6 +5,9 @@ namespace CommonGateway\CoreBundle\Service\Validation\Rules;
 use Respect\Validation\Exceptions\ComponentException;
 use Respect\Validation\Rules;
 
+/**
+ * @author Wilco Louwerse <wilco@conduction.nl>
+ */
 class Base64File extends Rules\AllOf
 {
     /**

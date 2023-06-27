@@ -6,9 +6,12 @@ use Exception;
 use JWadhams\JsonLogic as jsonLogicLib;
 use Respect\Validation\Rules\AbstractRule;
 
+/**
+ * @author Wilco Louwerse <wilco@conduction.nl>
+ */
 final class JsonLogic extends AbstractRule
 {
-    // todo getter setter
+    // Todo: Getter setter.
 
     /**
      * @var mixed
@@ -23,22 +26,26 @@ final class JsonLogic extends AbstractRule
         $this->jsonLogic = $jsonLogic;
 
     }//end __construct()
-
+    
     /**
      * @inheritDoc
      *
+     * @param $input
+     *
      * @throws Exception
+     *
+     * @return bool True if jsonLogic rules are met. False if not.
      */
     public function validate($input): bool
     {
-        if (is_string($this->jsonLogic)) {
-            // todo, what if we can't cast $input to string? maybe use try catch?
+        if (is_string($this->jsonLogic) === true) {
+            // Todo: what if we can't cast $input to string? maybe use try catch?
             $this->jsonLogic = str_replace('{{input}}', (string) $input, $this->jsonLogic);
             $this->jsonLogic = json_decode($this->jsonLogic, true);
             $input           = null;
         }
 
-        if (is_array($this->jsonLogic) && jsonLogicLib::apply($this->jsonLogic, $input)) {
+        if (is_array($this->jsonLogic) === true && empty(jsonLogicLib::apply($this->jsonLogic, $input)) === false) {
             return true;
         }
 
@@ -47,7 +54,7 @@ final class JsonLogic extends AbstractRule
     }//end validate()
 
     /*
-     * examples of how to use this Rule:
+     * Examples of how to use this Rule:
      *
      * With $jsonLogic as a string, in this example $input should be equal to "apples"
      * new CommonGateway\CoreBundle\Service\Validation\Rules\JsonLogic('{"==":["apples", "{{input}}"]}');

@@ -4,6 +4,9 @@ namespace CommonGateway\CoreBundle\Service\Validation\Exceptions;
 
 use Respect\Validation\Exceptions\NestedValidationException;
 
+/**
+ * @author Wilco Louwerse <wilco@conduction.nl>
+ */
 final class Base64SizeException extends NestedValidationException
 {
     public const BOTH    = 'both';
@@ -11,7 +14,10 @@ final class Base64SizeException extends NestedValidationException
     public const GREATER = 'greater';
 
     /**
+     * https://respect-validation.readthedocs.io/en/latest/custom-rules/#custom-rules
      * {@inheritDoc}
+     *
+     * @var string[][]
      */
     protected $defaultTemplates = [
         self::MODE_DEFAULT  => [
@@ -25,17 +31,19 @@ final class Base64SizeException extends NestedValidationException
             self::GREATER => '{{name}} is to small, file size must not be lower than {{maxSize}} bytes',
         ],
     ];
-
+    
     /**
      * {@inheritDoc}
+     *
+     * @return string both, greater or lower.
      */
     protected function chooseTemplate(): string
     {
-        if (!$this->getParam('minSize')) {
+        if (empty($this->getParam('minSize')) === true) {
             return self::GREATER;
         }
 
-        if (!$this->getParam('maxSize')) {
+        if (empty($this->getParam('maxSize')) === true) {
             return self::LOWER;
         }
 
