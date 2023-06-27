@@ -21,7 +21,7 @@ jobs:
           ls
           echo; echo "Adding features to PDF"
           for f in *.md; do cat $f; echo; done | md-to-pdf > ../../_output/manual.pdf
-          cd ../_output
+          cd ../../_output
           echo; echo "Output Folder Listing"
           ls
           cd ..
