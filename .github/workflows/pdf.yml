@@ -15,25 +15,27 @@ jobs:
       - name: Build book
         run: |-
           npm install -g md-to-pdf
-          mkdir -p _output
           echo; echo "Adding root to PDF"
-          for f in *.md; do cat $f; echo; done | md-to-pdf > /_output/manual.pdf
+          for f in *.md; do cat $f; echo; done | md-to-pdf > docs/manual.pdf
           cd /docs
           echo; echo "Input Folder docs"
           ls
           echo; echo "Adding docs to PDF"
-          for f in *.md; do cat $f; echo; done | md-to-pdf > ../_output/manual.pdf
+          for f in *.md; do cat $f; echo; done | md-to-pdf > manual.pdf
           cd /features
           echo; echo "Input Folder docs/features"
           ls
           echo; echo "Adding features to PDF"
-          for f in *.md; do cat $f; echo; done | md-to-pdf > ../../_output/manual.pdf
-          cd ../../_output
-          echo; echo "Output Folder Listing"
+          for f in *.md; do cat $f; echo; done | md-to-pdf > ../manual.pdf
+          cd ../
+          echo; echo "Output DOCS Folder Listing"
           ls
           cd ..
-
-      - uses: actions/upload-artifact@v1
-        with:
-          name: output
-          path: _output
+      - name: Git commit
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email ""
+          git add src
+          git commit -m "Update docs from PDF Manual creator" || echo "No changes to commit"
+          git pull origin $(git rev-parse --abbrev-ref HEAD) --rebase --autostash
+          git push
