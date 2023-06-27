@@ -1,5 +1,6 @@
 # Turns al the markdown files into a pdf for future downloads based on https://www.stevefenton.co.uk/blog/2022/04/converting-markdown-files-to-pdf-in-github-actions/
-name: convert
+# https://www.npmjs.com/package/md-to-pdf for more options
+name: PDF Manual
 
 on:
   push:
