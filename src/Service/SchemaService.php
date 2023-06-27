@@ -2,6 +2,7 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use App\Entity\Coupler;
 use App\Entity\Entity;
 use App\Entity\ObjectEntity;
 use App\Entity\Value;
@@ -42,10 +43,11 @@ class SchemaService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        LoggerInterface $schemaLogger
-    ) {
+        LoggerInterface        $schemaLogger
+    )
+    {
         $this->entityManager = $entityManager;
-        $this->logger        = $schemaLogger;
+        $this->logger = $schemaLogger;
 
     }//end __construct()
 
@@ -58,7 +60,7 @@ class SchemaService
     {
         $objects = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
 
-        $this->logger->info('Validating:'.count($objects).'objects\'s');
+        $this->logger->info('Validating:' . count($objects) . 'objects\'s');
 
         // Lets go go go !
         foreach ($objects as $object) {
@@ -79,12 +81,12 @@ class SchemaService
     {
         $values = $this->entityManager->getRepository('App:Value')->findAll();
 
-        $this->logger->info('Validating:'.count($values).'values\'s');
+        $this->logger->info('Validating:' . count($values) . 'values\'s');
 
         // Lets go go go !
         foreach ($values as $value) {
             if ($value->getObjectEntity() === null) {
-                $this->logger->error('Value '.$value->getStringValue().' ('.$value->getId().') that belongs to  '.$value->getAttribute()->getName().' ('.$value->getAttribute()->getId().') is orpahned');
+                $this->logger->error('Value ' . $value->getStringValue() . ' (' . $value->getId() . ') that belongs to  ' . $value->getAttribute()->getName() . ' (' . $value->getAttribute()->getId() . ') is orpahned');
             }
         }
 
@@ -99,7 +101,7 @@ class SchemaService
     {
         $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
 
-        $this->logger->info('Validating:'.count($schemas).'schema\'s');
+        $this->logger->info('Validating:' . count($schemas) . 'schema\'s');
 
         // Lets go go go !
         foreach ($schemas as $schema) {
@@ -124,25 +126,25 @@ class SchemaService
 
         // Does the schema have an reference?
         if ($schema->getReference() === null) {
-            $this->logger->debug('Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a reference');
+            $this->logger->debug('Schema ' . $schema->getName() . ' (' . $schema->getId() . ') dosn\t have a reference');
             $status = false;
         }
 
         // Does the schema have an application?
         if ($schema->getApplication() === null) {
-            $this->logger->debug('Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a application');
+            $this->logger->debug('Schema ' . $schema->getName() . ' (' . $schema->getId() . ') dosn\t have a application');
             $status = false;
         }
 
         // Does the schema have an organization?
         if ($schema->getOrganization() === null) {
-            $this->logger->debug('Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a organization');
+            $this->logger->debug('Schema ' . $schema->getName() . ' (' . $schema->getId() . ') dosn\t have a organization');
             $status = false;
         }
 
         // Does the schema have an owner?
         if ($schema->getOwner() === null) {
-            $this->logger->debug('Schema '.$schema->getName().' ('.$schema->getId().') dosn\t have a owner');
+            $this->logger->debug('Schema ' . $schema->getName() . ' (' . $schema->getId() . ') dosn\t have a owner');
             $status = false;
         }
 
@@ -156,9 +158,9 @@ class SchemaService
         }
 
         if ($status === true) {
-            $this->logger->info('Schema '.$schema->getName().' ('.$schema->getId().') has been checked and is fine');
+            $this->logger->info('Schema ' . $schema->getName() . ' (' . $schema->getId() . ') has been checked and is fine');
         } else if ($status === false) {
-            $this->logger->error('Schema '.$schema->getName().' ('.$schema->getId().') has been checked and has an error');
+            $this->logger->error('Schema ' . $schema->getName() . ' (' . $schema->getId() . ') has been checked and has an error');
         }
 
         return $status;
@@ -180,24 +182,24 @@ class SchemaService
         if ($attribute->getType() === 'object') {
             // Check for object link.
             if ($attribute->getObject() === false) {
-                $message = 'Attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an object';
+                $message = 'Attribute ' . $attribute->getName() . ' (' . $attribute->getId() . ') that is of type Object but is not linked to an object';
                 $this->logger->error($message);
                 $status = false;
             } else {
-                $message = 'Attribute '.$attribute->getName().' ('.$attribute->getId().') that is linked to object '.$attribute->getObject()->getName().' ('.$attribute->getObject()->getId();
+                $message = 'Attribute ' . $attribute->getName() . ' (' . $attribute->getId() . ') that is linked to object ' . $attribute->getObject()->getName() . ' (' . $attribute->getObject()->getId();
                 $this->logger->debug($message);
             }
 
             // Check for reference link.
             if ($attribute->getReference() === false) {
-                $message = 'Attribute '.$attribute->getName().' ('.$attribute->getId().') that is of type Object but is not linked to an reference';
+                $message = 'Attribute ' . $attribute->getName() . ' (' . $attribute->getId() . ') that is of type Object but is not linked to an reference';
                 $this->logger->debug($message);
             }
         }//end if
 
         // Check for reference link.
         if ($attribute->getReference() === true && $attribute->getType() !== 'object') {
-            $message = 'Attribute '.$attribute->getName().' ('.$attribute->getId().') that has a reference ('.$attribute->getReference().') but isn\'t of the type object';
+            $message = 'Attribute ' . $attribute->getName() . ' (' . $attribute->getId() . ') that has a reference (' . $attribute->getReference() . ') but isn\'t of the type object';
             $this->logger->error($message);
             $status = false;
         }
@@ -210,11 +212,11 @@ class SchemaService
      * Handles forced id's on object entities.
      *
      * @param ObjectEntity $objectEntity The object entity on wich to force an id
-     * @param array        $hydrate      The data to hydrate
+     * @param array $hydrate The data to hydrate
      *
      * @return ObjectEntity The PERSISTED object entity on the forced id
      */
-    public function hydrate(ObjectEntity $objectEntity, array $hydrate = []): ObjectEntity
+    public function hydrate(ObjectEntity $objectEntity, array $hydrate = [], bool $unsafe = false): ObjectEntity
     {
         // This savety dosn't make sense but we need it.
         if ($objectEntity->getEntity() === null) {
@@ -225,7 +227,7 @@ class SchemaService
 
         // We have an object entity with a fixed id that isn't in the database, so we need to act.
         if (isset($hydrate['id']) === true && $this->entityManager->contains($objectEntity) === false) {
-            $this->logger->debug('Creating new object ('.$objectEntity->getEntity()->getName().') on a fixed id ('.$hydrate['id'].')');
+            $this->logger->debug('Creating new object (' . $objectEntity->getEntity()->getName() . ') on a fixed id (' . $hydrate['id'] . ')');
 
             // Save the id.
             $id = $hydrate['id'];
@@ -239,9 +241,9 @@ class SchemaService
             $this->entityManager->flush();
             $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
 
-            $this->logger->debug('Defintive object id ('.$objectEntity->getId().')');
+            $this->logger->debug('Defintive object id (' . $objectEntity->getId() . ')');
         } else {
-            $this->logger->debug('Creating new object ('.$objectEntity->getEntity()->getName().') on a generated id');
+            $this->logger->debug('Creating new object (' . $objectEntity->getEntity()->getName() . ') on a generated id');
         }
 
         // We already dit this so lets skip it.
@@ -255,36 +257,46 @@ class SchemaService
             if ($valueObject instanceof Value) {
                 // Value is an array so lets create an object.
                 if ($valueObject->getAttribute()->getType() === 'object') {
+
+                    if ($unsafe || $value === null || $value === []) {
+                        // Make sure we unset inversedBy en subresourceOf, so no: $this->objects->clear();
+                        foreach ($object->getObjects() as $subObject) {
+                            $this->removeObject($subObject);
+                        }
+                        $object->setStringValue(null);
+                    }
+
                     // I hate arrays.
                     if ($valueObject->getAttribute()->getMultiple() === true) {
                         $this->logger->debug('an array for objects');
+
                         if (is_array($value) === true) {
                             foreach ($value as $subvalue) {
                                 // Savety.
                                 if ($valueObject->getAttribute()->getObject() === null) {
                                     continue;
                                 }
-
+                                if (is_string($subvalue)) {
+                                    $valueObject->setStringValue($value);
+                                    continue;
+                                }
                                 // Is array.
                                 if (is_array($subvalue) === true) {
+
                                     $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
-                                    $newObject = $this->hydrate($newObject, $subvalue);
-                                    $valueObject->addObject($newObject);
-                                } else {
-                                    // Is not an array.
-                                    $idValue  = $subvalue;
-                                    $subvalue = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
-                                    // Savety.
-                                    if ($subvalue === null) {
-                                        $this->logger->error('Could not find an object for id '.$idValue.' (SchemaService->hydrate)');
-                                    } else {
-                                        $valueObject->addObject($subvalue);
-                                    }
+                                    $newObject = $this->hydrate($newObject, $subvalue, $unsafe);
+                                    $coupler = new Coupler($newObject);
+
+                                    $this->entityManager->persist($coupler);
+                                    $this->entityManager->flush();
+
+                                    $valueObject->addObject($coupler);
                                 }
+
                             }//end foreach
                         } else {
                             // The use of gettype is discoureged, but we don't use it as a bl here and only for logging text purposes. So a design decicion was made te allow it.
-                            $this->logger->error($valueObject->getAttribute()->getName().' Is a multiple so should be filled with an array, but provided value was '.$value.'(type: '.gettype($value).')');
+                            $this->logger->error($valueObject->getAttribute()->getName() . ' Is a multiple so should be filled with an array, but provided value was ' . $value . '(type: ' . gettype($value) . ')');
                         }//end if
 
                         continue;
@@ -294,24 +306,24 @@ class SchemaService
                     if (is_array($value) === true) {
                         // Savety.
                         if ($valueObject->getAttribute()->getObject() === null) {
-                            $this->logger->error('Could not find an object for atribute  '.$valueObject->getAttribute()->getname().' ('.$valueObject->getAttribute()->getId().')');
+                            $this->logger->error('Could not find an object for atribute  ' . $valueObject->getAttribute()->getname() . ' (' . $valueObject->getAttribute()->getId() . ')');
+                            continue;
+                        }
+
+                        if (is_string($value)) {
+                            $valueObject->setStringValue($value);
                             continue;
                         }
 
                         $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
-                        $value     = $this->hydrate($newObject, $value);
-                        $valueObject->setValue($value);
-                    } else {
-                        // Is not an array.
-                        $idValue = $value;
-                        $value   = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
-                        // Savety.
-                        if ($value === null) {
-                            $this->logger->error('Could not find an object for id '.$idValue.' (SchemaService->hydrate)');
-                        } else {
-                            $valueObject->setValue($value);
-                        }
-                    }//end if
+                        $value = $this->hydrate($newObject, $value, $unsafe);
+                        $coupler = new Coupler($newObject);
+
+                        $this->entityManager->persist($coupler);
+                        $this->entityManager->flush();
+
+                        $valueObject->setValue($coupler);
+                    }
                 } else {
                     $valueObject->setValue($value);
                 }//end if
@@ -321,8 +333,19 @@ class SchemaService
             }//end if
         }//end foreach
 
+//        if ($unsafe) {
+//            foreach ($this->object->getObjectValues() as $value) {
+//                // Drop values from values
+//                $value->removeNonHydratedObjects();
+//                // Drop the value itself
+//                if (!in_array($value->getAttribute()->getName(), $hydratedValues)) {
+//                    $this->removeObjectValue($value);
+//                }
+//            }
+//        }
+
         // Lets force the default values.
-        $objectEntity->hydrate([]);
+//        $objectEntity->hydrate([], $unsafe);
 
         $this->entityManager->persist($objectEntity);
         $this->entityManager->flush();

@@ -168,6 +168,15 @@ class ValueService
 
     }//end findSubobject()
 
+    /**
+     * Fetches the inverses of a coupler by checking its value and object.
+     *
+     * @param Coupler           $coupler The coupler to find inverses for
+     * @param Value             $value   The value the coupler relates to.
+     * @param ObjectEntity|null $object  The object that is referenced by the coupler.
+     *
+     * @return ArrayCollection The inverses of the coupler.
+     */
     public function getInverses(Coupler $coupler, Value $value, ObjectEntity &$object = null): ArrayCollection
     {
         $targetObjectId = $coupler->getObjectId();
@@ -189,6 +198,13 @@ class ValueService
 
     }//end getInverses()
 
+    /**
+     * If needed, adds a new coupler for the inverse relation between two objects.
+     *
+     * @param Value $value The object to set the inverse for.
+     *
+     * @return void
+     */
     public function inverseRelation(Value $value)
     {
 
@@ -209,6 +225,14 @@ class ValueService
 
     }//end inverseRelation()
 
+    /**
+     * Removes inverses of deleted couplers.
+     *
+     * @param Coupler $coupler The coupler to be deleted.
+     * @param Value   $value   The value the coupler belongs to.
+     *
+     * @return void
+     */
     public function removeInverses(Coupler $coupler, Value $value)
     {
         $inverses = $this->getInverses($coupler, $value, $object);
