@@ -15,18 +15,13 @@ jobs:
       - name: Build book
         run: |-
           npm install -g md-to-pdf
-          mkdir -p /_output
+          mkdir -p _output
           cd docs/features
           echo; echo "Input Folder docs/features"
           ls
           echo; echo "Adding features to PDF"
-          for f in *.md; do cat $f; echo; done | md-to-pdf > /_output/manual.pdf
-          cd docs/classes/Service
-          echo; echo "Input Folder docs/classes/Service"
-          ls
-          echo; echo "Adding services to PDF"
-          for f in *.md; do cat $f; echo; done | md-to-pdf > /_output/manual.pdf
-          cd /_output
+          for f in *.md; do cat $f; echo; done | md-to-pdf > ../../_output/manual.pdf
+          cd ../_output
           echo; echo "Output Folder Listing"
           ls
           cd ..
