@@ -1,0 +1,32 @@
+# Turns al the markdown files into a pdf for future downloads based on https://www.stevefenton.co.uk/blog/2022/04/converting-markdown-files-to-pdf-in-github-actions/
+name: convert
+
+on:
+  push:
+
+# todo turn the folder into a variable
+jobs:
+  converttopdf:
+    name: Build PDF
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build book
+        run: |-
+          npm install -g md-to-pdf
+          mkdir -p _output
+          cd docs/features
+          echo; echo "Input Folder Listing"
+          ls
+          echo; echo "Generating PDF"
+          for f in *.md; do cat $f; echo; done | md-to-pdf > ../_output/manual.pdf
+          cd ../_output
+          echo; echo "Output Folder Listing"
+          ls
+          cd ..
+
+      - uses: actions/upload-artifact@v1
+        with:
+          name: output
+          path: _output
