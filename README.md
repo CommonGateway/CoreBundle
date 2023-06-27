@@ -1,4 +1,5 @@
 # Common Gateway
+
 Introducing the Common Gateway - a cutting-edge, advanced technology platform designed to enhance data interaction and exchange for local governments. The Common Gateway is a critical tool for the seamless provision of data to Common Ground services, ensuring smooth, efficient, and secure data transactions.
 
 At its core, the Common Gateway is a plugin-based system, allowing for flexible and customizable operations. It is capable of handling multiple plugins, each with its own unique set of functionalities, encapsulated in the form of installation.json files. The platform comes with a robust Installation Service that can read these installation.json files, understand the plugin's requirements, and create basic schema's accordingly.
