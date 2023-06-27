@@ -20,7 +20,7 @@ final class Base64Extension extends AbstractRule
      * @var string|null
      */
     private ?string $mime_type;
-    
+
     /**
      * @inheritDoc
      *
@@ -34,22 +34,22 @@ final class Base64Extension extends AbstractRule
             // Base64File.php will return an exception on one of these keys missing.
             return true;
         }
-        
+
         // Get extension from filename if the filename is present.
         $extension = pathinfo($input['filename'], PATHINFO_EXTENSION);
-    
+
         // Get mime_type from base64.
         $explode_base64 = explode(',', $input['base64']);
         $imgdata        = \Safe\base64_decode(end($explode_base64));
         $f              = finfo_open();
         $mime_type      = finfo_buffer($f, $imgdata, FILEINFO_MIME_TYPE);
         finfo_close($f);
-    
+
         // Validate if mime type and extension match.
         if ($this->mimeToExt($mime_type) !== $extension) {
             $this->setExtension($extension);
             $this->setMimeType($mime_type);
-        
+
             return false;
         }
 
@@ -61,7 +61,7 @@ final class Base64Extension extends AbstractRule
      * Converts a mime type to an extension (or find all mime_types with an extension).
      *
      * @param mixed $mime Mime type.
-     * @param null $ext Extension
+     * @param null  $ext  Extension
      *
      * @return array|false|string
      */

@@ -30,7 +30,7 @@ class ValidationService
 
     /**
      * The cache interface.
-     * 
+     *
      * @var CacheInterface
      */
     public CacheInterface $cache;
@@ -103,7 +103,7 @@ class ValidationService
      * Gets a Validator for the given Entity, uses caching.
      *
      * @param Entity $entity The entity used for validation.
-     * @param int    $level The level used to check for max depth when validating sub-objects.
+     * @param int    $level  The level used to check for max depth when validating sub-objects.
      *
      * @throws CacheException|ComponentException|GatewayException|InvalidArgumentException
      *
@@ -154,8 +154,8 @@ class ValidationService
         foreach ($entity->getAttributes() as $attribute) {
             if (($this->method === 'PUT' || $this->method === 'PATCH')
                 && isset($attribute->getValidations()['immutable']) === true
-                && $attribute->getValidations()['immutable'] === true)
-            {
+                && $attribute->getValidations()['immutable'] === true
+            ) {
                 // If immutable this attribute should not be present when doing a PUT or PATCH.
                 $validator->addRule(new Rules\Not(new Rules\Key($attribute->getName())));
                 // Skip any other validations.
@@ -163,8 +163,8 @@ class ValidationService
             }
 
             if ($this->method === 'POST' && isset($attribute->getValidations()['unsetable']) === true
-                && $attribute->getValidations()['unsetable'] === true)
-            {
+                && $attribute->getValidations()['unsetable'] === true
+            ) {
                 // If unsetable this attribute should not be present when doing a POST.
                 $validator->addRule(new Rules\Not(new Rules\Key($attribute->getName())));
                 // Skip any other validations.

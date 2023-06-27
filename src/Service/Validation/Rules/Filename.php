@@ -16,7 +16,7 @@ final class Filename extends AbstractRule
      * @var string
      */
     private string $regex;
-    
+
     /**
      * @param string|null $regex The regex used to validate if a filename is a valid filename.
      */
@@ -26,7 +26,7 @@ final class Filename extends AbstractRule
         $this->regex = $regex;
 
     }//end __construct()
-    
+
     /**
      * @inheritDoc
      *

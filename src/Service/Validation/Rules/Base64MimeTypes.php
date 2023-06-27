@@ -34,7 +34,7 @@ final class Base64MimeTypes extends AbstractRule
         $this->allowedTypes = $allowedTypes;
 
     }//end __construct()
-    
+
     /**
      * @inheritDoc
      *

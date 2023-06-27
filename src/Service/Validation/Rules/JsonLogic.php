@@ -26,7 +26,7 @@ final class JsonLogic extends AbstractRule
         $this->jsonLogic = $jsonLogic;
 
     }//end __construct()
-    
+
     /**
      * @inheritDoc
      *

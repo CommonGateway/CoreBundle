@@ -11,7 +11,7 @@ use Respect\Validation\Exceptions\ValidationException;
  */
 final class RsinException extends ValidationException
 {
-    
+
     /**
      * https://respect-validation.readthedocs.io/en/latest/custom-rules/#custom-rules
      * {@inheritDoc}

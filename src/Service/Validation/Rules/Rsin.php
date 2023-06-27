@@ -14,7 +14,6 @@ use function mb_strlen;
  */
 final class Rsin extends AbstractRule
 {
-    
     /**
      * {@inheritDoc}
      *

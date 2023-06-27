@@ -31,7 +31,7 @@ final class Base64SizeException extends NestedValidationException
             self::GREATER => '{{name}} is to small, file size must not be lower than {{maxSize}} bytes',
         ],
     ];
-    
+
     /**
      * {@inheritDoc}
      *

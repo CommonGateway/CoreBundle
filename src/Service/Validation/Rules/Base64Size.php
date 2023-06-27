@@ -36,11 +36,11 @@ final class Base64Size extends AbstractRule
         $this->maxSize = $maxSize;
 
     }//end __construct()
-    
+
     /**
      * @inheritDoc
      *
-     * @param mixed $input The input.
+     * @param  mixed $input The input.
      * @return bool True if the size is allowed (in min/max range).
      */
     public function validate($input): bool

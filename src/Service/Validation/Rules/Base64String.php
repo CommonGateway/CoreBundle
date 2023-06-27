@@ -19,7 +19,7 @@ final class Base64String extends AbstractRule
      * @var string|null
      */
     private ?string $exceptionMessage = null;
-    
+
     /**
      * @inheritDoc
      *

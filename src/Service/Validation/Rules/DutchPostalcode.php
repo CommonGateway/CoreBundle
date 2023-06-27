@@ -9,7 +9,6 @@ use Respect\Validation\Rules\AbstractRule;
  */
 final class DutchPostalcode extends AbstractRule
 {
-    
     /**
      * @inheritDoc
      *
@@ -30,7 +29,7 @@ final class DutchPostalcode extends AbstractRule
         return false;
 
     }//end validate()
-    
+
     /**
      * Gets the list of Dutch PC4 postal codes.
      *

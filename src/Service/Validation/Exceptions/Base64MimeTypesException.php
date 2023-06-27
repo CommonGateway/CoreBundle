@@ -9,7 +9,7 @@ use Respect\Validation\Exceptions\ValidationException;
  */
 final class Base64MimeTypesException extends ValidationException
 {
-    
+
     /**
      * https://respect-validation.readthedocs.io/en/latest/custom-rules/#custom-rules
      * {@inheritDoc}
