@@ -17,7 +17,12 @@ jobs:
           npm install -g md-to-pdf
           mkdir -p _output
           cd docs/features
-          echo; echo "Input Folder Listing"
+          echo; echo "Input Folder docs/features"
+          ls
+          echo; echo "Generating PDF"
+          for f in *.md; do cat $f; echo; done | md-to-pdf > ../_output/manual.pdf
+          cd docs/classes/Service
+          echo; echo "Input Folder docs/classes/Service"
           ls
           echo; echo "Generating PDF"
           for f in *.md; do cat $f; echo; done | md-to-pdf > ../_output/manual.pdf
