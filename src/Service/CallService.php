@@ -396,7 +396,7 @@ class CallService
         if (array_key_exists($endpoint, $endpointsConfig) === true
             && array_key_exists('in', $endpointsConfig[$endpoint]) === false
             || array_key_exists('global', $endpointsConfig) === true
-            && array_key_exists('in', $endpointsConfig['global'] === false)
+            && array_key_exists('in', $endpointsConfig['global']) === false
         ) {
             if ($response !== null) {
                 return $response;

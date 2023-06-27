@@ -271,13 +271,13 @@ class MetricsServiceTest extends TestCase
             [
                 'name' => 'app_objects_count',
                 'type' => 'gauge',
-                'help' => 'The amount of stored objects',
+                'help' => 'The amount of objects in the data layer',
                 'value' => 10,
             ],
             [
                 'name'  => 'app_cached_objects_count',
                 'type'  => 'gauge',
-                'help'  => 'The amount objects in the data layer that are stored in the MongoDB cache',
+                'help'  => 'The amount of objects in the data layer that are stored in the MongoDB cache',
                 'value' => 10,
             ],
             [
@@ -576,13 +576,13 @@ class MetricsServiceTest extends TestCase
             [
                 'name' => 'app_objects_count',
                 'type' => 'gauge',
-                'help' => 'The amount of stored objects',
+                'help' => 'The amount of objects in the data layer',
                 'value' => 10,
             ],
             [
                 'name'  => 'app_cached_objects_count',
                 'type'  => 'gauge',
-                'help'  => 'The amount objects in the data layer that are stored in the MongoDB cache',
+                'help'  => 'The amount of objects in the data layer that are stored in the MongoDB cache',
                 'value' => 10,
             ],
             [

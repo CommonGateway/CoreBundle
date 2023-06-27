@@ -73,7 +73,7 @@ class FileSystemCreateServiceTest extends TestCase
     {
         // Execute the method under test
         $this->fileSystemService->removeZipFile($filename);
-
+        
         $this->assertFileDoesNotExist($filename);
     }
 
