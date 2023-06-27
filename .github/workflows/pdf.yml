@@ -16,7 +16,14 @@ jobs:
         run: |-
           npm install -g md-to-pdf
           mkdir -p _output
-          cd docs/features
+          echo; echo "Adding root to PDF"
+          for f in *.md; do cat $f; echo; done | md-to-pdf > /_output/manual.pdf
+          cd /docs
+          echo; echo "Input Folder docs"
+          ls
+          echo; echo "Adding docs to PDF"
+          for f in *.md; do cat $f; echo; done | md-to-pdf > ../_output/manual.pdf
+          cd /features
           echo; echo "Input Folder docs/features"
           ls
           echo; echo "Adding features to PDF"
