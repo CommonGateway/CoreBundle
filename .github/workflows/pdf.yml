@@ -15,7 +15,7 @@ jobs:
       - name: Build book
         run: |-
           npm install -g md-to-pdf
-          mkdir -p _output
+          mkdir -p /_output
           cd docs/features
           echo; echo "Input Folder docs/features"
           ls
