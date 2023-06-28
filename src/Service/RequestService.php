@@ -444,7 +444,7 @@ class RequestService
             // If the proxy is set to the endpoint set the endpoint-proxy to the proxy variable.
             if ($data['endpoint']->getProxy() !== null) {
                 $proxy = $data['endpoint']->getProxy();
-            }// end if
+            }//end if
 
             if ($proxy instanceof Source && ($proxy->getIsEnabled() === null || $proxy->getIsEnabled() === false)) {
                 return new Response(
@@ -472,10 +472,10 @@ class RequestService
                 $this->data['path'],
                 $this->data['method'],
                 [
-                    'query'   => $this->data['query'],
-                    'headers' => $this->data['headers'],
-                    'body'    => $this->data['crude_body'],
-                    'decoded_body' => $this->data['body']
+                    'query'        => $this->data['query'],
+                    'headers'      => $this->data['headers'],
+                    'body'         => $this->data['crude_body'],
+                    'decoded_body' => $this->data['body'],
                 ]
             );
 
@@ -486,7 +486,6 @@ class RequestService
                 $result->getHeaders()
             );
         } catch (Exception $exception) {
-
             $statusCode = ($exception->getCode() ?? 500);
             if (method_exists(get_class($exception), 'getResponse') === true && $exception->getResponse() !== null) {
                 $body       = $exception->getResponse()->getBody()->getContents();
