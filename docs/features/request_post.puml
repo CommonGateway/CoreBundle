@@ -4,6 +4,8 @@ footer: Common Gateway | Endpoints
 header: POST Request
 autonumber
 
+skinparam backgroundColor transparent
+
 boundary    Endpoint         as Endpoint
 collections RequestService   as RequestService
 control     Authorization    as Authorization

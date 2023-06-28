@@ -3,6 +3,8 @@ title: Kubernetes
 footer: Common Gateway | Components
 header: Kubernetes
 
+skinparam backgroundColor transparent
+
 actor "User" as user
 interface "F5 extern (port 443)" as f5extern
 actor "Admin" as adminUser

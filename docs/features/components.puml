@@ -3,6 +3,7 @@ title: Components
 footer: Common Gateway | Components
 header: Components
 
+skinparam backgroundColor transparent
 
 cloud "Kubernetes"{
 

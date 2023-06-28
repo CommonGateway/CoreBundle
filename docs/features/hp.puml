@@ -3,6 +3,8 @@ title: Huwelijksplanner
 footer: Huwelijksplanner | Components
 header: Components
 
+skinparam backgroundColor transparent
+
 actor "User" as user
 interface "User Interface (port 443)" as f5extern
 actor "Admin" as adminUser
