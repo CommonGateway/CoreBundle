@@ -1,0 +1,33 @@
+@startuml
+title: Workers
+footer: Common Gateway | Workers
+header: Workers
+
+participant "Gateway Installation" as GI
+database "Message Bus (RabbitMQ)" as MB
+participant "Worker 1" as GC1
+participant "Worker 2" as GC2
+participant "Worker 3" as GC3
+participant "Worker 4" as GC4
+participant "Worker 5" as GC5
+
+GI -> MB : Sets asynchronous work
+
+GC1 -> MB : Check for work
+MB -> GC1 : Pick up work (if available)
+GC1 -> MB : Provide work result
+GC2 -> MB : Check for work
+MB -> GC2 : Pick up work (if available)
+GC2 -> MB : Provide work result
+GC3 -> MB : Check for work
+MB -> GC3 : Pick up work (if available)
+GC3 -> MB : Provide work result
+GC4 -> MB : Check for work
+MB -> GC4 : Pick up work (if available)
+GC4 -> MB : Provide work result
+GC5 -> MB : Check for work
+MB -> GC5 : Pick up work (if available)
+GC5 -> MB : Provide work result
+
+MB -> GI : Get work status
+@enduml

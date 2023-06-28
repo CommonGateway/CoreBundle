@@ -1,0 +1,249 @@
+@startuml
+title: Objects
+footer: Common Gateway | Objects
+header: Objects
+
+skinparam backgroundColor transparent
+
+package Deprecteced <<Folder>> {
+
+class  Audittrail{
+}
+class  Contract {
+}
+class  Document {
+}
+class  File {
+}
+class  Property{
+}
+class  Purpose{
+}
+class  Soap {
+}
+class  Translation {
+}
+}
+
+
+
+package Core <<Folder>> {
+
+class  User{
+}
+class  Organization {
+}
+class  Application{
+}
+class  Authentication{
+}
+class  DashboardCard{
+}
+class  "Source" as Gateway {
+}
+class  Log {
+}
+class  SecurityGroup {
+}
+}
+
+
+package Events <<Folder>> {
+
+class  Action{
+}
+class  ActionHandler{
+}
+class  Cronjob{
+}
+class  Handler{
+}
+}
+
+
+package API <<Folder>> {
+class  Collection{
+}
+class  Endpoint{
+}
+}
+
+package EAV <<Folder>> {
+package Interraction <<Folder>> {
+class  Mapping {
+}
+class  Synchronization{
+}
+class  Template {
+}
+class  Unread {
+}
+
+}
+package Data <<Folder>> {
+class "Object" as ObjectEntity {
+  -name: string
+  -self: string
+  -externalId: string
+  -uri: string
+  -application: Application
+  -organization: Organization
+  -owner: string
+  -entity: Entity
+  -objectValues: Collection<Value>
+  -hasErrors: bool
+  -errors: array
+  -hasPromises: bool
+  -promises: array
+  -externalResult: array
+  -subresourceOf: Collection<Value>
+  -subresourceIndex: string
+  -synchronizations: Collection<Synchronization>
+  -usedIn: Collection<Attribute>
+  -hydrated: bool
+  -lock: string
+  -sourceOfSynchronizations: Collection<Synchronization>
+  -- Metadata
+  -id: UuidInterface <<generated>>
+  -dateCreated: DateTime <<generated>>
+  -dateModified: DateTime <<generated>>
+}
+
+class Value {
+  -uri: string
+  -stringValue: string
+  -integerValue: int
+  -numberValue: float
+  -booleanValue: bool
+  -arrayValue: array
+  -simpleArrayValue: array
+  -dateTimeValue: DateTime
+  -files: Collection<File>
+  -attribute: Attribute
+  -objectEntity: ObjectEntity
+  -objects: Collection<ObjectEntity>
+  -- Metadata
+  -id: UuidInterface <<generated>>
+  -dateCreated: DateTime <<generated>>
+  -dateModified: DateTime <<generated>>
+}
+}
+
+package Definition <<Folder>> {
+class "Schema" as Entity {
+  -gateway: Source
+  -endpoint: string
+  -toSoap: Soap
+  -fromSoap: Collection<Soap>
+  -name: string
+  -description: string
+  -function: string
+  -extend: bool
+  -inherited: bool
+  -attributes: Collection<Attribute>
+  -searchPartial: Collection<Attribute>
+  -objectEntities: Collection<ObjectEntity>
+  -usedIn: Collection<Attribute>
+  -transformations: array
+  -route: string
+  -availableProperties: array
+  -usedProperties: array
+  -translationConfig: array
+  -collectionConfig: array
+  -itemConfig: array
+  -externMappingIn: array
+  -externMappingOut: array
+  -handlers: Collection<Handler>
+  -collections: Collection<CollectionEntity>
+  -schema: string
+  -dateCreated: DateTime
+  -dateModified: DateTime
+  -nameProperties: array
+  -maxDepth: int
+  -reference: string
+  -version: string
+  -endpoints: Collection<Endpoint>
+  -exclude: bool
+  -persist: bool
+  -createAuditTrails: bool
+  -defaultSource: Source
+  -- Metadata
+  -id: UuidInterface <<generated>>
+
+}
+
+class Attribute {
+    -name: string
+    -type: string
+    -format: string
+    -multiple: bool
+    -entity: Entity
+    -function: string
+    -searchPartial: Entity
+    -attributeValues: Collection
+    -object: Entity
+    -extend: bool
+    -include: bool
+    -ref: string
+    -multipleOf: string
+    -maximum: string
+    -exclusiveMaximum: string
+    -minimum: string
+    -exclusiveMinimum: string
+    -maxLength: string
+    -minLength: int
+    -maxItems: int
+    -minItems: int
+    -uniqueItems: bool
+    -maxProperties: string
+    -minProperties: int
+    -inversedBy: Attribute
+    -required: bool
+    -requiredIf: array
+    -forbiddenIf: array
+    -enum: array
+    -allOf: array
+    -anyOf: array
+    -oneOf: array
+    -description: string
+    -defaultValue: string
+    -nullable: bool
+    -mustBeUnique: bool
+    -caseSensitive: bool
+    -readOnly: bool
+    -writeOnly: bool
+    -example: string
+    -pattern: string
+    -deprecated: bool
+    -minDate: string
+    -maxDate: string
+    -maxFileSize: string
+    -minFileSize: string
+    -fileTypes: array
+    -validations: array
+    -persistToGateway: bool
+    -searchable: bool
+    -sortable: bool
+    -triggerParentEvents: bool
+    -cascadeDelete: bool
+    -cascade: bool
+    -objectConfig: array
+    -immutable: bool
+    -unsetable: bool
+    -mayBeOrphaned: bool
+    -schema: string
+    -inversedByPropertyName: string
+    -- Metadata
+    -id: UuidInterface <<generated>>
+    -dateCreated: Datetime <<generated>>
+    -dateModified: Datetime <<generated>>
+}
+}
+}
+
+
+Entity::id --|| "One" Attribute::Entity : Entities have attributes
+ObjectEntity::id  --|| "One" Value::ObjectEntity : Entities have values
+Value::Attribute "One" ||-- Attribute::id : Values are defined by an Attribute
+ObjectEntity::Entity "One" ||-- Entity::id : Objects are defined by an Entity
+@enduml
