@@ -219,6 +219,7 @@ class CallService
             throw new HttpException('409', "This source has no location: {$source->getName()}");
         }
 
+
         if (isset($config['headers']) === false) {
             $config['headers'] = [];
         }
@@ -232,13 +233,21 @@ class CallService
         // Backwards compatible, $source->getHeaders = deprecated
         $config['headers'] = array_merge(($source->getHeaders() ?? []), $config['headers']);
 
-        $config['headers']['host'] = $parsedUrl['host'];
-        $config['headers']         = $this->removeEmptyHeaders($config['headers']);
-
-        $url = $source->getLocation().$endpoint;
-        $this->callLogger->info('Calling url '.$url);
+        $config['headers']['host']  = $parsedUrl['host'];
+        $config['headers']          = $this->removeEmptyHeaders($config['headers']);
+        $config['path']['location'] = $source->getLocation();
+        $config['path']['endpoint'] = $endpoint;
 
         $config = $this->handleEndpointsConfigOut($source, $endpoint, $config);
+
+        // Check if the path in config is not empty. If so set the sourceLocation with the path of the config array as url.
+        if (empty($config['path']['endpoint']) === false) {
+            $endpoint = '/'.$config['path']['endpoint'];
+        }
+
+        $url = $source->getLocation().$endpoint;
+
+        $this->callLogger->info('Calling url '.$url);
 
         $this->callLogger->debug('Call configuration: ', $config);
         // Let's make the call
@@ -289,6 +298,7 @@ class CallService
         }
 
         if (isset($endpointConfigOut) === true) {
+            $config = $this->handleEndpointConfigOut($config, $endpointConfigOut, 'path');
             $config = $this->handleEndpointConfigOut($config, $endpointConfigOut, 'query');
             $config = $this->handleEndpointConfigOut($config, $endpointConfigOut, 'headers');
             $config = $this->handleEndpointConfigOut($config, $endpointConfigOut, 'body');
@@ -324,7 +334,17 @@ class CallService
                 return $config;
             }//end if
 
-            if (is_string($config[$configKey]) === true) {
+            // We want to mapp the path with the config of the body.
+            if ($configKey === 'path') {
+                try {
+                    // use the decoded_body from the config array to mapp the path.
+                    $config[$configKey] = $this->mappingService->mapping($mapping, $config['decoded_body']);
+                } catch (Exception | LoaderError | SyntaxError $exception) {
+                    $this->callLogger->error("Could not map with mapping {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source. ".$exception->getMessage());
+                }
+            }
+
+            if (is_string($config[$configKey]) === true && $configKey !== 'path') {
                 try {
                     $body               = $this->mappingService->mapping($mapping, \Safe\json_decode($config[$configKey], true));
                     $config[$configKey] = \Safe\json_encode($body);
@@ -333,7 +353,7 @@ class CallService
                 }
             }//end if
 
-            if (is_array($config[$configKey]) === true) {
+            if (is_array($config[$configKey]) === true && $configKey !== 'path') {
                 try {
                     $config[$configKey] = $this->mappingService->mapping($mapping, $config[$configKey]);
                 } catch (Exception | LoaderError | SyntaxError $exception) {
@@ -377,7 +397,7 @@ class CallService
         if (array_key_exists($endpoint, $endpointsConfig) === true
             && array_key_exists('in', $endpointsConfig[$endpoint]) === false
             || array_key_exists('global', $endpointsConfig) === true
-            && array_key_exists('in', $endpointsConfig['global'] === false)
+            && array_key_exists('in', $endpointsConfig['global']) === false
         ) {
             if ($response !== null) {
                 return $response;

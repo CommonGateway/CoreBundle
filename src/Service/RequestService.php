@@ -431,7 +431,7 @@ class RequestService
         // If we already have a proxy, we can skip these checks.
         if ($proxy instanceof Source === false) {
             // We only do proxying if the endpoint forces it, and we do not have a proxy.
-            if ($data['endpoint'] instanceof Endpoint === false || $proxy = $data['endpoint']->getProxy() === null) {
+            if ($data['endpoint'] instanceof Endpoint === false || $data['endpoint']->getProxy() === null) {
                 $message = !$data['endpoint'] instanceof Endpoint ? "No Endpoint in data['endpoint']" : "This Endpoint has no Proxy: {$data['endpoint']->getName()}";
 
                 return new Response(
@@ -441,7 +441,12 @@ class RequestService
                 );
             }//end if
 
-            if ($proxy instanceof Source && ($proxy->getIsEnabled() === null || $proxy->getEnabled() === false)) {
+            // If the proxy is set to the endpoint set the endpoint-proxy to the proxy variable.
+            if ($data['endpoint']->getProxy() !== null) {
+                $proxy = $data['endpoint']->getProxy();
+            }// end if
+
+            if ($proxy instanceof Source && ($proxy->getIsEnabled() === null || $proxy->getIsEnabled() === false)) {
                 return new Response(
                     $this->serializeData(['Message' => "This Source is not enabled: {$proxy->getName()}"], $contentType),
                     Response::HTTP_OK,
@@ -470,6 +475,7 @@ class RequestService
                     'query'   => $this->data['query'],
                     'headers' => $this->data['headers'],
                     'body'    => $this->data['crude_body'],
+                    'decoded_body' => $this->data['body']
                 ]
             );
 
@@ -480,6 +486,7 @@ class RequestService
                 $result->getHeaders()
             );
         } catch (Exception $exception) {
+
             $statusCode = ($exception->getCode() ?? 500);
             if (method_exists(get_class($exception), 'getResponse') === true && $exception->getResponse() !== null) {
                 $body       = $exception->getResponse()->getBody()->getContents();
@@ -961,9 +968,7 @@ class RequestService
 
         $appEndpointConfig = [];
         foreach ($application->getConfiguration() as $applicationConfig) {
-            if ($appConfig = $this->getConfigInOutOrGlobal($endpointRef, $endpoint, $applicationConfig) !== []) {
-                $appEndpointConfig = $this->getConfigInOutOrGlobal($endpointRef, $endpoint, $applicationConfig);
-            }
+            $appEndpointConfig = $this->getConfigInOutOrGlobal($endpointRef, $endpoint, $applicationConfig);
         }
 
         return $appEndpointConfig;
