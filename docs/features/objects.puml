@@ -3,6 +3,8 @@ title: Objects
 footer: Common Gateway | Objects
 header: Objects
 
+skinparam backgroundColor transparent
+
 package Deprecteced <<Folder>> {
 
 class  Audittrail{
