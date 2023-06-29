@@ -160,10 +160,10 @@ class MetricsService
             'ALERT'     => $collection->count(['level_name' => 'ALERT']),
             'CRITICAL'  => $collection->count(['level_name' => 'CRITICAL']),
             'ERROR'     => $collection->count(['level_name' => 'ERROR']),
-    
+
             // NOTE: The following log types are not counted towards the total number of errors:
-//            'WARNING'   => $collection->count(['level_name' => 'WARNING']),
-//            'NOTICE'    => $collection->count(['level_name' => 'NOTICE']),
+        // 'WARNING'   => $collection->count(['level_name' => 'WARNING']),
+        // 'NOTICE'    => $collection->count(['level_name' => 'NOTICE']),
         ];
 
         $metrics[] = [
