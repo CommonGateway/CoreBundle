@@ -24,7 +24,7 @@ final class Base64Extension extends AbstractRule
      * @var string|null
      */
     private ?string $mimeType;
-    
+
     /**
      * A list of extension and their matching mime types.
      */
@@ -236,7 +236,7 @@ final class Base64Extension extends AbstractRule
         $explode_base64 = explode(',', $input['base64']);
         $imgdata        = \Safe\base64_decode(end($explode_base64));
         $file           = finfo_open();
-        $mimeType      = finfo_buffer($file, $imgdata, FILEINFO_MIME_TYPE);
+        $mimeType       = finfo_buffer($file, $imgdata, FILEINFO_MIME_TYPE);
         finfo_close($file);
 
         // Validate if mime type and extension match.
@@ -271,7 +271,7 @@ final class Base64Extension extends AbstractRule
 
             return $mimeTypes;
         }
-        
+
         if (array_key_exists($mime, $this::MIME_MAP) === true) {
             return $this::MIME_MAP[$mime];
         }

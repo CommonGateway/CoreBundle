@@ -41,11 +41,11 @@ class ValidationService
      * @var string
      */
     private string $method;
-    
+
     /**
      * The level used to check for max depth when validating sub-objects.
      *
-     * @var int
+     * @var integer
      */
     private int $level;
 
@@ -123,6 +123,7 @@ class ValidationService
             // Todo: make it so that if we reach max depth we throw an error if input is provided.
             return new Validator();
         }
+
         $this->level = $level;
 
         // Try and get a validator for this Entity(+method) from cache.
@@ -150,7 +151,7 @@ class ValidationService
     /**
      * Adds Attribute Validators to an Entity Validator.
      *
-     * @param Entity    $entity The entity used for validation.
+     * @param Entity    $entity    The entity used for validation.
      * @param Validator $validator The entity validator we are going to add attribute validation to.
      *
      * @throws CacheException|ComponentException|GatewayException|InvalidArgumentException
@@ -550,10 +551,10 @@ class ValidationService
         if (isset($attribute->getValidations()['cascade']) === false || $attribute->getValidations()['cascade'] === false) {
             // Uuid.
             $objectValidator->addRule(new Rules\Uuid());
-            
+
             return $objectValidator;
         }
-    
+
         // Array or Uuid.
         $objectValidator->addRule(
             new Rules\OneOf(
@@ -696,9 +697,9 @@ class ValidationService
     /**
      * Gets the correct Rule for a specific validation of the given Attribute.
      *
-     * @param Attribute $attribute The attribute we are adding validation rules for.
-     * @param string $validation A single validation key from attribute->validations.
-     * @param mixed $config A single validation value from attribute->validations.
+     * @param Attribute $attribute  The attribute we are adding validation rules for.
+     * @param string    $validation A single validation key from attribute->validations.
+     * @param mixed     $config     A single validation value from attribute->validations.
      *
      * @throws ComponentException|GatewayException|Exception
      *
