@@ -4,6 +4,8 @@ footer: Common Gateway | Endpoints
 header: Requests
 autonumber
 
+skinparam backgroundColor transparent
+
 actor       Requester        as Requester
 boundary    Endpoint         as Endpoint
 control     Authentication   as Authentication

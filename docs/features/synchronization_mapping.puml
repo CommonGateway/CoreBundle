@@ -1,0 +1,16 @@
+@startuml
+database Datalayer
+actor MappingService
+database Source
+
+Datalayer -> MappingService: Outgoing Object
+note right of Datalayer: The object as it is in the datalayer
+MappingService -> Source: Outgoing Object
+note right of MappingService: The object afther aplieng mappingOut
+
+Source --> MappingService: Incoming Object
+note left of Source: The object as it is in the source
+MappingService --> Datalayer: Incoming Object
+note left of MappingService: The object afther aplieng mappingIn
+
+@enduml

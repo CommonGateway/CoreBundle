@@ -1,5 +1,11 @@
 @startuml
 title: Getting data from the datalayer
+footer: Common Gateway | Components
+header: Datalyer
+
+skinparam backgroundColor transparent
+
+
 Request -> Datalayer: Request
 Datalayer-> Cache: Update object('s)
 Cache--> Datalayer: Object('s)
