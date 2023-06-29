@@ -55,7 +55,7 @@ function generatePubliccode(array $metadata): array
 
     }
 
-    // Lets set some defaults
+    // Let's set some defaults
     if(isset($publiccode['publiccode-yml-version']) === false){
         $publiccode['publiccode-yml-version'] = '0.2';
     }

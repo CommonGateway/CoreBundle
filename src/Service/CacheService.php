@@ -278,7 +278,7 @@ class CacheService
 
         $collection = $this->client->objects->json;
 
-        // Lets not cash the entire schema
+        // Let's not cash the entire schema
         $array = $objectEntity->toArray(['embedded' => true, 'user' => $this->getObjectUser($objectEntity)]);
 
         // (isset($array['_schema']['$id'])?$array['_schema'] = $array['_schema']['$id']:'');
@@ -437,7 +437,7 @@ class CacheService
             }
         }
 
-        // Lets see if we need a search
+        // Let's see if we need a search
         $this->handleSearch($filter, $completeFilter, $search);
 
         // Limit & Start for pagination
@@ -573,7 +573,7 @@ class CacheService
      */
     private function handleFilterArray($key, &$value): bool
     {
-        // Lets check for the methods like in
+        // Let's check for the methods like in
         if (is_array($value) === true) {
             // int_compare
             if (array_key_exists('int_compare', $value) === true && is_array($value['int_compare']) === true) {
@@ -951,7 +951,7 @@ class CacheService
         $limit = isset($filter['_limit']) && is_numeric($filter['_limit']) ? (int) $filter['_limit'] : 30;
         $page  = isset($filter['_page']) && is_numeric($filter['_page']) ? (int) $filter['_page'] : 1;
 
-        // Lets build the page & pagination
+        // Let's build the page & pagination
         if ($start > 1) {
             $offset = ($start - 1);
         } else {
