@@ -111,7 +111,7 @@ class EavService
             // $objects = $this->entityManager->getRepository('App:ObjectEntity')->findAll();.
         }
 
-        // And lets delete them
+        // And let's delete them
         // TODO: we should use a function from RequestService specific for deleting objects, in case we ever add custom BL for deletion.
         foreach ($objects as $object) {
             $this->entityManager->remove($object);

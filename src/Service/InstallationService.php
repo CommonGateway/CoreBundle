@@ -470,7 +470,7 @@ class InstallationService
      */
     private function addToObjects(array $schema)
     {
-        // It is a schema so lets save it like that.
+        // It is a schema so let's save it like that.
         if (array_key_exists('$schema', $schema) === true) {
             $this->objects[$schema['$schema']][] = $schema;
 
@@ -761,7 +761,7 @@ class InstallationService
         // Create users with given Organization, Applications & SecurityGroups.
         $this->createUsers(($data['users'] ?? []));
 
-        // Lets see if we have things that we want to create cards for stuff (Since this might create cards for the stuff above this should always be last).
+        // Let's see if we have things that we want to create cards for stuff (Since this might create cards for the stuff above this should always be last).
         $this->createCards(($data['cards'] ?? []));
 
         // Set the default source for a schema.

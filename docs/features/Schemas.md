@@ -46,7 +46,7 @@ The old schema has a set version number and the new schema has a higher set vers
 The old schema has a set version number and the new schema has a lower set version number -> The gateway does not update the schema
 The old schema has a set version number and the new schema does not have a set version number -> The gateway does not update the schema
 
-Lets take a look at an example. We have a weather plugin that contains a weather schema.
+Let's take a look at an example. We have a weather plugin that contains a weather schema.
 
 
 
