@@ -13,6 +13,8 @@ final class Filename extends AbstractRule
     // Todo: Getter setter.
 
     /**
+     * The regex used to validate if a filename is a valid filename.
+     *
      * @var string
      */
     private string $regex;
@@ -21,8 +23,8 @@ final class Filename extends AbstractRule
      * @param string|null $regex The regex used to validate if a filename is a valid filename.
      */
     public function __construct(?string $regex = '/^[\w,\s()~!@#$%^&*_+\-=\[\]{};\'.]{1,255}\.[A-Za-z0-9]{1,5}$/')
-    // public function __construct(?string $regex = '/^[^\\/:*?\"<>|]{1,255}\.[A-Za-z0-9]{1,5}$/') #todo:
     {
+        // Use this regex instead? $regex = '/^[^\\/:*?\"<>|]{1,255}\.[A-Za-z0-9]{1,5}$/'
         $this->regex = $regex;
 
     }//end __construct()
@@ -36,9 +38,7 @@ final class Filename extends AbstractRule
      */
     public function validate($input): bool
     {
-        if (Validator::stringType()->validate($input) === true
-            && Validator::regex($this->regex)->validate($input) === true
-        ) {
+        if (Validator::stringType()->validate($input) === true && Validator::regex($this->regex)->validate($input) === true) {
             return true;
         }
 

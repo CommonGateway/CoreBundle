@@ -13,6 +13,8 @@ final class Base64MimeTypes extends AbstractRule
 {
 
     /**
+     * The allowed mime types.
+     *
      * @var array
      */
     private array $allowedTypes;
@@ -45,16 +47,16 @@ final class Base64MimeTypes extends AbstractRule
     public function validate($input): bool
     {
         // Todo: We could just move and merge all validations from here to the Base64String rule?
-        // Get base64 from this input string
-        $exploded_input = explode(',', $input);
-        $base64         = end($exploded_input);
+        // Get base64 from this input string.
+        $explodedInput = explode(',', $input);
+        $base64        = end($explodedInput);
 
         try {
-            // Use the base64 to open a file and get the mimeType
+            // Use the base64 to open a file and get the mimeType.
             $fileData = \Safe\base64_decode($base64);
-            $f        = finfo_open();
-            $mimeType = finfo_buffer($f, $fileData, FILEINFO_MIME_TYPE);
-            finfo_close($f);
+            $file     = finfo_open();
+            $mimeType = finfo_buffer($file, $fileData, FILEINFO_MIME_TYPE);
+            finfo_close($file);
         } catch (Exception $exception) {
             $this->setExceptionMessage($exception->getMessage());
 
@@ -97,7 +99,7 @@ final class Base64MimeTypes extends AbstractRule
     }//end getExceptionMessage()
 
     /**
-     * @param string $exceptionMessage
+     * @param string $exceptionMessage The exception message.
      *
      * @return Validatable
      */
