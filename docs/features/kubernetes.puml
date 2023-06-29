@@ -1,37 +1,32 @@
 @startuml
-title: Huwelijksplanner
-footer: Huwelijksplanner | Components
-header: Components
+title: Kubernetes
+footer: Common Gateway | Components
+header: Kubernetes
 
 skinparam backgroundColor transparent
 
 actor "User" as user
-interface "User Interface (port 443)" as f5extern
+interface "F5 extern (port 443)" as f5extern
 actor "Admin" as adminUser
-interface "Admin Interface  (port 443) " as f5intern
+interface "F5 intern (port 443)" as f5intern
 
+actor "Externe Catalogus" as externalCatalouge
+interface "Hipp (outd of scope)" as hipp
 
 cloud "Azure"{
  [ADFS]  as identity
 }
 
-cloud "Netwerk"{
-interface "BRP (HC 1.4 / Stuf)" as brp
-interface "Facturatie (NLCIUS)" as factuur
-}
-
-
 cloud "Internet"{
-interface "Ingenico" as betalen
+interface "External Catalog" as externalCatalog
 }
 
 
-cloud "(Hardend) Kubernetes Namespace"{
+cloud "Kubernetes"{
 
 boundary "ingress" as ingress
 database loki
 database prometheus
-
 
 package "Layer 5 (interaction)" {
 package "React Container 1" {
@@ -49,11 +44,8 @@ package "NGINX Container" {
  boundary "Nginx" as Nginx
 }
 
-package "Symfony Framework" {
- [Huwlijksplanner Service] as hp
- [Agenda Component] as agenda
- [Producten Component] as producten
- [Order Component] as order
+package "Gateway Container" {
+ [Open Catalogi plugin] as Plugins
  [Web Gateway] as Gateway
  [ORM] as ORM
 }
@@ -76,24 +68,21 @@ cloud "Database Service"{
 }
 }
 
-user <..> f5extern: Browser ANONIEM/DigiD
-adminUser <..> f5intern : Browser ADFS/OAuth JWT Claim
-f5extern <..> ingress: RBAC
-f5intern <..> ingress: RBAC
+externalCatalouge <..> hipp: PKIO
+user <..> f5extern: Browser ANONIEM
+adminUser <..> f5intern : Browser MET JWT Claim
+f5extern <..> ingress: Alleen openbare endpoints en objecten
+f5intern <..> ingress: Alle endpionts
+hipp <..> ingress: Catalogus uitwisselingen
 ingress <..> ui: Exposes
 ingress <..> admin: Exposes
 ingress <..> Nginx: Exposes
 Nginx  <..> Gateway: Runs
-Gateway <..> hp: Implements
-Gateway <..> agenda: Implements
-Gateway <..> order: Implements
-Gateway <..> producten: Implements
+Gateway <..> Plugins: Implements
 Gateway <..> identity: Implements
 Gateway ..> loki: Logs to
 Gateway ..> prometheus: Reports to
-hp <..> brp: Get citizens
-hp <..> factuur: Log results
-hp <..> betalen: Get payment link
+Plugins <..> externalCatalog: exchanges based on pki
 Gateway ..> MognoDB: Index
 Gateway ..> Redis: Cache
 Gateway ..> ORM: Store
