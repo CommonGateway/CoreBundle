@@ -21,7 +21,7 @@ final class DutchPostalcode extends AbstractRule
         $dutchPc4List = $this->getDutchPC4List();
 
         foreach ($dutchPc4List as $dutchPc4) {
-            if ($dutchPc4 == $input) {
+            if ($dutchPc4 === $input) {
                 return true;
             }
         }
