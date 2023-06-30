@@ -1,7 +1,6 @@
 <?php
 
 // src/Subscriber/DatabaseActivitySubscriber.php
-
 namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Entity\User;
@@ -12,6 +11,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserSubscriber implements EventSubscriberInterface
 {
+
     /**
      * @var UserPasswordHasherInterface
      */
@@ -24,6 +24,7 @@ class UserSubscriber implements EventSubscriberInterface
         UserPasswordHasherInterface $hasher
     ) {
         $this->hasher = $hasher;
+
     }//end __construct()
 
     /**
@@ -37,6 +38,7 @@ class UserSubscriber implements EventSubscriberInterface
             Events::prePersist,
             Events::preUpdate,
         ];
+
     }//end getSubscribedEvents()
 
     /**
@@ -49,6 +51,7 @@ class UserSubscriber implements EventSubscriberInterface
     public function prePersist(LifecycleEventArgs $args): void
     {
         $this->hashPassword($args);
+
     }//end prePersist()
 
     /**
@@ -61,6 +64,7 @@ class UserSubscriber implements EventSubscriberInterface
     public function preUpdate(LifecycleEventArgs $args): void
     {
         $this->hashPassword($args);
+
     }//end preUpdate()
 
     /**
@@ -72,9 +76,11 @@ class UserSubscriber implements EventSubscriberInterface
     {
         $object = $args->getObject();
         if ($object instanceof User === true
-            && password_get_info($object->getPassword())['algoName'] === 'unknown') {
+            && password_get_info($object->getPassword())['algoName'] === 'unknown'
+        ) {
             $hash = $this->hasher->hashPassword($object, $object->getPassword());
             $object->setPassword($hash);
         }
+
     }//end hashPassword()
 }//end class

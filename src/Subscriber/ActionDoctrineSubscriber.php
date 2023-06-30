@@ -11,7 +11,9 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class ActionDoctrineSubscriber implements EventSubscriberInterface
 {
+
     private ActionService $actionService;
+
     private EntityManagerInterface $entityManager;
 
     public function __construct(
@@ -20,19 +22,25 @@ class ActionDoctrineSubscriber implements EventSubscriberInterface
     ) {
         $this->actionService = $actionService;
         $this->entityManager = $entityManager;
-    }
+
+    }//end __construct()
 
     public static function getSubscribedEvents(): array
     {
         return [
-            KernelEvents::VIEW => ['postLoad', EventPriorities::PRE_SERIALIZE],
+            KernelEvents::VIEW => [
+                'postLoad',
+                EventPriorities::PRE_SERIALIZE,
+            ],
         ];
-    }
+
+    }//end getSubscribedEvents()
 
     public function postLoad(ViewEvent $event)
     {
         $this->addActionHandlerConfig($event);
-    }
+
+    }//end postLoad()
 
     private function addActionHandlerConfig(ViewEvent $event)
     {
@@ -46,7 +54,7 @@ class ActionDoctrineSubscriber implements EventSubscriberInterface
                     $event->setControllerResult($actionHandler);
                 }
             }
-        } elseif ($route == 'api_action_handlers_get_collection') {
+        } else if ($route == 'api_action_handlers_get_collection') {
             // get all actionHandlers with a commongateway.action_handlers tag
             $actionHandlers = $this->actionService->getAllActionHandlers();
             $event->setControllerResult($actionHandlers);
@@ -62,24 +70,27 @@ class ActionDoctrineSubscriber implements EventSubscriberInterface
             $response = [];
             foreach ($actions as $action) {
                 $handler = $this->actionService->getHandlerForAction($action);
-                $config = $handler->getConfiguration();
+                $config  = $handler->getConfiguration();
 
-                $action = $action->setActionHandlerConfiguration($config);
+                $action     = $action->setActionHandlerConfiguration($config);
                 $response[] = $action;
             }
+
             $event->setControllerResult($response);
         }
 
         if ($route == 'api_actions_get_item') {
-            $actionId = $event->getRequest()->attributes->get('_route_params') ? $event->getRequest()->attributes->get('_route_params')['id'] : null; //The id of the resource
+            $actionId = $event->getRequest()->attributes->get('_route_params') ? $event->getRequest()->attributes->get('_route_params')['id'] : null;
+            // The id of the resource
             $action = $this->entityManager->getRepository('App:Action')->find($actionId);
 
             $handler = $this->actionService->getHandlerForAction($action);
-            $config = $handler->getConfiguration();
+            $config  = $handler->getConfiguration();
 
             $action->setActionHandlerConfiguration($config);
 
             $event->setControllerResult($action);
         }
-    }
-}
+
+    }//end addActionHandlerConfig()
+}//end class

@@ -10,6 +10,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class ResponseSubscriber implements EventSubscriberInterface
 {
+
     /**
      * @var EntityManagerInterface
      */
@@ -27,7 +28,8 @@ class ResponseSubscriber implements EventSubscriberInterface
     public function __construct(EntityManagerInterface $entityManager, SessionInterface $session)
     {
         $this->entityManager = $entityManager;
-        $this->session = $session;
+        $this->session       = $session;
+
     }//end __construct()
 
     /**
@@ -38,6 +40,7 @@ class ResponseSubscriber implements EventSubscriberInterface
         return [
             KernelEvents::RESPONSE => ['request'],
         ];
+
     }//end getSubscribedEvents()
 
     /**
@@ -48,11 +51,14 @@ class ResponseSubscriber implements EventSubscriberInterface
         $response = $event->getResponse();
 
         // Set multiple headers simultaneously
-        $response->headers->add([
-            'Access-Control-Allow-Credentials' => 'true',
-            'Process-ID'                       => $this->session->get('process'),
-        ]);
+        $response->headers->add(
+            [
+                'Access-Control-Allow-Credentials' => 'true',
+                'Process-ID'                       => $this->session->get('process'),
+            ]
+        );
 
         $response->headers->remove('Access-Control-Allow-Origin');
+
     }//end request()
 }//end class

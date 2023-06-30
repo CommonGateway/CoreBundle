@@ -11,12 +11,14 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class GatewayItemSubscriber implements EventSubscriberInterface
 {
+
     private GatewayService $gatewayService;
 
     public function __construct(GatewayService $gatewayService)
     {
         $this->gatewayService = $gatewayService;
-    }
+
+    }//end __construct()
 
     /**
      * @return array[]
@@ -24,9 +26,13 @@ class GatewayItemSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            KernelEvents::REQUEST => ['gateway', EventPriorities::PRE_DESERIALIZE],
+            KernelEvents::REQUEST => [
+                'gateway',
+                EventPriorities::PRE_DESERIALIZE,
+            ],
         ];
-    }
+
+    }//end getSubscribedEvents()
 
     /**
      * @param RequestEvent $event
@@ -38,12 +44,12 @@ class GatewayItemSubscriber implements EventSubscriberInterface
         if (!$event->isMainRequest()) {
             return;
         }
+
         $route = $event->getRequest()->attributes->get('_route');
 
-        if (
-            $route !== 'api_gateways_gateway_get_item' &&
-            $route !== 'api_gateways_gateway_put_item' &&
-            $route !== 'api_gateways_gateway_delete_item'
+        if ($route !== 'api_gateways_gateway_get_item'
+            && $route !== 'api_gateways_gateway_put_item'
+            && $route !== 'api_gateways_gateway_delete_item'
         ) {
             return;
         }
@@ -58,5 +64,6 @@ class GatewayItemSubscriber implements EventSubscriberInterface
         );
 
         $event->setResponse($response);
-    }
-}
+
+    }//end gateway()
+}//end class

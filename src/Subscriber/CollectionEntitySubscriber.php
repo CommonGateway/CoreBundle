@@ -12,19 +12,25 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class CollectionEntitySubscriber implements EventSubscriberInterface
 {
+
     private EntityManagerInterface $entityManager;
 
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
-    }
+
+    }//end __construct()
 
     public static function getSubscribedEvents()
     {
         return [
-            KernelEvents::VIEW => ['request', EventPriorities::PRE_WRITE],
+            KernelEvents::VIEW => [
+                'request',
+                EventPriorities::PRE_WRITE,
+            ],
         ];
-    }
+
+    }//end getSubscribedEvents()
 
     /**
      * @param ViewEvent $event
@@ -33,13 +39,12 @@ class CollectionEntitySubscriber implements EventSubscriberInterface
     {
         $requestContent = json_decode($event->getRequest()->getContent());
 
-        if (
-            $event->getRequest()->attributes->get('_route') !== 'api_collection_entities_put_item' || !isset($requestContent->prefix)
+        if ($event->getRequest()->attributes->get('_route') !== 'api_collection_entities_put_item' || !isset($requestContent->prefix)
         ) {
             return;
         }
 
-        $oldObject = $event->getRequest()->get('previous_data');
+        $oldObject        = $event->getRequest()->get('previous_data');
         $collectionEntity = $this->entityManager->getRepository(CollectionEntity::class)->find($oldObject->getId()->toString());
 
         // Replace endpoints paths
@@ -47,9 +52,11 @@ class CollectionEntitySubscriber implements EventSubscriberInterface
             foreach ($collectionEntity->getEndpoints() as $endpoint) {
                 $this->setNewPath($endpoint, $requestContent->prefix, $oldObject->getPrefix());
             }
+
             $this->entityManager->flush();
         }
-    }
+
+    }//end request()
 
     /**
      * Sets a new path and pathRegex for given Endpoint.
@@ -66,17 +73,17 @@ class CollectionEntitySubscriber implements EventSubscriberInterface
             $endpoint->setPath(str_replace($oldPrefix, $newPrefix, $endpoint->getPath()));
         } else {
             // Set prefix for first time
-            $newPath = $endpoint->getPath();
+            $newPath           = $endpoint->getPath();
             $endpointPathRegex = $endpoint->getPathRegex();
             array_unshift($newPath, $newPrefix);
             $endpoint->setPath($newPath);
 
-            str_contains($endpointPathRegex, '^(') ?
-                $strToReplace = '^(' :
-                $strToReplace = '^';
-            $newPrefix = $strToReplace.$newPrefix.'/';
+            str_contains($endpointPathRegex, '^(') ? $strToReplace = '^(' : $strToReplace = '^';
+            $newPrefix                                             = $strToReplace.$newPrefix.'/';
             $endpoint->setPathRegex(str_replace($strToReplace, $newPrefix, $endpointPathRegex));
         }
+
         $this->entityManager->persist($endpoint);
-    }
-}
+
+    }//end setNewPath()
+}//end class

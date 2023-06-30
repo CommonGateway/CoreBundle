@@ -21,12 +21,19 @@ use Symfony\Component\Messenger\MessageBusInterface;
 
 class ActionSubscriber implements EventSubscriberInterface
 {
+
     private EntityManagerInterface $entityManager;
+
     private ContainerInterface $container;
+
     private ObjectEntityService $objectEntityService;
+
     private SessionInterface $session;
+
     private SymfonyStyle $io;
+
     private MessageBusInterface $messageBus;
+
     private LoggerInterface $logger;
 
     /**
@@ -46,7 +53,8 @@ class ActionSubscriber implements EventSubscriberInterface
             'commongateway.action.event'    => 'handleEvent',
 
         ];
-    }
+
+    }//end getSubscribedEvents()
 
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -56,13 +64,14 @@ class ActionSubscriber implements EventSubscriberInterface
         LoggerInterface $actionLogger,
         MessageBusInterface $messageBus
     ) {
-        $this->entityManager = $entityManager;
-        $this->container = $container;
+        $this->entityManager       = $entityManager;
+        $this->container           = $container;
         $this->objectEntityService = $objectEntityService;
-        $this->session = $session;
-        $this->messageBus = $messageBus;
-        $this->logger = $actionLogger;
-    }
+        $this->session             = $session;
+        $this->messageBus          = $messageBus;
+        $this->logger              = $actionLogger;
+
+    }//end __construct()
 
     public function runFunction(Action $action, array $data, string $currentThrow): array
     {
@@ -76,7 +85,7 @@ class ActionSubscriber implements EventSubscriberInterface
             }
         }
 
-        $class = $action->getClass();
+        $class  = $action->getClass();
         $object = $this->container->get($class);
 
         // timer starten
@@ -91,11 +100,11 @@ class ActionSubscriber implements EventSubscriberInterface
         try {
             $data = $object->run($data, array_merge($action->getConfiguration(), ['actionConditions' => $action->getConditions()]));
         } catch (AsynchronousException $exception) {
-            //Do not stop the execution when the asynchronousError is thrown, but throw at the end
-
+            // Do not stop the execution when the asynchronousError is thrown, but throw at the end
             // Something went wrong
             $actionRanGood = false;
         }
+
         // timer stoppen
         $stopTimer = microtime(true);
 
@@ -108,7 +117,7 @@ class ActionSubscriber implements EventSubscriberInterface
             }
         }
 
-        $totalTime = $stopTimer - $startTimer;
+        $totalTime = ($stopTimer - $startTimer);
 
         // Let's set some results
         $action->setLastRun(new DateTime());
@@ -125,7 +134,8 @@ class ActionSubscriber implements EventSubscriberInterface
         }
 
         return $data;
-    }
+
+    }//end runFunction()
 
     public function handleAction(Action $action, ActionEvent $event): ActionEvent
     {
@@ -163,7 +173,8 @@ class ActionSubscriber implements EventSubscriberInterface
         }
 
         return $event;
-    }
+
+    }//end handleAction()
 
     /**
      * Throws Events for the Action if it has any Throws configured.
@@ -178,7 +189,7 @@ class ActionSubscriber implements EventSubscriberInterface
     {
         if (isset($this->io)) {
             $totalThrows = $action->getThrows() ? count($action->getThrows()) : 0;
-            $ioMessage = "Found $totalThrows Throw".($totalThrows !== 1 ? 's' : '').' for this Action.';
+            $ioMessage   = "Found $totalThrows Throw".($totalThrows !== 1 ? 's' : '').' for this Action.';
             $currentCronJobThrow ? $this->io->block($ioMessage) : $this->io->text($ioMessage);
             if ($totalThrows !== 0) {
                 $extraDashesStr = $currentCronJobThrow ? '-' : '';
@@ -188,23 +199,26 @@ class ActionSubscriber implements EventSubscriberInterface
                 $currentCronJobThrow ?: $this->io->newLine();
             }
         }
+
         foreach ($action->getThrows() as $key => $throw) {
             // Throw event
             $this->objectEntityService->dispatchEvent('commongateway.action.event', $data, $throw);
 
             if (isset($this->io) && isset($totalThrows) && isset($extraDashesStr)) {
                 if ($key !== array_key_last($action->getThrows())) {
-                    $keyStr = $key + 1;
+                    $keyStr = ($key + 1);
                     $this->io->text("$keyStr/$totalThrows -$extraDashesStr Looping through Throws of this Action \"{$action->getName()}\"...");
                     !$currentCronJobThrow ?: $this->io->newLine();
                 }
             }
         }
+
         if (isset($this->io) && isset($totalThrows) && $totalThrows !== 0 && isset($extraDashesStr)) {
             $this->io->text("$totalThrows/$totalThrows -$extraDashesStr Finished looping through all Throws of this Action \"{$action->getName()}\"");
             $this->io->newLine();
         }
-    }
+
+    }//end handleActionThrows()
 
     /**
      * If we got here through CronjobCommand, write user feedback to $this->io before handling an Action.
@@ -217,36 +231,37 @@ class ActionSubscriber implements EventSubscriberInterface
     private function handleActionIoStart(Action $action, ActionEvent $event): bool
     {
         $currentCronJobThrow = false;
-        if (isset($this->io) &&
-            $this->session->get('currentCronJobThrow') &&
-            $this->session->get('currentCronJobThrow') == $event->getType() &&
-            $this->session->get('currentCronJobSubThrow') == $event->getSubType()
+        if (isset($this->io)
+            && $this->session->get('currentCronJobThrow')
+            && $this->session->get('currentCronJobThrow') == $event->getType()
+            && $this->session->get('currentCronJobSubThrow') == $event->getSubType()
         ) {
             $currentCronJobThrow = true;
             $this->io->block("Found an Action with matching conditions: [{$this->objectEntityService->implodeMultiArray($action->getConditions())}]");
             $this->io->definitionList(
                 'The conditions of the following Action match with the ActionEvent data',
                 new TableSeparator(),
-                ['Id'          => $action->getId()->toString()],
-                ['Name'        => $action->getName()],
+                ['Id' => $action->getId()->toString()],
+                ['Name' => $action->getName()],
                 ['Description' => $action->getDescription()],
-                ['Listens'     => implode(', ', $action->getListens())],
-                ['Throws'      => implode(', ', $action->getThrows())],
-                ['Class'       => $action->getClass()],
-                ['Priority'    => $action->getPriority()],
-                ['Async'       => is_null($action->getAsync()) ? null : ($action->getAsync() ? 'True' : 'False')],
-                ['IsLockable'  => is_null($action->getIsLockable()) ? null : ($action->getIsLockable() ? 'True' : 'False')],
-                ['LastRun'     => $action->getLastRun() ? $action->getLastRun()->format('Y-m-d H:i:s') : null],
+                ['Listens' => implode(', ', $action->getListens())],
+                ['Throws' => implode(', ', $action->getThrows())],
+                ['Class' => $action->getClass()],
+                ['Priority' => $action->getPriority()],
+                ['Async' => is_null($action->getAsync()) ? null : ($action->getAsync() ? 'True' : 'False')],
+                ['IsLockable' => is_null($action->getIsLockable()) ? null : ($action->getIsLockable() ? 'True' : 'False')],
+                ['LastRun' => $action->getLastRun() ? $action->getLastRun()->format('Y-m-d H:i:s') : null],
                 ['LastRunTime' => $action->getLastRunTime()],
-                ['Status'      => is_null($action->getStatus()) ? null : ($action->getStatus() ? 'True' : 'False')],
+                ['Status' => is_null($action->getStatus()) ? null : ($action->getStatus() ? 'True' : 'False')],
             );
             $this->io->block("The configuration of this Action: [{$this->objectEntityService->implodeMultiArray($action->getConfiguration())}]");
-        } elseif (isset($this->io)) {
+        } else if (isset($this->io)) {
             $this->io->text("The conditions of the Action {$action->getName()} match with the 'sub'-ActionEvent data");
-        }
+        }//end if
 
         return $currentCronJobThrow;
-    }
+
+    }//end handleActionIoStart()
 
     /**
      * If we got here through CronjobCommand, write user feedback to $this->io after handling an Action.
@@ -262,16 +277,17 @@ class ActionSubscriber implements EventSubscriberInterface
             $this->io->definitionList(
                 'Finished handling the following Action that matched the ActionEvent data',
                 new TableSeparator(),
-                ['Id'          => $action->getId()->toString()],
-                ['Name'        => $action->getName()],
-                ['LastRun'     => $action->getLastRun() ? $action->getLastRun()->format('Y-m-d H:i:s') : null],
+                ['Id' => $action->getId()->toString()],
+                ['Name' => $action->getName()],
+                ['LastRun' => $action->getLastRun() ? $action->getLastRun()->format('Y-m-d H:i:s') : null],
                 ['LastRunTime' => $action->getLastRunTime()],
-                ['Status'      => is_null($action->getStatus()) ? null : ($action->getStatus() ? 'True' : 'False')],
+                ['Status' => is_null($action->getStatus()) ? null : ($action->getStatus() ? 'True' : 'False')],
             );
-        } elseif (isset($this->io)) {
+        } else if (isset($this->io)) {
             $this->io->text("Finished handling the Action {$action->getName()} that matched the 'sub'-ActionEvent data");
         }
-    }
+
+    }//end handleActionIoFinish()
 
     public function handleEvent(ActionEvent $event): ActionEvent
     {
@@ -280,7 +296,7 @@ class ActionSubscriber implements EventSubscriberInterface
         // Normal behaviour is using the $event->getType(), but if $event->getSubType() is set, use that one instead.
         $listeningToThrow = !$event->getSubType() ? $event->getType() : $event->getSubType();
 
-        $actions = $this->entityManager->getRepository('App:Action')->findByListens($listeningToThrow);
+        $actions      = $this->entityManager->getRepository('App:Action')->findByListens($listeningToThrow);
         $totalActions = is_countable($actions) ? count($actions) : 0;
 
         $this->logger->info('Handling actions for event: '.$listeningToThrow.', found '.$totalActions.' listening actions');
@@ -296,6 +312,7 @@ class ActionSubscriber implements EventSubscriberInterface
                 $currentCronJobThrow ?: $this->io->newLine();
             }
         }
+
         $this->logger->debug($ioMessage);
 
         foreach ($actions as $key => $action) {
@@ -306,12 +323,13 @@ class ActionSubscriber implements EventSubscriberInterface
 
             if (isset($this->io) && isset($totalActions) && isset($extraDashesStr)) {
                 if ($key !== array_key_last($actions)) {
-                    $keyStr = $key + 1;
+                    $keyStr = ($key + 1);
                     $this->io->text("$keyStr/$totalActions --$extraDashesStr Looping through all Actions listening to \"$listeningToThrow\"...");
                     $this->logger->debug("$keyStr/$totalActions -- Looping through all Actions listening to \"$listeningToThrow\"...");
                     !$currentCronJobThrow ?: $this->io->newLine();
                 }
             }
+
             $this->session->remove('action');
         }
 
@@ -319,10 +337,12 @@ class ActionSubscriber implements EventSubscriberInterface
             $this->io->text("$totalActions/$totalActions -- Finished looping all Actions listening to \"$listeningToThrow\"");
             $this->io->newLine();
         }
+
         $this->logger->info("$totalActions/$totalActions -- Finished looping all Actions listening to \"$listeningToThrow\"");
 
         return $event;
-    }
+
+    }//end handleEvent()
 
     /**
      * If we got here through CronjobCommand, write user feedback to $this->io before handling Actions.
@@ -335,9 +355,10 @@ class ActionSubscriber implements EventSubscriberInterface
     {
         if ($this->session->get('io')) {
             $this->io = $this->session->get('io');
-            if ($this->session->get('currentCronJobThrow') &&
-                $this->session->get('currentCronJobThrow') == $event->getType() &&
-                $this->session->get('currentCronJobSubThrow') == $event->getSubType()) {
+            if ($this->session->get('currentCronJobThrow')
+                && $this->session->get('currentCronJobThrow') == $event->getType()
+                && $this->session->get('currentCronJobSubThrow') == $event->getSubType()
+            ) {
                 $this->io->section("Handle ActionEvent \"{$event->getType()}\"".($event->getSubType() ? " With SubType: \"{$event->getSubType()}\"" : ''));
                 $this->logger->info("Handle ActionEvent \"{$event->getType()}\"".($event->getSubType() ? " With SubType: \"{$event->getSubType()}\"" : ''));
 
@@ -349,5 +370,6 @@ class ActionSubscriber implements EventSubscriberInterface
         }
 
         return false;
-    }
-}
+
+    }//end handleEventIo()
+}//end class

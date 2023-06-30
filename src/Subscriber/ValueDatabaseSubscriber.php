@@ -1,7 +1,6 @@
 <?php
 
 // src/Subscriber/DatabaseActivitySubscriber.php
-
 namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Entity\Value;
@@ -14,6 +13,7 @@ use Twig\Environment;
 
 class ValueDatabaseSubscriber implements EventSubscriberInterface
 {
+
     private Environment $twig;
 
     private EntityManagerInterface $entityManager;
@@ -25,10 +25,11 @@ class ValueDatabaseSubscriber implements EventSubscriberInterface
         EntityManagerInterface $entityManager,
         ParameterBagInterface $param
     ) {
-        $this->twig = $twig;
+        $this->twig          = $twig;
         $this->entityManager = $entityManager;
-        $this->param = $param;
-    }
+        $this->param         = $param;
+
+    }//end __construct()
 
     // this method can only return the event names; you cannot define a
     // custom method name to execute when each event triggers
@@ -38,7 +39,8 @@ class ValueDatabaseSubscriber implements EventSubscriberInterface
             Events::postPersist,
             Events::postUpdate,
         ];
-    }
+
+    }//end getSubscribedEvents()
 
     public function postUpdate(LifecycleEventArgs $args)
     {
@@ -47,12 +49,15 @@ class ValueDatabaseSubscriber implements EventSubscriberInterface
             if ($value->getObjectEntity()->getUri() === null) {
                 $value->getObjectEntity()->setUri(rtrim($this->param->get('app_url'), '/').$value->getObjectEntity()->getSelf());
             }
+
             $value->setStringValue($this->twig->createTemplate($value->getStringValue())->render(['object' => $value->getObjectEntity()]));
         }
-    }
+
+    }//end postUpdate()
 
     public function postPersist(LifecycleEventArgs $args)
     {
         $this->postUpdate($args);
-    }
-}
+
+    }//end postPersist()
+}//end class

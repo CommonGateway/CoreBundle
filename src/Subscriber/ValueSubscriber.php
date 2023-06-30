@@ -17,6 +17,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class ValueSubscriber implements EventSubscriberInterface
 {
+
     /**
      * @var EntityManagerInterface
      */
@@ -45,10 +46,11 @@ class ValueSubscriber implements EventSubscriberInterface
      */
     public function __construct(EntityManagerInterface $entityManager, LoggerInterface $valueSubscriberLogger, SynchronizationService $synchronizationService, ParameterBagInterface $parameterBag)
     {
-        $this->entityManager = $entityManager;
-        $this->logger = $valueSubscriberLogger;
+        $this->entityManager          = $entityManager;
+        $this->logger                 = $valueSubscriberLogger;
         $this->synchronizationService = $synchronizationService;
-        $this->parameterBag = $parameterBag;
+        $this->parameterBag           = $parameterBag;
+
     }//end __construct()
 
     /**
@@ -63,6 +65,7 @@ class ValueSubscriber implements EventSubscriberInterface
             Events::prePersist,
             Events::preRemove,
         ];
+
     }//end getSubscribedEvents()
 
     /**
@@ -97,8 +100,8 @@ class ValueSubscriber implements EventSubscriberInterface
                             'id'   => $parentObject->getEntity()->getId()->toString(),
                             'name' => $parentObject->getEntity()->getName(),
                         ] : null,
-                        '_self' => $parentObject->getSelf(),
-                        'name'  => $parentObject->getName(),
+                        '_self'  => $parentObject->getSelf(),
+                        'name'   => $parentObject->getName(),
                     ],
                 ]
             );
@@ -107,6 +110,7 @@ class ValueSubscriber implements EventSubscriberInterface
         }//end if
 
         return $subObject;
+
     }//end getSubObjectById()
 
     /**
@@ -127,7 +131,7 @@ class ValueSubscriber implements EventSubscriberInterface
         }
 
         // Then check if the url is internal.
-        $self = str_replace(rtrim($this->parameterBag->get('app_url'), '/'), '', $url);
+        $self         = str_replace(rtrim($this->parameterBag->get('app_url'), '/'), '', $url);
         $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['self' => $self]);
         if ($objectEntity !== null) {
             return $objectEntity;
@@ -140,6 +144,7 @@ class ValueSubscriber implements EventSubscriberInterface
         }
 
         return $this->synchronizationService->aquireObject($url, $valueObject->getAttribute()->getObject());
+
     }//end getSubObjectByUrl()
 
     /**
@@ -154,12 +159,13 @@ class ValueSubscriber implements EventSubscriberInterface
     {
         if (Uuid::isValid($identifier)) {
             return $this->getSubObjectById($identifier, $valueObject);
-        } elseif (filter_var($identifier, FILTER_VALIDATE_URL)) {
+        } else if (filter_var($identifier, FILTER_VALIDATE_URL)) {
             return $this->getSubObjectByUrl($identifier, $valueObject);
         }
 
         return null;
-    }//end findSubObject()
+
+    }//end findSubobject()
 
     /**
      * Adds object resources from identifier.
@@ -178,18 +184,22 @@ class ValueSubscriber implements EventSubscriberInterface
                         $valueObject->addObject($subobject);
                     }
                 }
+
                 $valueObject->setArrayValue([]);
-            } elseif ((Uuid::isValid($valueObject->getStringValue()) || filter_var($valueObject->getStringValue(), FILTER_VALIDATE_URL)) && $identifier = $valueObject->getStringValue()) {
+            } else if ((Uuid::isValid($valueObject->getStringValue()) || filter_var($valueObject->getStringValue(), FILTER_VALIDATE_URL)) && $identifier = $valueObject->getStringValue()) {
                 foreach ($valueObject->getObjects() as $object) {
                     $valueObject->removeObject($object);
                 }
+
                 $subobject = $this->findSubobject($identifier, $valueObject);
                 if ($subobject !== null) {
                     $valueObject->addObject($subobject);
                 }
             }
+
             $valueObject->getObjectEntity()->setDateModified(new \DateTime());
-        }
+        }//end if
+
     }//end preUpdate()
 
     /**
@@ -200,9 +210,11 @@ class ValueSubscriber implements EventSubscriberInterface
     public function prePersist(LifecycleEventArgs $args): void
     {
         $this->preUpdate($args);
+
     }//end prePersist()
 
     public function preRemove(LifecycleEventArgs $args): void
     {
+
     }//end preRemove()
 }//end class

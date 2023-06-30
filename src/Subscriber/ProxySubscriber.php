@@ -21,6 +21,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 class ProxySubscriber implements EventSubscriberInterface
 {
+
     /**
      * @var EntityManagerInterface The entity manager
      */
@@ -66,12 +67,13 @@ class ProxySubscriber implements EventSubscriberInterface
      */
     public function __construct(EntityManagerInterface $entityManager, CallService $callService, FileSystemHandleService $fileSystemService, RequestService $requestService, SerializerInterface $serializer)
     {
-        $this->entityManager = $entityManager;
-        $this->callService = $callService;
+        $this->entityManager     = $entityManager;
+        $this->callService       = $callService;
         $this->fileSystemService = $fileSystemService;
-        $this->requestService = $requestService;
-        $this->serializer = $serializer;
-    }
+        $this->requestService    = $requestService;
+        $this->serializer        = $serializer;
+
+    }//end __construct()
 
     /**
      * Get Subscribed Events.
@@ -81,9 +83,13 @@ class ProxySubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            KernelEvents::REQUEST => ['proxy', EventPriorities::PRE_DESERIALIZE],
+            KernelEvents::REQUEST => [
+                'proxy',
+                EventPriorities::PRE_DESERIALIZE,
+            ],
         ];
-    }
+
+    }//end getSubscribedEvents()
 
     /**
      * Handle Proxy.
@@ -102,20 +108,21 @@ class ProxySubscriber implements EventSubscriberInterface
             return;
         }
 
-        //@Todo rename
+        // @Todo rename
         $source = $this->entityManager->getRepository('App:Gateway')->find($event->getRequest()->attributes->get('id'));
         if (!$source instanceof Source) {
             return;
         }
 
-        $headers = array_merge_recursive($source->getHeaders(), $event->getRequest()->headers->all());
-        $endpoint = $headers['x-endpoint'][0] ?? '';
+        $headers  = array_merge_recursive($source->getHeaders(), $event->getRequest()->headers->all());
+        $endpoint = ($headers['x-endpoint'][0] ?? '');
         if (empty($endpoint) === false && str_starts_with($endpoint, '/') === false && str_ends_with($source->getLocation(), '/') === false) {
             $endpoint = '/'.$endpoint;
         }
+
         $endpoint = rtrim($endpoint, '/');
 
-        $method = $headers['x-method'][0] ?? $event->getRequest()->getMethod();
+        $method = ($headers['x-method'][0] ?? $event->getRequest()->getMethod());
         unset($headers['authorization']);
         unset($headers['x-endpoint']);
         unset($headers['x-method']);
@@ -138,17 +145,18 @@ class ProxySubscriber implements EventSubscriberInterface
                 $result = $this->fileSystemService->call($source, $endpoint);
                 $result = new \GuzzleHttp\Psr7\Response(200, [], $this->serializer->serialize($result, 'json'));
             }
-        } catch (ServerException|ClientException|RequestException $exception) {
-            $statusCode = $exception->getCode() ?? 500;
+        } catch (ServerException | ClientException | RequestException $exception) {
+            $statusCode = ($exception->getCode() ?? 500);
             if (method_exists(get_class($exception), 'getResponse') === true && $exception->getResponse() !== null) {
-                $body = $exception->getResponse()->getBody()->getContents();
+                $body       = $exception->getResponse()->getBody()->getContents();
                 $statusCode = $exception->getResponse()->getStatusCode();
-                $headers = $exception->getResponse()->getHeaders();
+                $headers    = $exception->getResponse()->getHeaders();
             }
+
             $content = $this->serializer->serialize(
                 [
                     'Message' => $exception->getMessage(),
-                    'Body'    => $body ?? "Can\'t get a response & body for this type of Exception: ".get_class($exception),
+                    'Body'    => ($body ?? "Can\'t get a response & body for this type of Exception: ").get_class($exception),
                 ],
                 'json'
             );
@@ -157,7 +165,9 @@ class ProxySubscriber implements EventSubscriberInterface
 
             // If error catched dont pass event->getHeaders (causes infinite loop)
             $wentWrong = true;
-        }
+        }//end try
+
         $event->setResponse(new Response($result->getBody()->getContents(), $result->getStatusCode(), !isset($wentWrong) ? $result->getHeaders() : []));
-    }
-}
+
+    }//end proxy()
+}//end class

@@ -13,6 +13,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 final class EntityDeleteObjectsSubscriber implements EventSubscriberInterface
 {
+
     /**
      * @var EntityManagerInterface
      */
@@ -32,15 +33,20 @@ final class EntityDeleteObjectsSubscriber implements EventSubscriberInterface
         EavService $eavService
     ) {
         $this->entityManager = $entityManager;
-        $this->eavService = $eavService;
-    }
+        $this->eavService    = $eavService;
+
+    }//end __construct()
 
     public static function getSubscribedEvents()
     {
         return [
-            KernelEvents::REQUEST => ['entityDeleteObjects', EventPriorities::PRE_DESERIALIZE],
+            KernelEvents::REQUEST => [
+                'entityDeleteObjects',
+                EventPriorities::PRE_DESERIALIZE,
+            ],
         ];
-    }
+
+    }//end getSubscribedEvents()
 
     /**
      * This function returns the schema of an objectEntity or entity.
@@ -52,8 +58,7 @@ final class EntityDeleteObjectsSubscriber implements EventSubscriberInterface
         $route = $event->getRequest()->attributes->get('_route');
 
         // Only trigger when we want to.
-        if (
-            $route !== 'api_entities_delete_objects_collection'
+        if ($route !== 'api_entities_delete_objects_collection'
         ) {
             return;
         }
@@ -68,5 +73,6 @@ final class EntityDeleteObjectsSubscriber implements EventSubscriberInterface
         $result = $this->eavService->deleteAllObjects($entity);
 
         $event->setResponse(new Response(json_encode(['Amount of objects deleted' => $result]), 200, []));
+
     }//end entityDeleteObjects()
-}
+}//end class

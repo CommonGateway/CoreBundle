@@ -11,19 +11,25 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class TranslationTablesSubscriber implements EventSubscriberInterface
 {
+
     private EntityManagerInterface $entityManager;
 
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
-    }
+
+    }//end __construct()
 
     public static function getSubscribedEvents()
     {
         return [
-            KernelEvents::VIEW => ['translationTablesNames', EventPriorities::PRE_SERIALIZE],
+            KernelEvents::VIEW => [
+                'translationTablesNames',
+                EventPriorities::PRE_SERIALIZE,
+            ],
         ];
-    }
+
+    }//end getSubscribedEvents()
 
     /**
      * @param ViewEvent $event
@@ -31,18 +37,27 @@ class TranslationTablesSubscriber implements EventSubscriberInterface
     public function translationTablesNames(ViewEvent $event)
     {
         $route = $event->getRequest()->attributes->get('_route');
-        $path = $event->getRequest()->getPathInfo();
+        $path  = $event->getRequest()->getPathInfo();
 
         if ($route === 'api_translations_get_table_names_collection' && $path === '/admin/table_names') {
             $translationsRepo = $this->entityManager->getRepository('App:Translation');
 
-            $event->setResponse(new Response(json_encode([
-                'results' => $translationsRepo->getTables(),
-            ]), 200, ['Content-type' => 'application/json']));
+            $event->setResponse(
+                new Response(
+                    json_encode(
+                        [
+                            'results' => $translationsRepo->getTables(),
+                        ]
+                    ),
+                    200,
+                    ['Content-type' => 'application/json']
+                )
+            );
         }
 
         if ($route !== 'api_translations_get_collection') {
             return false;
         }
-    }
-}
+
+    }//end translationTablesNames()
+}//end class

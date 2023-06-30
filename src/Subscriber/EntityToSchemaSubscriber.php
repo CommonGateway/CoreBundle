@@ -12,20 +12,26 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 final class EntityToSchemaSubscriber implements EventSubscriberInterface
 {
+
     private EntityManagerInterface $entityManager;
 
     public function __construct(
         EntityManagerInterface $entityManager
     ) {
         $this->entityManager = $entityManager;
-    }
+
+    }//end __construct()
 
     public static function getSubscribedEvents()
     {
         return [
-            KernelEvents::REQUEST => ['toSchema', EventPriorities::PRE_DESERIALIZE],
+            KernelEvents::REQUEST => [
+                'toSchema',
+                EventPriorities::PRE_DESERIALIZE,
+            ],
         ];
-    }
+
+    }//end getSubscribedEvents()
 
     /**
      * This function returns the schema of an objectEntity or entity.
@@ -44,9 +50,9 @@ final class EntityToSchemaSubscriber implements EventSubscriberInterface
         }
 
         // @todo Get endpoint with prefix does not work
-//        $objectType = $request->attributes->get('_route_params') ? $request->attributes->get('_route_params')['_api_resource_class'] : null; //The class of the requested entity
-        $objectId = $request->attributes->get('_route_params') ? $request->attributes->get('_route_params')['id'] : null; //The id of the resource
-
+        // $objectType = $request->attributes->get('_route_params') ? $request->attributes->get('_route_params')['_api_resource_class'] : null; //The class of the requested entity
+        $objectId = $request->attributes->get('_route_params') ? $request->attributes->get('_route_params')['id'] : null;
+        // The id of the resource
         if (!$objectId) {
             throw new GatewayException('Cannot give a schema if no entity is given');
         }
@@ -56,6 +62,7 @@ final class EntityToSchemaSubscriber implements EventSubscriberInterface
             if (isset($schema['required']) === false) {
                 $schema['required'] = [];
             }
+
             $event->setResponse(new Response(json_encode($schema), Response::HTTP_OK, ['content-type' => 'application/json+schema']));
         }
 
@@ -64,7 +71,9 @@ final class EntityToSchemaSubscriber implements EventSubscriberInterface
             if (isset($schema['required']) === false) {
                 $schema['required'] = [];
             }
+
             $event->setResponse(new Response(json_encode($schema), Response::HTTP_OK, ['content-type' => 'application/json+schema']));
         }
-    }
-}
+
+    }//end toSchema()
+}//end class

@@ -11,25 +11,32 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class DashboardCardDoctrineSubscriber implements EventSubscriberInterface
 {
+
     private EntityManagerInterface $entityManager;
 
     public function __construct(
         EntityManagerInterface $entityManager
     ) {
         $this->entityManager = $entityManager;
-    }
+
+    }//end __construct()
 
     public static function getSubscribedEvents(): array
     {
         return [
-            KernelEvents::VIEW => ['postLoad', EventPriorities::PRE_SERIALIZE],
+            KernelEvents::VIEW => [
+                'postLoad',
+                EventPriorities::PRE_SERIALIZE,
+            ],
         ];
-    }
+
+    }//end getSubscribedEvents()
 
     public function postLoad(ViewEvent $event)
     {
         $this->updateDashboardCard($event);
-    }
+
+    }//end postLoad()
 
     private function addObject(DashboardCard $dashboardCard): ?DashboardCard
     {
@@ -44,7 +51,8 @@ class DashboardCardDoctrineSubscriber implements EventSubscriberInterface
         $object = $this->entityManager->find($entity, $dashboardCard->getEntityId());
 
         return $dashboardCard->setObject($object);
-    }
+
+    }//end addObject()
 
     private function updateDashboardCard(ViewEvent $event)
     {
@@ -56,17 +64,19 @@ class DashboardCardDoctrineSubscriber implements EventSubscriberInterface
             $response = [];
             foreach ($dashboardCards as $dashboardCard) {
                 $dashboardCard = $this->addObject($dashboardCard);
-                $response[] = $dashboardCard;
+                $response[]    = $dashboardCard;
             }
+
             $event->setControllerResult($response);
         }
 
         if ($route == 'api_dashboard_cards_get_item') {
-            $objectId = $event->getRequest()->attributes->get('_route_params') ? $event->getRequest()->attributes->get('_route_params')['id'] : null; //The id of the resource
-
+            $objectId = $event->getRequest()->attributes->get('_route_params') ? $event->getRequest()->attributes->get('_route_params')['id'] : null;
+            // The id of the resource
             $dashboardCard = $this->entityManager->getRepository('App:DashboardCard')->find($objectId);
             $dashboardCard = $this->addObject($dashboardCard);
             $event->setControllerResult($dashboardCard);
         }
-    }
-}
+
+    }//end updateDashboardCard()
+}//end class

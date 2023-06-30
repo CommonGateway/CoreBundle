@@ -16,6 +16,7 @@ use Symfony\Component\Security\Core\Security;
 
 class AuditTrailSubscriber implements EventSubscriberInterface
 {
+
     /**
      * @var EntityManagerInterface
      */
@@ -65,11 +66,12 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         CacheService $cacheService
     ) {
         $this->entityManager = $entityManager;
-        $this->logger = $valueSubscriberLogger;
-        $this->security = $security;
-        $this->parameterBag = $parameterBag;
-        $this->requestStack = $requestStack;
-        $this->cacheService = $cacheService;
+        $this->logger        = $valueSubscriberLogger;
+        $this->security      = $security;
+        $this->parameterBag  = $parameterBag;
+        $this->requestStack  = $requestStack;
+        $this->cacheService  = $cacheService;
+
     }//end __construct()
 
     /**
@@ -83,8 +85,9 @@ class AuditTrailSubscriber implements EventSubscriberInterface
             Events::postUpdate,
             Events::postPersist,
             Events::preRemove,
-            //            Events::postLoad,
+            // Events::postLoad,
         ];
+
     }//end getSubscribedEvents()
 
     /**
@@ -97,11 +100,11 @@ class AuditTrailSubscriber implements EventSubscriberInterface
     public function createAuditTrail(ObjectEntity $object, array $config): AuditTrail
     {
         $userId = null;
-        $user = null;
+        $user   = null;
 
         if ($this->security->getUser() !== null) {
             $userId = $this->security->getUser()->getUserIdentifier();
-            $user = $this->entityManager->getRepository('App:User')->find($userId);
+            $user   = $this->entityManager->getRepository('App:User')->find($userId);
         }
 
         $auditTrail = new AuditTrail();
@@ -122,6 +125,7 @@ class AuditTrailSubscriber implements EventSubscriberInterface
             $auditTrail->setUserId($userId);
             $auditTrail->setUserView($user->getName());
         }
+
         $auditTrail->setAction($config['action']);
         $auditTrail->setActionView($config['action']);
         $auditTrail->setResult($config['result']);
@@ -133,7 +137,8 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         $this->entityManager->persist($auditTrail);
 
         return $auditTrail;
-    }
+
+    }//end createAuditTrail()
 
     /**
      * Adds object resources from identifier.
@@ -145,7 +150,7 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         $object = $args->getObject();
         if ($object instanceof ObjectEntity === false) {
             return;
-        } elseif ($object->getEntity() === null || $object->getEntity()->getCreateAuditTrails() === false) {
+        } else if ($object->getEntity() === null || $object->getEntity()->getCreateAuditTrails() === false) {
             return;
         }
 
@@ -156,7 +161,8 @@ class AuditTrailSubscriber implements EventSubscriberInterface
 
         $auditTrail = $this->createAuditTrail($object, $config);
         $this->entityManager->persist($auditTrail);
-    }
+
+    }//end postLoad()
 
     /**
      * Adds object resources from identifier.
@@ -169,7 +175,7 @@ class AuditTrailSubscriber implements EventSubscriberInterface
 
         if ($object instanceof ObjectEntity === false) {
             return;
-        } elseif ($object->getEntity()->getCreateAuditTrails() === false) {
+        } else if ($object->getEntity()->getCreateAuditTrails() === false) {
             return;
         }
 
@@ -189,13 +195,16 @@ class AuditTrailSubscriber implements EventSubscriberInterface
 
         $auditTrail = $this->createAuditTrail($object, $config);
 
-        $auditTrail->setAmendments([
-            'new' => $object->toArray(),
-            'old' => $this->cacheService->getObject($object->getId()),
-        ]);
+        $auditTrail->setAmendments(
+            [
+                'new' => $object->toArray(),
+                'old' => $this->cacheService->getObject($object->getId()),
+            ]
+        );
         $this->entityManager->persist($auditTrail);
         $this->entityManager->flush();
-    }//end preUpdate()
+
+    }//end postUpdate()
 
     /**
      * Passes the result of prePersist to preUpdate.
@@ -207,7 +216,7 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         $object = $args->getObject();
         if ($object instanceof ObjectEntity === false) {
             return;
-        } elseif ($object->getEntity()->getCreateAuditTrails() === false) {
+        } else if ($object->getEntity()->getCreateAuditTrails() === false) {
             return;
         }
 
@@ -217,34 +226,40 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         ];
 
         $auditTrail = $this->createAuditTrail($object, $config);
-        $auditTrail->setAmendments([
-            'new' => $object->toArray(),
-            'old' => null,
-        ]);
+        $auditTrail->setAmendments(
+            [
+                'new' => $object->toArray(),
+                'old' => null,
+            ]
+        );
 
         $this->entityManager->persist($auditTrail);
         $this->entityManager->flush();
-    }//end prePersist()
+
+    }//end postPersist()
 
     public function preRemove(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
         if ($object instanceof ObjectEntity === false) {
             return;
-        } elseif ($object->getEntity()->getCreateAuditTrails() === false) {
+        } else if ($object->getEntity()->getCreateAuditTrails() === false) {
             return;
         }
 
-        $config = [
+        $config     = [
             'action' => 'DELETE',
             'result' => 204,
         ];
         $auditTrail = $this->createAuditTrail($object, $config);
-        $auditTrail->setAmendments([
-            'new' => null,
-            'old' => $object->toArray(),
-        ]);
+        $auditTrail->setAmendments(
+            [
+                'new' => null,
+                'old' => $object->toArray(),
+            ]
+        );
 
         $this->entityManager->persist($auditTrail);
+
     }//end preRemove()
 }//end class

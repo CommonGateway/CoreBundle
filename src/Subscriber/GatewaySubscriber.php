@@ -11,19 +11,25 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class GatewaySubscriber implements EventSubscriberInterface
 {
+
     private GatewayService $gatewayService;
 
     public function __construct(GatewayService $gatewayService)
     {
         $this->gatewayService = $gatewayService;
-    }
+
+    }//end __construct()
 
     public static function getSubscribedEvents()
     {
         return [
-            KernelEvents::VIEW => ['gateway', EventPriorities::PRE_VALIDATE],
+            KernelEvents::VIEW => [
+                'gateway',
+                EventPriorities::PRE_VALIDATE,
+            ],
         ];
-    }
+
+    }//end getSubscribedEvents()
 
     /**
      * @param ViewEvent $event
@@ -34,8 +40,7 @@ class GatewaySubscriber implements EventSubscriberInterface
 
         $response = new Response();
 
-        if (
-            $route !== 'api_gateways_gateway_post_collection'
+        if ($route !== 'api_gateways_gateway_post_collection'
         ) {
             return;
         }
@@ -52,16 +57,18 @@ class GatewaySubscriber implements EventSubscriberInterface
         // Lets see if we need to render a file
         // @todo dit is echt but lellijke code
         if (strpos($event->getRequest()->attributes->get('name'), '.') && $renderType = explode('.', $event->getRequest()->attributes->get('name'))) {
-            $path = $renderType[0];
+            $path       = $renderType[0];
             $renderType = end($renderType);
-        } elseif (strpos($event->getRequest()->attributes->get('endpoint'), '.') && $renderType = explode('.', $event->getRequest()->attributes->get('endpoint'))) {
-            $path = $renderType[0];
+        } else if (strpos($event->getRequest()->attributes->get('endpoint'), '.') && $renderType = explode('.', $event->getRequest()->attributes->get('endpoint'))) {
+            $path       = $renderType[0];
             $renderType = end($renderType);
         }
+
         if (isset($renderType)) {
             $response = $this->gatewayService->retrieveExport($response, $renderType, $path);
         }
 
         $event->setResponse($response);
-    }
-}
+
+    }//end gateway()
+}//end class
