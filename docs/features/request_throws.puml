@@ -3,6 +3,8 @@ title: Throw events
 footer: Common Gateway | Endpoints
 header: Events
 
+skinparam backgroundColor transparent
+
 autonumber
 
 boundary    Endpoint         as Endpoint
