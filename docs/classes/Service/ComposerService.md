@@ -32,7 +32,7 @@ public audit (array $options)
 
 Search for a given term. 
 
-See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function 
+See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function. 
 
 **Parameters**
 
@@ -58,7 +58,7 @@ public getAll (void)
 
 Show al packages installed trough composer. 
 
-See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function 
+See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function. 
 
 **Parameters**
 
@@ -110,7 +110,7 @@ public getSingle (string $package)
 
 Show a single package installed trough composer. 
 
-See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function 
+See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function. 
 
 **Parameters**
 
@@ -136,7 +136,7 @@ public remove (string $package, array $options)
 
 Show a single package installed trough composer. 
 
-See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function 
+See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function. 
 
 **Parameters**
 
@@ -190,7 +190,7 @@ public search (string|null $search)
 
 Search for a given term. 
 
-See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function 
+See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function. 
 
 **Parameters**
 
