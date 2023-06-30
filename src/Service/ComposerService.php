@@ -19,7 +19,7 @@ class ComposerService
 {
     private function arrayEnum(array $array, array $enum): bool
     {
-        // Let's see if the values in the array arry pressent in the enum
+        // Let's see if the values in the array arry pressent in the enum.
         foreach ($array as $value) {
             if (in_array($value, $enum) === false) {
                 return false;
@@ -33,7 +33,7 @@ class ComposerService
     /**
      * Make a call to composer.
      *
-     * @param string      $call    The call that you want to make to composer shoul be one of show, init, install
+     * @param string      $call    The call that you want to make to composer shoul be one of show, init, install.
      * @param string|null $package
      * @param array       $options
      *
@@ -355,7 +355,9 @@ class ComposerService
     /**
      * Show al packages installed trough composer.
      *
-     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
+     * 
+     * @todo We used to have a $options argument in this function for filtering on types of plugins (installed, disabled etc). Removed because not implemented.
      *
      * @return array
      */
@@ -411,7 +413,7 @@ class ComposerService
     /**
      * Show a single package installed trough composer.
      *
-     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
      *
      * @param string $package
      * @param array  $options
@@ -427,7 +429,7 @@ class ComposerService
     /**
      * Show a single package installed trough composer.
      *
-     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
      *
      * @param string $package
      *
@@ -473,7 +475,9 @@ class ComposerService
     /**
      * Search for a given term.
      *
-     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
+     * 
+     * @todo We used to have a $options argument in this function for filtering on types of plugins (installed, disabled etc). Removed because not implemented.
      *
      * @param string|null $search
      *
@@ -507,7 +511,7 @@ class ComposerService
     /**
      * Search for a given term.
      *
-     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
      *
      * @param array $options
      *
