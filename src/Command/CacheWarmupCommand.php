@@ -18,10 +18,21 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class CacheWarmupCommand extends Command
 {
 
+    /**
+     * @var static $defaultName
+     */
     protected static $defaultName = 'commongateway:cache:warmup';
 
-    private $cacheService;
+    /**
+     * The CacheService
+     *
+     * @var CacheService $cacheService
+     */
+    private CacheService $cacheService;
 
+    /**
+     * __construct
+     */
     public function __construct(CacheService $cacheService)
     {
         $this->cacheService = $cacheService;
@@ -29,6 +40,11 @@ class CacheWarmupCommand extends Command
 
     }//end __construct()
 
+    /**
+     * Configures this commnand.
+     *
+     * @return void Nothing.
+     */
     protected function configure(): void
     {
         $this
@@ -37,6 +53,14 @@ class CacheWarmupCommand extends Command
 
     }//end configure()
 
+    /**
+     * Executes this commnand.
+     *
+     * @param InputInterface  $input  The input interface.
+     * @param OutputInterface $output The output interface.
+     *
+     * @return int 1 is successfully executed, else 0.
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->cacheService->setStyle(new SymfonyStyle($input, $output));

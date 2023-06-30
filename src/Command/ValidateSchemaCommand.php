@@ -18,10 +18,21 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class ValidateSchemaCommand extends Command
 {
 
+    /**
+     * @var static $defaultName
+     */
     protected static $defaultName = 'commongateway:validate:schema';
 
-    private $installationService;
+    /**
+     * The InstallationService.
+     *
+     * @var InstallationService $installationService
+     */
+    private InstallationService $installationService;
 
+    /**
+     * __construct
+     */
     public function __construct(InstallationService $installationService)
     {
         $this->installationService = $installationService;
@@ -29,6 +40,11 @@ class ValidateSchemaCommand extends Command
 
     }//end __construct()
 
+    /**
+     * Configures this command.
+     *
+     * @return void Nothing.
+     */
     protected function configure(): void
     {
         $this
@@ -37,6 +53,14 @@ class ValidateSchemaCommand extends Command
 
     }//end configure()
 
+    /**
+     * Executes this command.
+     *
+     * @param InputInterface  $input  The input interface.
+     * @param OutputInterface $output The output interface.
+     *
+     * @return int 1 for success, 0 for failure.
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->installationService->setStyle(new SymfonyStyle($input, $output));

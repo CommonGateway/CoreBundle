@@ -38,10 +38,19 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
 class AuthenticationService
 {
 
+    /**
+     * @var ParameterBagInterface $parameterBag;
+     */
     private ParameterBagInterface $parameterBag;
 
+    /**
+     * @var FileService $fileService;
+     */
     private FileService $fileService;
 
+    /**
+     * __construct
+     */
     public function __construct(ParameterBagInterface $parameterBag)
     {
         $this->parameterBag = $parameterBag;
@@ -219,9 +228,9 @@ class AuthenticationService
         $algorithm        = $this->getAlgorithm($source);
         $jwsBuilder       = new JWSBuilder($algorithmManager);
 
-        $jwk      = $this->getJWK($algorithm, $source);
-        $clientId = $this->getApplicationId($source);
-        $payload  = $this->getJwtPayload($source);
+        $jwk = $this->getJWK($algorithm, $source);
+
+        $payload = $this->getJwtPayload($source);
 
         $jws = $jwsBuilder
             ->create()
@@ -245,15 +254,15 @@ class AuthenticationService
     public function getCertificate(array $config): array
     {
         $configs = [];
-        if (isset($config['cert'])) {
+        if (isset($config['cert']) === true) {
             $configs['cert'] = $this->fileService->writeFile('certificate', $config['cert']);
         }
 
-        if (isset($config['ssl_key'])) {
+        if (isset($config['ssl_key']) === true) {
             $configs['ssl_key'] = $this->fileService->writeFile('privateKey', $config['ssl_key']);
         }
 
-        if (isset($config['verify']) && is_string($config['verify'])) {
+        if (isset($config['verify']) === true && is_string($config['verify']) === true) {
             $configs['verify'] = $this->fileService->writeFile('verify', $config['ssl_key']);
         }
 
@@ -270,15 +279,15 @@ class AuthenticationService
      */
     public function removeFiles(array $config): void
     {
-        if (isset($config['cert'])) {
+        if (isset($config['cert']) === true) {
             $this->fileService->removeFile($config['cert']);
         }
 
-        if (isset($config['ssl_key'])) {
+        if (isset($config['ssl_key']) === true) {
             $this->fileService->removeFile($config['ssl_key']);
         }
 
-        if (isset($config['verify']) && is_string($config['verify'])) {
+        if (isset($config['verify']) === true && is_string($config['verify']) === true) {
             $this->fileService->removeFile($config['verify']);
         }
 
@@ -409,18 +418,30 @@ class AuthenticationService
 
     /**
      * Gets a hmac token.
+     *
+     * @param array  $requestOptions Array of request options like method, url & body.
+     * @param Source $source         A Source.
+     *
+     * @return string The hmac token.
      */
     public function getHmacToken(array $requestOptions, Source $source): string
     {
-        // todo: what if we don't have a body, method or url in $requestOptions?
+        if (isset($requestOptions['method']) === false || isset($requestOptions['url']) === false) {
+            return "";
+        }
+
         switch ($requestOptions['method']) {
         case 'POST':
+            if (isset($requestOptions['body']) === false) {
+                return "";
+            }
+
             $md5  = md5($requestOptions['body'], true);
             $post = \Safe\base64_encode($md5);
             break;
         case 'GET':
+            // @Todo: what about a get call?
         default:
-            // todo: what about a get call?
             $get  = 'not a UTF-8 string';
             $post = \Safe\base64_encode($get);
             break;
@@ -432,8 +453,8 @@ class AuthenticationService
         $time       = time();
 
         $hmac = $websiteKey.$requestOptions['method'].$uri.$time.$nonce.$post;
-        $s    = hash_hmac('sha256', $hmac, $source->getSecret(), true);
-        $hmac = \Safe\base64_encode($s);
+        $hash = hash_hmac('sha256', $hmac, $source->getSecret(), true);
+        $hmac = \Safe\base64_encode($hash);
 
         return 'hmac '.$websiteKey.':'.$hmac.':'.$nonce.':'.$time;
 
@@ -490,11 +511,11 @@ class AuthenticationService
     /**
      * Decides if the provided JWT token is signed with the RS512 Algorithm.
      *
-     * @param JWT $token The token provided by the user
+     * @param JWT $token The token provided by the user.
      *
-     * @return bool Whether the token is in HS256 or not
+     * @return bool Whether the token is in HS256 or not.
      */
-    public function checkRS512(JWT $token)
+    public function checkRS512(JWT $token): bool
     {
         $headerChecker = new HeaderCheckerManager([new AlgorithmChecker(['RS512'])], [new JWSTokenSupport()]);
 
@@ -511,11 +532,11 @@ class AuthenticationService
     /**
      * Decides if the provided JWT token is signed with the HS256 Algorithm.
      *
-     * @param JWT $token The token provided by the user
+     * @param JWT $token The token provided by the user.
      *
-     * @return bool Whether the token is in HS256 or not
+     * @return bool Whether the token is in HS256 or not.
      */
-    public function checkHS256(JWT $token)
+    public function checkHS256(JWT $token): bool
     {
         $headerChecker = new HeaderCheckerManager([new AlgorithmChecker(['HS256'])], [new JWSTokenSupport()]);
 
@@ -532,9 +553,9 @@ class AuthenticationService
     /**
      * Decides if the provided JWT token is signed with the HS256 Algorithm.
      *
-     * @param JWT $token The token provided by the user
+     * @param JWT $token The token provided by the user.
      *
-     * @return bool Whether the token is in HS256 or not
+     * @return bool Whether the token is in HS256 or not.
      */
     public function checkRS256(JWT $token)
     {

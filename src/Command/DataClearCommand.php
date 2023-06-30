@@ -2,7 +2,6 @@
 
 namespace CommonGateway\CoreBundle\Command;
 
-use CommonGateway\CoreBundle\Service\CacheService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -21,27 +20,40 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 class DataClearCommand extends Command
 {
 
+    /**
+     * @var static
+     */
     protected static $defaultName = 'commongateway:data:clear';
 
-    private $cacheService;
+    /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
 
-    private EntityManagerInterface $entityManagerInterface;
-
+    /**
+     * @var ParameterBagInterface
+     */
     private ParameterBagInterface $parameterBagInterface;
 
+    /**
+     * __construct
+     */
     public function __construct(
-        CacheService $cacheService,
-        EntityManagerInterface $entityManagerInterface,
+        EntityManagerInterface $entityManager,
         ParameterBagInterface $parameterBagInterface
     ) {
-        $this->cacheService          = $cacheService;
-        $this->entitymanager         = $entityManagerInterface;
+        $this->entityManager         = $entityManager;
         $this->parameterBagInterface = $parameterBagInterface;
 
         parent::__construct();
 
     }//end __construct()
 
+    /**
+     * Configures this command.
+     *
+     * @return void Nothng.
+     */
     protected function configure(): void
     {
         $this
@@ -50,6 +62,11 @@ class DataClearCommand extends Command
 
     }//end configure()
 
+    /**
+     * Executes this command.
+     *
+     * @return int 1 if succsesfull 0 if not.
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $env          = $this->parameterBagInterface->get('app_env');
@@ -66,33 +83,33 @@ class DataClearCommand extends Command
             ]
         );
 
-        if ($env != 'dev') {
+        if ($env !== 'dev') {
             $symfonyStyle->error('Could not remove the data bescouse the environment is not in dev mode');
 
             return Command::FAILURE;
         }
 
-        $objects = $this->entitymanager->getRepository('App:ObjectEntity')->findAll();
+        $objects = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
 
         $symfonyStyle->writeln('Found '.count($objects).' objects');
 
-        // creates a new progress bar (50 units)
+        // Creates a new progress bar (50 units).
         $progressBar = new ProgressBar($output, count($objects));
 
-        // starts and displays the progress bar
+        // Starts and displays the progress bar.
         $progressBar->start();
 
         foreach ($objects as $object) {
-            // advances the progress bar 1 unit
+            // Advances the progress bar 1 unit.
             $progressBar->advance();
 
-            // you can also advance the progress bar by more than 1 unit
-            $this->entitymanager->remove($object);
+            // You can also advance the progress bar by more than 1 unit.
+            $this->entityManager->remove($object);
         }
 
-        // ensures that the progress bar is at 100%
+        // Ensures that the progress bar is at 100%.
         $progressBar->finish();
-        $this->entitymanager->flush();
+        $this->entityManager->flush();
 
         $symfonyStyle->writeln('');
         $symfonyStyle->success('All done');

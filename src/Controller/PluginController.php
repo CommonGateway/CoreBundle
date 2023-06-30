@@ -38,10 +38,10 @@ class PluginController extends AbstractController
     /**
      * @Route("/installed", methods={"GET"})
      */
-    public function installedAction(Request $request)
+    public function installedAction()
     {
         $status  = 200;
-        $plugins = $this->composerService->getAll(['--installed'])['installed'];
+        $plugins = $this->composerService->getAll()['installed'];
 
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
 
@@ -50,7 +50,7 @@ class PluginController extends AbstractController
     /**
      * @Route("/audit", methods={"GET"})
      */
-    public function auditAction(Request $request)
+    public function auditAction()
     {
         $status  = 200;
         $plugins = $this->composerService->audit(['--format=json']);
@@ -68,7 +68,7 @@ class PluginController extends AbstractController
 
         $search = $request->query->get('search', 'a');
 
-        $plugins = $this->composerService->search($search, ['--type=common-gateway-plugin']);
+        $plugins = $this->composerService->search($search);
 
         return new Response(json_encode($plugins), $status, ['Content-type' => 'application/json']);
 
@@ -96,7 +96,7 @@ class PluginController extends AbstractController
     {
         $status = 200;
 
-        if (!$package = $request->query->get('plugin', false)) {
+        if (empty($package = $request->query->get('plugin', false)) === true) {
             return new Response('No plugin provided as query parameters', 400, ['Content-type' => 'application/json']);
         }
 
@@ -113,7 +113,7 @@ class PluginController extends AbstractController
     {
         $status = 200;
 
-        if (!$package = $request->query->get('plugin', false)) {
+        if (empty($package = $request->query->get('plugin', false)) === true) {
             return new Response('No plugin provided as query parameters', 400, ['Content-type' => 'application/json']);
         }
 
@@ -130,7 +130,7 @@ class PluginController extends AbstractController
     {
         $status = 200;
 
-        if ($package = $request->query->get('plugin', false) === null || $package = $request->query->get('plugin', false) === false) {
+        if (empty($package = $request->query->get('plugin', false)) === true) {
             return new Response('No plugin provided as query parameters', 400, ['Content-type' => 'application/json']);
         }
 
