@@ -19,7 +19,7 @@ class ComposerService
 {
     private function arrayEnum(array $array, array $enum): bool
     {
-        // Let's see if the values in the array arry pressent in the enum
+        // Let's see if the values in the array arry pressent in the enum.
         foreach ($array as $value) {
             if (in_array($value, $enum) === false) {
                 return false;
@@ -33,7 +33,7 @@ class ComposerService
     /**
      * Make a call to composer.
      *
-     * @param string      $call    The call that you want to make to composer shoul be one of show, init, install
+     * @param string      $call    The call that you want to make to composer shoul be one of show, init, install.
      * @param string|null $package
      * @param array       $options
      *
@@ -56,7 +56,7 @@ class ComposerService
             // --stability (-s): Value for the minimum-stability field.
             // --license (-l): License of package.
             // --repository: Provide one (or more) custom repositories. They will be stored in the generated composer.json, and used for auto-completion when prompting for the list of requires. Every repository can be either an HTTP URL pointing to a composer repository or a JSON string which similar to what the repositories key accepts.
-            // --autoload (-a): Add a PSR-4 autoload mapping to
+            // --autoload (-a): Add a PSR-4 autoload mapping to.
             break;
         case 'install':
             $optionsList = [];
@@ -277,37 +277,37 @@ class ComposerService
             break;
         }//end switch
 
-        // Prepare the comand
+        // Prepare the comand.
         $cmd = [
             'composer',
             $call,
         ];
 
-        if ($package != '') {
+        if (empty($package) === false) {
             $cmd[] = strtolower($package);
         }
 
-        // Check the enums
+        // Check the enums.
         if ($options and !$this->arrayEnum($options, $optionsList)) {
             // @todo throwException();
         }
 
-        // Force JSON output where supported
+        // Force JSON output where supported.
         if (in_array('--format', $optionsList) && in_array('--format json', $options) === false) {
             $options[] = '--format=json';
         }
 
-        // Include options
+        // Include options.
         $cmd = array_merge_recursive($cmd, $options);
 
-        // Start the procces
+        // Start the procces.
         $process = new Process($cmd);
         $process->setWorkingDirectory('/srv/api');
         $process->setTimeout(3600);
         $process->run();
 
-        // executes after the command finishes
-        if (!$process->isSuccessful()) {
+        // executes after the command finishes.
+        if ($process->isSuccessful() === false) {
             // throw new ProcessFailedException($process);
             // var_dump('error');
             $content = $process->getErrorOutput();
@@ -315,7 +315,7 @@ class ComposerService
             $content = $process->getOutput();
         }
 
-        // Turn in into simpethin workable
+        // Turn in into simpethin workable.
         if (in_array('--format=json', $options)) {
             $content = json_decode($content, true);
         } else {
@@ -355,18 +355,18 @@ class ComposerService
     /**
      * Show al packages installed trough composer.
      *
-     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
      *
-     * @param array $options
+     * @todo We used to have a $options argument in this function for filtering on types of plugins (installed, disabled etc). Removed because not implemented.
      *
      * @return array
      */
-    public function getAll(array $options = []): array
+    public function getAll(): array
     {
         $lockFile = $this->getLockFile();
         $plugins  = [];
         foreach ($lockFile as $result) {
-            // Remove non gateway plugins from the result
+            // Remove non gateway plugins from the result.
             if (isset($result['keywords']) === false || in_array('common-gateway-plugin', $result['keywords']) === false) {
                 continue;
             }
@@ -413,7 +413,7 @@ class ComposerService
     /**
      * Show a single package installed trough composer.
      *
-     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
      *
      * @param string $package
      * @param array  $options
@@ -429,14 +429,13 @@ class ComposerService
     /**
      * Show a single package installed trough composer.
      *
-     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
      *
      * @param string $package
-     * @param array  $options
      *
      * @return array
      */
-    public function getSingle(string $package, array $options = []): array
+    public function getSingle(string $package): array
     {
         $url = 'https://packagist.org/packages/'.$package.'.json';
 
@@ -454,7 +453,7 @@ class ComposerService
                 // Let's see if we have newer versions than currently installer
                 foreach ($plugin['versions']  as $version => $versionDetails) {
                     if (version_compare($plugin['version'], $version) < 0) {
-                        if (!$plugin['update']) {
+                        if (empty($plugin['update']) === true) {
                             $plugin['update'] = $version;
                             continue;
                         }
@@ -476,16 +475,16 @@ class ComposerService
     /**
      * Search for a given term.
      *
-     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
+     *
+     * @todo We used to have a $options argument in this function for filtering on types of plugins (installed, disabled etc). Removed because not implemented.
      *
      * @param string|null $search
-     * @param array       $options
      *
      * @return array
      */
-    public function search(string $search = null, array $options = []): array
+    public function search(string $search = null): array
     {
-        $url   = 'https://packagist.org/search.json';
         $query = ['tags' => 'common-gateway-plugin'];
         if ($search) {
             $query['q'] = $search;
@@ -512,7 +511,7 @@ class ComposerService
     /**
      * Search for a given term.
      *
-     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
      *
      * @param array $options
      *

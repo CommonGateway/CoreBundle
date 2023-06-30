@@ -31,14 +31,31 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
 {
 
+    /**
+     * The CacheService
+     *
+     * @var CacheService $cacheService
+     */
     private CacheService $cacheService;
 
+    /**
+     * @var EntityManagerInterface $entityManager
+     */
     private EntityManagerInterface $entityManager;
 
+    /**
+     * @var SessionInterface $session
+     */
     private SessionInterface $session;
 
+    /**
+     * @var EventDispatcherInterface $eventDispatcher
+     */
     private EventDispatcherInterface $eventDispatcher;
 
+    /**
+     * @var Logger $logger
+     */
     private Logger $logger;
 
     /**
@@ -63,8 +80,12 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
 
     }//end __construct()
 
-    // this method can only return the event names; you cannot define a
-    // custom method name to execute when each event triggers
+    /**
+     * This method can only return the event names; you cannot define a
+     * custom method name to execute when each event triggers.
+     *
+     * @return array
+     */
     public function getSubscribedEvents(): array
     {
         return [
@@ -86,18 +107,18 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args
      *
-     * @return void
+     * @return void Nothing.
      */
     public function preRemove(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
 
         // if this subscriber only applies to certain entity types,
-        if (!$object instanceof ObjectEntity) {
+        if ($object instanceof ObjectEntity === false) {
             return;
         }
 
-        // Write the log
+        // Write the log.
         $this->logger->info(
             'Deleting object from database',
             [
@@ -106,7 +127,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             ]
         );
 
-        // Throw the event
+        // Throw the event.
         $event = new ActionEvent('commongateway.action.event', ['object' => $object], 'commongateway.object.pre.delete');
         $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 
@@ -117,18 +138,18 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args
      *
-     * @return void
+     * @return void Nothing.
      */
     public function prePersist(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
 
-        // if this subscriber only applies to certain entity types,
-        if (!$object instanceof ObjectEntity) {
+        // If this subscriber only applies to certain entity types,
+        if ($object instanceof ObjectEntity === false) {
             return;
         }
 
-        // Write the log
+        // Write the log.
         $this->logger->info(
             'Creating object in database',
             [
@@ -137,7 +158,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             ]
         );
 
-        // Throw the event
+        // Throw the event.
         $event = new ActionEvent('commongateway.action.event', ['object' => $object], 'commongateway.object.pre.create');
         $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 
@@ -148,18 +169,18 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args
      *
-     * @return void
+     * @return void Nothing.
      */
     public function preUpdate(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
 
-        // if this subscriber only applies to certain entity types,
-        if (!$object instanceof ObjectEntity) {
+        // If this subscriber only applies to certain entity types,
+        if ($object instanceof ObjectEntity === false) {
             return;
         }
 
-        // Write the log
+        // Write the log.
         $this->logger->info(
             'Updating object to database',
             [
@@ -168,7 +189,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             ]
         );
 
-        // Throw the event
+        // Throw the event.
         $event = new ActionEvent('commongateway.action.event', ['object' => $object], 'commongateway.object.pre.update');
         $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 
@@ -179,24 +200,24 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args
      *
-     * @return void
+     * @return void Nothing.
      */
     public function postRemove(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
 
-        // if this subscriber only applies to certain entity types,
-        if (!$object instanceof ObjectEntity) {
+        // If this subscriber only applies to certain entity types,
+        if ($object instanceof ObjectEntity === false) {
             return;
         }
 
-        // Write the log
+        // Write the log.
         $this->logger->info(
             'Deleted object from database',
             []
         );
 
-        // Throw the event
+        // Throw the event.
         $event = new ActionEvent('commongateway.action.event', [], 'commongateway.object.post.delete');
         $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 
@@ -207,18 +228,18 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args
      *
-     * @return void
+     * @return void Nothing.
      */
     public function postPersist(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
 
-        // if this subscriber only applies to certain entity types,
-        if (!$object instanceof ObjectEntity) {
+        // If this subscriber only applies to certain entity types,
+        if ($object instanceof ObjectEntity === false) {
             return;
         }
 
-        // Write the log
+        // Write the log.
         $this->logger->info(
             'Created object in database',
             [
@@ -227,7 +248,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             ]
         );
 
-        // Throw the event
+        // Throw the event.
         $event = new ActionEvent('commongateway.action.event', ['object' => $object], 'commongateway.object.post.create');
         $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 
@@ -238,18 +259,18 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args
      *
-     * @return void
+     * @return void Nothing.
      */
     public function postUpdate(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
 
-        // if this subscriber only applies to certain entity types,
-        if (!$object instanceof ObjectEntity) {
+        // If this subscriber only applies to certain entity types,
+        if ($object instanceof ObjectEntity === false) {
             return;
         }
 
-        // Write the log
+        // Write the log.
         $this->logger->info(
             'Updated object in database',
             [
@@ -258,7 +279,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
             ]
         );
 
-        // Throw the event
+        // Throw the event.
         $event = new ActionEvent('commongateway.action.event', ['object' => $object], 'commongateway.object.post.update');
         $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 
@@ -269,14 +290,14 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args
      *
-     * @return void
+     * @return void Nothing.
      */
     public function postLoad(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
 
         // if this subscriber only applies to certain entity types,
-        if (!$object instanceof ObjectEntity) {
+        if ($object instanceof ObjectEntity === false) {
             return;
         }
 
@@ -297,11 +318,9 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     /**
      * Flushing entity manager.
      *
-     * @param LifecycleEventArgs $args
-     *
-     * @return void
+     * @return void Nothing.
      */
-    public function preFlush(PreFlushEventArgs $args): void
+    public function preFlush(): void
     {
         // Write the log
         $this->logger->info(
@@ -318,19 +337,17 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     /**
      * Flushed entity manager.
      *
-     * @param LifecycleEventArgs $args
-     *
-     * @return void
+     * @return void Nothing.
      */
-    public function postFlush(PostFlushEventArgs $args): void
+    public function postFlush(): void
     {
-        // Write the log
+        // Write the log.
         $this->logger->info(
             'Flushed entity manager',
             []
         );
 
-        // Throw the event
+        // Throw the event.
         $event = new ActionEvent('commongateway.action.event', [], 'commongateway.object.post.flush');
         $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 

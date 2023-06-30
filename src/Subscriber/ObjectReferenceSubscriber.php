@@ -5,7 +5,6 @@ namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Entity\Attribute;
 use App\Entity\Entity;
-use CommonGateway\CoreBundle\Service\EavService;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
@@ -21,21 +20,29 @@ use Doctrine\Persistence\Event\LifecycleEventArgs;
 class ObjectReferenceSubscriber implements EventSubscriberInterface
 {
 
-    private EavService $eavService;
-
+    /**
+     * @var EntityManagerInterface $entityManager
+     */
     private EntityManagerInterface $entityManager;
 
+    /**
+     * __construct
+     */
     public function __construct(
-        EntityManagerInterface $entityManager,
-        EavService $eavService
+        EntityManagerInterface $entityManager
     ) {
         $this->entityManager = $entityManager;
-        $this->eavService    = $eavService;
 
     }//end __construct()
 
-    // this method can only return the event names; you cannot define a
-    // custom method name to execute when each event triggers
+    /**
+     * This method can only return the event names; you cannot define a,
+     * custom method name to execute when each event triggers.
+     *
+     * @todo Should be a static.
+     *
+     * @return array
+     */
     public function getSubscribedEvents(): array
     {
         return [
@@ -56,10 +63,10 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
     {
         $object = $args->getObject();
 
-        // Let see if we need to hook an attribute to an entity
-        if ($object instanceof Attribute // It's an attribute
-            && ($object->getSchema() || $object->getReference()) // It has a reference
-            && !$object->getObject() // It isn't currently connected to a schema
+        // Let see if we need to hook an attribute to an entity.
+        if ($object instanceof Attribute // It's an attribute.
+            && ($object->getSchema() || $object->getReference()) // It has a reference.
+            && !$object->getObject() // It isn't currently connected to a schema.
         ) {
             $reference = ($object->getReference() ?? $object->getSchema());
             $entity    = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference]);
@@ -71,13 +78,13 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
                         $object->setInversedBy($attribute);
                     }
                 }
-            }
+            }//end if
 
             return;
-        }
+        }//end if
 
-        if ($object instanceof Entity // Is it an entity
-            && $object->getReference() // Does it have a reference
+        if ($object instanceof Entity // Is it an entity.
+            && $object->getReference() // Does it have a reference.
         ) {
             $attributes = $this->entityManager->getRepository('App:Attribute')->findBy(['schema' => $object->getReference()]);
             foreach ($attributes as $attribute) {
@@ -92,10 +99,10 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
                         $attribute->setInversedBy($attribute);
                     }
                 }
-            }
+            }//end foreach
 
             return;
-        }
+        }//end if
 
     }//end postPersist()
 

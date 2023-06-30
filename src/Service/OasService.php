@@ -184,7 +184,7 @@ class OasService
                 'schema'      => [
                     'type'       => $attribute->getType(),
                     'format'     => $attribute->getFormat(),
-                    'properties' => isset($properties) ? $properties : null,
+                    'properties' => isset($properties) === true ? $properties : null,
                     'items'      => ['type' => 'string'],
                 ],
             ];
@@ -359,7 +359,7 @@ class OasService
 
         $collectionResponse = $this->setCollectionResponse($endpoint);
 
-        // Don't set the parameters with a GET collection request
+        // Don't set the parameters with a GET collection request.
         if ($method === 'GET' && $operationId === 'collection') {
             unset($operations['responses']['200']);
             unset($operations['parameters']);
@@ -375,7 +375,7 @@ class OasService
             ];
         }//end if
 
-        // Don't set the parameters with a POST request
+        // Don't set the parameters with a POST request.
         if ($method === 'POST') {
             unset($operations['parameters']);
         }

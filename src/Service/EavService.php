@@ -16,32 +16,24 @@ use Doctrine\ORM\EntityManagerInterface;
 class EavService
 {
 
-    private EntityManagerInterface $entityManager;
-
-    private CacheService $cacheService;
-
-    private array $configuration;
-
-    private array $data;
-
-    private ObjectEntity $object;
-
-    private string $id;
-
     /**
      * @param EntityManagerInterface $entityManager
      */
-    public function __construct(
-        EntityManagerInterface $entityManager,
-        CacheService $cacheService
-    ) {
+    private EntityManagerInterface $entityManager;
+
+    /**
+     * The constructor sets al needed variables.
+     *
+     * @param EntityManagerInterface $entityManager
+     */
+    public function __construct(EntityManagerInterface $entityManager)
+    {
         $this->entityManager = $entityManager;
-        $this->cacheService  = $cacheService;
 
     }//end __construct()
 
     /**
-     * Checks an entity to see if there are anny atributtes waiting for it.
+     * Checks an entity to see if there are anny attributes waiting for it.
      *
      * @param Entity $entity
      *
@@ -49,15 +41,15 @@ class EavService
      */
     public function checkEntityforAttribute(Entity $entity): Entity
     {
-        // Make sure we have a reference
-        if (!$entity->getReference()) {
+        // Make sure we have a reference.
+        if ($entity->getReference() === null) {
             return $entity;
         }
 
-        // Find the atribbutes
+        // Find the attributes.
         $attributes = $this->entityManager->getRepository('App:Attribute')->findBy(['reference' => $entity->getReference(), 'object' => null]);
 
-        // Add them to the entity
+        // Add them to the entity.
         foreach ($attributes as $attribute) {
             $attribute->setObject($entity);
         }
@@ -67,7 +59,7 @@ class EavService
     }//end checkEntityforAttribute()
 
     /**
-     * Checks an atribute to see if a schema for its reference has becomme available.
+     * Checks an attribute to see if a schema for its reference has become available.
      *
      * @param Attribute $attribute
      *
@@ -75,8 +67,8 @@ class EavService
      */
     public function checkAttributeforEntity(Attribute $attribute): Attribute
     {
-        // Make sure we have a referende
-        if (!$attribute->getReference() || $attribute->getObject()) {
+        // Make sure we have a reference.
+        if ($attribute->getReference() === null || $attribute->getObject() !== null) {
             return $attribute;
         }
 

@@ -40,13 +40,11 @@ class MetricsController extends AbstractController
     /**
      * Provides a metrics endpoint for prometheus to crawl.
      *
-     * @param Request $request The symfony request object
-     *
      * @return Response
      *
      * @Route("/metrics", methods={"GET"})
      */
-    public function metrics(Request $request): Response
+    public function metrics(): Response
     {
         $status  = 200;
         $metrics = $this->metricsService->getAll();

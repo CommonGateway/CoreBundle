@@ -79,7 +79,7 @@ class MetricsService
     {
         $coreBundle = $this->composerService->getSingle('commongateway/corebundle');
 
-        // @todo the below should come out of mongoDB
+        // @Todo the below should come out of mongoDB.
         $requests = 0;
         $calls    = 0;
 
@@ -137,7 +137,7 @@ class MetricsService
             ],
         ];
 
-        // Let get the data from the providers
+        // Let get the data from the providers.
         $metrics = array_merge($metrics, $this->getErrors());
         $metrics = array_merge($metrics, $this->getPlugins());
 
@@ -154,7 +154,7 @@ class MetricsService
     {
         $collection = $this->client->logs->logs;
 
-        // Count all error logs with one of these level_names
+        // Count all error logs with one of these level_names.
         $errorTypes = [
             'EMERGENCY' => $collection->count(['level_name' => 'EMERGENCY']),
             'ALERT'     => $collection->count(['level_name' => 'ALERT']),
@@ -195,7 +195,7 @@ class MetricsService
      */
     public function getPlugins(): array
     {
-        // Get all the plugins
+        // Get all the plugins.
         $plugins = $this->composerService->getAll(['--installed']);
 
         $metrics[] = [
@@ -205,7 +205,7 @@ class MetricsService
             'value' => count($plugins),
         ];
 
-        // Create a list
+        // Create a list.
         foreach ($plugins as $plugin) {
             $metrics[] = [
                 'name'   => 'app_installed_plugins',
@@ -256,7 +256,7 @@ class MetricsService
             'value' => count($schemas),
         ];
 
-        // Create a list
+        // Create a list.
         foreach ($schemas as $schema) {
             $filter = ['_self.schema.id' => $schema['id']->toString()];
 

@@ -23,10 +23,21 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 class CacheDatabaseSubscriber implements EventSubscriberInterface
 {
 
+    /**
+     * The CacheService
+     *
+     * @var CacheService $cacheService
+     */
     private CacheService $cacheService;
 
+    /**
+     * @var EntityManagerInterface $entityManager
+     */
     private EntityManagerInterface $entityManager;
 
+    /**
+     * @var SessionInterface $session
+     */
     private SessionInterface $session;
 
     public function __construct(
@@ -40,8 +51,8 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
 
     }//end __construct()
 
-    // this method can only return the event names; you cannot define a
-    // custom method name to execute when each event triggers
+    // this method can only return the event names; you cannot define a,
+    // custom method name to execute when each event triggers.
     public function getSubscribedEvents(): array
     {
         return [
@@ -52,6 +63,13 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
 
     }//end getSubscribedEvents()
 
+    /**
+     * Executes postPersist().
+     *
+     * @param LifecycleEventArgs $args
+     *
+     * @return void Nothing.
+     */
     public function postUpdate(LifecycleEventArgs $args): void
     {
         $this->postPersist($args);
@@ -63,26 +81,26 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
      *
      * @param LifecycleEventArgs $args
      *
-     * @return void
+     * @return void Nothing.
      */
     public function postPersist(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
         // if this subscriber only applies to certain entity types,
-        if ($object instanceof ObjectEntity) {
+        if ($object instanceof ObjectEntity === true) {
             // $this->updateParents($object);
             $this->cacheService->cacheObject($object);
 
             return;
         }
 
-        if ($object instanceof Entity) {
+        if ($object instanceof Entity === true) {
             $this->cacheService->cacheShema($object);
 
             return;
         }
 
-        if ($object instanceof Endpoint) {
+        if ($object instanceof Endpoint === true) {
             $this->cacheService->cacheEndpoint($object);
 
             return;
@@ -109,12 +127,13 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         }
 
         if ($object instanceof Entity) {
-            $this->cacheService->removeSchema($object);
-
+            // @todo finish this function.
+            // $this->cacheService->removeSchema($object);
             return;
         }
 
         if ($object instanceof Endpoint) {
+            // @todo finish this function.
             $this->cacheService->removeEndpoint($object);
 
             return;

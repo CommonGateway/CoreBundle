@@ -20,10 +20,21 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class UninstallCommand extends Command
 {
 
+    /**
+     * @var static $defaultName
+     */
     protected static $defaultName = 'commongateway:uninstall';
 
+    /**
+     * The InstallationService.
+     *
+     * @var InstallationService $installationService
+     */
     private InstallationService $installationService;
 
+    /**
+     * __construct
+     */
     public function __construct(InstallationService $installationService)
     {
         $this->installationService = $installationService;
@@ -32,6 +43,11 @@ class UninstallCommand extends Command
 
     }//end __construct()
 
+    /**
+     * Configures this commmand.
+     *
+     * @return void Nothing.
+     */
     protected function configure(): void
     {
         $this
@@ -43,6 +59,14 @@ class UninstallCommand extends Command
 
     }//end configure()
 
+    /**
+     * Executes this commmand.
+     *
+     * @param InputInterface  $input  The input interface.
+     * @param OutputInterface $output The output interface.
+     *
+     * @return int 1 if successfully executed, else 0.
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io     = new SymfonyStyle($input, $output);

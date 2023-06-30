@@ -161,29 +161,29 @@ class InstallationService
      */
     public function update(array $config = [], SymfonyStyle $style = null): int
     {
+        $this->cacheService->setStyle($style);
+
         // Let's see if we are trying to update a single plugin.
         if (isset($config['plugin']) === true) {
             $this->logger->debug('Running plugin installer for a single plugin: '.$config['plugin']);
             $this->install($config['plugin'], $config);
-        } else {
-            // If we don't want to update a single plugin then we want to install al the plugins.
-            $plugins = $this->composerService->getAll();
 
-            $this->logger->debug('Running plugin installer for all plugins');
+            $this->logger->debug('Doing a cache warmup after installer is done...');
+            $this->cacheService->warmup();
 
-            foreach ($plugins as $plugin) {
-                $this->install($plugin['name'], $config);
-            }
+            return Command::SUCCESS;
         }//end if
 
-        $this->logger->debug('Do a cache warmup after installer is done...');
+        // If we don't want to update a single plugin then we want to install al the plugins.
+        $plugins = $this->composerService->getAll();
 
-        if ($style !== null) {
-            $this->cacheService->setStyle($style);
-            $style->info('Done running installer...');
-            $style->section('Running cache warmup');
+        $this->logger->debug('Running plugin installer for all plugins');
+
+        foreach ($plugins as $plugin) {
+            $this->install($plugin['name'], $config);
         }
 
+        $this->logger->debug('Doing a cache warmup after installer is done...');
         $this->cacheService->warmup();
 
         return Command::SUCCESS;
@@ -350,7 +350,7 @@ class InstallationService
      */
     private function translateCoreReferences()
     {
-        foreach ($this->objects as $translateFrom => $value) {
+        foreach (array_keys($this->objects) as $translateFrom) {
             switch ($translateFrom) {
             case 'https://json-schema.org/draft/2020-12/action':
                 $translateTo = 'https://docs.commongateway.nl/schemas/Action.schema.json';
@@ -414,7 +414,7 @@ class InstallationService
             }
         }
 
-        // Make sure to warn users if they have to many files in a folder. (36 is maximum)
+        // Make sure to warn users if they have to many files in a folder. (36 is maximum).
         if (count($hits->files()) > 25) {
             $this->logger->warning("Found {strval(count($hits->files()))} files in directory, try limiting your files to 32 per directory. Or you won\'t be able to load in these schema\'s locally on a windows machine.", ['location' => $location, 'files' => count($hits->files())]);
         }
@@ -449,8 +449,8 @@ class InstallationService
             return false;
         }
 
-        // // Todo: validateJsonMapping does not exist
-        // // Check if it is a valid schema.
+        // @Todo: validateJsonMapping does not exist.
+        // Check if it is a valid schema.
         // $mappingSchema = $this->validateJsonMapping($mappingSchema);
         // if ($this->validateJsonMapping($mappingSchema) === true) {
         // $this->logger->error($file->getFilename().' is not a valid json-mapping object');
@@ -588,9 +588,9 @@ class InstallationService
             return null;
         }
 
-        $type  = $matches[1];
-        $query = explode(',', ltrim($matches[2], '?'));
-
+        $type = $matches[1];
+        // @todo remove $query? its not being used.
+        // $query = explode(',', ltrim($matches[2], '?'));
         // Load it if we have it.
         if (array_key_exists('$id', $schema) === true) {
             $object = $this->entityManager->getRepository('App:'.$type)->findOneBy(['reference' => $schema['$id']]);
@@ -706,7 +706,7 @@ class InstallationService
             $object->setOwner($this->testDataDefault['owner']);
         }
 
-        // TODO: testdata objects seem to have twice as much subobjects as they should have. Duplicates... (example: kiss->klanten->telefoonnummers)
+        // TODO: testdata objects seem to have twice as much subobjects as they should have. Duplicates... (example: kiss->klanten->telefoonnummers).
         // Now it gets a bit specif but for EAV data we allow nested fixed id's so let dive deep.
         if ($this->entityManager->contains($object) === false && (array_key_exists('id', $schema) === true || array_key_exists('_id', $schema) === true)) {
             $object = $this->schemaService->hydrate($object, $schema);
@@ -790,7 +790,7 @@ class InstallationService
         try {
             $install = $installationService->install();
 
-            return is_bool($install) ? $install : empty($install) === false;
+            return is_bool($install) === true ? $install : empty($install) === false;
         } catch (\Throwable $throwable) {
             $this->logger->critical("Failed to install installationService {$data['installationService']}: {$throwable->getMessage()}", ['file' => $throwable->getFile(), 'line' => $throwable->getLine()]);
 
@@ -916,7 +916,7 @@ class InstallationService
 
                 $endpoints[] = $endpoint;
 
-                // Handle sub and subSchema Endpoints. (will always create an endpoint for type 'schemas')
+                // Handle sub and subSchema Endpoints. (will always create an endpoint for type 'schemas').
                 $endpointData['$id'] = $endpoint->getReference();
                 $endpoints           = array_merge($endpoints, $this->handleSubEndpoints($endpointData, $subEndpoints));
                 $endpoints           = array_merge($endpoints, $this->handleSubSchemaEndpoints($endpointData, $subSchemaEndpoints));
@@ -1096,7 +1096,7 @@ class InstallationService
     {
         $name = ucfirst($newEndpointData['path']);
         $newEndpoint->setName($newEndpoint->getName().' '.$name);
-        if (isset($subEndpointData['description']) === true) {
+        if (isset($newEndpointData['description']) === true) {
             $newEndpoint->setDescription($newEndpointData['description']);
         }
 
@@ -1252,8 +1252,8 @@ class InstallationService
                 $action = new Action($actionHandler);
             }
 
-            array_key_exists('name', $handlerData) ? $action->setName($handlerData['name']) : '';
-            array_key_exists('reference', $handlerData) ? $action->setReference($handlerData['reference']) : '';
+            array_key_exists('name', $handlerData) === true ? $action->setName($handlerData['name']) : '';
+            array_key_exists('reference', $handlerData) === true ? $action->setReference($handlerData['reference']) : '';
             $action->setListens(($handlerData['listens'] ?? []));
             $action->setConditions(($handlerData['conditions'] ?? ['==' => [1, 1]]));
 
@@ -1336,14 +1336,14 @@ class InstallationService
             switch ($value['type']) {
             case 'string':
             case 'array':
-                if (isset($value['example'])) {
+                if (isset($value['example']) === true) {
                     $defaultConfig[$key] = $value['example'];
                 }
                 break;
             case 'object':
                 break;
             case 'uuid':
-                if (isset($value['$ref'])) {
+                if (isset($value['$ref']) === true) {
                     try {
                         $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $value['$ref']]);
                     } catch (Exception $exception) {
@@ -1354,7 +1354,7 @@ class InstallationService
                 }
                 break;
             default:
-                // throw error
+                // throw error.
             }//end switch
         }//end foreach
 
@@ -1379,9 +1379,9 @@ class InstallationService
                 continue;
             }//end if
 
-            if ($key == 'entity' && is_string($override) && Uuid::isValid($override) === false) {
+            if ($key == 'entity' && is_string($override) === true && Uuid::isValid($override) === false) {
                 $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $override]);
-                if (!$entity) {
+                if ($entity === null) {
                     $this->logger->error("No entity found with reference {$override} (overrideConfig() for installation.json)");
                     continue;
                 }
@@ -1391,9 +1391,9 @@ class InstallationService
                 continue;
             }//end if
 
-            if ($key == 'source' && is_string($override) && Uuid::isValid($override) === false) {
+            if ($key == 'source' && is_string($override) === true && Uuid::isValid($override) === false) {
                 $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $override]);
-                if (!$source) {
+                if ($source === null) {
                     $this->logger->error("No source found with reference {$override} (overrideConfig() for installation.json)");
                     continue;
                 }

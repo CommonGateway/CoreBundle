@@ -10,9 +10,9 @@
 
 | Name | Description |
 |------|-------------|
-|[__construct](#eavservice__construct)||
-|[checkAttributeforEntity](#eavservicecheckattributeforentity)|Checks an atribute to see if a schema for its reference has becomme available.|
-|[checkEntityforAttribute](#eavservicecheckentityforattribute)|Checks an entity to see if there are anny atributtes waiting for it.|
+|[__construct](#eavservice__construct)|The constructor sets al needed variables.|
+|[checkAttributeforEntity](#eavservicecheckattributeforentity)|Checks an attribute to see if a schema for its reference has become available.|
+|[checkEntityforAttribute](#eavservicecheckentityforattribute)|Checks an entity to see if there are anny attributes waiting for it.|
 |[deleteAllObjects](#eavservicedeleteallobjects)|Removes all object entities from the database (should obviously not be used in production).|
 
 
@@ -23,16 +23,16 @@
 **Description**
 
 ```php
- __construct (void)
+public __construct (\EntityManagerInterface $entityManager)
 ```
 
- 
+The constructor sets al needed variables. 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(\EntityManagerInterface) $entityManager`
 
 **Return Values**
 
@@ -50,7 +50,7 @@
 public checkAttributeforEntity (\Attribute $attribute)
 ```
 
-Checks an atribute to see if a schema for its reference has becomme available. 
+Checks an attribute to see if a schema for its reference has become available. 
 
  
 
@@ -76,7 +76,7 @@ Checks an atribute to see if a schema for its reference has becomme available.
 public checkEntityforAttribute (\Entity $entity)
 ```
 
-Checks an entity to see if there are anny atributtes waiting for it. 
+Checks an entity to see if there are anny attributes waiting for it. 
 
  
 

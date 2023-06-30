@@ -32,7 +32,7 @@ public audit (array $options)
 
 Search for a given term. 
 
-See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function 
+See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function. 
 
 **Parameters**
 
@@ -53,16 +53,16 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 **Description**
 
 ```php
-public getAll (array $options)
+public getAll (void)
 ```
 
 Show al packages installed trough composer. 
 
-See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function 
+See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function. 
 
 **Parameters**
 
-* `(array) $options`
+`This function has no parameters.`
 
 **Return Values**
 
@@ -105,17 +105,16 @@ Gets all installed plugins from the lock file.
 **Description**
 
 ```php
-public getSingle (string $package, array $options)
+public getSingle (string $package)
 ```
 
 Show a single package installed trough composer. 
 
-See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function 
+See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function. 
 
 **Parameters**
 
 * `(string) $package`
-* `(array) $options`
 
 **Return Values**
 
@@ -137,7 +136,7 @@ public remove (string $package, array $options)
 
 Show a single package installed trough composer. 
 
-See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function 
+See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function. 
 
 **Parameters**
 
@@ -186,17 +185,16 @@ See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al option
 **Description**
 
 ```php
-public search (string|null $search, array $options)
+public search (string|null $search)
 ```
 
 Search for a given term. 
 
-See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function 
+See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function. 
 
 **Parameters**
 
 * `(string|null) $search`
-* `(array) $options`
 
 **Return Values**
 

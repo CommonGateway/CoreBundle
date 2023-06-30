@@ -4,10 +4,8 @@ namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Entity\ObjectEntity;
 use App\Service\ObjectEntityService;
-use App\Service\SynchronizationService;
 use CommonGateway\CoreBundle\Service\GatewayResourceService;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Psr\Log\LoggerInterface;
@@ -25,21 +23,6 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
 {
 
     /**
-     * @var EntityManagerInterface
-     */
-    private EntityManagerInterface $entityManager;
-
-    /**
-     * @var SynchronizationService
-     */
-    private SynchronizationService $syncService;
-
-    /**
-     * @var GatewayResourceService
-     */
-    private GatewayResourceService $resourceService;
-
-    /**
      * @var ObjectEntityService
      */
     private ObjectEntityService $objectEntityService;
@@ -52,22 +35,14 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
     /**
      * The constructor sets al needed variables.
      *
-     * @param EntityManagerInterface $entityManager
-     * @param SynchronizationService $syncService
      * @param GatewayResourceService $resourceService
      * @param ObjectEntityService    $objectEntityService
      * @param LoggerInterface        $pluginLogger
      */
     public function __construct(
-        EntityManagerInterface $entityManager,
-        SynchronizationService $syncService,
-        GatewayResourceService $resourceService,
         ObjectEntityService $objectEntityService,
         LoggerInterface $pluginLogger
     ) {
-        $this->entityManager       = $entityManager;
-        $this->syncService         = $syncService;
-        $this->resourceService     = $resourceService;
         $this->objectEntityService = $objectEntityService;
         $this->pluginLogger        = $pluginLogger;
 
@@ -107,7 +82,7 @@ class ObjectSyncSubscriber implements EventSubscriberInterface
             $this->pluginLogger->info('There is already a synchronisation for this object.');
 
             return;
-        }
+        }//end if
 
         // Check if the default source of the entity of the object is null.
         if (($defaultSource = $object->getEntity()->getDefaultSource()) === null) {

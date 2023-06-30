@@ -88,8 +88,8 @@ class RequestService
      * @var $schema
      */
     private $schema;
-    // todo: cast to Entity|Boolean in php 8.
-    // todo: we might want to move or rewrite code instead of using these services here:
+    // @Todo: cast to Entity|Boolean in php 8.
+    // @Todo: we might want to move or rewrite code instead of using these services here:
 
     /**
      * @var ResponseService
@@ -213,7 +213,7 @@ class RequestService
 
         $xmlEncoder = new XmlEncoder([]);
 
-        // @TODO: Create hal and ld encoding
+        // @TODO: Create hal and ld encoding.
         switch ($accept) {
         case 'pdf':
             $content = $this->downloadService->downloadPdf($data);
@@ -267,7 +267,11 @@ class RequestService
             return $vars;
         }
 
-        $pairs = explode('&', empty($queryString) === false ? $queryString : $_SERVER['QUERY_STRING']);
+        if (empty($queryString) === true && isset($_SERVER['QUERY_STRING']) === true) {
+            $queryString = $_SERVER['QUERY_STRING'];
+        }
+
+        $pairs = explode('&', $queryString);
         foreach ($pairs as $pair) {
             $nv    = explode('=', $pair);
             $name  = urldecode($nv[0]);
@@ -324,7 +328,7 @@ class RequestService
      */
     public function getId()
     {
-        // Try to grab an id
+        // Try to grab an id.
         if (isset($this->data['path']['{id}']) === true) {
             return $this->data['path']['{id}'];
         }
@@ -350,7 +354,7 @@ class RequestService
         }
 
         if (isset($this->content['id']) === true) {
-            // the id might also be passed through the object itself
+            // the id might also be passed through the object itself.
             return $this->content['id'];
         }
 
@@ -372,7 +376,7 @@ class RequestService
     public function getSchema(array $parameters)
     {
         // If we have an object this is easy.
-        if (isset($this->object)) {
+        if (isset($this->object) === true) {
             return $this->object->getEntity();
         }
 
@@ -413,7 +417,7 @@ class RequestService
         }//end if
 
         // We only end up here if there is no endpoint or an unlimited endpoint.
-        if (isset($id) === true) {
+        if (isset($identification) === true) {
             return $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $identification]);
         }
 
@@ -575,8 +579,9 @@ class RequestService
         foreach ($this->data['path'] as $key => $value) {
             if (strpos($key, '{') !== false) {
                 if ($key !== '{id}') {
-                    $keyExplodedFilter  = explode('{', $key);
-                    $keyFilter          = explode('}', $keyExplodedFilter[1]);
+                    // @todo unused code below, remove?
+                    // $keyExplodedFilter  = explode('{', $key);
+                    // $keyFilter          = explode('}', $keyExplodedFilter[1]);
                     $filters['_search'] = $value;
                 }
             }
@@ -632,7 +637,7 @@ class RequestService
             }
         }
 
-        // Security
+        // Security.
         $scopes = $this->getScopes();
         foreach ($allowedSchemas['name'] as $schema) {
             if (isset($scopes[$schema][$this->data['method']]) === false) {
@@ -678,7 +683,7 @@ class RequestService
                 $session     = new Session();
                 $session->set('object', $this->identification);
 
-                // todo: This log is needed so we know an user has 'read' this object
+                // todo: This log is needed so we know an user has 'read' this object.
                 $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) === true ? json_encode($this->content) : $this->content);
             } else {
                 // $this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();

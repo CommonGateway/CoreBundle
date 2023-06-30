@@ -4,9 +4,24 @@ namespace CommonGateway\CoreBundle\Installer;
 
 interface InstallerInterface
 {
-    public function install();
+    /**
+     * Install
+     *
+     * @return void Nothing.
+     */
+    public function install(): void;
 
-    public function update();
+    /**
+     * Update
+     *
+     * @return void Nothing.
+     */
+    public function update(): void;
 
-    public function uninstall();
+    /**
+     * Uninstall
+     *
+     * @return void Nothing.
+     */
+    public function uninstall(): void;
 }//end interface

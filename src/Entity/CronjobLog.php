@@ -22,6 +22,11 @@ class CronjobLog
      */
     private $id;
 
+    /**
+     * Gets the id of this CronjobLog.
+     *
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;

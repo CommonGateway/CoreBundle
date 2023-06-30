@@ -20,11 +20,9 @@ This service provides a guzzle wrapper to work with sources in the common gatewa
 |[getEndpoint](#cacheservicegetendpoint)|Get a single endpoint from the cache.|
 |[getEndpoints](#cacheservicegetendpoints)||
 |[getObject](#cacheservicegetobject)|Get a single object from the cache.|
-|[getSchema](#cacheservicegetschema)|Get a single schema from the cache.|
 |[handleResultPagination](#cacheservicehandleresultpagination)|Adds pagination variables to an array with the results we found with searchObjects().|
 |[removeEndpoint](#cacheserviceremoveendpoint)|Removes an endpoint from the cache.|
 |[removeObject](#cacheserviceremoveobject)|Removes an object from the cache.|
-|[removeSchema](#cacheserviceremoveschema)|Removes an Schema from the cache.|
 |[retrieveObjectsFromCache](#cacheserviceretrieveobjectsfromcache)|Retrieves objects from a cache collection.|
 |[searchObjects](#cacheservicesearchobjects)|Searches the object store for objects containing the search string.|
 |[setPagination](#cacheservicesetpagination)|Decides the pagination values.|
@@ -156,6 +154,8 @@ Remove non-existing items from the cache.
 
 `void`
 
+> Nothing.
+
 
 <hr />
 
@@ -236,32 +236,6 @@ Get a single object from the cache.
 <hr />
 
 
-### CacheService::getSchema  
-
-**Description**
-
-```php
-public getSchema (\Uuid $identification)
-```
-
-Get a single schema from the cache. 
-
- 
-
-**Parameters**
-
-* `(\Uuid) $identification`
-
-**Return Values**
-
-`array|null`
-
-
-
-
-<hr />
-
-
 ### CacheService::handleResultPagination  
 
 **Description**
@@ -331,32 +305,6 @@ Removes an object from the cache.
 **Parameters**
 
 * `(\ObjectEntity) $objectEntity`
-
-**Return Values**
-
-`void`
-
-
-
-
-<hr />
-
-
-### CacheService::removeSchema  
-
-**Description**
-
-```php
-public removeSchema (\Entity $entity)
-```
-
-Removes an Schema from the cache. 
-
- 
-
-**Parameters**
-
-* `(\Entity) $entity`
 
 **Return Values**
 
@@ -508,7 +456,9 @@ Throws all available objects into the cache.
 
 **Return Values**
 
-`void`
+`int`
+
+
 
 
 <hr />

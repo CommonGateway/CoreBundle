@@ -145,7 +145,7 @@ Maps (transforms) an array (input) to a different array (output).
 **Description**
 
 ```php
-public setStyle (\SymfonyStyle $io)
+public setStyle (\SymfonyStyle $style)
 ```
 
 Set symfony style in order to output to the console. 
@@ -154,7 +154,7 @@ Set symfony style in order to output to the console.
 
 **Parameters**
 
-* `(\SymfonyStyle) $io`
+* `(\SymfonyStyle) $style`
 
 **Return Values**
 
