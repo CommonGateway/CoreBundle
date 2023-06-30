@@ -3,6 +3,8 @@ database Datalayer
 actor MappingService
 database Source
 
+skinparam backgroundColor transparent
+
 Datalayer -> MappingService: Outgoing Object
 note right of Datalayer: The object as it is in the datalayer
 MappingService -> Source: Outgoing Object

@@ -1,0 +1,33 @@
+@startuml
+
+title: Synchronization Object
+footer: Common Gateway | Synchronization Object
+header: Synchronization Object
+
+skinparam backgroundColor transparent
+
+@startuml
+
+package "Data Layer" {
+  class "Object Internal" as ObjectA {
+}
+}
+
+package "External Source" {
+  class "Object External" as ObjectB  {
+  }
+}
+
+class "SynchronizationObject" as SynchronizationObject {
+
+
+    -- Metadata
+    -id: UuidInterface <<generated>>
+    -dateCreated: Datetime <<generated>>
+    -dateModified: Datetime <<generated>>
+}
+
+
+ObjectA <-- SynchronizationObject
+ObjectB <-- SynchronizationObject
+@enduml

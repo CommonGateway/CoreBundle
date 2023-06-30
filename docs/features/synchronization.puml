@@ -1,5 +1,10 @@
 @startuml
-title Determining the Current State of Data
+title: Determining the Current State of Data
+footer: Common Gateway | Determining the Current State of Data
+header: Compare Data
+
+skinparam backgroundColor transparent
+
 
 [*] --> ObjectNotExistsInSource : Object only exists on Datalayer
 
