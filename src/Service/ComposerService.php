@@ -356,7 +356,7 @@ class ComposerService
      * Show al packages installed trough composer.
      *
      * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
-     * 
+     *
      * @todo We used to have a $options argument in this function for filtering on types of plugins (installed, disabled etc). Removed because not implemented.
      *
      * @return array
@@ -476,7 +476,7 @@ class ComposerService
      * Search for a given term.
      *
      * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function.
-     * 
+     *
      * @todo We used to have a $options argument in this function for filtering on types of plugins (installed, disabled etc). Removed because not implemented.
      *
      * @param string|null $search
