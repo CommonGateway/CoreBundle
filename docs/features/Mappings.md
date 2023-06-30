@@ -55,7 +55,7 @@ Mapping objects MUST follow the bellow specifications
 | cast        | no       | Casts properties to a specific type                                                                         | A valid json object, read [more]() about using cast                                                                                                                                                                                                                                                                                                                                                                    |
 
 ## Usage
-Okay, lets take a look at the most commonly used example api ([petstore](https://petstore.swagger.io/#/pet/findPetsByStatus)) and a basic original object.
+Okay, let's take a look at the most commonly used example api ([petstore](https://petstore.swagger.io/#/pet/findPetsByStatus)) and a basic original object.
 
 ```json
 {
@@ -65,7 +65,7 @@ Okay, lets take a look at the most commonly used example api ([petstore](https:/
 }
 ```
 
-Now lets say we want to move the status into a new object that has a sub object called metadata, like this:
+Now let's say we want to move the status into a new object that has a sub object called metadata, like this:
 
 ```json
 {
@@ -597,7 +597,7 @@ ChatGDP should now explain to you how it would create mappings.
 
 ![chat2.png](chat2.png)
 
-Oke so now we have ChatGDP setup, we can as it to create mappings for us. Lets ask it te create a simple mapping for us
+Oke so now we have ChatGDP setup, we can as it to create mappings for us. Let's ask it te create a simple mapping for us
 
 Normally we would ask something like this:
 

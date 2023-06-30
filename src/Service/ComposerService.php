@@ -19,7 +19,7 @@ class ComposerService
 {
     private function arrayEnum(array $array, array $enum): bool
     {
-        // Lets see if the values in the array arry pressent in the enum.
+        // Let's see if the values in the array arry pressent in the enum
         foreach ($array as $value) {
             if (in_array($value, $enum) === false) {
                 return false;
@@ -181,7 +181,7 @@ class ComposerService
             // --only-name (-N): Search only in package names.
             // --only-vendor (-O): Search only for vendor / organization names, returns only "vendor" as a result.
             // --type (-t): Search for a specific package type.
-            // --format (-f): Lets you pick between text (default) or json output format. Note that in the json, only the name and description keys are guaranteed to be present. The rest (url, repository, downloads and favers) are available for Packagist.org search results and other repositories may return more or less data.
+            // --format (-f): Let's you pick between text (default) or json output format. Note that in the json, only the name and description keys are guaranteed to be present. The rest (url, repository, downloads and favers) are available for Packagist.org search results and other repositories may return more or less data.
             break;
         case 'show':
             $optionsList = [
@@ -224,7 +224,7 @@ class ComposerService
             break;
         case 'fund':
             $optionsList = [];
-            // --format (-f): Lets you pick between text (default) or json output format.
+            // --format (-f): Let's you pick between text (default) or json output format.
             break;
         case 'depends ':
             $optionsList = [];
@@ -448,8 +448,8 @@ class ComposerService
                 $plugin           = array_merge($installedPlugin, $plugin);
                 $plugin['update'] = false;
 
-                // Lets see if we have newer versions than currently installer.
-                foreach (array_keys($plugin['versions'])  as $version) {
+                // Let's see if we have newer versions than currently installer
+                foreach ($plugin['versions']  as $version => $versionDetails) {
                     if (version_compare($plugin['version'], $version) < 0) {
                         if (isset($plugin['update']) === false || empty($plugin['update']) === true) {
                             $plugin['update'] = $version;
@@ -495,7 +495,7 @@ class ComposerService
 
         $plugins = json_decode($response->getBody()->getContents(), true)['results'];
 
-        // Lets pull the online detail datail.
+        // Let's pull the online detail datail
         foreach ($plugins as $key => $plugin) {
             $plugins[$key] = array_merge($plugin, $this->getSingle($plugin['name']));
         }

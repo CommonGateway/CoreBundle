@@ -1,19 +1,35 @@
-site_name: CoreBundle documentation
-site_url: https://test-koor-bundle.readthedocs.io/en/latest/
+site_name: Common Gateway user documentation
+site_url: https://commongateway.readthedocs.io/en/latest/
 repo_url: https://github.com/CommonGateway/CoreBundle
 docs_dir: docs
 theme:
   name: readthedocs
 nav:
-  - Home: index.md
-  - Commands: "./classes/Commands.md"
-  # - Schema : "./classes/Schema.md"
-  #  - Controller: "./classes/Controller.md"
-  # - Data: "./classes/Data.md"
-  # - DependencyInjection: "./classes/DependencyInjection.md"
-  # - Entity: "./classes/Entity.md"
-  # - Installer: "./classes/Installer.md"
-  # - Resources: "./classes/Resources.md"
+  - Home: "README.md"
+  - Installation: "Installation.md"
+  - Features: 
+    - Actionhandlers: "./features/Action_handlers.md"
+    - Api: "./features/Api.md"
+    - Architecture: "./features/Architecture.md"
+    - Authentication: "./features/Authentication.md"
+    - Authorization: "./features/Authorization.md"
+    - Codequality: "./features/Code_quality.md"
+    - Commands: "./features/Commands.md"
+    - Cronjobs: "./features/Cronjobs.md"
+    - Datalayer: "./features/Datalayer.md"
+    - Endpoints: "./features/Endpoints.md"
+    - Events: "./features/Events.md"
+    - Federalization: "./features/Federalization.md"
+    - Logging: "./features/Logging.md"
+    - Mappings: "./features/Mappings.md"
+    - Monitoring: "./features/Monitoring.md"
+    - Notifications: "./features/Notifications.md"
+    - Plugins: "./features/Plugins.md"
+    - Schemas: "./features/Schemas.md"
+    - Security: "./features/Security.md"
+    - Sources: "./features/Sources.md"
+    - Synchronizations: "./features/Synchronizations.md"
+    - Twig: "./features/Twig.md"
   - Services:
     - AuthenticationService: "./classes/Service/AuthenticationService.md"
     - CacheService: "./classes/Service/CacheService.md"
@@ -34,31 +50,6 @@ nav:
     - ObjectSyncService: "./classes/Service/ObjectSyncService.md"
     - RequestService: "./classes/Service/RequestService.md"
     - SchemaService: "./classes/Service/SchemaService.md"
-  - Features: 
-    - Action_handlers: "./features/Action_handlers.md"
-    - Api: "./features/Api.md"
-    - Architecture: "./features/Architecture.md"
-    - Authentication: "./features/Authentication.md"
-    - Authorization: "./features/Authorization.md"
-    - Code_quality: "./features/Code_quality.md"
-    - Commands: "./features/Commands.md"
-    - Cronjobs: "./features/Cronjobs.md"
-    - Datalayer: "./features/Datalayer.md"
-    - Design-decisions: "./features/Design-decisions.md"
-    - Endpoints: "./features/Endpoints.md"
-    - Events: "./features/Events.md"
-    - Features: "./features/Features.md"
-    - Federalization: "./features/Federalization.md"
-    - Logging: "./features/Logging.md"
-    - Mappings: "./features/Mappings.md"
-    - Monitoring: "./features/Monitoring.md"
-    - Notifications: "./features/Notifications.md"
-    - Plugins: "./features/Plugins.md"
-    - Schemas: "./features/Schemas.md"
-    - Security: "./features/Security.md"
-    - Sources: "./features/Sources.md"
-    - Synchronizations: "./features/Synchronizations.md"
-    - Twig: "./features/Twig.md"
 
 
   

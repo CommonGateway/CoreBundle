@@ -131,7 +131,7 @@ class EndpointService
             $parameters['response'] = $this->requestService->proxyHandler($parameters, []);
         }
 
-        // If we have shema's lets handle those.
+        // If we have shema's let's handle those.
         if (count($endpoint->getEntities()) > 0) {
             $this->logger->info('Handling entity endpoint');
 
@@ -174,7 +174,7 @@ class EndpointService
      */
     public function getAcceptType(): string
     {
-        // Lets first look at the accept header.
+        // Let's first look at the accept header.
         $acceptHeader = $this->request->headers->get('accept');
 
         // If the accept header does not provide useful info, check if the endpoint contains a pointer.
@@ -222,7 +222,7 @@ class EndpointService
             }//end switch
         }
 
-        // If we endup we cant detirmine what kind of accept we need so lets throw an error.
+        // If we endup we cant detirmine what kind of accept we need so let's throw an error.
         $this->logger->error('No proper accept could be determined');
 
         throw new BadRequestHttpException('No proper accept could be determined');
@@ -291,7 +291,7 @@ class EndpointService
      */
     private function getParametersFromRequest(?array $parameters = []): array
     {
-        // Lets make sure that we always have a path.
+        // Let's make sure that we always have a path.
         $this->logger->debug('Get the raw path');
         $parameters['pathRaw'] = $this->request->getPathInfo();
 
@@ -320,10 +320,10 @@ class EndpointService
         $parameters['method'] = $this->request->getMethod();
         $parameters['query']  = $this->request->query->all();
 
-        // Lets get all the headers.
+        // Let's get all the headers.
         $parameters['headers'] = $this->request->headers->all();
 
-        // Lets get all the post variables.
+        // Let's get all the post variables.
         $parameters['post'] = $this->request->request->all();
 
         return $parameters;

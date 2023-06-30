@@ -59,7 +59,7 @@ class SchemaService
 
         $this->logger->info('Validating:'.count($objects).'objects\'s');
 
-        // Lets go go go !
+        // Let's go go go !
         foreach ($objects as $object) {
             $this->session->set('object', $object->getId()->toString());
             if ($object->get === true) {
@@ -80,7 +80,7 @@ class SchemaService
 
         $this->logger->info('Validating:'.count($values).'values\'s');
 
-        // Lets go go go !
+        // Let's go go go !
         foreach ($values as $value) {
             if ($value->getObjectEntity() === null) {
                 $this->logger->error('Value '.$value->getStringValue().' ('.$value->getId().') that belongs to  '.$value->getAttribute()->getName().' ('.$value->getAttribute()->getId().') is orpahned');
@@ -100,7 +100,7 @@ class SchemaService
 
         $this->logger->info('Validating:'.count($schemas).'schema\'s');
 
-        // Lets go go go !
+        // Let's go go go !
         foreach ($schemas as $schema) {
             $this->session->set('schema', $this->schema->getId()->toString());
             $this->validateSchema($schema);
@@ -243,7 +243,7 @@ class SchemaService
             $this->logger->debug('Creating new object ('.$objectEntity->getEntity()->getName().') on a generated id');
         }
 
-        // We already dit this so lets skip it.
+        // We already dit this so let's skip it.
         unset($hydrate['_id']);
 
         foreach ($hydrate as $key => $value) {
@@ -252,7 +252,7 @@ class SchemaService
 
             // If we find the Value object we set the value.
             if ($valueObject instanceof Value) {
-                // Value is an array so lets create an object.
+                // Value is an array so let's create an object.
                 if ($valueObject->getAttribute()->getType() === 'object') {
                     // I hate arrays.
                     if ($valueObject->getAttribute()->getMultiple() === true) {
@@ -320,7 +320,7 @@ class SchemaService
             }//end if
         }//end foreach
 
-        // Lets force the default values.
+        // Let's force the default values.
         $objectEntity->hydrate([]);
 
         $this->entityManager->persist($objectEntity);
