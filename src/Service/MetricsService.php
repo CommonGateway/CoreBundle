@@ -156,14 +156,14 @@ class MetricsService
 
         // Count all error logs with one of these level_names
         $errorTypes = [
-            'EMERGENCY' => $collection->count(['level_name' => ['$in' => ['EMERGENCY']]]),
-            'ALERT'     => $collection->count(['level_name' => ['$in' => ['ALERT']]]),
-            'CRITICAL'  => $collection->count(['level_name' => ['$in' => ['CRITICAL']]]),
-            'ERROR'     => $collection->count(['level_name' => ['$in' => ['ERROR']]]),
+            'EMERGENCY' => $collection->count(['level_name' => 'EMERGENCY']),
+            'ALERT'     => $collection->count(['level_name' => 'ALERT']),
+            'CRITICAL'  => $collection->count(['level_name' => 'CRITICAL']),
+            'ERROR'     => $collection->count(['level_name' => 'ERROR']),
 
             // NOTE: The following log types are not counted towards the total number of errors:
-            'WARNING'   => $collection->count(['level_name' => ['$in' => ['WARNING']]]),
-            'NOTICE'    => $collection->count(['level_name' => ['$in' => ['NOTICE']]]),
+        // 'WARNING'   => $collection->count(['level_name' => 'WARNING']),
+        // 'NOTICE'    => $collection->count(['level_name' => 'NOTICE']),
         ];
 
         $metrics[] = [

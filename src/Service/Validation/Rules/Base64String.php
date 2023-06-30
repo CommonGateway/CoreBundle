@@ -30,7 +30,7 @@ final class Base64String extends AbstractRule
     public function validate($input): bool
     {
         // Todo: Split code in this function into multiple subFunctions.
-        // Example of a (full length) base64 string: data:text/plain;base64,ZGl0IGlzIGVlbiB0ZXN0IGRvY3VtZW50
+        // Example of a (full length) base64 string: data:text/plain;base64,ZGl0IGlzIGVlbiB0ZXN0IGRvY3VtZW50 .
         // Make sure we have a string as input.
         if (Validator::stringType()->validate($input) === false) {
             $this->setExceptionMessage('This is not a string.');
@@ -49,18 +49,18 @@ final class Base64String extends AbstractRule
 
         // Get mimeType using the base64 to open a file and compare it with the mimeType from the base64 input string.
         try {
-            // Use the base64 to open a file and get the mimeType
+            // Use the base64 to open a file and get the mimeType.
             $fileData  = \Safe\base64_decode($base64);
-            $f         = finfo_open();
-            $mimeType1 = finfo_buffer($f, $fileData, FILEINFO_MIME_TYPE);
-            finfo_close($f);
+            $file      = finfo_open();
+            $mimeType1 = finfo_buffer($file, $fileData, FILEINFO_MIME_TYPE);
+            finfo_close($file);
         } catch (Exception $exception) {
             $this->setExceptionMessage($exception->getMessage());
 
             return false;
         }
 
-        // Support normal base64 validation as well, example: ZGl0IGlzIGVlbiB0ZXN0IGRvY3VtZW50
+        // Support normal base64 validation as well, example: ZGl0IGlzIGVlbiB0ZXN0IGRvY3VtZW50 .
         $mimeType2 = $mimeType1;
 
         // If input string has a single comma (',') in it, count($exploded_input) will return 2.

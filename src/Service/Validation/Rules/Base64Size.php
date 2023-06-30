@@ -13,6 +13,8 @@ final class Base64Size extends AbstractRule
     // Todo: Getter setter.
 
     /**
+     * The minimum size.
+     *
      * @var integer|null
      */
     private ?int $minSize;
@@ -20,6 +22,8 @@ final class Base64Size extends AbstractRule
     // Todo: Getter setter.
 
     /**
+     * The maximum size.
+     *
      * @var integer|null
      */
     private ?int $maxSize;
@@ -55,7 +59,7 @@ final class Base64Size extends AbstractRule
     /**
      * Gets the memory size of a base64 file in bytes.
      *
-     * @param $base64
+     * @param mixed $base64 A base64 string.
      *
      * @return Exception|float|int
      */
