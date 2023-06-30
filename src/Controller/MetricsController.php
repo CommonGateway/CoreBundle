@@ -48,8 +48,11 @@ class MetricsController extends AbstractController
     {
         $status  = 200;
         $metrics = $this->metricsService->getAll();
-
-        return new Response(json_encode(['metrics' => $metrics]), $status, ['Content-type' => 'application/json']);
+        
+        // Todo: temp fix for now, we ant the metricsService to return an array that looks like the one we are creating here:
+        $response = "{$metrics[3]['name']}{help=\"{$metrics[3]['help']}\"} {$metrics[3]['value']}\n{$metrics[4]['name']}{help=\"{$metrics[4]['help']}\"} {$metrics[4]['value']}\n{$metrics[5]['name']}{help=\"{$metrics[5]['help']}\"} {$metrics[5]['value']}";
+        
+        return new Response($response, $status, ['Content-type' => 'text/plain']);
 
     }//end metrics()
 }//end class
