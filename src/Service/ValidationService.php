@@ -287,7 +287,7 @@ class ValidationService
     private function checkIfAttRequired(Attribute $attribute): Rules\AbstractRule
     {
         // If attribute is required and an 'inversedBy required loop' is possible.
-        if (isset($attribute->getValidations()['required']) === true && $attribute->getValidations()['required'] === true && $this->checkInversedBy($attribute) && $this->level != 0) {
+        if (isset($attribute->getValidations()['required']) === true && $attribute->getValidations()['required'] === true && $this->checkInversedBy($attribute) === true && $this->level != 0) {
             // Todo: this is an incomplete solution to the inversedBy required loop problem, because this way fields that are inversedBy are never required unless they are on level 0...
             return new Rules\Key(
                 $attribute->getName(),
