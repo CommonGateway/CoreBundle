@@ -21,7 +21,7 @@ final class DutchPostalcode extends AbstractRule
         $dutchPc4List = $this->getDutchPC4List();
 
         foreach ($dutchPc4List as $dutchPc4) {
-            if ($dutchPc4 == $input) {
+            if ($dutchPc4 === $input) {
                 return true;
             }
         }
@@ -39,12 +39,12 @@ final class DutchPostalcode extends AbstractRule
     {
         $file = fopen(dirname(__FILE__).'../../../csv/dutch_pc4.csv', 'r');
 
-        $i            = 0;
+        $iterator     = 0;
         $dutchPc4List = [];
-        while (!feof($file)) {
+        while (feof($file) === false) {
             $line = fgetcsv($file);
-            if ($i === 0) {
-                $i++;
+            if ($iterator === 0) {
+                $iterator++;
                 continue;
             }
 
@@ -52,7 +52,7 @@ final class DutchPostalcode extends AbstractRule
                 $dutchPc4List[] = $line[1];
             }
 
-            $i++;
+            $iterator++;
         }
 
         return $dutchPc4List;

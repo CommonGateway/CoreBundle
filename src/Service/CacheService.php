@@ -869,11 +869,7 @@ class CacheService
 
         // Normal search on every property with type text (includes strings).
         if (is_string($search) === true) {
-            $filter['$text']
-                = [
-                    '$search'        => $search,
-                    '$caseSensitive' => false,
-                ];
+            $filter['$text'] = ['$search' => $search];
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value.
         else if (is_array($search) === true) {
