@@ -11,31 +11,37 @@ use Symfony\Component\Security\Core\Security;
  */
 class ReadUnreadService
 {
+
     /**
      * @var Security
      */
     private Security $security;
 
-    public function __construct(Security $security) {
+    public function __construct(Security $security)
+    {
         $this->security = $security;
-    }
+
+    }//end __construct()
 
     public function getIdentifier(array $data): string
     {
         $endpoint = $data['endpoint'];
         $path     = $data['path'];
 
-        if($endpoint->getProxy() !== null) {
+        if ($endpoint->getProxy() !== null) {
             return rtrim($endpoint->getProxy()->getLocation(), '/').'/'.implode('/', $path);
         } else {
             return end($path);
         }
-    }
+
+    }//end getIdentifier()
+
     public function readHandler(array $data, array $config): array
     {
         $identifier = $this->getIdentifier($data);
         $userId     = $this->security->getUser()->getUserId();
 
         return $data;
-    }
-}
+
+    }//end readHandler()
+}//end class
