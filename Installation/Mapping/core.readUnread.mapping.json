@@ -6,7 +6,7 @@
   "passTrough": false,
   "mapping": {
     "sourceObject": "{{ sourceObject|json_encode }}",
-    "readObject": "{{ readObject.id }}"
+    "readObject.dateRead": "{% if readObject.dateRead|default === false %}null{% elseif readObject.dateRead|default and readObject.dateRead|date('U') < readObject.dateModified|date('U') %}null{% elseif readObject.dateRead|default and readObject.dateRead|date('U') > readObject.dateModified|date('U') %}{{ readObject.id }}{% endif %}"
   },
   "cast": {
     "sourceObject": "jsonToArray"
