@@ -1,0 +1,14 @@
+{
+  "title": "readUnread",
+  "$id": "https://commongateway.nl/mapping/core.readUnread.mapping.json",
+  "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
+  "version": "0.0.1",
+  "passTrough": false,
+  "mapping": {
+    "sourceObject": "{{ sourceObject|json_encode }}",
+    "readObject": "{{ readObject.id }}"
+  },
+  "cast": {
+    "sourceObject": "jsonToArray"
+  }
+}
