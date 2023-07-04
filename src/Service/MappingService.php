@@ -255,7 +255,7 @@ class MappingService
             $value = json_decode($value, true);
             break;
         case 'nullStringToNull':
-            if ($value === 'null')  {
+            if ($value === 'null') {
                 $value = null;
             }
             break;
