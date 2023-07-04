@@ -9,6 +9,7 @@
     "dateRead": "{% if readObject.dateRead|default === false %}null{% elseif readObject.dateRead|default and readObject.dateRead|date('U') < readObject.dateModified|date('U') %}null{% elseif readObject.dateRead|default and readObject.dateRead|date('U') > readObject.dateModified|date('U') %}{{ readObject.dateRead }}{% endif %}"
   },
   "cast": {
-    "sourceObject": "jsonToArray"
+    "sourceObject": "jsonToArray",
+    "dateRead": "nullStringToNull"
   }
 }

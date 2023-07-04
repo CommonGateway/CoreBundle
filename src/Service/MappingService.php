@@ -254,6 +254,11 @@ class MappingService
             $value = str_replace(['&quot;', '&amp;quot;'], '"', $value);
             $value = json_decode($value, true);
             break;
+        case 'nullStringToNull':
+            if ($value === 'null')  {
+                $value = null;
+            }
+            break;
         case 'coordinateStringToArray':
             $value = $this->coordinateStringToArray($value);
             break;
