@@ -169,6 +169,7 @@ class MappingService
                 foreach ($cast as $singleCast) {
                     $this->handleCast($dotArray, $key, $singleCast);
                 }
+
                 continue;
             }
 
