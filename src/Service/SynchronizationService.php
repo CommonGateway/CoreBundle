@@ -39,9 +39,9 @@ class SynchronizationService
 
     /**
      * Old one from the gateway.
-     * 
+     *
      * @todo Remove once all code is moved to this new class.
-     * 
+     *
      * @var OldSynchronizationService
      */
     private OldSynchronizationService $oldSyncService;
@@ -56,16 +56,16 @@ class SynchronizationService
      *
      * @param Environment            $twig.
      * @param LoggerInterface        $actionLogger.
-     * @param SynchronizationService $syncService Old one from the gateway.
+     * @param SynchronizationService $syncService   Old one from the gateway.
      */
     public function __construct(
         LoggerInterface $actionLogger,
         OldSynchronizationService $oldSyncService
     ) {
-        $this->logger = $actionLogger;
+        $this->logger         = $actionLogger;
         $this->oldSyncService = $oldSyncService;
-    }//end __construct()
 
+    }//end __construct()
 
     /**
      * Set symfony style in order to output to the console.
@@ -82,11 +82,10 @@ class SynchronizationService
 
     }//end setStyle()
 
-
     /**
      * Temporary function as replacement of the $this->oldSyncService->synchronize() function.
      * Because currently synchronize function can only pull from a source and not push to a source.
-     * 
+     *
      * @todo: Temp way of doing this without updating the oldSyncService->synchronize() function...
      *
      * @param Synchronization $synchronization The synchronization we are going to synchronize.
@@ -108,19 +107,17 @@ class SynchronizationService
                 'POST',
                 [
                     'body'    => $objectString,
-                    //'query'   => [],
+                    // 'query'   => [],
                     'headers' => $synchronization->getSource()->getHeaders(),
                 ]
             );
-        } catch (Exception|GuzzleException $exception) {
+        } catch (Exception | GuzzleException $exception) {
             $this->oldSyncService->ioCatchException(
                 $exception,
                 [
                     'line',
                     'file',
-                    'message' => [
-                        'preMessage' => 'Error while doing syncToSource in zgwToVrijbrpHandler: ',
-                    ],
+                    'message' => ['preMessage' => 'Error while doing syncToSource in zgwToVrijbrpHandler: '],
                 ]
             );
             $this->logger->error('Could not synchronize object. Error message: '.$exception->getMessage().'\nFull Response'.($exception instanceof ServerException || $exception instanceof ClientException || $exception instanceof RequestException === true ? $exception->getResponse()->getBody() : ''));
@@ -132,13 +129,13 @@ class SynchronizationService
         $body = $this->callService->decodeResponse($synchronization->getSource(), $result);
 
         $bodyDot = new Dot($body);
-        $now = new DateTime();
+        $now     = new DateTime();
         $synchronization->setLastSynced($now);
         $synchronization->setSourceLastChanged($now);
         $synchronization->setLastChecked($now);
         $synchronization->setHash(hash('sha384', serialize($bodyDot->jsonSerialize())));
 
         return $body;
-    }//end synchronizeTemp()
 
+    }//end synchronizeTemp()
 }//end class
