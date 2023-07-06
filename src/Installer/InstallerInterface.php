@@ -9,19 +9,19 @@ interface InstallerInterface
      *
      * @return void Nothing.
      */
-    public function install(): void;
+    public function install();
 
     /**
      * Update
      *
      * @return void Nothing.
      */
-    public function update(): void;
+    public function update();
 
     /**
      * Uninstall
      *
      * @return void Nothing.
      */
-    public function uninstall(): void;
+    public function uninstall();
 }//end interface
