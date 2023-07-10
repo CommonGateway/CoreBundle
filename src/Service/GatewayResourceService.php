@@ -85,7 +85,7 @@ class GatewayResourceService
 
         return $objectEntity;
 
-    }//end getSchema()
+    }//end getObject()
 
     /**
      * Get a mapping by reference.
