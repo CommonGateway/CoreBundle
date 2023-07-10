@@ -54,7 +54,7 @@ class InstallCommand extends Command
     /**
      * Executes installation of a bundle.
      */
-    protected function execute(InputInterface $input): int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $bundle = $input->getArgument('bundle');
 
