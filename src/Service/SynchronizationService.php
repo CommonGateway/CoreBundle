@@ -59,7 +59,7 @@ class SynchronizationService
      *
      * @param Environment            $twig.
      * @param LoggerInterface        $actionLogger.
-     * @param SynchronizationService $syncService Old one from the gateway.
+     * @param SynchronizationService $syncService   Old one from the gateway.
      * @param CallService            $callService.
      */
     public function __construct(
@@ -69,7 +69,8 @@ class SynchronizationService
     ) {
         $this->logger         = $actionLogger;
         $this->oldSyncService = $oldSyncService;
-        $this->callService = $callService;
+        $this->callService    = $callService;
+
     }//end __construct()
 
     /**
@@ -109,7 +110,8 @@ class SynchronizationService
 
         $this->logger->info('Sending message with body '.$objectString);
         isset($this->style) && $this->style->info('Sending message with body '.$objectString);
-        var_dump('test123');die;
+        var_dump('test123');
+        die;
 
         try {
             $result = $this->callService->call(
@@ -144,7 +146,7 @@ class SynchronizationService
             $synchronization->setEntity($schema);
         }
 
-        $bodyDot = new Dot($body);
+        $bodyDot  = new Dot($body);
         $sourceId = $bodyDot->get($idLocation);
         $synchronization->setSourceId($sourceId);
         $synchronization->setObject($objectEntity);

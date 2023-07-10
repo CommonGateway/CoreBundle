@@ -68,10 +68,11 @@ class InstallCommand extends Command
             'unsafe'   => $input->getOption('unsafe'),
         ];
 
-        if($this->installationService->install($bundle, $options) === true)
+        if ($this->installationService->install($bundle, $options) === true) {
             return 0;
-        else
+        } else {
             return 1;
+        }
 
     }//end execute()
 }//end class
