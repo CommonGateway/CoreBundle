@@ -122,16 +122,16 @@ class MappingService
 
         $input = $this->encodeArrayKeys($input, '.', '&#46;');
 
-        isset($this->style) === true && $this->style->info('Mapping array based on mapping object '.$mappingObject->getName().' (id:'.$mappingObject->getId()->toString().' / ref:'.$mappingObject->getReference().') v:'.$mappingObject->getversion());
+        isset($this->style) === true && $this->style->debug('Mapping array based on mapping object '.$mappingObject->getName().' (id:'.$mappingObject->getId()->toString().' / ref:'.$mappingObject->getReference().') v:'.$mappingObject->getversion());
 
         // Determine pass trough.
         // Let's get the dot array based on https://github.com/adbario/php-dot-notation.
         if ($mappingObject->getPassTrough()) {
             $dotArray = new Dot($input);
-            isset($this->style) === true && $this->style->info('Mapping *with* pass trough');
+            isset($this->style) === true && $this->style->debug('Mapping *with* pass trough');
         } else {
             $dotArray = new Dot();
-            isset($this->style) === true && $this->style->info('Mapping *without* pass trough');
+            isset($this->style) === true && $this->style->debug('Mapping *without* pass trough');
         }
 
         $dotInput = new Dot($input);
@@ -152,7 +152,7 @@ class MappingService
         $unsets = ($mappingObject->getUnset() ?? []);
         foreach ($unsets as $unset) {
             if ($dotArray->has($unset) === false) {
-                isset($this->style) === true && $this->style->info("Trying to unset an property that doesn't exist during mapping");
+                isset($this->style) === true && $this->style->debug("Trying to unset an property that doesn't exist during mapping");
                 continue;
             }
         }
@@ -165,7 +165,7 @@ class MappingService
 
         foreach ($casts as $key => $cast) {
             if ($dotArray->has($key) === false) {
-                isset($this->style) === true && $this->style->info("Trying to cast an property that doesn't exist during mapping");
+                isset($this->style) === true && $this->style->debug("Trying to cast an property that doesn't exist during mapping");
                 continue;
             }
 
@@ -192,7 +192,7 @@ class MappingService
         }
 
         // Log the result.
-        isset($this->style) === true && $this->style->info(
+        isset($this->style) === true && $this->style->debug(
             'Mapped object',
             [
                 'input'      => $input,
@@ -264,7 +264,7 @@ class MappingService
             $value = $this->coordinateStringToArray($value);
             break;
         default:
-            isset($this->style) === true && $this->style->info('Trying to cast to an unsupported cast type: '.$cast);
+            isset($this->style) === true && $this->style->debug('Trying to cast to an unsupported cast type: '.$cast);
             break;
         }//end switch
 
