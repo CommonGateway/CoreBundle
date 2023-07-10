@@ -162,7 +162,7 @@ class MappingService
         if (is_array($casts) === false) {
             $casts = explode(',', $casts);
         }
-        
+
         foreach ($casts as $key => $cast) {
             if ($dotArray->has($key) === false) {
                 isset($this->style) === true && $this->style->info("Trying to cast an property that doesn't exist during mapping");
