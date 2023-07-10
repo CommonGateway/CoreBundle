@@ -2,6 +2,10 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use App\Entity\Read;
+use Adbar\Dot;
+use Doctrine\ORM\EntityManagerInterface;
+use Safe\DateTime;
 use Symfony\Component\Security\Core\Security;
 
 /**
@@ -17,9 +21,18 @@ class ReadUnreadService
      */
     private Security $security;
 
-    public function __construct(Security $security)
-    {
-        $this->security = $security;
+    /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
+
+    private MappingService $mappingService;
+
+    public function __construct(Security $security, EntityManagerInterface $entityManager, $mappingService) {
+        $this->security       = $security;
+        $this->entityManager  = $entityManager;
+        $this->mappingService = $mappingService;
+    }
 
     }//end __construct()
 
@@ -33,15 +46,50 @@ class ReadUnreadService
         } else {
             return end($path);
         }
-
-    }//end getIdentifier()
+    }
 
     public function readHandler(array $data, array $config): array
     {
         $identifier = $this->getIdentifier($data);
         $userId     = $this->security->getUser()->getUserId();
 
-        return $data;
+        if($this->entityManager->getRepository('App:Read')->findOneBy(['userId' => $userId, 'objectId' => $identifier]) !== null) {
+            return $data;
+        }
 
-    }//end readHandler()
-}//end class
+        $readObject = new Read();
+        $readObject->setObjectId($identifier);
+        $readObject->setUserId($userId);
+        $readObject->setDateRead(new DateTime());
+
+        $this->entityManager->persist($readObject);
+        $this->entityManager->flush();
+
+        return $data;
+    }
+
+    public function checkReadHandler(array $data, array $config): array
+    {
+        $identifier = $this->getIdentifier($data);
+        $userId = $this->security->getUser()->getUserId();
+        $mapping = '';
+
+        if (in_array($identifier, $config['collection_endpoints'])){
+            //TODO: partial match between objectId and the id in the read should suffice here.
+            $reads = $this->entityManager->getRepository('App:Read')->findBy(['userId' => $userId, 'objectId' => "$identifier%"]);
+
+            $responseEncoded = $data['response']->getContents();
+            $response = new Dot(\Safe\json_decode($responseEncoded, true));
+
+            foreach($response->get($config['objectsPath'])->toArray() as $key => $object) {
+                $object['reads'] = $reads;
+                $this->mappingService->mapping($mapping, $object);
+            }
+
+        } else {
+            $reads = $this->entityManager->getRepository('App:Read')->findBy(['userId' => $userId, 'objectId' => $identifier]);
+        }
+
+
+    }
+}
