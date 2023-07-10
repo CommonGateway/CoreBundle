@@ -416,7 +416,7 @@ class InstallationService
 
         // Make sure to warn users if they have to many files in a folder. (36 is maximum).
         if (count($hits->files()) > 25) {
-            $this->logger->warning("Found {strval(count($hits->files()))} files in directory, try limiting your files to 32 per directory. Or you won\'t be able to load in these schema\'s locally on a windows machine.", ['location' => $location, 'files' => count($hits->files())]);
+            $this->logger->warning("Found ".strval(count($hits->files()))." files in directory, try limiting your files to 32 per directory. Or you won\'t be able to load in these schema\'s locally on a windows machine.", ['location' => $location, 'files' => count($hits->files())]);
         }
 
         // Read all files in this folder.
