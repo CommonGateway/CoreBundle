@@ -156,23 +156,25 @@ class MappingService
                 continue;
             }
         }
-    
+
         // Cast values to a specific type.
         $casts = ($mappingObject->getCast() ?? []);
-    
+
         foreach ($casts as $key => $cast) {
             if ($dotArray->has($key) === false) {
                 isset($this->style) === true && $this->style->info("Trying to cast an property that doesn't exist during mapping");
                 continue;
             }
-        
+
             if (is_array($cast) === false) {
                 $cast = explode(',', $cast);
             }
+
             if ($cast === false) {
                 isset($this->style) === true && $this->style->info("Cast for property $key is an empty string");
                 continue;
             }
+
             foreach ($cast as $singleCast) {
                 $this->handleCast($dotArray, $key, $singleCast);
             }
