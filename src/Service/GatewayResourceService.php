@@ -20,6 +20,7 @@ use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\Gateway as Source;
 use App\Entity\Mapping;
+use App\Entity\ObjectEntity;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -65,6 +66,24 @@ class GatewayResourceService
         }//end if
 
         return $entity;
+
+    }//end getSchema()
+
+    /**
+     * Get a object by identifier.
+     *
+     * @param string $id The id to look for.
+     *
+     * @return ObjectEntity|null
+     */
+    public function getObject(string $id): ?ObjectEntity
+    {
+        $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->find($id);
+        if ($objectEntity === null) {
+            $this->pluginLogger->error("No objectEntity found for $id.");
+        }
+
+        return $objectEntity;
 
     }//end getSchema()
 
