@@ -5,6 +5,8 @@ namespace CommonGateway\CoreBundle\Service;
 use DateTime;
 use Exception;
 use Adbar\Dot;
+use App\Entity\Entity as Schema;
+use App\Entity\ObjectEntity;
 use App\Entity\Synchronization;
 use App\Service\SynchronizationService as OldSynchronizationService;
 use CommonGateway\CoreBundle\Service\CallService;
@@ -15,10 +17,11 @@ use GuzzleHttp\Exception\ServerException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+
 /**
  * The synchronization service handles the fetching and sending of data or objects to and from sources (Source/Gateway objects).
  *
- * @Author Barry Brands <barry@conduction.nl>
+ * @author Conduction BV <info@conduction.nl>, Barry Brands <barry@conduction.nl>
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
@@ -56,15 +59,17 @@ class SynchronizationService
      *
      * @param Environment            $twig.
      * @param LoggerInterface        $actionLogger.
-     * @param SynchronizationService $syncService   Old one from the gateway.
+     * @param SynchronizationService $syncService Old one from the gateway.
+     * @param CallService            $callService.
      */
     public function __construct(
         LoggerInterface $actionLogger,
-        OldSynchronizationService $oldSyncService
+        OldSynchronizationService $oldSyncService,
+        CallService $callService
     ) {
         $this->logger         = $actionLogger;
         $this->oldSyncService = $oldSyncService;
-
+        $this->callService = $callService;
     }//end __construct()
 
     /**
@@ -88,23 +93,29 @@ class SynchronizationService
      *
      * @todo: Temp way of doing this without updating the oldSyncService->synchronize() function...
      *
-     * @param Synchronization $synchronization The synchronization we are going to synchronize.
-     * @param array           $objectArray     The object data we are going to synchronize.
+     * @param Synchronization|null $synchronization The synchronization we are going to synchronize.
+     * @param array                $objectArray     The object data we are going to synchronize.
+     * @param ObjectEntity         $objectEntity    The objectEntity which data we are going to synchronize.
+     * @param Schema               $schema          The schema the object we are going to send belongs to.
+     * @param string               $location        The path/endpoint we send the request to.
+     * @param string               $idLocation      The location of the id in the response body.
+     * @param string               $method          The request method PUT or POST.
      *
      * @return array The response body of the outgoing call, or an empty array on error.
      */
-    public function synchronizeTemp(Synchronization $synchronization, array $objectArray, string $location): array
+    public function synchronizeTemp(?Synchronization &$synchronization = null, array $objectArray, ObjectEntity $objectEntity, Schema $schema, string $location, string $idLocation, ?string $method = 'POST'): array
     {
         $objectString = $this->oldSyncService->getObjectString($objectArray);
 
         $this->logger->info('Sending message with body '.$objectString);
         isset($this->style) && $this->style->info('Sending message with body '.$objectString);
+        var_dump('test123');die;
 
         try {
             $result = $this->callService->call(
                 $synchronization->getSource(),
                 $location,
-                'POST',
+                $method,
                 [
                     'body'    => $objectString,
                     // 'query'   => [],
@@ -128,8 +139,16 @@ class SynchronizationService
 
         $body = $this->callService->decodeResponse($synchronization->getSource(), $result);
 
+        if (isset($synchronization) === false) {
+            $synchronization = new Synchronization();
+            $synchronization->setEntity($schema);
+        }
+
         $bodyDot = new Dot($body);
-        $now     = new DateTime();
+        $sourceId = $bodyDot->get($idLocation);
+        $synchronization->setSourceId($sourceId);
+        $synchronization->setObject($objectEntity);
+        $now = new DateTime();
         $synchronization->setLastSynced($now);
         $synchronization->setSourceLastChanged($now);
         $synchronization->setLastChecked($now);

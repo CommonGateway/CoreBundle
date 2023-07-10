@@ -2,10 +2,12 @@
 
 namespace CommonGateway\CoreBundle\Command;
 
+use CommonGateway\CoreBundle\Controller\PluginController;
 use CommonGateway\CoreBundle\Service\InstallationService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 
 /**
@@ -54,7 +56,7 @@ class InstallCommand extends Command
     /**
      * Executes installation of a bundle.
      */
-    protected function execute(InputInterface $input): int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $bundle = $input->getArgument('bundle');
 
@@ -65,7 +67,10 @@ class InstallCommand extends Command
             'unsafe'   => $input->getOption('unsafe'),
         ];
 
-        return $this->installationService->install($bundle, $options);
+        if($this->installationService->install($bundle, $options) === true)
+            return 0;
+        else
+            return 1;
 
     }//end execute()
 }//end class
