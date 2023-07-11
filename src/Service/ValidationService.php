@@ -559,7 +559,8 @@ class ValidationService
         $objectValidator->addRule(
             new Rules\OneOf(
                 new Rules\ArrayType(),
-                new Rules\Uuid()
+                new Rules\Uuid(),
+                new Rules\Url()
             )
         );
         // If we are allowed to cascade and the input is an array, validate the input array for the Attribute->object Entity.
@@ -602,6 +603,9 @@ class ValidationService
         case 'rsin':
             return new CustomRules\Rsin();
         case 'url':
+            if($attribute->getType() === 'object') {
+                return new Rules\AlwaysValid();
+            }
             return new Rules\Url();
         case 'uuid':
             return new Rules\Uuid();
@@ -614,6 +618,7 @@ class ValidationService
         case 'dutch_pc4':
             return new CustomRules\DutchPostalcode();
         case 'date':
+        case 'datetime':
             // For now...
         case 'duration':
             // For now...
@@ -636,7 +641,7 @@ class ValidationService
             return new Rules\AlwaysValid();
         default:
             throw new GatewayException(
-                'Unknown attribute format.',
+                "Unknown attribute format $format.",
                 null,
                 null,
                 [
@@ -766,3 +771,4 @@ class ValidationService
 
     }//end getValidationRule()
 }//end class
+
