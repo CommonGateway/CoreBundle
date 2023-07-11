@@ -31,7 +31,7 @@ Handles incoming request from endpoints or controllers that relate to the gatewa
 **Description**
 
 ```php
-public __construct (\EntityManagerInterface $entityManager, \GatewayResourceService $resourceService, \MappingService $mappingService, \ValidationService $validationService, \CacheService $cacheService, \ResponseService $responseService, \ObjectEntityService $objectEntityService, \LogService $logService, \CallService $callService, \Security $security, \EventDispatcherInterface $eventDispatcher, \SerializerInterface $serializer, \SessionInterface $session, \LoggerInterface $requestLogger, \DownloadService $downloadService)
+public __construct (\EntityManagerInterface $entityManager, \GatewayResourceService $resourceService, \MappingService $mappingService, \ValidationService $validationService, \CacheService $cacheService, \ReadUnreadService $readUnreadService, \LogService $logService, \CallService $callService, \Security $security, \EventDispatcherInterface $eventDispatcher, \SerializerInterface $serializer, \SessionInterface $session, \LoggerInterface $requestLogger, \DownloadService $downloadService)
 ```
 
 The constructor sets al needed variables. 
@@ -45,8 +45,7 @@ The constructor sets al needed variables.
 * `(\MappingService) $mappingService`
 * `(\ValidationService) $validationService`
 * `(\CacheService) $cacheService`
-* `(\ResponseService) $responseService`
-* `(\ObjectEntityService) $objectEntityService`
+* `(\ReadUnreadService) $readUnreadService`
 * `(\LogService) $logService`
 * `(\CallService) $callService`
 * `(\Security) $security`
