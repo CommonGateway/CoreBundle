@@ -1,0 +1,83 @@
+name: Deploy the Product Page to GitHub Pages
+
+env: # Change these to your preferences any image url can also be a base encoded image
+  # General settings
+  GITHUB_PAGES_BRANCH: gh-pages
+  GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
+  GITHUB_API_BASE_URL: https://api.github.com/repos/${{ github.repository }}/contents
+  NL_DESIGN_TOKEN: "!ChangeMe!"
+  FAVICON_URL: "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/Pgo8IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDIwMDEwOTA0Ly9FTiIKICAgICJodHRwOi8vd3d3LnczLm9yZy9UUi8yMDAxL1JFQy1TVkctMjAwMTA5MDQvRFREL3N2ZzEwLmR0ZCI+CjxzdmcgdmVyc2lvbj0iMS4wIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgICAgd2lkdGg9IjcxLjAwMDAwMHB0IiBoZWlnaHQ9IjcwLjAwMDAwMHB0IiB2aWV3Qm94PSIwIDAgNzEuMDAwMDAwIDcwLjAwMDAwMCIKICAgICBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWlkWU1pZCBtZWV0Ij4KCiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLjAwMDAwMCw3MC4wMDAwMDApIHNjYWxlKDAuMTAwMDAwLC0wLjEwMDAwMCkiCiAgICAgICBmaWxsPSIjNDM3NkZDIiBzdHJva2U9Im5vbmUiPgogICAgICAgIDxwYXRoIGQ9Ik0yMTggNTkyIGwtMTM3IC03NyAwIC0xNjUgMCAtMTY1IDEzMSAtNzQgYzcyIC00MSAxMzcgLTc0IDE0MyAtNzQgNgowIDcwIDMzIDE0MyA3NCBsMTMxIDc0IDEgMTY1IDAgMTY1IC02OCAzNyBjLTM3IDIxIC05OSA1NiAtMTM3IDc3IGwtNzEgNDAKLTEzNiAtNzd6IG0yOTUgLTg1IGw1NyAtMzIgMCAtMTI1IDAgLTEyNSAtMTA2IC02MCBjLTU4IC0zMyAtMTA4IC02MCAtMTExCi01OSAtMyAwIC01MiAyNyAtMTA5IDYwIGwtMTAzIDU5IDAgMTI1IDAgMTI1IDEwNyA2MSAxMDcgNjIgNTAgLTI5IGMyNyAtMTYKNzYgLTQ0IDEwOCAtNjJ6Ii8+CiAgICAgICAgPHBhdGggZD0iTTI3OCA0NzIgbC02OCAtMzcgMCAtODUgMCAtODUgNzMgLTM5IDczIC0zOSA2MiAzNCBjMzQgMTggNjIgMzcgNjIKNDEgMCA0IC0xNCAxNSAtMzEgMjMgLTI4IDE1IC0zMyAxNSAtNTQgMSAtMzEgLTIwIC00NiAtMjAgLTg0IDIgLTI3IDE1IC0zMQoyMiAtMzEgNjIgMCA0MCA0IDQ3IDMxIDYzIDM4IDIxIDUzIDIxIDg0IDEgMjEgLTE0IDI2IC0xNCA1NCAxIDE3IDggMzEgMTkgMzEKMjMgMCA4IC0xMTMgNzIgLTEyNiA3MiAtNSAwIC0zOSAtMTcgLTc2IC0zOHoiLz4KICAgIDwvZz4KPC9zdmc+Cg=="
+  # Main menu
+  NAVBAR_LOGO_URL: "https://conduction.nl/wp-content/uploads/2021/07/cropped-conductionlogo-1.png"
+  GITHUB_DOCS_DIRECTORY_PATHS: '[{"name": "Features", "location": "/docs/features"}]'
+  READ_THE_DOCS_URL: "https://commongateway.readthedocs.io/en/latest/"
+  SLACK_URL: "https://join.slack.com/t/conductionworkspace/shared_invite/zt-1y5kerime-amWEvljvnLvo5S3YfU_jzg"
+  GITHUB_REPOSITORY_URL: ${{ github.event.repository.url }}
+  # Jumbotron setup
+  JUMBOTRON_TITLE: "Common Gateway"
+  JUMBOTRON_SUBTITLE: "Transforming how you handle data"
+  JUMBOTRON_DESCRIPTION: ${{ github.event.repository.description }}
+  JUMBOTRON_SVG: "https://www.conduction.nl/wp-content/uploads/2021/07/cropped-Conduction_HOME_0000_afb1-1.png"
+  # Footer setup
+  FOOTER_LOGO_URL: "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/Pgo8IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDIwMDEwOTA0Ly9FTiIKICAgICJodHRwOi8vd3d3LnczLm9yZy9UUi8yMDAxL1JFQy1TVkctMjAwMTA5MDQvRFREL3N2ZzEwLmR0ZCI+CjxzdmcgdmVyc2lvbj0iMS4wIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgICAgd2lkdGg9IjcxLjAwMDAwMHB0IiBoZWlnaHQ9IjcwLjAwMDAwMHB0IiB2aWV3Qm94PSIwIDAgNzEuMDAwMDAwIDcwLjAwMDAwMCIKICAgICBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWlkWU1pZCBtZWV0Ij4KCiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLjAwMDAwMCw3MC4wMDAwMDApIHNjYWxlKDAuMTAwMDAwLC0wLjEwMDAwMCkiCiAgICAgICBmaWxsPSIjNDM3NkZDIiBzdHJva2U9Im5vbmUiPgogICAgICAgIDxwYXRoIGQ9Ik0yMTggNTkyIGwtMTM3IC03NyAwIC0xNjUgMCAtMTY1IDEzMSAtNzQgYzcyIC00MSAxMzcgLTc0IDE0MyAtNzQgNgowIDcwIDMzIDE0MyA3NCBsMTMxIDc0IDEgMTY1IDAgMTY1IC02OCAzNyBjLTM3IDIxIC05OSA1NiAtMTM3IDc3IGwtNzEgNDAKLTEzNiAtNzd6IG0yOTUgLTg1IGw1NyAtMzIgMCAtMTI1IDAgLTEyNSAtMTA2IC02MCBjLTU4IC0zMyAtMTA4IC02MCAtMTExCi01OSAtMyAwIC01MiAyNyAtMTA5IDYwIGwtMTAzIDU5IDAgMTI1IDAgMTI1IDEwNyA2MSAxMDcgNjIgNTAgLTI5IGMyNyAtMTYKNzYgLTQ0IDEwOCAtNjJ6Ii8+CiAgICAgICAgPHBhdGggZD0iTTI3OCA0NzIgbC02OCAtMzcgMCAtODUgMCAtODUgNzMgLTM5IDczIC0zOSA2MiAzNCBjMzQgMTggNjIgMzcgNjIKNDEgMCA0IC0xNCAxNSAtMzEgMjMgLTI4IDE1IC0zMyAxNSAtNTQgMSAtMzEgLTIwIC00NiAtMjAgLTg0IDIgLTI3IDE1IC0zMQoyMiAtMzEgNjIgMCA0MCA0IDQ3IDMxIDYzIDM4IDIxIDUzIDIxIDg0IDEgMjEgLTE0IDI2IC0xNCA1NCAxIDE3IDggMzEgMTkgMzEKMjMgMCA4IC0xMTMgNzIgLTEyNiA3MiAtNSAwIC0zOSAtMTcgLTc2IC0zOHoiLz4KICAgIDwvZz4KPC9zdmc+Cg=="
+  FOOTER_LOGO_HREF: "https://conduction.nl"
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get the Product Website Template Code
+        uses: actions/checkout@v2
+        with:
+          repository: ConductionNL/product-website-template
+          ref: main
+
+      # With special thanxs to https://github.com/SpicyPizza/create-envfile
+      - name: Make envfile
+        uses: SpicyPizza/create-envfile@v2.0
+        with:
+          envkey_GITHUB_REPOSITORY_NAME: ${{ env.GITHUB_REPOSITORY_NAME }}
+          envkey_GATSBY_GITHUB_API_BASE_URL: ${{ env.GITHUB_API_BASE_URL }}
+          envkey_GATSBY_NL_DESIGN_TOKEN: ${{ env.NL_DESIGN_TOKEN }}
+          envkey_GATSBY_FAVICON_URL: ${{ env.FAVICON_URL }}
+          envkey_GATSBY_NAVBAR_LOGO_URL: ${{ env.NAVBAR_LOGO_URL }}
+          envkey_GATSBY_GITHUB_DOCS_DIRECTORY_PATHS: ${{ env.GITHUB_DOCS_DIRECTORY_PATHS }}
+          envkey_GATSBY_READ_THE_DOCS_URL: ${{ env.READ_THE_DOCS_URL }}
+          envkey_GATSBY_SLACK_URL: ${{ env.SLACK_URL }}
+          envkey_GATSBY_GITHUB_REPOSITORY_URL: ${{ env.GITHUB_REPOSITORY_URL }}
+          envkey_GATSBY_JUMBOTRON_TITLE: ${{ env.JUMBOTRON_TITLE }}
+          envkey_GATSBY_JUMBOTRON_SUBTITLE: ${{ env.JUMBOTRON_SUBTITLE }}
+          envkey_GATSBY_JUMBOTRON_DESCRIPTION: ${{ env.JUMBOTRON_DESCRIPTION }}
+          envkey_GATSBY_JUMBOTRON_SVG: ${{ env.JUMBOTRON_SVG }}
+          envkey_GATSBY_FOOTER_LOGO_URL: ${{ env.FOOTER_LOGO_URL }}
+          envkey_GATSBY_FOOTER_LOGO_HREF: ${{ env.FOOTER_LOGO_HREF }}
+          directory: pwa/static
+          file_name: .env.production
+          fail_on_empty: true
+          sort_keys: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+
+      - name: Install dependencies
+        run: cd pwa && npm install
+
+      - name: Remove old Gatsby cache
+        run: rm -rf pwa/.cache
+
+      - name: Build application
+        run: cd pwa && npm run build
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@4.1.0
+        with:
+          branch: ${{ env.GITHUB_PAGES_BRANCH }}
+          folder: pwa/public
