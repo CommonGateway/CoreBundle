@@ -167,20 +167,20 @@ class RequestService
         LoggerInterface $requestLogger,
         DownloadService $downloadService
     ) {
-        $this->entityManager       = $entityManager;
-        $this->cacheService        = $cacheService;
-        $this->resourceService     = $resourceService;
-        $this->mappingService      = $mappingService;
-        $this->validationService   = $validationService;
-        $this->readUnreadService   = $readUnreadService;
-        $this->logService          = $logService;
-        $this->callService         = $callService;
-        $this->security            = $security;
-        $this->eventDispatcher     = $eventDispatcher;
-        $this->serializer          = $serializer;
-        $this->session             = $session;
-        $this->logger              = $requestLogger;
-        $this->downloadService     = $downloadService;
+        $this->entityManager     = $entityManager;
+        $this->cacheService      = $cacheService;
+        $this->resourceService   = $resourceService;
+        $this->mappingService    = $mappingService;
+        $this->validationService = $validationService;
+        $this->readUnreadService = $readUnreadService;
+        $this->logService        = $logService;
+        $this->callService       = $callService;
+        $this->security          = $security;
+        $this->eventDispatcher   = $eventDispatcher;
+        $this->serializer        = $serializer;
+        $this->session           = $session;
+        $this->logger            = $requestLogger;
+        $this->downloadService   = $downloadService;
 
     }//end __construct()
 
@@ -1155,12 +1155,12 @@ class RequestService
         if ($objectEntity instanceof ObjectEntity === false) {
             return;
         }
-    
+
         $getItem = false;
         if ($this->data['method'] === 'GET' && empty($this->identification) === false) {
             $getItem = true;
         }
-    
+
         $result['_self'] = $this->readUnreadService->addDateRead($result['_self'], $objectEntity, $getItem);
 
     }//end handleMetadataSelf()
