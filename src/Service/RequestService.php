@@ -11,8 +11,6 @@ use App\Entity\ObjectEntity;
 use App\Event\ActionEvent;
 use App\Exception\GatewayException;
 use App\Service\LogService;
-use App\Service\ObjectEntityService;
-use App\Service\ResponseService;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -89,17 +87,11 @@ class RequestService
      */
     private $schema;
     // @Todo: cast to Entity|Boolean in php 8.
-    // @Todo: we might want to move or rewrite code instead of using these services here:
 
     /**
-     * @var ResponseService
+     * @var ReadUnreadService
      */
-    private ResponseService $responseService;
-
-    /**
-     * @var ObjectEntityService
-     */
-    private ObjectEntityService $objectEntityService;
+    private ReadUnreadService $readUnreadService;
 
     /**
      * @var LogService
@@ -149,8 +141,7 @@ class RequestService
      * @param MappingService           $mappingService
      * @param ValidationService        $validationService
      * @param CacheService             $cacheService
-     * @param ResponseService          $responseService
-     * @param ObjectEntityService      $objectEntityService
+     * @param ReadUnreadService        $readUnreadService
      * @param LogService               $logService
      * @param CallService              $callService
      * @param Security                 $security
@@ -166,8 +157,7 @@ class RequestService
         MappingService $mappingService,
         ValidationService $validationService,
         CacheService $cacheService,
-        ResponseService $responseService,
-        ObjectEntityService $objectEntityService,
+        ReadUnreadService $readUnreadService,
         LogService $logService,
         CallService $callService,
         Security $security,
@@ -182,8 +172,7 @@ class RequestService
         $this->resourceService     = $resourceService;
         $this->mappingService      = $mappingService;
         $this->validationService   = $validationService;
-        $this->responseService     = $responseService;
-        $this->objectEntityService = $objectEntityService;
+        $this->readUnreadService   = $readUnreadService;
         $this->logService          = $logService;
         $this->callService         = $callService;
         $this->security            = $security;
@@ -624,8 +613,6 @@ class RequestService
             $extend = $dot->all();
         }//end if
 
-        $metadataSelf = ($extend['_self'] ?? []);
-
         // todo: controlleren of de gebruiker ingelogd is.
         // Make a list of schema's that are allowed for this endpoint.
         $allowedSchemas['id']   = [];
@@ -803,7 +790,7 @@ class RequestService
                 if ($validationErrors === null && $this->object->hydrate($this->content, true)) {
                     // This should be an unsafe hydration.
                     if (array_key_exists('@dateRead', $this->content) === true && $this->content['@dateRead'] == false) {
-                        $this->objectEntityService->setUnread($this->object);
+                        $this->readUnreadService->setUnread($this->object);
                     }
 
                     if ($this->schema->getPersist() === true) {
@@ -870,7 +857,7 @@ class RequestService
                 $validationErrors = $this->validationService->validateData($this->content, $this->schema, 'PATCH');
                 if ($validationErrors === null && $this->object->hydrate($this->content)) {
                     if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
-                        $this->objectEntityService->setUnread($this->object);
+                        $this->readUnreadService->setUnread($this->object);
                     }
 
                     if ($this->schema->getPersist() === true) {
@@ -928,7 +915,7 @@ class RequestService
         }//end switch
 
         // Handle _self metadata, includes adding dateRead
-        $this->handleMetadataSelf($result, $metadataSelf);
+        $this->handleMetadataSelf($result);
 
         // Handle application configuration out for embedded if we need to do this for the current application and current endpoint.
         if (isset($appEndpointConfig['out']['embedded']) === true) {
@@ -1137,7 +1124,7 @@ class RequestService
      *
      * @return void
      */
-    private function handleMetadataSelf(&$result, array $metadataSelf)
+    private function handleMetadataSelf(&$result)
     {
         // @todo: Adding type array before &$result will break this function ^^^.
         if (empty($metadataSelf) === true) {
@@ -1153,7 +1140,7 @@ class RequestService
                 }
             );
             foreach ($result['results'] as &$collectionItem) {
-                $this->handleMetadataSelf($collectionItem, $metadataSelf);
+                $this->handleMetadataSelf($collectionItem);
             }
 
             return;
@@ -1168,15 +1155,13 @@ class RequestService
         if ($objectEntity instanceof ObjectEntity === false) {
             return;
         }
-
+    
+        $getItem = false;
         if ($this->data['method'] === 'GET' && empty($this->identification) === false) {
-            $metadataSelf['dateRead'] = 'getItem';
+            $getItem = true;
         }
-
-        $this->responseService->xCommongatewayMetadata = $metadataSelf;
-        $resultMetadataSelf                            = (array) $result['_self'];
-        $this->responseService->addToMetadata($resultMetadataSelf, 'dateRead', $objectEntity);
-        $result['_self'] = $resultMetadataSelf;
+    
+        $result['_self'] = $this->readUnreadService->addDateRead($result['_self'], $objectEntity, $getItem);
 
     }//end handleMetadataSelf()
 
