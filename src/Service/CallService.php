@@ -268,6 +268,7 @@ class CallService
             }
 
             $this->callLogger->info("Request to $url succesful");
+            $this->callLogger->notice("Request to $url returned {$response->getStatusCode()}");
         } catch (ServerException | ClientException | RequestException | Exception $exception) {
             return $this->handleCallException($exception, $source, $endpoint);
         } catch (GuzzleException $exception) {

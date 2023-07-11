@@ -227,21 +227,49 @@ class MappingService
 
         // Todo: Add more casts.
         switch ($cast) {
-        case 'int':
-        case 'integer':
-            $value = (int) $value;
+        case 'string':
+            $value = (string) $value;
             break;
         case 'bool':
         case 'boolean':
-            if ((int) $value === 1 || $value === 'true' || $value === 'True' || $value === 'TRUE') {
+            if ((int) $value === 1 || strtolower($value) === 'true' || strtolower($value) === 'yes') {
                 $value = true;
                 break;
             }
 
             $value = false;
             break;
-        case 'string':
-            $value = (string) $value;
+        case 'int':
+        case 'integer':
+            $value = (int) $value;
+            break;
+        case 'float':
+            $value = (float) $value;
+            break;
+        case 'array':
+            $value = (array) $value;
+            break;
+        case 'date':
+            $value = date($value);
+            break;
+        case 'url':
+            $value = urlencode($value);
+            break;
+        case 'rawurl':
+            $value = rawurlencode($value);
+            break;
+        case 'base64':
+            $value = \Safe\base64_encode($value);
+            break;
+        case 'json':
+            $value = \Safe\json_encode($value);
+            break;
+        case 'jsonToArray':
+            $value = str_replace(['&quot;', '&amp;quot;'], '"', $value);
+            $value = json_decode($value, true);
+            break;
+        case 'coordinateStringToArray':
+            $value = $this->coordinateStringToArray($value);
             break;
         case 'keyCantBeValue':
             if ($key == $value) {
@@ -255,13 +283,6 @@ class MappingService
             ) {
                 $dotArray->delete($key);
             }
-            break;
-        case 'jsonToArray':
-            $value = str_replace(['&quot;', '&amp;quot;'], '"', $value);
-            $value = json_decode($value, true);
-            break;
-        case 'coordinateStringToArray':
-            $value = $this->coordinateStringToArray($value);
             break;
         default:
             isset($this->style) === true && $this->style->info('Trying to cast to an unsupported cast type: '.$cast);
