@@ -25,9 +25,17 @@ class ReadUnreadService
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
-
+    
+    /**
+     * @var MappingService
+     */
     private MappingService $mappingService;
-
+    
+    /**
+     * @param Security $security
+     * @param EntityManagerInterface $entityManager
+     * @param $mappingService
+     */
     public function __construct(Security $security, EntityManagerInterface $entityManager, $mappingService)
     {
         $this->security       = $security;
@@ -35,62 +43,63 @@ class ReadUnreadService
         $this->mappingService = $mappingService;
 
     }//end __construct()
-}//end class
 
-public function getIdentifier(array $data): string
-{
-    $endpoint = $data['endpoint'];
-    $path     = $data['path'];
-
-    if ($endpoint->getProxy() !== null) {
-        return rtrim($endpoint->getProxy()->getLocation(), '/').'/'.implode('/', $path);
-    } else {
-        return end($path);
-    }
-
-}//end getIdentifier()
-
-public function readHandler(array $data, array $config): array
-{
-    $identifier = $this->getIdentifier($data);
-    $userId     = $this->security->getUser()->getUserId();
-
-    if ($this->entityManager->getRepository('App:Read')->findOneBy(['userId' => $userId, 'objectId' => $identifier]) !== null) {
-        return $data;
-    }
-
-    $readObject = new Read();
-    $readObject->setObjectId($identifier);
-    $readObject->setUserId($userId);
-    $readObject->setDateRead(new DateTime());
-
-    $this->entityManager->persist($readObject);
-    $this->entityManager->flush();
-
-    return $data;
-
-}//end readHandler()
-
-public function checkReadHandler(array $data, array $config): array
-{
-    $identifier = $this->getIdentifier($data);
-    $userId     = $this->security->getUser()->getUserId();
-    $mapping    = '';
-
-    if (in_array($identifier, $config['collection_endpoints'])) {
-        // TODO: partial match between objectId and the id in the read should suffice here.
-        $reads = $this->entityManager->getRepository('App:Read')->findBy(['userId' => $userId, 'objectId' => "$identifier%"]);
-
-        $responseEncoded = $data['response']->getContents();
-        $response        = new Dot(\Safe\json_decode($responseEncoded, true));
-
-        foreach ($response->get($config['objectsPath'])->toArray() as $key => $object) {
-            $object['reads'] = $reads;
-            $this->mappingService->mapping($mapping, $object);
+    public function getIdentifier(array $data): string
+    {
+        $endpoint = $data['endpoint'];
+        $path     = $data['path'];
+    
+        if ($endpoint->getProxy() !== null) {
+            return rtrim($endpoint->getProxy()->getLocation(), '/').'/'.implode('/', $path);
+        } else {
+            return end($path);
         }
-    } else {
-        $reads = $this->entityManager->getRepository('App:Read')->findBy(['userId' => $userId, 'objectId' => $identifier]);
-    }
-
-}//end checkReadHandler()
-}
+    
+    }//end getIdentifier()
+    
+    public function readHandler(array $data, array $config): array
+    {
+        $identifier = $this->getIdentifier($data);
+        $userId     = $this->security->getUser()->getUserId();
+    
+        if ($this->entityManager->getRepository('App:Read')->findOneBy(['userId' => $userId, 'objectId' => $identifier]) !== null) {
+            return $data;
+        }
+    
+        $readObject = new Read();
+        $readObject->setObjectId($identifier);
+        $readObject->setUserId($userId);
+        $readObject->setDateRead(new DateTime());
+    
+        $this->entityManager->persist($readObject);
+        $this->entityManager->flush();
+    
+        return $data;
+    
+    }//end readHandler()
+    
+    public function checkReadHandler(array $data, array $config): array
+    {
+        $identifier = $this->getIdentifier($data);
+        $userId     = $this->security->getUser()->getUserId();
+        $mapping    = '';
+    
+        if (in_array($identifier, $config['collection_endpoints'])) {
+            // TODO: partial match between objectId and the id in the read should suffice here.
+            $reads = $this->entityManager->getRepository('App:Read')->findBy(['userId' => $userId, 'objectId' => "$identifier%"]);
+    
+            $responseEncoded = $data['response']->getContents();
+            $response        = new Dot(\Safe\json_decode($responseEncoded, true));
+    
+            foreach ($response->get($config['objectsPath'])->toArray() as $key => $object) {
+                $object['reads'] = $reads;
+                $this->mappingService->mapping($mapping, $object);
+            }
+        } else {
+            $reads = $this->entityManager->getRepository('App:Read')->findBy(['userId' => $userId, 'objectId' => $identifier]);
+        }
+        
+        // todo?
+        return [];
+    }//end checkReadHandler()
+}//end class
