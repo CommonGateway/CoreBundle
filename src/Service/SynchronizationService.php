@@ -110,7 +110,7 @@ class SynchronizationService
 
         $this->logger->info('Sending message with body '.$objectString);
         isset($this->style) && $this->style->info('Sending message with body '.$objectString);
-        
+
         try {
             $result = $this->callService->call(
                 $synchronization->getSource(),
@@ -153,9 +153,8 @@ class SynchronizationService
         $synchronization->setSourceLastChanged($now);
         $synchronization->setLastChecked($now);
         $synchronization->setHash(hash('sha384', serialize($bodyDot->jsonSerialize())));
-        
-        $this->logger->error('Synchronize succesfull with response body ' . json_encode($body));
-            
+
+        $this->logger->error('Synchronize succesfull with response body '.json_encode($body));
 
         return $body;
 
