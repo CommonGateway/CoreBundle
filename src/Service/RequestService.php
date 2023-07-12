@@ -1019,7 +1019,7 @@ class RequestService
 
         $appEndpointConfig = [];
         foreach ($application->getConfiguration() as $applicationConfig) {
-            $appEndpointConfig = $this->getConfigInOutOrGlobal($endpointRef, $endpoint, $applicationConfig);
+            $appEndpointConfig = array_merge($this->getConfigInOutOrGlobal($endpointRef, $endpoint, $applicationConfig), $appEndpointConfig);
         }
 
         return $appEndpointConfig;
