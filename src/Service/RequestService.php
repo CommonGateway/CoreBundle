@@ -952,8 +952,8 @@ class RequestService
                 $code = Response::HTTP_BAD_REQUEST;
             }
 
-            // If we have a response return that
-            if ($event->getData()['response']) {
+            // If we have a response return that.
+            if (isset($event->getData()['response']) === true) {
                 return new Response($this->serializeData($event->getData()['response'], $contentType), $code, ['Content-type' => $contentType]);
             }
         }//end if
