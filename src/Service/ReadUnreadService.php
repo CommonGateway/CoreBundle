@@ -58,6 +58,10 @@ class ReadUnreadService
      */
     public function addDateRead(array $metadata, ObjectEntity $objectEntity, bool $getItem = false): array
     {
+        if ($objectEntity->getEntity() === null || $objectEntity->getEntity()->getCreateAuditTrails() === false) {
+            return $metadata;
+        }
+        
         // If the api-call is an getItem call show NOW instead!
         if ($getItem === true) {
             $value = new DateTime();
