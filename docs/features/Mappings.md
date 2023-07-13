@@ -13,10 +13,11 @@ The mapping service supports the process of changing the structure of an object.
 5. [Working with conditional data](#working-with-conditional-data)
 6. [Sub mappings ](#sub-mappings)
 7. [Casting (Forcing) the type/format of values](#casting-forcing-the-typeformat-of-values)
-8. [Translating values](#translating-values)
-9. [Renaming Keys](#renaming-keys)
-10. [Order of mapping](#order-of-mappingv)
-11. [What if I can't map?](#what-if-i-cant-map)
+8. [Special Casting (Forcing) change of values](#special-casting-forcing-change-of-values)
+9. [Translating values](#translating-values)
+10. [Renaming Keys](#renaming-keys)
+11. [Order of mapping](#order-of-mapping)
+12. [What if I can't map?](#what-if-i-cant-map)
 
 ## Defining a mapping
 
@@ -35,7 +36,7 @@ The Common Gateway stores,imports and exports mappings as JSON mapping objects. 
   },
   "unset": ["{{from_key}}"],
   "cast": {
-    "{{to_key}}":"{{type}}"
+    "{{to_key}}": ["{{type}}"]
   }
 }
 
@@ -59,8 +60,8 @@ Okay, let's take a look at the most commonly used example api ([petstore](https:
 
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "name":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "doggie",
   "status": "available"
 }
 ```
@@ -69,8 +70,8 @@ Now let's say we want to move the status into a new object that has a sub object
 
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "name":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "doggie",
   "metadata":{
     "status": "available"
   }
@@ -117,8 +118,8 @@ Keep in mind that dot notations have no maximum depth, so an original object lik
 
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "name":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "doggie",
   "status": "available"
 }
 ```
@@ -141,8 +142,8 @@ To a new object:
 
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "name":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "doggie",
   "metadata":{
     "status":{
       "name": "available"
@@ -176,8 +177,8 @@ To turn this orignal object:
 
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "name":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "doggie",
   "status": "available"
 }
 ```
@@ -186,8 +187,8 @@ Into this new object:
 
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "name":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "doggie",
   "status": "available",
   "aisle": "red"
 }
@@ -240,8 +241,8 @@ Will turn this original object:
 
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "name":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "doggie",
   "status": "available"
 }
 ```
@@ -250,8 +251,8 @@ Into this new object:
 
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "name":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "doggie",
   "status": "available",
   "metadata":{
     "status":{
@@ -279,8 +280,8 @@ Which wil turn this original object:
 
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "name":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "doggie",
   "status": "available"
 }
 ```
@@ -288,8 +289,8 @@ Into this new object
 
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "name":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "doggie",
   "metadata":{
     "status":{
       "name": "available"
@@ -340,8 +341,8 @@ Both turn this original object:
 
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "name":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "doggie",
   "color": "blue"
 }
 ```
@@ -350,8 +351,8 @@ Into this new object
 
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "name":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "doggie",
   "metadata": {
     "color": "The color is blue"
   }
@@ -397,36 +398,36 @@ To do this you can access the mapping service from within a mapping trough twig 
   "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
   "passthrough": true,
   "mapping": {
-    "color": "{{ color|map(‘{id or ref}’, {array}) }}"
+    "color": "{{ color|map(‘{reference}’, {array}) }}"
   }
 }
 ```
 
 The mapping service takes three arguments:
-id [required]: Either the UUID or reference of the mapping that you want to use
-array [required]: The actual data that you want to map
-list [optional, defaults to false]: Whether you want to be mapped in its entirety (as an object) or as an list (of objects)
+- reference [required]: Either the reference of the mapping that you want to use
+- array [required]: The actual data that you want to map
+- list [optional, defaults to false]: Set this to true if you want to map as a list (of objects) instead of its entirety (as one object).
 
 ## Casting (Forcing) the type/format of values
-In some cases you might want to change the properties variable type or if you a ussing twig rendering, mapping output will always change all the values to `string`. For internal gateway traffic, this isn’t problematic, as the data layer will cast values to the appropriate outputs. When sending data to an external source, having all Booleans cast to strings might be bothersome. To avoid this predicament, we can force the datatype of your values by ‘casting’ them.
+In some cases you might want to change the properties variable type or if you are using twig rendering, mapping output will always change all the values to `string`. For internal gateway traffic, this isn’t problematic, as the data layer will cast values to the appropriate outputs. When sending data to an external source, having all Booleans cast to strings might be bothersome. To avoid this predicament, we can force the datatype of your values by ‘casting’ them.
 
-We can cast values by including a cast property in our mapping, the following casts are currently available:
+We can cast values by including a cast property in our mapping, the following type casts are currently available:
 
-| Cast            | Function                                                  | Twig   |
-|---------------- |---------------------------------------------------------- |--------|
-| string          | <https://www.php.net/manual/en/function.strval.php>         | No     |
-| bool / boolean  | <https://www.php.net/manual/en/function.boolval.php>        | No     |
-| int / integer   | <https://www.php.net/manual/en/function.intval.php>         | No     |
-| float           | <https://www.php.net/manual/en/function.floatval>           |  No     |
-| array           |                                                           | No     |
-| date            | <https://www.php.net/manual/en/function.date>               |  No     |
-| url             | <https://www.php.net/manual/en/function.urlencode.php>      |  Yes   |
-| rawurl          | <https://www.php.net/manual/en/function.rawurlencode.php>   |  Yes   |
-| base64          | <https://www.php.net/manual/en/function.base64-encode.php>  |  Yes   |
-| json            | <https://www.php.net/manual/en/function.json-encode.php>    |  Yes   |
-| xml             |                                                           |  No     |
+| Cast           | Function (php docs)                                                                    | Twig   |
+|----------------|----------------------------------------------------------------------------------------|--------|
+| string         | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)    | No     |
+| bool / boolean | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)    | No     |
+| int / integer  | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)    | No     |
+| float          | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)    |  No     |
+| array          | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)    | No     |
+| date           | [php date function](https://www.php.net/manual/en/function.date)                       |  No     |
+| url            | [php urlencode function](https://www.php.net/manual/en/function.urlencode.php)         |  Yes   |
+| rawurl         | [php rawurlencode function](https://www.php.net/manual/en/function.rawurlencode.php)   |  Yes   |
+| base64         | [php base64-encode function](https://www.php.net/manual/en/function.base64-encode.php) |  Yes   |
+| json           | [php json-encode function](https://www.php.net/manual/en/function.json-encode.php)     |  Yes   |
+| jsonToArray    | [php json-decode function](https://www.php.net/manual/en/function.json-decode.php)     |  Yes   |
 
-That meanns that we can write a mapping like
+That means that we can write a mapping like
 
 ```json
 {
@@ -434,8 +435,8 @@ That meanns that we can write a mapping like
   "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
   "passthrough": true,
   "cast": {
-    "age": "int",
-    "available": "bool"
+    "age": ["int"],
+    "available": ["bool"]
   }
 }
 ```
@@ -444,8 +445,8 @@ To turn this original object:
 
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "name":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "doggie",
   "age": "2",
   "available": "yes"
 }
@@ -455,16 +456,96 @@ Into the new object
 
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "name":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "doggie",
   "age": 2,
   "available": true
 }
 ```
 
 > **Note**
-> - Beware what functions PHP uses to map these values and if the cast should be possible (or else a n error is thrown).
+> - Beware what functions PHP uses to map these values and if the cast should be possible (or else an error is thrown).
 > - Casting is always the last action performed by the mapping service
+
+
+## Special casting (Forcing) change of values
+In some rarer cases you might want to not 'just cast to a different type' but change a value entirely, these casts do not match with just one specific php cast or php function but contain more than one line of code. In most normal cases when you want to cast to (for example) an integer you would only use one cast `["integer"]` but with these cast it isn't unusual to combine multiple casts such as `["jsonToArray", "unsetIfValue=="]`.
+
+We can change values by including a cast property in our mapping, the following special casts are currently available:
+
+| Cast                    | Description                                                                                                                                                                                               |
+|-------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| nullStringToNull        | This cast checks if the value equals string = 'null' and casts it to actual null.                                                                                                                         |
+| coordinateStringToArray | This cast converts a coordinate string to an array of coordinates.                                                                                                                                        |
+| keyCantBeValue          | This cast checks if the value equals the property name and if so, unsets the property.                                                                                                                    |
+| unsetIfValue            | This cast checks if the value equals a specific value and if so, unsets the property. An example: `"unsetIfValue==example`. This can also be used to check if the value is empty with `"unsetIfValue=="`. |
+
+That means that we can write a mapping like
+
+```json
+{
+  "title": "A more complex mapping",
+  "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
+  "passthrough": false,
+  "mapping": {
+    "doggies": "{% if subMapping is defined and subMapping is not empty %}{{ map(‘{reference}’, subMapping, true)|json_encode }}{% else %}\"\"{% endif %}"
+  },
+  "cast": {
+    "doggies": ["jsonToArray", "unsetIfValue=="]
+  }
+}
+```
+
+To turn this original object:
+
+```json
+{
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "example",
+  "doggies": null
+}
+```
+
+Into the new object
+
+```json
+{
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "example"
+}
+```
+
+Or to turn this original object:
+
+```json
+{
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "example2",
+  "doggies": [
+    {
+        "name": "doggie",
+        "description": "<- renamed to note by the subMapping",
+        "age": 2
+    }
+  ]
+}
+```
+
+Into the new object
+
+```json
+{
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "example2",
+  "doggies": [
+    {
+      "name": "doggie",
+      "note": "<- renamed to note by the subMapping",
+      "age": 2
+    }
+  ]
+}
+```
 
 
 ## Translating values
@@ -481,7 +562,7 @@ The following mapping:
   "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
   "passthrough": true,
   "mapping": {
-    "color":"{{source.color|trans({},\"colors\") }}"
+    "color": "{{source.color|trans({},\"colors\") }}"
   }
 }
 ```
@@ -490,8 +571,8 @@ Wil turn this original object:
 
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "name":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "doggie",
   "color": "blue"
 }
 ```
@@ -500,8 +581,8 @@ Into this new object (on locale nl):
 
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "name":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "doggie",
   "color": "blauw"
 }
 ```
@@ -514,7 +595,7 @@ If we want to force German (even if the requester asked for a different language
   "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
   "passthrough": true,
   "mapping": {
-    "color":"{{source.color|trans({},\"colors\".\"de\") }}"
+    "color": "{{source.color|trans({},\"colors\".\"de\") }}"
   }
 }
 ```
@@ -523,8 +604,8 @@ And get the following new object:
 
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "name":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "doggie",
   "color": "Blau"
 }
 ```
@@ -545,7 +626,7 @@ For example, we could write a mapping like:
   "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
   "passthrough": true,
   "mapping": {
-    "title":"name"
+    "title": "name"
   },
   "unset": [
     "name"
@@ -557,8 +638,8 @@ To turn this original object:
 
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "name":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "doggie",
   "color": "blue"
 }
 ```
@@ -567,8 +648,8 @@ Into this new object
 
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "title":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "title": "doggie",
   "color": "blue"
 }
 ```
@@ -604,8 +685,8 @@ Normally we would ask something like this:
 Can you create a mapping from this original object
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "name":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "doggie",
   "color": "blue"
 }
 ```
@@ -613,11 +694,11 @@ Can you create a mapping from this original object
 Into the following new object
 ```json
 {
-  "id":"0d671e30-04af-479a-926a-5e7044484171",
-  "name":"doggie",
+  "id": "0d671e30-04af-479a-926a-5e7044484171",
+  "name": "doggie",
   "metadata":{
     "color": "blue",
-    "dateCreated":"use twig to create a time stamp"
+    "dateCreated": "use twig to create a time stamp"
   }
 }
 ```

@@ -603,7 +603,7 @@ class ValidationService
         case 'rsin':
             return new CustomRules\Rsin();
         case 'url':
-            if($attribute->getType() === 'object') {
+            if ($attribute->getType() === 'object') {
                 return new Rules\AlwaysValid();
             }
             return new Rules\Url();
@@ -771,4 +771,3 @@ class ValidationService
 
     }//end getValidationRule()
 }//end class
-
