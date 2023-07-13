@@ -155,6 +155,7 @@ class MappingService
                 isset($this->style) === true && $this->style->info("Trying to unset an property that doesn't exist during mapping");
                 continue;
             }
+            $dotArray->delete($unset);
         }
 
         // Cast values to a specific type.
@@ -306,3 +307,4 @@ class MappingService
 
     }//end coordinateStringToArray()
 }//end class
+
