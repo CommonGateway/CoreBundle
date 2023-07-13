@@ -669,9 +669,6 @@ class RequestService
                 $responseLog = new Response(is_string($this->content) === true || is_null($this->content) === true ? $this->content : null, 200, ['CoreBundle' => 'GetItem']);
                 $session     = new Session();
                 $session->set('object', $this->identification);
-
-                // todo: This log is needed so we know an user has 'read' this object.
-                $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) === true ? json_encode($this->content) : $this->content);
             } else {
                 // $this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
                 $result = $this->cacheService->searchObjects(null, $filters, $allowedSchemas['id']);
@@ -1117,21 +1114,15 @@ class RequestService
     }//end checkEmbedded()
 
     /**
-     * @TODO
+     * Add extra parameters to the _self metadata of an Object result. Such as dateRead.
      *
      * @param array $result
-     * @param array $metadataSelf
      *
      * @return void
      */
-    private function handleMetadataSelf(&$result)
+    private function handleMetadataSelf(array &$result)
     {
-        // @todo: Adding type array before &$result will break this function ^^^.
-        if (empty($metadataSelf) === true) {
-            return;
-        }
-
-        // todo: $this->identification is sometimes empty, it should never be an empty string.
+        // Note: $this->identification is sometimes empty, it should never be an empty string.
         if (isset($result['results']) === true && $this->data['method'] === 'GET' && empty($this->identification) === true) {
             array_walk(
                 $result['results'],
@@ -1146,11 +1137,12 @@ class RequestService
             return;
         }//end if
 
-        if (empty($result['id']) === true || Uuid::isValid($result['id']) === false) {
+        if (empty($result['_id']) === true || Uuid::isValid($result['_id']) === false) {
             return;
         }
 
-        $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['id']]);
+        // Note: $this->object is never set if method === 'GET'. And in case we have a Get Collection we have to use _id anyway.
+        $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['_id']]);
 
         if ($objectEntity instanceof ObjectEntity === false) {
             return;

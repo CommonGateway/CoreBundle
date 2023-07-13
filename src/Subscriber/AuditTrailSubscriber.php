@@ -4,6 +4,7 @@ namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Entity\AuditTrail;
 use App\Entity\ObjectEntity;
+use CommonGateway\CoreBundle\Service\AuditTrailService;
 use CommonGateway\CoreBundle\Service\CacheService;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -18,16 +19,22 @@ class AuditTrailSubscriber implements EventSubscriberInterface
 {
 
     /**
+     * The entity manager.
+     *
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
 
     /**
+     * The logger interface.
+     *
      * @var LoggerInterface
      */
     private LoggerInterface $logger;
 
     /**
+     * Security for getting the current user.
+     *
      * @var Security
      */
     private Security $security;
@@ -52,12 +59,20 @@ class AuditTrailSubscriber implements EventSubscriberInterface
     private CacheService $cacheService;
     
     /**
-     * @param EntityManagerInterface $entityManager
-     * @param LoggerInterface $valueSubscriberLogger
-     * @param Security $security
-     * @param ParameterBagInterface $parameterBag
-     * @param RequestStack $requestStack
-     * @param CacheService $cacheService
+     * The Audit Trail service.
+     *
+     * @var AuditTrailService
+     */
+    private AuditTrailService $auditTrailService;
+    
+    /**
+     * @param EntityManagerInterface $entityManager The entity manager
+     * @param LoggerInterface $valueSubscriberLogger The logger interface
+     * @param Security $security Security for getting the current user
+     * @param ParameterBagInterface $parameterBag Parameter bag
+     * @param RequestStack $requestStack The request stack
+     * @param CacheService $cacheService The cache service
+     * @param AuditTrailService $auditTrailService The Audit Trail service
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -65,14 +80,16 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         Security $security,
         ParameterBagInterface $parameterBag,
         RequestStack $requestStack,
-        CacheService $cacheService
+        CacheService $cacheService,
+        AuditTrailService $auditTrailService
     ) {
-        $this->entityManager = $entityManager;
-        $this->logger        = $valueSubscriberLogger;
-        $this->security      = $security;
-        $this->parameterBag  = $parameterBag;
-        $this->requestStack  = $requestStack;
-        $this->cacheService  = $cacheService;
+        $this->entityManager     = $entityManager;
+        $this->logger            = $valueSubscriberLogger;
+        $this->security          = $security;
+        $this->parameterBag      = $parameterBag;
+        $this->requestStack      = $requestStack;
+        $this->cacheService      = $cacheService;
+        $this->auditTrailService = $auditTrailService;
 
     }//end __construct()
 
@@ -87,62 +104,11 @@ class AuditTrailSubscriber implements EventSubscriberInterface
             Events::postUpdate,
             Events::postPersist,
             Events::preRemove,
-            // Events::postLoad,
+            Events::postLoad,
         ];
 
     }//end getSubscribedEvents()
     
-    /**
-     * Passes the result of prePersist to preUpdate.
-     *
-     * @param ObjectEntity $object
-     * @param array $config
-     *
-     * @return AuditTrail
-     */
-    public function createAuditTrail(ObjectEntity $object, array $config): AuditTrail
-    {
-        $userId = null;
-        $user   = null;
-
-        if ($this->security->getUser() !== null) {
-            $userId = $this->security->getUser()->getUserIdentifier();
-            $user   = $this->entityManager->getRepository('App:User')->find($userId);
-        }
-
-        $auditTrail = new AuditTrail();
-        if ($object->getEntity() !== null
-            && $object->getEntity()->getCollections()->first() !== false
-        ) {
-            $auditTrail->setSource($object->getEntity()->getCollections()->first()->getPrefix());
-        }
-
-        $auditTrail->setApplicationId('Anonymous');
-        $auditTrail->setApplicationView('Anonymous');
-        $auditTrail->setUserId('Anonymous');
-        $auditTrail->setUserView('Anonymous');
-
-        if ($user !== null) {
-            $auditTrail->setApplicationId($user->getApplications()->first()->getId()->toString());
-            $auditTrail->setApplicationView($user->getApplications()->first()->getName());
-            $auditTrail->setUserId($userId);
-            $auditTrail->setUserView($user->getName());
-        }
-
-        $auditTrail->setAction($config['action']);
-        $auditTrail->setActionView($config['action']);
-        $auditTrail->setResult($config['result']);
-        $auditTrail->setResource($object->getId()->toString());
-        $auditTrail->setResourceUrl($object->getUri());
-        $auditTrail->setResourceView($object->getName());
-        $auditTrail->setCreationDate(new \DateTime('now'));
-
-        $this->entityManager->persist($auditTrail);
-
-        return $auditTrail;
-
-    }//end createAuditTrail()
-
     /**
      * Adds object resources from identifier.
      *
@@ -159,15 +125,14 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         ) {
             return;
         }
-
+        
         $config = [
             'action' => 'READ',
             'result' => 200,
         ];
-
-        $auditTrail = $this->createAuditTrail($object, $config);
-        $this->entityManager->persist($auditTrail);
-
+        
+        $this->auditTrailService->createAuditTrail($object, $config);
+        
     }//end postLoad()
 
     /**
@@ -181,34 +146,32 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false
             || $object->getEntity() === null
             || $object->getEntity()->getCreateAuditTrails() === false
+            || $this->requestStack->getMainRequest() === null
+            || in_array($this->requestStack->getMainRequest()->getMethod(), ['UPDATE', 'PATCH']) === false
         ) {
             return;
         }
-
-        $config = [
-            'action' => 'UPDATE',
-            'result' => 200,
-        ];
-
-        if ($this->requestStack->getMainRequest() !== null
-            && $this->requestStack->getMainRequest()->getMethod() === 'PATCH'
-        ) {
-            $config = [
-                'action' => 'PARTIAL_UPDATE',
-                'result' => 200,
-            ];
+        
+        $new = $object->toArray();
+        $old = $this->cacheService->getObject($object->getId());
+    
+        if ($new === $old) {
+            return;
         }
-
-        $auditTrail = $this->createAuditTrail($object, $config);
-
-        $auditTrail->setAmendments(
-            [
-                'new' => $object->toArray(),
-                'old' => $this->cacheService->getObject($object->getId()),
-            ]
-        );
-        $this->entityManager->persist($auditTrail);
-        $this->entityManager->flush();
+    
+        $action = 'UPDATE';
+        if ($this->requestStack->getMainRequest()->getMethod() === 'PATCH') {
+            $action = 'PARTIAL_UPDATE';
+        }
+        
+        $config = [
+            'action' => $action,
+            'result' => 200,
+            'new' => $new,
+            'old' => $old,
+        ];
+        
+        $this->auditTrailService->createAuditTrail($object, $config);
 
     }//end postUpdate()
 
@@ -223,6 +186,8 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false
             || $object->getEntity() === null
             || $object->getEntity()->getCreateAuditTrails() === false
+            || $this->requestStack->getMainRequest() === null
+            || $this->requestStack->getMainRequest()->getMethod() !== 'POST'
         ) {
             return;
         }
@@ -230,18 +195,11 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         $config = [
             'action' => 'CREATE',
             'result' => 201,
+            'new' => $object->toArray(),
+            'old' => null,
         ];
 
-        $auditTrail = $this->createAuditTrail($object, $config);
-        $auditTrail->setAmendments(
-            [
-                'new' => $object->toArray(),
-                'old' => null,
-            ]
-        );
-
-        $this->entityManager->persist($auditTrail);
-        $this->entityManager->flush();
+        $this->auditTrailService->createAuditTrail($object, $config);
 
     }//end postPersist()
 
@@ -251,6 +209,8 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false
             || $object->getEntity() === null
             || $object->getEntity()->getCreateAuditTrails() === false
+            || $this->requestStack->getMainRequest() === null
+            || $this->requestStack->getMainRequest()->getMethod() !== 'DELETE'
         ) {
             return;
         }
@@ -258,16 +218,11 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         $config     = [
             'action' => 'DELETE',
             'result' => 204,
+            'new' => null,
+            'old' => $object->toArray(),
         ];
-        $auditTrail = $this->createAuditTrail($object, $config);
-        $auditTrail->setAmendments(
-            [
-                'new' => null,
-                'old' => $object->toArray(),
-            ]
-        );
-
-        $this->entityManager->persist($auditTrail);
+        
+        $this->auditTrailService->createAuditTrail($object, $config);
 
     }//end preRemove()
 }//end class

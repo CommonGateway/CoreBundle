@@ -3,6 +3,7 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use Adbar\Dot;
+use App\Entity\AuditTrail;
 use App\Entity\ObjectEntity;
 use App\Entity\Unread;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,6 +14,10 @@ use Symfony\Component\Security\Core\Security;
  * This service manages reading if an ObjectEntity is read/unread and marking an ObjectEntity as read/unread.
  *
  * @author Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Service
  */
 class ReadUnreadService
 {
@@ -91,24 +96,37 @@ class ReadUnreadService
             return null;
         }
 
-        // todo:
         // Use sql to find last get item audit trail of the current user for the given object.
-        // $logs = $this->entityManager->getRepository('App:Log')->findDateRead($objectEntity->getId()->toString(), $user->getUserIdentifier());
-        // if (!empty($logs) and $logs[0] instanceof Log) {
-        // return $logs[0]->getDateCreated();
-        // }
+        $auditTrails = $this->entityManager->getRepository('App:AuditTrail')->findDateRead($objectEntity->getId()->toString(), $userId);
+        if (empty($auditTrails) === false and $auditTrails[0] instanceof AuditTrail) {
+            return $auditTrails[0]->getCreationDate();
+        }
+        
         return null;
 
     }//end getDateRead()
 
     /**
-     * Todo: do we need a function like this?
+     * Marks the given ObjectEntity for the current user as read. Currently, already/also automatically done in the AuditTrailService after a Get Item call.
+     *
+     * @param AuditTrailService The Audit Trail service. Do not set this service in the constructor,
+     * because this will create a construct loop with AuditTrailService!
+     * @param string $identification The identification of the ObjectEntity we are setting / updating the last dateRead for.
      *
      * @return void
      */
-    public function setDateRead()
+    public function setDateRead(AuditTrailService $auditTrailService, string $identification)
     {
-        // $this->removeUnreads();
+        $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $identification]);
+        
+        $this->removeUnreads($objectEntity);
+    
+        $auditTrailConfig = [
+            'action' => 'READ',
+            'result' => 200,
+        ];
+    
+        $auditTrailService->createAuditTrail($objectEntity, $auditTrailConfig);
     }//end setDateRead()
 
     /**
@@ -126,8 +144,6 @@ class ReadUnreadService
         if ($user !== null) {
             $userId = $user->getUserIdentifier();
         }
-
-        $unreads = $this->entityManager->getRepository('App:Unread')->findBy(['object' => $objectEntity, 'userId' => $user->getUserIdentifier()]);
         
         $unreads = $this->entityManager->getRepository('App:Unread')->findBy(['object' => $objectEntity, 'userId' => $userId]);
         if (empty($unreads) === false) {
@@ -149,7 +165,7 @@ class ReadUnreadService
      *
      * @return void
      */
-    private function removeUnreads(ObjectEntity $objectEntity)
+    public function removeUnreads(ObjectEntity $objectEntity)
     {
         $user = $this->security->getUser();
         $userId = 'Anonymous';
