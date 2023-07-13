@@ -57,7 +57,7 @@ class AuditTrailSubscriber implements EventSubscriberInterface
      * @var CacheService
      */
     private CacheService $cacheService;
-    
+
     /**
      * The Audit Trail service.
      *
@@ -108,7 +108,7 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         ];
 
     }//end getSubscribedEvents()
-    
+
     /**
      * Adds object resources from identifier.
      *
