@@ -522,10 +522,16 @@ class RequestService
      */
     public function getScopes(): ?array
     {
-        if ($user = $this->security->getUser()) {
-            return $user->getScopes();
-        }
+        $user = $this->security->getUser();
+        if (isset($user) === true && $user->getRoles() !== null) {
+            $scopes = [];
+            foreach ($user->getRoles() as $role) {
+                $scopes[str_replace('ROLE_', '', $role)] = true;
+            }
 
+            return $scopes;
+        }//end if
+        
         $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous' => true]);
         if ($anonymousSecurityGroup !== null) {
             return $anonymousSecurityGroup->getScopes();
@@ -637,13 +643,35 @@ class RequestService
             }
         }
 
+        
         // Security.
+        // Check if the user has a scope for this endpoint.
+        $userHasScope = false;
         $scopes = $this->getScopes();
         foreach ($allowedSchemas['name'] as $schema) {
-            if (isset($scopes[$schema][$this->data['method']]) === false) {
-                // THROW SECURITY ERROR AND EXIT.
+            if (isset($scopes["schemas.$schema.{$this->data['method']}"]) === true) {
+                // If true the user is authorized.
+                $userHasScope = true;
+                break;
             }
         }
+
+        // If the user doesn't have the normal scope and doesn't have the admin scope, return a 403 forbidden.
+        if ($userHasScope === false && isset($scopes["admin.{$this->data['method']}"]) === false) {
+            $this->logger->error("Authentication failed. You do not have rights for scope: $schema.{$this->data['method']}");
+            return new Response(
+                $this->serializer->serialize(
+                    [
+                        'message' => "Authentication failed. You do not have rights for scope: $schema.{$this->data['method']}"
+                    ],
+                    'json'
+                ),
+                Response::HTTP_FORBIDDEN, 
+                ['Content-type' => $this->data['endpoint']->getDefaultContentType()]
+            );
+        }//endif
+        // Else if authorized continue like normal.
+
 
         // All prepped so let's go.
         // todo: split these into functions?
