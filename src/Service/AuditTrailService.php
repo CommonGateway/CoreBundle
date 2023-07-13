@@ -91,7 +91,7 @@ class AuditTrailService
             $auditTrail->setAmendments(['new' => $config['new'], 'old' => $config['old']]);
         }
 
-        if ($config['action'] === 'GET' && $config['result'] === 200) {
+        if ($config['action'] === 'RETRIEVE' && $config['result'] === 200) {
             $this->readUnreadService->removeUnreads($object);
         }
 

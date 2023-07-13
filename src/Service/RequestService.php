@@ -631,6 +631,9 @@ class RequestService
                 // THROW SECURITY ERROR AND EXIT.
             }
         }
+        
+        // Make sure we set object to null in the session, for detecting the correct AuditTrails to create. Also used for DateRead to work correctly!
+        $this->session->set('object', null);
 
         // All prepped so let's go.
         // todo: split these into functions?
@@ -812,7 +815,7 @@ class RequestService
             $eventType = 'commongateway.object.update';
 
             // We dont have an id on a PATCH so die.
-            if (isset($this->identification) === true) {
+            if (isset($this->identification) === false) {
                 $this->logger->error('No id could be established for your request');
 
                 return new Response('No id could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
