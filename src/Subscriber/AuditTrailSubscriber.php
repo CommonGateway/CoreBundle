@@ -64,15 +64,15 @@ class AuditTrailSubscriber implements EventSubscriberInterface
      * @var AuditTrailService
      */
     private AuditTrailService $auditTrailService;
-    
+
     /**
-     * @param EntityManagerInterface $entityManager The entity manager
-     * @param LoggerInterface $valueSubscriberLogger The logger interface
-     * @param Security $security Security for getting the current user
-     * @param ParameterBagInterface $parameterBag Parameter bag
-     * @param RequestStack $requestStack The request stack
-     * @param CacheService $cacheService The cache service
-     * @param AuditTrailService $auditTrailService The Audit Trail service
+     * @param EntityManagerInterface $entityManager         The entity manager
+     * @param LoggerInterface        $valueSubscriberLogger The logger interface
+     * @param Security               $security              Security for getting the current user
+     * @param ParameterBagInterface  $parameterBag          Parameter bag
+     * @param RequestStack           $requestStack          The request stack
+     * @param CacheService           $cacheService          The cache service
+     * @param AuditTrailService      $auditTrailService     The Audit Trail service
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -125,14 +125,14 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         ) {
             return;
         }
-        
+
         $config = [
             'action' => 'READ',
             'result' => 200,
         ];
-        
+
         $this->auditTrailService->createAuditTrail($object, $config);
-        
+
     }//end postLoad()
 
     /**
@@ -151,26 +151,26 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         ) {
             return;
         }
-        
+
         $new = $object->toArray();
         $old = $this->cacheService->getObject($object->getId());
-    
+
         if ($new === $old) {
             return;
         }
-    
+
         $action = 'UPDATE';
         if ($this->requestStack->getMainRequest()->getMethod() === 'PATCH') {
             $action = 'PARTIAL_UPDATE';
         }
-        
+
         $config = [
             'action' => $action,
             'result' => 200,
-            'new' => $new,
-            'old' => $old,
+            'new'    => $new,
+            'old'    => $old,
         ];
-        
+
         $this->auditTrailService->createAuditTrail($object, $config);
 
     }//end postUpdate()
@@ -195,8 +195,8 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         $config = [
             'action' => 'CREATE',
             'result' => 201,
-            'new' => $object->toArray(),
-            'old' => null,
+            'new'    => $object->toArray(),
+            'old'    => null,
         ];
 
         $this->auditTrailService->createAuditTrail($object, $config);
@@ -215,13 +215,13 @@ class AuditTrailSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $config     = [
+        $config = [
             'action' => 'DELETE',
             'result' => 204,
-            'new' => null,
-            'old' => $object->toArray(),
+            'new'    => null,
+            'old'    => $object->toArray(),
         ];
-        
+
         $this->auditTrailService->createAuditTrail($object, $config);
 
     }//end preRemove()

@@ -84,7 +84,7 @@ class ReadUnreadService
      */
     private function getDateRead(ObjectEntity $objectEntity): ?DateTimeInterface
     {
-        $user = $this->security->getUser();
+        $user   = $this->security->getUser();
         $userId = 'Anonymous';
         if ($user !== null) {
             $userId = $user->getUserIdentifier();
@@ -105,7 +105,7 @@ class ReadUnreadService
         ) {
             return $auditTrails[0]->getCreationDate();
         }
-        
+
         return null;
 
     }//end getDateRead()
@@ -115,22 +115,23 @@ class ReadUnreadService
      *
      * @param AuditTrailService The Audit Trail service. Do not set this service in the constructor,
      * because this will create a construct loop with AuditTrailService!
-     * @param string $identification The identification of the ObjectEntity we are setting / updating the last dateRead for.
+     * @param string                                    $identification The identification of the ObjectEntity we are setting / updating the last dateRead for.
      *
      * @return void
      */
     public function setDateRead(AuditTrailService $auditTrailService, string $identification)
     {
         $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $identification]);
-        
+
         $this->removeUnreads($objectEntity);
-    
+
         $auditTrailConfig = [
             'action' => 'READ',
             'result' => 200,
         ];
-    
+
         $auditTrailService->createAuditTrail($objectEntity, $auditTrailConfig);
+
     }//end setDateRead()
 
     /**
@@ -143,12 +144,12 @@ class ReadUnreadService
     public function setUnread(ObjectEntity $objectEntity)
     {
         // First, check if there is an Unread object for this Object+User. If so, do nothing.
-        $user = $this->security->getUser();
+        $user   = $this->security->getUser();
         $userId = 'Anonymous';
         if ($user !== null) {
             $userId = $user->getUserIdentifier();
         }
-        
+
         $unreads = $this->entityManager->getRepository('App:Unread')->findBy(['object' => $objectEntity, 'userId' => $userId]);
         if (empty($unreads) === false) {
             return;
@@ -171,7 +172,7 @@ class ReadUnreadService
      */
     public function removeUnreads(ObjectEntity $objectEntity)
     {
-        $user = $this->security->getUser();
+        $user   = $this->security->getUser();
         $userId = 'Anonymous';
         if ($user !== null) {
             $userId = $user->getUserIdentifier();

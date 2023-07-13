@@ -36,7 +36,7 @@ class AuditTrailService
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
-    
+
     /**
      * The Read Unread service.
      *
@@ -56,12 +56,12 @@ class AuditTrailService
         $this->readUnreadService = $readUnreadService;
 
     }//end __construct()
-    
+
     /**
      * Passes the result of prePersist to preUpdate.
      *
      * @param ObjectEntity $object
-     * @param array $config
+     * @param array        $config
      *
      * @return AuditTrail|null
      */
@@ -70,38 +70,38 @@ class AuditTrailService
         if ($object->getEntity() === null || $object->getEntity()->getCreateAuditTrails() === false) {
             return null;
         }
-        
+
         $auditTrail = new AuditTrail();
         if ($object->getEntity() !== null
             && $object->getEntity()->getCollections()->first() !== false
         ) {
             $auditTrail->setSource($object->getEntity()->getCollections()->first()->getPrefix());
         }
-        
+
         $auditTrail = $this->setAuditTrailUser($auditTrail);
-        
+
         $auditTrail->setAction($config['action']);
         $auditTrail->setActionView($config['action']);
         $auditTrail->setResult($config['result']);
         $auditTrail->setResource($object->getId()->toString());
         $auditTrail->setResourceUrl($object->getUri());
         $auditTrail->setResourceView($object->getName());
-        
+
         if (isset($config['new'], $config['old']) === true) {
             $auditTrail->setAmendments(['new' => $config['new'], 'old' => $config['old']]);
         }
-        
+
         if ($config['action'] === 'GET' && $config['result'] === 200) {
             $this->readUnreadService->removeUnreads($object);
         }
-        
+
         $this->entityManager->persist($auditTrail);
         $this->entityManager->flush();
-        
+
         return $auditTrail;
-        
+
     }//end createAuditTrail()
-    
+
     /**
      * Adds some user related information to an AuditTrail.
      *
@@ -113,24 +113,25 @@ class AuditTrailService
     {
         $userId = null;
         $user   = null;
-    
+
         if ($this->security->getUser() !== null) {
             $userId = $this->security->getUser()->getUserIdentifier();
             $user   = $this->entityManager->getRepository('App:User')->find($userId);
         }
-        
+
         $auditTrail->setApplicationId('Anonymous');
         $auditTrail->setApplicationView('Anonymous');
         $auditTrail->setUserId('Anonymous');
         $auditTrail->setUserView('Anonymous');
-    
+
         if ($user !== null) {
             $auditTrail->setApplicationId($user->getApplications()->first()->getId()->toString());
             $auditTrail->setApplicationView($user->getApplications()->first()->getName());
             $auditTrail->setUserId($userId);
             $auditTrail->setUserView($user->getName());
         }
-        
+
         return $auditTrail;
-    }
+
+    }//end setAuditTrailUser()
 }//end class
