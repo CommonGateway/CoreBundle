@@ -1152,10 +1152,11 @@ class RequestService
         if ($this->data['method'] === 'GET' && empty($this->identification) === false) {
             $getItem = true;
         }
-    
+
         if (is_array($result['_self']) === false) {
             $result['_self'] = iterator_to_array($result['_self']);
         }
+
         $result['_self'] = $this->readUnreadService->addDateRead($result['_self'], $objectEntity, $getItem);
 
     }//end handleMetadataSelf()
