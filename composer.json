@@ -7,8 +7,7 @@
     "common",
     "gateway",
     "conduction",
-    "symfony",
-    "common-gateway-plugin"
+    "symfony"
   ],
   "homepage": "https://commongatway.nl",
   "license": "MIT",
