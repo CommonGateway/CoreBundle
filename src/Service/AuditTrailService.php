@@ -8,7 +8,6 @@ use App\Entity\ObjectEntity;
 use App\Entity\Unread;
 use Doctrine\ORM\EntityManagerInterface;
 use Safe\DateTime;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 
