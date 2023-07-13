@@ -82,7 +82,7 @@ class ReadUnreadService
 
         // First, check if there is an Unread object for this Object+User. If so, return null.
         $unreads = $this->entityManager->getRepository('App:Unread')->findBy(['object' => $objectEntity, 'userId' => $user->getUserIdentifier()]);
-        if (!empty($unreads)) {
+        if (empty($unreads) === false) {
             return null;
         }
 
@@ -95,9 +95,19 @@ class ReadUnreadService
         return null;
 
     }//end getDateRead()
+    
+    /**
+     * Todo: do we need a function like this?
+     *
+     * @return void
+     */
+    public function setDateRead()
+    {
+//        $this->removeUnreads();
+    }//end setDateRead()
 
     /**
-     * Checks if there exists an unread object for the given ObjectEntity + current UserId. If not, creation one.
+     * Checks if there exists an unread object for the given ObjectEntity + current UserId. If not, create one.
      *
      * @param ObjectEntity $objectEntity The ObjectEntity we are creating an Unread object for.
      *
@@ -107,16 +117,41 @@ class ReadUnreadService
     {
         // First, check if there is an Unread object for this Object+User. If so, do nothing.
         $user = $this->security->getUser();
-        if ($user !== null) {
-            $unreads = $this->entityManager->getRepository('App:Unread')->findBy(['object' => $objectEntity, 'userId' => $user->getUserIdentifier()]);
-            if (empty($unreads)) {
-                $unread = new Unread();
-                $unread->setObject($objectEntity);
-                $unread->setUserId($user->getUserIdentifier());
-                $this->entityManager->persist($unread);
-                // Do not flush, will always be done after the api-call that triggers this function, if that api-call doesn't throw an exception.
-            }
+        if ($user === null) {
+            return;
         }
+        
+        $unreads = $this->entityManager->getRepository('App:Unread')->findBy(['object' => $objectEntity, 'userId' => $user->getUserIdentifier()]);
+        if (empty($unreads) === false) {
+            return;
+        }
+        
+        $unread = new Unread();
+        $unread->setObject($objectEntity);
+        $unread->setUserId($user->getUserIdentifier());
+        $this->entityManager->persist($unread);
+        // Do not flush, will always be done after the api-call that triggers this function, if that api-call doesn't throw an exception.
 
     }//end setUnread()
+    
+    /**
+     * After a successful get item call we want to remove unread objects for the logged-in user, this function removes all unread objects for the current user + given object.
+     *
+     * @param ObjectEntity $objectEntity The ObjectEntity we are removing Unread objects for.
+     *
+     * @return void
+     */
+    private function removeUnreads(ObjectEntity $objectEntity)
+    {
+        $user = $this->security->getUser();
+        if ($user === null) {
+            return;
+        }
+        
+        // Check if there exist Unread objects for this Object+User. If so, delete them.
+        $unreads = $this->entityManager->getRepository('App:Unread')->findBy(['object' => $objectEntity, 'userId' => $user->getUserIdentifier()]);
+        foreach ($unreads as $unread) {
+            $this->entityManager->remove($unread);
+        }
+    }//end removeUnreads()
 }//end class
