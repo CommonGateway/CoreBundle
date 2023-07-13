@@ -531,7 +531,7 @@ class RequestService
 
             return $scopes;
         }//end if
-        
+
         $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous' => true]);
         if ($anonymousSecurityGroup !== null) {
             return $anonymousSecurityGroup->getScopes();
@@ -643,11 +643,10 @@ class RequestService
             }
         }
 
-        
         // Security.
         // Check if the user has a scope for this endpoint.
         $userHasScope = false;
-        $scopes = $this->getScopes();
+        $scopes       = $this->getScopes();
         foreach ($allowedSchemas['name'] as $schema) {
             if (isset($scopes["schemas.$schema.{$this->data['method']}"]) === true) {
                 // If true the user is authorized.
@@ -661,18 +660,14 @@ class RequestService
             $this->logger->error("Authentication failed. You do not have rights for scope: $schema.{$this->data['method']}");
             return new Response(
                 $this->serializer->serialize(
-                    [
-                        'message' => "Authentication failed. You do not have rights for scope: $schema.{$this->data['method']}"
-                    ],
+                    ['message' => "Authentication failed. You do not have rights for scope: $schema.{$this->data['method']}"],
                     'json'
                 ),
-                Response::HTTP_FORBIDDEN, 
+                Response::HTTP_FORBIDDEN,
                 ['Content-type' => $this->data['endpoint']->getDefaultContentType()]
             );
-        }//endif
+        }//end if
         // Else if authorized continue like normal.
-
-
         // All prepped so let's go.
         // todo: split these into functions?
         switch ($this->data['method']) {
