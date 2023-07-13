@@ -95,7 +95,7 @@ class ReadUnreadService
         return null;
 
     }//end getDateRead()
-    
+
     /**
      * Todo: do we need a function like this?
      *
@@ -103,7 +103,7 @@ class ReadUnreadService
      */
     public function setDateRead()
     {
-//        $this->removeUnreads();
+        // $this->removeUnreads();
     }//end setDateRead()
 
     /**
@@ -120,12 +120,12 @@ class ReadUnreadService
         if ($user === null) {
             return;
         }
-        
+
         $unreads = $this->entityManager->getRepository('App:Unread')->findBy(['object' => $objectEntity, 'userId' => $user->getUserIdentifier()]);
         if (empty($unreads) === false) {
             return;
         }
-        
+
         $unread = new Unread();
         $unread->setObject($objectEntity);
         $unread->setUserId($user->getUserIdentifier());
@@ -133,7 +133,7 @@ class ReadUnreadService
         // Do not flush, will always be done after the api-call that triggers this function, if that api-call doesn't throw an exception.
 
     }//end setUnread()
-    
+
     /**
      * After a successful get item call we want to remove unread objects for the logged-in user, this function removes all unread objects for the current user + given object.
      *
@@ -147,11 +147,12 @@ class ReadUnreadService
         if ($user === null) {
             return;
         }
-        
+
         // Check if there exist Unread objects for this Object+User. If so, delete them.
         $unreads = $this->entityManager->getRepository('App:Unread')->findBy(['object' => $objectEntity, 'userId' => $user->getUserIdentifier()]);
         foreach ($unreads as $unread) {
             $this->entityManager->remove($unread);
         }
+
     }//end removeUnreads()
 }//end class
