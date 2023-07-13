@@ -10,26 +10,30 @@ use Safe\DateTime;
 use Symfony\Component\Security\Core\Security;
 
 /**
- * This service manages the setting of read or unread for a resource, internal or external.
+ * This service manages reading if an ObjectEntity is read/unread and marking an ObjectEntity as read/unread.
  *
- * @author Ruben van der Linde <ruben@conduction.nl>, Robert Zondervan <robert@conduction.nl>
+ * @author Wilco Louwerse <wilco@conduction.nl>
  */
 class ReadUnreadService
 {
 
     /**
+     * Security for getting the current user.
+     *
      * @var Security
      */
     private Security $security;
 
     /**
+     * The entity manager.
+     *
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
 
     /**
-     * @param Security               $security
-     * @param EntityManagerInterface $entityManager
+     * @param Security               $security      Security for getting the current user
+     * @param EntityManagerInterface $entityManager The entity manager
      */
     public function __construct(Security $security, EntityManagerInterface $entityManager)
     {
@@ -76,12 +80,13 @@ class ReadUnreadService
     private function getDateRead(ObjectEntity $objectEntity): ?DateTimeInterface
     {
         $user = $this->security->getUser();
-        if ($user === null) {
-            return null;
+        $userId = 'Anonymous';
+        if ($user !== null) {
+            $userId = $user->getUserIdentifier();
         }
 
         // First, check if there is an Unread object for this Object+User. If so, return null.
-        $unreads = $this->entityManager->getRepository('App:Unread')->findBy(['object' => $objectEntity, 'userId' => $user->getUserIdentifier()]);
+        $unreads = $this->entityManager->getRepository('App:Unread')->findBy(['object' => $objectEntity, 'userId' => $userId]);
         if (empty($unreads) === false) {
             return null;
         }
@@ -117,18 +122,21 @@ class ReadUnreadService
     {
         // First, check if there is an Unread object for this Object+User. If so, do nothing.
         $user = $this->security->getUser();
-        if ($user === null) {
-            return;
+        $userId = 'Anonymous';
+        if ($user !== null) {
+            $userId = $user->getUserIdentifier();
         }
 
         $unreads = $this->entityManager->getRepository('App:Unread')->findBy(['object' => $objectEntity, 'userId' => $user->getUserIdentifier()]);
+        
+        $unreads = $this->entityManager->getRepository('App:Unread')->findBy(['object' => $objectEntity, 'userId' => $userId]);
         if (empty($unreads) === false) {
             return;
         }
 
         $unread = new Unread();
         $unread->setObject($objectEntity);
-        $unread->setUserId($user->getUserIdentifier());
+        $unread->setUserId($userId);
         $this->entityManager->persist($unread);
         // Do not flush, will always be done after the api-call that triggers this function, if that api-call doesn't throw an exception.
 
@@ -144,12 +152,13 @@ class ReadUnreadService
     private function removeUnreads(ObjectEntity $objectEntity)
     {
         $user = $this->security->getUser();
-        if ($user === null) {
-            return;
+        $userId = 'Anonymous';
+        if ($user !== null) {
+            $userId = $user->getUserIdentifier();
         }
 
         // Check if there exist Unread objects for this Object+User. If so, delete them.
-        $unreads = $this->entityManager->getRepository('App:Unread')->findBy(['object' => $objectEntity, 'userId' => $user->getUserIdentifier()]);
+        $unreads = $this->entityManager->getRepository('App:Unread')->findBy(['object' => $objectEntity, 'userId' => $userId]);
         foreach ($unreads as $unread) {
             $this->entityManager->remove($unread);
         }

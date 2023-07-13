@@ -50,12 +50,14 @@ class AuditTrailSubscriber implements EventSubscriberInterface
      * @var CacheService
      */
     private CacheService $cacheService;
-
+    
     /**
      * @param EntityManagerInterface $entityManager
-     * @param LoggerInterface        $valueSubscriberLogger
-     * @param Security               $security
-     * @param ParameterBagInterface  $parameterBag
+     * @param LoggerInterface $valueSubscriberLogger
+     * @param Security $security
+     * @param ParameterBagInterface $parameterBag
+     * @param RequestStack $requestStack
+     * @param CacheService $cacheService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -89,13 +91,14 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         ];
 
     }//end getSubscribedEvents()
-
+    
     /**
      * Passes the result of prePersist to preUpdate.
      *
      * @param ObjectEntity $object
+     * @param array $config
      *
-     * @return array
+     * @return AuditTrail
      */
     public function createAuditTrail(ObjectEntity $object, array $config): AuditTrail
     {
@@ -148,9 +151,12 @@ class AuditTrailSubscriber implements EventSubscriberInterface
     public function postLoad(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
-        if ($object instanceof ObjectEntity === false) {
-            return;
-        } else if ($object->getEntity() === null || $object->getEntity()->getCreateAuditTrails() === false) {
+        if ($object instanceof ObjectEntity === false
+            || $object->getEntity() === null
+            || $object->getEntity()->getCreateAuditTrails() === false
+            || $this->requestStack->getMainRequest() === null
+            || $this->requestStack->getMainRequest()->getMethod() !== 'GET'
+        ) {
             return;
         }
 
@@ -172,10 +178,10 @@ class AuditTrailSubscriber implements EventSubscriberInterface
     public function postUpdate(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
-
-        if ($object instanceof ObjectEntity === false) {
-            return;
-        } else if ($object->getEntity()->getCreateAuditTrails() === false) {
+        if ($object instanceof ObjectEntity === false
+            || $object->getEntity() === null
+            || $object->getEntity()->getCreateAuditTrails() === false
+        ) {
             return;
         }
 
@@ -214,9 +220,10 @@ class AuditTrailSubscriber implements EventSubscriberInterface
     public function postPersist(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
-        if ($object instanceof ObjectEntity === false) {
-            return;
-        } else if ($object->getEntity()->getCreateAuditTrails() === false) {
+        if ($object instanceof ObjectEntity === false
+            || $object->getEntity() === null
+            || $object->getEntity()->getCreateAuditTrails() === false
+        ) {
             return;
         }
 
@@ -241,9 +248,10 @@ class AuditTrailSubscriber implements EventSubscriberInterface
     public function preRemove(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
-        if ($object instanceof ObjectEntity === false) {
-            return;
-        } else if ($object->getEntity()->getCreateAuditTrails() === false) {
+        if ($object instanceof ObjectEntity === false
+            || $object->getEntity() === null
+            || $object->getEntity()->getCreateAuditTrails() === false
+        ) {
             return;
         }
 
