@@ -97,8 +97,12 @@ class ReadUnreadService
         }
 
         // Use sql to find last get item audit trail of the current user for the given object.
+        // But only if this audit trail was created after the object was last modified.
         $auditTrails = $this->entityManager->getRepository('App:AuditTrail')->findDateRead($objectEntity->getId()->toString(), $userId);
-        if (empty($auditTrails) === false and $auditTrails[0] instanceof AuditTrail) {
+        if (empty($auditTrails) === false
+            && $auditTrails[0] instanceof AuditTrail
+            && $auditTrails[0]->getCreationDate() > $objectEntity->getDateModified()
+        ) {
             return $auditTrails[0]->getCreationDate();
         }
         
