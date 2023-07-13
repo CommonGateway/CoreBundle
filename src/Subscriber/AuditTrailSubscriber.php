@@ -50,14 +50,14 @@ class AuditTrailSubscriber implements EventSubscriberInterface
      * @var CacheService
      */
     private CacheService $cacheService;
-    
+
     /**
      * @param EntityManagerInterface $entityManager
-     * @param LoggerInterface $valueSubscriberLogger
-     * @param Security $security
-     * @param ParameterBagInterface $parameterBag
-     * @param RequestStack $requestStack
-     * @param CacheService $cacheService
+     * @param LoggerInterface        $valueSubscriberLogger
+     * @param Security               $security
+     * @param ParameterBagInterface  $parameterBag
+     * @param RequestStack           $requestStack
+     * @param CacheService           $cacheService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -91,12 +91,12 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         ];
 
     }//end getSubscribedEvents()
-    
+
     /**
      * Passes the result of prePersist to preUpdate.
      *
      * @param ObjectEntity $object
-     * @param array $config
+     * @param array        $config
      *
      * @return AuditTrail
      */
