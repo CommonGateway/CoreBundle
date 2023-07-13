@@ -64,7 +64,7 @@ class AuditTrailSubscriber implements EventSubscriberInterface
      * @var AuditTrailService
      */
     private AuditTrailService $auditTrailService;
-    
+
     /**
      * The current session.
      *
@@ -135,12 +135,12 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         ) {
             return;
         }
-    
+
         $action = 'LIST';
         if ($this->session->get('object') !== null) {
             $action = 'RETRIEVE';
         }
-        
+
         $config = [
             'action' => $action,
             'result' => 200,
