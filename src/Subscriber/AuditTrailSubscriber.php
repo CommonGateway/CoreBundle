@@ -64,6 +64,13 @@ class AuditTrailSubscriber implements EventSubscriberInterface
      * @var AuditTrailService
      */
     private AuditTrailService $auditTrailService;
+    
+    /**
+     * The current session.
+     *
+     * @var SessionInterface
+     */
+    private SessionInterface $session;
 
     /**
      * @param EntityManagerInterface $entityManager         The entity manager
@@ -73,6 +80,7 @@ class AuditTrailSubscriber implements EventSubscriberInterface
      * @param RequestStack           $requestStack          The request stack
      * @param CacheService           $cacheService          The cache service
      * @param AuditTrailService      $auditTrailService     The Audit Trail service
+     * @param SessionInterface       $session               The current session
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -81,7 +89,8 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         ParameterBagInterface $parameterBag,
         RequestStack $requestStack,
         CacheService $cacheService,
-        AuditTrailService $auditTrailService
+        AuditTrailService $auditTrailService,
+        SessionInterface $session
     ) {
         $this->entityManager     = $entityManager;
         $this->logger            = $valueSubscriberLogger;
@@ -90,6 +99,7 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         $this->requestStack      = $requestStack;
         $this->cacheService      = $cacheService;
         $this->auditTrailService = $auditTrailService;
+        $this->session           = $session;
 
     }//end __construct()
 
@@ -125,9 +135,14 @@ class AuditTrailSubscriber implements EventSubscriberInterface
         ) {
             return;
         }
-
+    
+        $action = 'LIST';
+        if ($this->session->get('object') !== null) {
+            $action = 'RETRIEVE';
+        }
+        
         $config = [
-            'action' => 'READ',
+            'action' => $action,
             'result' => 200,
         ];
 

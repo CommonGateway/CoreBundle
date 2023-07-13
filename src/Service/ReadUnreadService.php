@@ -7,7 +7,7 @@ use App\Entity\AuditTrail;
 use App\Entity\ObjectEntity;
 use App\Entity\Unread;
 use Doctrine\ORM\EntityManagerInterface;
-use Safe\DateTime;
+use DateTime;
 use Symfony\Component\Security\Core\Security;
 
 /**
@@ -80,9 +80,9 @@ class ReadUnreadService
      *
      * @param ObjectEntity $objectEntity The ObjectEntity we are checking the last date read for.
      *
-     * @return DateTimeInterface|null
+     * @return DateTime|null
      */
-    private function getDateRead(ObjectEntity $objectEntity): ?DateTimeInterface
+    private function getDateRead(ObjectEntity $objectEntity): ?DateTime
     {
         $user   = $this->security->getUser();
         $userId = 'Anonymous';
