@@ -321,8 +321,6 @@ class RequestService
 
     }//end recursiveRequestQueryKey()
 
-
-    
     /**
      * Gets the schemas related to this endpoint.
      *
@@ -333,9 +331,9 @@ class RequestService
         $allowedSchemas = [
             'id'        => [],
             'name'      => [],
-            'reference' => []
+            'reference' => [],
         ];
-        
+
         if (isset($this->data['endpoint']) === true) {
             foreach ($this->data['endpoint']->getEntities() as $entity) {
                 $allowedSchemas['id'][]        = $entity->getId()->toString();
@@ -345,30 +343,30 @@ class RequestService
         }
 
         return $allowedSchemas;
-    }//end getAllowedSchemas
 
+    }//end getAllowedSchemas()
 
     /**
      * This function checks if the requesting user has the needed scopes to access the requested endpoint.
-     * 
+     *
      * @param array $allowedSchemas Schemas which we need scopes for.
      *
      * @return null|Response A 403 response if the requested user does not have the needed scopes.
      */
     private function checkUserScopes(array $allowedSchemas): ?Response
     {
-        $userHasScope = false;
-        $scopes       = $this->getScopes();
+        $userHasScope  = false;
+        $scopes        = $this->getScopes();
         $loopedSchemas = [];
         foreach ($allowedSchemas['reference'] as $schema) {
-            $schemaScope = "schemas.$schema.{$this->data['method']}";
+            $schemaScope     = "schemas.$schema.{$this->data['method']}";
             $loopedSchemas[] = $schemaScope;
             if (isset($scopes[$schemaScope]) === true) {
-
                 // If true the user is authorized.
                 return null;
             }
         }
+
         // If the user doesn't have the normal scope and doesn't have the admin scope, return a 403 forbidden.
         if ($userHasScope === false && isset($scopes["admin.{$this->data['method']}"]) === false) {
             $implodeString = implode(', ', $loopedSchemas);
@@ -377,9 +375,7 @@ class RequestService
                 $this->serializer->serialize(
                     [
                         'message' => "Authentication failed. You do not have any of the required scopes for this endpoint.",
-                        'scopes' => [
-                            'anyOf' => $loopedSchemas
-                        ]
+                        'scopes'  => ['anyOf' => $loopedSchemas],
                     ],
                     'json'
                 ),
@@ -389,6 +385,7 @@ class RequestService
         }//end if
 
         return null;
+
     }//end checkUserScopes()
 
     /**
