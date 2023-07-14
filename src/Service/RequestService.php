@@ -324,7 +324,7 @@ class RequestService
     /**
      * Gets the schemas related to this endpoint.
      *
-     * @return array All necessary info from the schemas related to this endpoijnt
+     * @return array All necessary info from the schemas related to this endpoint.
      */
     private function getAllowedSchemas(): array
     {
@@ -349,17 +349,17 @@ class RequestService
     /**
      * This function checks if the requesting user has the needed scopes to access the requested endpoint.
      *
-     * @param array $allowedSchemas Schemas which we need scopes for.
+     * @param array $references Schema references which we checks scopes for.
      *
      * @return null|Response A 403 response if the requested user does not have the needed scopes.
      */
-    private function checkUserScopes(array $allowedSchemas): ?Response
+    private function checkUserScopes(array $references, string $type = 'schemas'): ?Response
     {
         $userHasScope  = false;
         $scopes        = $this->getScopes();
         $loopedSchemas = [];
-        foreach ($allowedSchemas['reference'] as $schema) {
-            $schemaScope     = "schemas.$schema.{$this->data['method']}";
+        foreach ($references as $reference) {
+            $schemaScope     = "$type.$reference.{$this->data['method']}";
             $loopedSchemas[] = $schemaScope;
             if (isset($scopes[$schemaScope]) === true) {
                 // If true the user is authorized.
@@ -511,7 +511,7 @@ class RequestService
         // If we already have a proxy, we can skip these checks.
         if ($proxy instanceof Source === false) {
             // We only do proxying if the endpoint forces it, and we do not have a proxy.
-            if ($data['endpoint'] instanceof Endpoint === false || $proxy = $data['endpoint']->getProxy() === null) {
+            if ($data['endpoint'] instanceof Endpoint === false || ($proxy = $data['endpoint']->getProxy()) === null) {
                 $message = !$data['endpoint'] instanceof Endpoint ? "No Endpoint in data['endpoint']" : "This Endpoint has no Proxy: {$data['endpoint']->getName()}";
 
                 return new Response(
@@ -521,9 +521,9 @@ class RequestService
                 );
             }//end if
 
-            if ($proxy instanceof Source && ($proxy->getIsEnabled() === null || $proxy->getEnabled() === false)) {
+            if ($proxy instanceof Source && ($proxy->getIsEnabled() === null || $proxy->getIsEnabled() === false)) {
                 return new Response(
-                    $this->serializeData(['Message' => "This Source is not enabled: {$proxy->getName()}"], $contentType),
+                    $this->serializeData(['message' => "This Source is not enabled: {$proxy->getName()}"], $contentType),
                     Response::HTTP_OK,
                     // This should be ok, so we can disable Sources without creating error responses?
                     ['Content-type' => $contentType]
@@ -531,6 +531,11 @@ class RequestService
             }
         }//end if
 
+        $securityResponse = $this->checkUserScopes([$proxy->getReference()], 'sources');
+        if ($securityResponse instanceof Response === true) {
+
+            return $securityResponse;
+        }
         // Work around the _ with a custom function for getting clean query parameters from a request
         $this->data['query'] = $this->realRequestQueryAll();
         if (isset($data['path']['{route}']) === true) {
@@ -705,7 +710,7 @@ class RequestService
         $allowedSchemas = $this->getAllowedSchemas();
 
         // Check if the user has the needed scopes.
-        $securityResponse = $this->checkUserScopes($allowedSchemas);
+        $securityResponse = $this->checkUserScopes($allowedSchemas['reference']);
         if ($securityResponse instanceof Response === true) {
             return $securityResponse;
         }
@@ -1257,9 +1262,7 @@ class RequestService
     {
         $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $configuration['source']]);
 
-        $data['response'] = $this->proxyHandler($parameters, $configuration, $source);
-
-        return $data;
+        return ['response' => $this->proxyHandler($parameters, $configuration, $source)];
 
     }//end proxyRequestHandler()
 
