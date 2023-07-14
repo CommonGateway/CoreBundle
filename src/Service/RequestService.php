@@ -322,6 +322,72 @@ class RequestService
     }//end recursiveRequestQueryKey()
 
     /**
+     * Gets the schemas related to this endpoint.
+     *
+     * @return array All necessary info from the schemas related to this endpoint.
+     */
+    private function getAllowedSchemas(): array
+    {
+        $allowedSchemas = [
+            'id'        => [],
+            'name'      => [],
+            'reference' => [],
+        ];
+
+        if (isset($this->data['endpoint']) === true) {
+            foreach ($this->data['endpoint']->getEntities() as $entity) {
+                $allowedSchemas['id'][]        = $entity->getId()->toString();
+                $allowedSchemas['name'][]      = $entity->getName();
+                $allowedSchemas['reference'][] = $entity->getReference();
+            }
+        }
+
+        return $allowedSchemas;
+
+    }//end getAllowedSchemas()
+
+    /**
+     * This function checks if the requesting user has the needed scopes to access the requested endpoint.
+     *
+     * @param array $references Schema references which we checks scopes for.
+     *
+     * @return null|Response A 403 response if the requested user does not have the needed scopes.
+     */
+    private function checkUserScopes(array $references, string $type = 'schemas'): ?Response
+    {
+        $scopes        = $this->getScopes();
+        $loopedSchemas = [];
+        foreach ($references as $reference) {
+            $schemaScope     = "$type.$reference.{$this->data['method']}";
+            $loopedSchemas[] = $schemaScope;
+            if (isset($scopes[$schemaScope]) === true) {
+                // If true the user is authorized.
+                return null;
+            }
+        }
+
+        // If the user doesn't have the normal scope and doesn't have the admin scope, return a 403 forbidden.
+        if (isset($scopes["admin.{$this->data['method']}"]) === false) {
+            $implodeString = implode(', ', $loopedSchemas);
+            $this->logger->error("Authentication failed. You do not have any of the required scopes for this endpoint. ($implodeString)");
+            return new Response(
+                $this->serializer->serialize(
+                    [
+                        'message' => "Authentication failed. You do not have any of the required scopes for this endpoint.",
+                        'scopes'  => ['anyOf' => $loopedSchemas],
+                    ],
+                    'json'
+                ),
+                Response::HTTP_FORBIDDEN,
+                ['Content-type' => $this->data['endpoint']->getDefaultContentType()]
+            );
+        }//end if
+
+        return null;
+
+    }//end checkUserScopes()
+
+    /**
      * Get the ID from given parameters.
      *
      * @return string|false
@@ -444,7 +510,7 @@ class RequestService
         // If we already have a proxy, we can skip these checks.
         if ($proxy instanceof Source === false) {
             // We only do proxying if the endpoint forces it, and we do not have a proxy.
-            if ($data['endpoint'] instanceof Endpoint === false || $proxy = $data['endpoint']->getProxy() === null) {
+            if ($data['endpoint'] instanceof Endpoint === false || ($proxy = $data['endpoint']->getProxy()) === null) {
                 $message = !$data['endpoint'] instanceof Endpoint ? "No Endpoint in data['endpoint']" : "This Endpoint has no Proxy: {$data['endpoint']->getName()}";
 
                 return new Response(
@@ -454,15 +520,20 @@ class RequestService
                 );
             }//end if
 
-            if ($proxy instanceof Source && ($proxy->getIsEnabled() === null || $proxy->getEnabled() === false)) {
+            if ($proxy instanceof Source && ($proxy->getIsEnabled() === null || $proxy->getIsEnabled() === false)) {
                 return new Response(
-                    $this->serializeData(['Message' => "This Source is not enabled: {$proxy->getName()}"], $contentType),
+                    $this->serializeData(['message' => "This Source is not enabled: {$proxy->getName()}"], $contentType),
                     Response::HTTP_OK,
                     // This should be ok, so we can disable Sources without creating error responses?
                     ['Content-type' => $contentType]
                 );
             }
         }//end if
+
+        $securityResponse = $this->checkUserScopes([$proxy->getReference()], 'sources');
+        if ($securityResponse instanceof Response === true) {
+            return $securityResponse;
+        }
 
         // Work around the _ with a custom function for getting clean query parameters from a request
         $this->data['query'] = $this->realRequestQueryAll();
@@ -522,16 +593,24 @@ class RequestService
      */
     public function getScopes(): ?array
     {
-        if ($user = $this->security->getUser()) {
-            return $user->getScopes();
-        }
+        // If we have a user, return the user his scopes.
+        $user = $this->security->getUser();
+        if (isset($user) === true && $user->getRoles() !== null) {
+            $scopes = [];
+            foreach ($user->getRoles() as $role) {
+                $scopes[str_replace('ROLE_', '', $role)] = true;
+            }
 
+            return $scopes;
+        }//end if
+
+        // If we don't have a user, return the anonymous security group its scopes.
         $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous' => true]);
         if ($anonymousSecurityGroup !== null) {
             return $anonymousSecurityGroup->getScopes();
         }
 
-        // Let's play it save.
+        // If we don't have a user or anonymous security group, return an empty array (this will result in a 403 response in the checkUserScopes function).
         return [];
 
     }//end getScopes()
@@ -626,23 +705,13 @@ class RequestService
 
         $metadataSelf = ($extend['_self'] ?? []);
 
-        // todo: controlleren of de gebruiker ingelogd is.
         // Make a list of schema's that are allowed for this endpoint.
-        $allowedSchemas['id']   = [];
-        $allowedSchemas['name'] = [];
-        if (isset($this->data['endpoint']) === true) {
-            foreach ($this->data['endpoint']->getEntities() as $entity) {
-                $allowedSchemas['id'][]   = $entity->getId()->toString();
-                $allowedSchemas['name'][] = $entity->getName();
-            }
-        }
+        $allowedSchemas = $this->getAllowedSchemas();
 
-        // Security.
-        $scopes = $this->getScopes();
-        foreach ($allowedSchemas['name'] as $schema) {
-            if (isset($scopes[$schema][$this->data['method']]) === false) {
-                // THROW SECURITY ERROR AND EXIT.
-            }
+        // Check if the user has the needed scopes.
+        $securityResponse = $this->checkUserScopes($allowedSchemas['reference']);
+        if ($securityResponse instanceof Response === true) {
+            return $securityResponse;
         }
 
         // All prepped so let's go.
@@ -1192,9 +1261,7 @@ class RequestService
     {
         $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $configuration['source']]);
 
-        $data['response'] = $this->proxyHandler($parameters, $configuration, $source);
-
-        return $data;
+        return ['response' => $this->proxyHandler($parameters, $configuration, $source)];
 
     }//end proxyRequestHandler()
 
