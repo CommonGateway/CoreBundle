@@ -77,6 +77,8 @@ The default admin user has all admin.method scopes (admin.GET, admin.POST etc) b
 
 API scopes should  be assigned to users through their SecurityGroups which can be added through the admin user interface. If you would like to work with an /api endpoint for a specific Schema the scope would be schemas.https://vng.opencatalogi.nl/schemas/zrc.zaak.schema.json.GET
 
+If you have an endpoint with a configured proxy you need the scope of the source to work with it, for example scope: sources.https://common-gateway.nl/source/api.petstore.source.json.GET
+
 # Common Gateway: Ownership and Creation
 
 In the context of the Common Gateway project, it's crucial to understand the difference between the roles of an 'Owner' and a 'Creator'. These two roles possess different levels of control over objects within the system, and each has specific rights and limitations.
