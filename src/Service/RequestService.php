@@ -321,6 +321,76 @@ class RequestService
 
     }//end recursiveRequestQueryKey()
 
+
+    
+    /**
+     * Gets the schemas related to this endpoint.
+     *
+     * @return array All necessary info from the schemas related to this endpoijnt
+     */
+    private function getAllowedSchemas(): array
+    {
+        $allowedSchemas = [
+            'id'        => [],
+            'name'      => [],
+            'reference' => []
+        ];
+        
+        if (isset($this->data['endpoint']) === true) {
+            foreach ($this->data['endpoint']->getEntities() as $entity) {
+                $allowedSchemas['id'][]        = $entity->getId()->toString();
+                $allowedSchemas['name'][]      = $entity->getName();
+                $allowedSchemas['reference'][] = $entity->getReference();
+            }
+        }
+
+        return $allowedSchemas;
+    }//end getAllowedSchemas
+
+
+    /**
+     * This function checks if the requesting user has the needed scopes to access the requested endpoint.
+     * 
+     * @param array $allowedSchemas Schemas which we need scopes for.
+     *
+     * @return null|Response A 403 response if the requested user does not have the needed scopes.
+     */
+    private function checkUserScopes(array $allowedSchemas): ?Response
+    {
+        $userHasScope = false;
+        $scopes       = $this->getScopes();
+        $loopedSchemas = [];
+        foreach ($allowedSchemas['reference'] as $schema) {
+            $schemaScope = "schemas.$schema.{$this->data['method']}";
+            $loopedSchemas[] = $schemaScope;
+            if (isset($scopes[$schemaScope]) === true) {
+
+                // If true the user is authorized.
+                return null;
+            }
+        }
+        // If the user doesn't have the normal scope and doesn't have the admin scope, return a 403 forbidden.
+        if ($userHasScope === false && isset($scopes["admin.{$this->data['method']}"]) === false) {
+            $implodeString = implode(', ', $loopedSchemas);
+            $this->logger->error("Authentication failed. You do not have any of the required scopes for this endpoint. ($implodeString)");
+            return new Response(
+                $this->serializer->serialize(
+                    [
+                        'message' => "Authentication failed. You do not have any of the required scopes for this endpoint.",
+                        'scopes' => [
+                            'anyOf' => $loopedSchemas
+                        ]
+                    ],
+                    'json'
+                ),
+                Response::HTTP_FORBIDDEN,
+                ['Content-type' => $this->data['endpoint']->getDefaultContentType()]
+            );
+        }//end if
+
+        return null;
+    }//end checkUserScopes()
+
     /**
      * Get the ID from given parameters.
      *
@@ -522,6 +592,7 @@ class RequestService
      */
     public function getScopes(): ?array
     {
+        // If we have a user, return the user his scopes.
         $user = $this->security->getUser();
         if (isset($user) === true && $user->getRoles() !== null) {
             $scopes = [];
@@ -532,12 +603,13 @@ class RequestService
             return $scopes;
         }//end if
 
+        // If we don't have a user, return the anonymous security group its scopes.
         $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous' => true]);
         if ($anonymousSecurityGroup !== null) {
             return $anonymousSecurityGroup->getScopes();
         }
 
-        // Let's play it save.
+        // If we don't have a user or anonymous security group, return an empty array (this will result in a 403 response in the checkUserScopes function).
         return [];
 
     }//end getScopes()
@@ -632,42 +704,15 @@ class RequestService
 
         $metadataSelf = ($extend['_self'] ?? []);
 
-        // todo: controlleren of de gebruiker ingelogd is.
         // Make a list of schema's that are allowed for this endpoint.
-        $allowedSchemas['id']   = [];
-        $allowedSchemas['name'] = [];
-        if (isset($this->data['endpoint']) === true) {
-            foreach ($this->data['endpoint']->getEntities() as $entity) {
-                $allowedSchemas['id'][]   = $entity->getId()->toString();
-                $allowedSchemas['name'][] = $entity->getName();
-            }
+        $allowedSchemas = $this->getAllowedSchemas();
+
+        // Check if the user has the needed scopes.
+        $securityResponse = $this->checkUserScopes($allowedSchemas);
+        if ($securityResponse instanceof Response === true) {
+            return $securityResponse;
         }
 
-        // Security.
-        // Check if the user has a scope for this endpoint.
-        $userHasScope = false;
-        $scopes       = $this->getScopes();
-        foreach ($allowedSchemas['name'] as $schema) {
-            if (isset($scopes["schemas.$schema.{$this->data['method']}"]) === true) {
-                // If true the user is authorized.
-                $userHasScope = true;
-                break;
-            }
-        }
-
-        // If the user doesn't have the normal scope and doesn't have the admin scope, return a 403 forbidden.
-        if ($userHasScope === false && isset($scopes["admin.{$this->data['method']}"]) === false) {
-            $this->logger->error("Authentication failed. You do not have rights for scope: $schema.{$this->data['method']}");
-            return new Response(
-                $this->serializer->serialize(
-                    ['message' => "Authentication failed. You do not have rights for scope: $schema.{$this->data['method']}"],
-                    'json'
-                ),
-                Response::HTTP_FORBIDDEN,
-                ['Content-type' => $this->data['endpoint']->getDefaultContentType()]
-            );
-        }//end if
-        // Else if authorized continue like normal.
         // All prepped so let's go.
         // todo: split these into functions?
         switch ($this->data['method']) {
