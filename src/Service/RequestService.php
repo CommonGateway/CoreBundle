@@ -355,7 +355,6 @@ class RequestService
      */
     private function checkUserScopes(array $references, string $type = 'schemas'): ?Response
     {
-        $userHasScope  = false;
         $scopes        = $this->getScopes();
         $loopedSchemas = [];
         foreach ($references as $reference) {
@@ -368,7 +367,7 @@ class RequestService
         }
 
         // If the user doesn't have the normal scope and doesn't have the admin scope, return a 403 forbidden.
-        if ($userHasScope === false && isset($scopes["admin.{$this->data['method']}"]) === false) {
+        if (isset($scopes["admin.{$this->data['method']}"]) === false) {
             $implodeString = implode(', ', $loopedSchemas);
             $this->logger->error("Authentication failed. You do not have any of the required scopes for this endpoint. ($implodeString)");
             return new Response(
