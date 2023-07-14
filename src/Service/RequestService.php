@@ -533,9 +533,9 @@ class RequestService
 
         $securityResponse = $this->checkUserScopes([$proxy->getReference()], 'sources');
         if ($securityResponse instanceof Response === true) {
-
             return $securityResponse;
         }
+
         // Work around the _ with a custom function for getting clean query parameters from a request
         $this->data['query'] = $this->realRequestQueryAll();
         if (isset($data['path']['{route}']) === true) {
