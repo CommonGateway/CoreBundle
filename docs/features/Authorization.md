@@ -75,8 +75,7 @@ The default admin user has all admin.method scopes (admin.GET, admin.POST etc) b
 
 ### API scopes
 
-API scopes should  be assigned to users through their SecurityGroups which can be added through the admin user interface. If you would like to work with an /api endpoint for a specific Schema the scope would be schemas. 
-@todo what would the complete scope be? ^
+API scopes should  be assigned to users through their SecurityGroups which can be added through the admin user interface. If you would like to work with an /api endpoint for a specific Schema the scope would be schemas.https://vng.opencatalogi.nl/schemas/zrc.zaak.schema.json.GET
 
 # Common Gateway: Ownership and Creation
 
