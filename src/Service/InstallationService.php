@@ -299,10 +299,10 @@ class InstallationService
             if ((isset($config['data']) === true && $config['data'] !== false) || in_array($ref, $this::ALLOWED_CORE_SCHEMAS)) {
                 if (isset($this->style) === true) {
                     $this->style->newline();
-                    $this->style->writeln('Found '.count($schemas).' objects types for schema '.$ref);
+                    $this->style->writeln('Found '.count($schemas).' objects for schema '.$ref);
                 }
 
-                $this->logger->debug('Found '.count($schemas).' objects types for schema '.$ref, ['bundle' => $bundle, 'reference' => $ref]);
+                $this->logger->debug('Found '.count($schemas).' objects for schema '.$ref, ['bundle' => $bundle, 'reference' => $ref]);
                 $this->handleObjectType($ref, $schemas);
             }
 
