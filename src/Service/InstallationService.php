@@ -80,7 +80,7 @@ class InstallationService
      * @var CacheService
      */
     private CacheService $cacheService;
-    
+
     /**
      * @var SymfonyStyle
      */
@@ -151,7 +151,7 @@ class InstallationService
         $this->filesystem      = new Filesystem();
 
     }//end __construct()
-    
+
     /**
      * Set symfony style in order to output to the console.
      *
@@ -162,9 +162,9 @@ class InstallationService
     public function setStyle(SymfonyStyle $style): self
     {
         $this->style = $style;
-        
+
         return $this;
-        
+
     }//end setStyle()
 
     /**
@@ -187,7 +187,7 @@ class InstallationService
         if (isset($config['plugin']) === true) {
             $this->logger->debug('Running plugin installer for a single plugin: '.$config['plugin']);
             $this->install($config['plugin'], $config);
-    
+
             isset($this->style) === true && $this->style->section('Doing a cache warmup after installer is done...');
             $this->logger->debug('Doing a cache warmup after installer is done...');
             $this->cacheService->warmup();
@@ -203,7 +203,7 @@ class InstallationService
         foreach ($plugins as $plugin) {
             $this->install($plugin['name'], $config);
         }
-    
+
         isset($this->style) === true && $this->style->section('Doing a cache warmup after installer is done...');
         $this->logger->debug('Doing a cache warmup after installer is done...');
         $this->cacheService->warmup();
@@ -246,7 +246,7 @@ class InstallationService
 
         // Handling all the found files.
         $this->handlePluginFiles($bundle, $config);
-    
+
         isset($this->style) === true && $this->style->info('All Done installing plugin '.$bundle);
         $this->logger->debug('All Done installing plugin '.$bundle, ['bundle' => $bundle]);
 
