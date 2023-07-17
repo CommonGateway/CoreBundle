@@ -217,11 +217,13 @@ class CacheService
 
     private function removeDataFromCache(Collection $collection, string $type): void
     {
-        $endpoints = $collection->find()->toArray();
-        foreach ($endpoints as $endpoint) {
-            if ($this->entityManager->find($type, $endpoint['_id']) === null) {
-                (isset($this->style) === true ?? $this->style->writeln("removing {$endpoint['_id']} from cache"));
-                $collection->findOneAndDelete(['id' => $endpoint['_id']]);
+        $objects = $collection->find()->toArray();
+        foreach ($objects as $object) {
+            if ($this->entityManager->find($type, $object['_id']) === null) {
+                if (isset($this->style) === true) {
+                    $this->style->writeln("removing {$object['_id']} from cache");
+                }
+                $collection->findOneAndDelete(['id' => $object['_id']]);
             }
         }
 

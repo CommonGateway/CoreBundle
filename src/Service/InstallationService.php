@@ -339,7 +339,10 @@ class InstallationService
         if (isset($config['data']) === false || $config['data'] === false) {
             $finder = new Finder();
             $files  = $finder->in($this->vendorFolder.'/'.$bundle.'/Installation')->files()->name('data.json');
-            isset($this->style) === true && $this->style->writeln('Found '.count($files).' data.json file(s)');
+            if (isset($this->style) === true) {
+                $this->style->writeln('Found '.count($files).' data.json file(s)');
+                $this->style->newline();
+            }
             $this->logger->debug('Found '.count($files).' data.json file(s)', ['bundle' => $bundle]);
             foreach ($files as $file) {
                 $this->readfile($file);
