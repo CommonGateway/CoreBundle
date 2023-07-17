@@ -287,6 +287,8 @@ class InstallationService
             $testDataUser                   = $this->entityManager->getRepository('App:User')->findOneBy(['reference' => $this->testDataDefault['owner']]);
             $this->testDataDefault['owner'] = $testDataUser ? $testDataUser->getId()->toString() : $testDataUser;
         }
+    
+        isset($this->style) === true && $this->style->newLine() && $this->style->block('Handling test data & fixtures for '.$bundle.' ...');
 
         // Handle all the other objects.
         foreach ($this->objects as $ref => $schemas) {
@@ -326,6 +328,7 @@ class InstallationService
         if (isset($config['data']) === false || $config['data'] === false) {
             $finder = new Finder();
             $files  = $finder->in($this->vendorFolder.'/'.$bundle.'/Installation')->files()->name('data.json');
+            isset($this->style) === true && $this->style->writeln('Found '.count($files).' data.json file(s)');
             $this->logger->debug('Found '.count($files).' data.json file(s)', ['bundle' => $bundle]);
             foreach ($files as $file) {
                 $this->readfile($file);
