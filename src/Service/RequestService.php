@@ -432,8 +432,9 @@ class RequestService
 
         // If we already have a proxy, we can skip these checks.
         if ($proxy instanceof Source === false) {
+            $proxy = $data['endpoint']->getProxy();
             // We only do proxying if the endpoint forces it, and we do not have a proxy.
-            if ($data['endpoint'] instanceof Endpoint === false || $proxy = $data['endpoint']->getProxy() === null) {
+            if ($data['endpoint'] instanceof Endpoint === false || $proxy === null) {
                 $message = !$data['endpoint'] instanceof Endpoint ? "No Endpoint in data['endpoint']" : "This Endpoint has no Proxy: {$data['endpoint']->getName()}";
 
                 return new Response(
@@ -443,7 +444,7 @@ class RequestService
                 );
             }//end if
 
-            if ($proxy instanceof Source && ($proxy->getIsEnabled() === null || $proxy->getEnabled() === false)) {
+            if ($proxy instanceof Source && ($proxy->getIsEnabled() === null || $proxy->getIsEnabled() === false)) {
                 return new Response(
                     $this->serializeData(['Message' => "This Source is not enabled: {$proxy->getName()}"], $contentType),
                     Response::HTTP_OK,
