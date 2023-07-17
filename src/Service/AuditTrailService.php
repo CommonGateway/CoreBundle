@@ -56,6 +56,16 @@ class AuditTrailService
         $this->readUnreadService = $readUnreadService;
 
     }//end __construct()
+    
+    /**
+     * Test function TODO: REMOVE THIS!!!
+     *
+     * @return array
+     */
+    public function test(): array
+    {
+        return [];
+    }
 
     /**
      * Passes the result of prePersist to preUpdate.
