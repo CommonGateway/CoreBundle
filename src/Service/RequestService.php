@@ -897,7 +897,7 @@ class RequestService
             $eventType = 'commongateway.object.update';
 
             // We dont have an id on a PATCH so die.
-            if (isset($this->identification) === true) {
+            if (isset($this->identification) === false) {
                 $this->logger->error('No id could be established for your request');
 
                 return new Response('No id could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
