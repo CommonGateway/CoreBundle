@@ -58,17 +58,6 @@ class AuditTrailService
     }//end __construct()
 
     /**
-     * Test function TODO: REMOVE THIS!!!
-     *
-     * @return array
-     */
-    public function test(): array
-    {
-        return [];
-
-    }//end test()
-
-    /**
      * Passes the result of prePersist to preUpdate.
      *
      * @param ObjectEntity $object
