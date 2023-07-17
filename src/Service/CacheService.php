@@ -223,6 +223,7 @@ class CacheService
                 if (isset($this->style) === true) {
                     $this->style->writeln("removing {$object['_id']} from cache");
                 }
+
                 $collection->findOneAndDelete(['id' => $object['_id']]);
             }
         }

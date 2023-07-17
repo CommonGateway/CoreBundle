@@ -343,6 +343,7 @@ class InstallationService
                 $this->style->writeln('Found '.count($files).' data.json file(s)');
                 $this->style->newline();
             }
+
             $this->logger->debug('Found '.count($files).' data.json file(s)', ['bundle' => $bundle]);
             foreach ($files as $file) {
                 $this->readfile($file);
