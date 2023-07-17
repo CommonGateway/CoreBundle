@@ -12,7 +12,6 @@ This service manages the creation of Audit Trails.
 |------|-------------|
 |[__construct](#audittrailservice__construct)||
 |[createAuditTrail](#audittrailservicecreateaudittrail)|Passes the result of prePersist to preUpdate.|
-|[test](#audittrailservicetest)|Test function TODO: REMOVE THIS!!!|
 
 
 
@@ -61,32 +60,6 @@ Passes the result of prePersist to preUpdate.
 **Return Values**
 
 `\AuditTrail|null`
-
-
-
-
-<hr />
-
-
-### AuditTrailService::test  
-
-**Description**
-
-```php
-public test (void)
-```
-
-Test function TODO: REMOVE THIS!!! 
-
- 
-
-**Parameters**
-
-`This function has no parameters.`
-
-**Return Values**
-
-`array`
 
 
 
