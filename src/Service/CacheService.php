@@ -149,7 +149,7 @@ class CacheService
             ]
         );
 
-        isset($this->style) === true && $this->style->writeln('Connecting to'.$this->parameters->get('cache_url'));
+        isset($this->style) === true && $this->style->writeln('Connecting to '.$this->parameters->get('cache_url'));
 
         // Backwards compatablity.
         if (isset($this->client) === false) {

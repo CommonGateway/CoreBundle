@@ -80,6 +80,11 @@ class InstallationService
      * @var CacheService
      */
     private CacheService $cacheService;
+    
+    /**
+     * @var SymfonyStyle
+     */
+    private SymfonyStyle $style;
 
     /**
      * @var string The location of the vendor folder.
@@ -146,6 +151,21 @@ class InstallationService
         $this->filesystem      = new Filesystem();
 
     }//end __construct()
+    
+    /**
+     * Set symfony style in order to output to the console.
+     *
+     * @param SymfonyStyle $style
+     *
+     * @return self
+     */
+    public function setStyle(SymfonyStyle $style): self
+    {
+        $this->style = $style;
+        
+        return $this;
+        
+    }//end setStyle()
 
     /**
      * Updates all commonground bundles on the common gateway installation.
@@ -167,7 +187,8 @@ class InstallationService
         if (isset($config['plugin']) === true) {
             $this->logger->debug('Running plugin installer for a single plugin: '.$config['plugin']);
             $this->install($config['plugin'], $config);
-
+    
+            isset($this->style) === true && $this->style->section('Doing a cache warmup after installer is done...');
             $this->logger->debug('Doing a cache warmup after installer is done...');
             $this->cacheService->warmup();
 
@@ -182,7 +203,8 @@ class InstallationService
         foreach ($plugins as $plugin) {
             $this->install($plugin['name'], $config);
         }
-
+    
+        isset($this->style) === true && $this->style->section('Doing a cache warmup after installer is done...');
         $this->logger->debug('Doing a cache warmup after installer is done...');
         $this->cacheService->warmup();
 
@@ -204,11 +226,10 @@ class InstallationService
      */
     public function install(string $bundle, array $config = []): bool
     {
+        isset($this->style) === true && $this->style->section('Installing plugin '.$bundle);
         $this->logger->debug('Installing plugin '.$bundle, ['plugin' => $bundle]);
 
         // First we want to read all the files so that we have all the content we should install.
-        $this->logger->debug('Installing plugin '.$bundle);
-
         // Let's check the basic folders for legacy purposes. todo: remove these at some point.
         $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Action');
         // Entity.
@@ -225,7 +246,8 @@ class InstallationService
 
         // Handling all the found files.
         $this->handlePluginFiles($bundle, $config);
-
+    
+        isset($this->style) === true && $this->style->info('All Done installing plugin '.$bundle);
         $this->logger->debug('All Done installing plugin '.$bundle, ['bundle' => $bundle]);
 
         return true;
@@ -615,20 +637,23 @@ class InstallationService
 
         // Load the data. Compare version to check if we need to update or not.
         if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) <= 0) {
-            $this->logger->debug('The schema has a version number equal or lower then the already present version, the object is NOT updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
+            isset($this->style) === true && $this->style->section('The core schema ['.$schema['$id'].'] has a version number ('.$schema['version'].') equal or lower then the already present version ('.$object->getVersion().'), the object is NOT updated');
+            $this->logger->debug('The core schema has a version number equal or lower then the already present version, the object is NOT updated', ['schema' => $schema['$id'], 'schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
 
             return $object;
         }
 
         if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) > 0) {
-            $this->logger->debug('The schema has a version number higher then the already present version, the object data is updated', ['schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
+            isset($this->style) === true && $this->style->section('The schema ['.$schema['$id'].'] has a version number ('.$schema['version'].') higher then the already present version ('.$object->getVersion().'), the object data is updated');
+            $this->logger->debug('The core schema has a version number higher then the already present version, the object data is updated', ['schema' => $schema['$id'], 'schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
 
             return $object;
         }
 
         if (array_key_exists('version', $schema) === false || $object->getVersion() === null) {
-            $this->logger->debug('The new schema doesn\'t have a version number, the object data is created', ['schemaVersion' => $schema['version'] ?? null, 'objectVersion' => $object->getVersion()]);
+            isset($this->style) === true && $this->style->section('The new schema ['.$schema['$id'].'] doesn\'t have a version number ('.$schema['version'] ?? null.') or the already present object doesn\'t have a version number ('.$object->getVersion().'), the object data is created');
+            $this->logger->debug('The core schema doesn\'t have a version number or the already present object doesn\'t have a version number, the object data is created', ['schema' => $schema['$id'], 'schemaVersion' => $schema['version'] ?? null, 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
 
             return $object;
