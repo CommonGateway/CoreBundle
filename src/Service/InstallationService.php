@@ -287,7 +287,7 @@ class InstallationService
             $testDataUser                   = $this->entityManager->getRepository('App:User')->findOneBy(['reference' => $this->testDataDefault['owner']]);
             $this->testDataDefault['owner'] = $testDataUser ? $testDataUser->getId()->toString() : $testDataUser;
         }
-    
+
         isset($this->style) === true && $this->style->newLine() && $this->style->block('Handling test data & fixtures for '.$bundle.' ...');
 
         // Handle all the other objects.
