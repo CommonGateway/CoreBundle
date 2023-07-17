@@ -16,6 +16,7 @@ This class breaks complexity, methods and coupling rules. This could be solved b
 |[addActionConfiguration](#installationserviceaddactionconfiguration)|This function creates default configuration for the action.|
 |[install](#installationserviceinstall)|Installs the files from a bundle.|
 |[overrideConfig](#installationserviceoverrideconfig)|Overrides the default configuration of an Action. Will also set entity and source to id if a reference is given.|
+|[setStyle](#installationservicesetstyle)|Set symfony style in order to output to the console.|
 |[update](#installationserviceupdate)|Updates all commonground bundles on the common gateway installation.|
 
 
@@ -140,6 +141,32 @@ Overrides the default configuration of an Action. Will also set entity and sourc
 **Return Values**
 
 `array`
+
+
+
+
+<hr />
+
+
+### InstallationService::setStyle  
+
+**Description**
+
+```php
+public setStyle (\SymfonyStyle $style)
+```
+
+Set symfony style in order to output to the console. 
+
+ 
+
+**Parameters**
+
+* `(\SymfonyStyle) $style`
+
+**Return Values**
+
+`self`
 
 
 
