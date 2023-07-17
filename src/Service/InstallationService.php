@@ -271,6 +271,7 @@ class InstallationService
             $this->style->writeln('Found '.count($this->objects).' different schema types for '.$bundle);
             $this->style->newline();
         }
+
         $this->logger->debug('Found '.count($this->objects).' different schema types for '.$bundle, ['bundle' => $bundle]);
 
         // There is a certain order to this, meaning that we want to handle certain schema types before other schema types.
@@ -300,6 +301,7 @@ class InstallationService
                     $this->style->newline();
                     $this->style->writeln('Found '.count($schemas).' objects types for schema '.$ref);
                 }
+
                 $this->logger->debug('Found '.count($schemas).' objects types for schema '.$ref, ['bundle' => $bundle, 'reference' => $ref]);
                 $this->handleObjectType($ref, $schemas);
             }
@@ -312,6 +314,7 @@ class InstallationService
             $this->style->newLine();
             $this->style->block('Handling fixtures for '.$bundle.' ...');
         }
+
         $this->handleDataJson($bundle, $config);
 
         // Save the all other objects to the database.
@@ -654,6 +657,7 @@ class InstallationService
             $this->style->writeln('Creating or updating core schema:');
             $this->style->writeln('['.$schema['$id'].']');
         }
+
         $this->logger->debug('Creating or updating core schema', ['schema' => $schema['$id']]);
 
         // Load the data. Compare version to check if we need to update or not.
