@@ -267,7 +267,10 @@ class InstallationService
      */
     private function handlePluginFiles(string $bundle, array $config)
     {
-        isset($this->style) === true && $this->style->writeln('Found '.count($this->objects).' schema types for '.$bundle);
+        if (isset($this->style) === true) {
+            $this->style->writeln('Found '.count($this->objects).' different schema types for '.$bundle);
+            $this->style->newline();
+        }
         $this->logger->debug('Found '.count($this->objects).' different schema types for '.$bundle, ['bundle' => $bundle]);
 
         // There is a certain order to this, meaning that we want to handle certain schema types before other schema types.
@@ -288,14 +291,15 @@ class InstallationService
             $this->testDataDefault['owner'] = $testDataUser ? $testDataUser->getId()->toString() : $testDataUser;
         }
 
-        isset($this->style) === true && $this->style->newLine() && $this->style->block('Handling test data & fixtures for '.$bundle.' ...');
-
         // Handle all the other objects.
         foreach ($this->objects as $ref => $schemas) {
             // Only do handleObjectType if we want to load in ALL testdata, when user has used the argument data.
             // Or if it is a core schema, of course.
             if ((isset($config['data']) === true && $config['data'] !== false) || in_array($ref, $this::ALLOWED_CORE_SCHEMAS)) {
-                isset($this->style) === true && $this->style->writeln('Found '.count($schemas).' objects types for schema '.$ref);
+                if (isset($this->style) === true) {
+                    $this->style->newline();
+                    $this->style->writeln('Found '.count($schemas).' objects types for schema '.$ref);
+                }
                 $this->logger->debug('Found '.count($schemas).' objects types for schema '.$ref, ['bundle' => $bundle, 'reference' => $ref]);
                 $this->handleObjectType($ref, $schemas);
             }
@@ -304,6 +308,10 @@ class InstallationService
         }//end foreach
 
         // Find and handle the data.json file, if it exists.
+        if (isset($this->style) === true) {
+            $this->style->newLine();
+            $this->style->block('Handling fixtures for '.$bundle.' ...');
+        }
         $this->handleDataJson($bundle, $config);
 
         // Save the all other objects to the database.
@@ -642,7 +650,10 @@ class InstallationService
             return null;
         }
 
-        isset($this->style) === true && $this->style->writeln('Creating or updating core schema ['.$schema['$id'].']');
+        if (isset($this->style) === true) {
+            $this->style->writeln('Creating or updating core schema:');
+            $this->style->writeln('['.$schema['$id'].']');
+        }
         $this->logger->debug('Creating or updating core schema', ['schema' => $schema['$id']]);
 
         // Load the data. Compare version to check if we need to update or not.
