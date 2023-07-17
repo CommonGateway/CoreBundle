@@ -638,10 +638,10 @@ class InstallationService
 
             return null;
         }
-        
+
         isset($this->style) === true && $this->style->writeln('Creating or updating core schema ['.$schema['$id'].']');
         $this->logger->debug('Creating or updating core schema', ['schema' => $schema['$id']]);
-        
+
         // Load the data. Compare version to check if we need to update or not.
         if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) <= 0) {
             isset($this->style) === true && $this->style->writeln('The schema has a version number ('.$schema['version'].') equal or lower than the current version ('.$object->getVersion().'), the object is NOT updated');
