@@ -61,6 +61,11 @@ class RequestService
      * @var ValidationService
      */
     private ValidationService $validationService;
+    
+    /**
+     * @var FileSystemHandleService The fileSystem service
+     */
+    private FileSystemHandleService $fileSystemService;
 
     /**
      * @var array
@@ -140,6 +145,7 @@ class RequestService
      * @param GatewayResourceService   $resourceService
      * @param MappingService           $mappingService
      * @param ValidationService        $validationService
+     * @param FileSystemHandleService  $fileSystemService
      * @param CacheService             $cacheService
      * @param ReadUnreadService        $readUnreadService
      * @param LogService               $logService
@@ -156,6 +162,7 @@ class RequestService
         GatewayResourceService $resourceService,
         MappingService $mappingService,
         ValidationService $validationService,
+        FileSystemHandleService $fileSystemService,
         CacheService $cacheService,
         ReadUnreadService $readUnreadService,
         LogService $logService,
@@ -172,6 +179,7 @@ class RequestService
         $this->resourceService   = $resourceService;
         $this->mappingService    = $mappingService;
         $this->validationService = $validationService;
+        $this->fileSystemService = $fileSystemService;
         $this->readUnreadService = $readUnreadService;
         $this->logService        = $logService;
         $this->callService       = $callService;
@@ -420,10 +428,13 @@ class RequestService
     }//end getSchema()
 
     /**
+     * Handles a proxy Endpoint.
+     * todo: we want to merge proxyHandler() and requestHandler() code at some point.
+     *
      * @param array $data          The data from the call
      * @param array $configuration The configuration from the call
      *
-     * @return Response The data as returned bij the origanal source
+     * @return Response The data as returned bij the original source
      */
     public function proxyHandler(array $data, array $configuration, ?Source $proxy = null): Response
     {
@@ -456,26 +467,37 @@ class RequestService
 
         // Work around the _ with a custom function for getting clean query parameters from a request
         $this->data['query'] = $this->realRequestQueryAll();
+        
         if (isset($data['path']['{route}']) === true) {
             $this->data['path'] = '/'.$data['path']['{route}'];
         } else {
             $this->data['path'] = '';
         }
-
+        
+        // Don't pass gateway authorization to the source
         unset($this->data['headers']['authorization']);
+    
+        $url = \Safe\parse_url($proxy->getLocation());
+        
         // Make a guzzle call to the source based on the incoming call.
         try {
-            $result = $this->callService->call(
-                $proxy,
-                $this->data['path'],
-                $this->data['method'],
-                [
-                    'query'   => $this->data['query'],
-                    'headers' => $this->data['headers'],
-                    'body'    => $this->data['crude_body'],
-                ]
-            );
-
+            // Check if we are dealing with http, https or something else like a ftp (fileSystem)
+            if ($url['scheme'] === 'http' || $url['scheme'] === 'https') {
+                $result = $this->callService->call(
+                    $proxy,
+                    $this->data['path'],
+                    $this->data['method'],
+                    [
+                        'query'   => $this->data['query'],
+                        'headers' => $this->data['headers'],
+                        'body'    => $this->data['crude_body'],
+                    ]
+                );
+            } else {
+                $result = $this->fileSystemService->call($proxy, $this->data['path']);
+                $result = new \GuzzleHttp\Psr7\Response(200, [], $this->serializer->serialize($result, 'json'));
+            }
+    
             // Let create a response from the guzzle call.
             $response = new Response(
                 $result->getBody()->getContents(),
@@ -527,7 +549,8 @@ class RequestService
     }//end getScopes()
 
     /**
-     * Handles incomming requests and is responsible for generating a response.
+     * Handles incoming requests and is responsible for generating a response.
+     * todo: we want to merge requestHandler() and proxyHandler() code at some point.
      *
      * @param array $data          The data from the call
      * @param array $configuration The configuration from the call
@@ -540,8 +563,6 @@ class RequestService
     {
         $this->data          = $data;
         $this->configuration = $configuration;
-
-        $filters = [];
 
         // Get application configuration in and out for current endpoint/global if this is set on current application.
         if ($this->session->get('application') !== null) {
@@ -952,14 +973,15 @@ class RequestService
 
     /**
      * Gets the application configuration 'in' and/or 'out' for the current endpoint.
+     * Will first check for endpoint reference, then used endpoint (as string) and lastly for 'global' (all endpoints).
      *
      * @param string $endpointRef       The reference of the current endpoint
      * @param string $endpoint          The current endpoint path
-     * @param string $applicationConfig An item of the configuration of the application
+     * @param array $applicationConfig  An item of the configuration of the application
      *
      * @return array The 'in' and 'out' configuration of the Application for the current Endpoint.
      */
-    private function getConfigInOutOrGlobal(string $endpointRef, string $endpoint, array $applicationConfig): array
+    private function getAppConfigInOut(string $endpointRef, string $endpoint, array $applicationConfig): array
     {
         $appEndpointConfig = [];
 
@@ -1007,7 +1029,7 @@ class RequestService
 
         $appEndpointConfig = [];
         foreach ($application->getConfiguration() as $applicationConfig) {
-            $appEndpointConfig = $this->getConfigInOutOrGlobal($endpointRef, $endpoint, $applicationConfig);
+            $appEndpointConfig = $this->getAppConfigInOut($endpointRef, $endpoint, $applicationConfig);
         }
 
         return $appEndpointConfig;

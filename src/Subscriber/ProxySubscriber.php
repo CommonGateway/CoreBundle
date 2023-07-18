@@ -5,7 +5,6 @@ namespace CommonGateway\CoreBundle\Subscriber;
 use ApiPlatform\Core\EventListener\EventPriorities;
 use App\Entity\Gateway as Source;
 use CommonGateway\CoreBundle\Service\CallService;
-use CommonGateway\CoreBundle\Service\FileSystemHandleService;
 use CommonGateway\CoreBundle\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Exception\ClientException;
@@ -33,11 +32,6 @@ class ProxySubscriber implements EventSubscriberInterface
     private CallService $callService;
 
     /**
-     * @var FileSystemHandleService The fileSystem service
-     */
-    private FileSystemHandleService $fileSystemService;
-
-    /**
      * @var RequestService The request service
      */
     private RequestService $requestService;
@@ -61,15 +55,13 @@ class ProxySubscriber implements EventSubscriberInterface
      *
      * @param EntityManagerInterface  $entityManager     The entity manager
      * @param CallService             $callService       The call service
-     * @param FileSystemHandleService $fileSystemService The fileSystem service
      * @param RequestService          $requestService    The request service
      * @param SerializerInterface     $serializer        The serializer
      */
-    public function __construct(EntityManagerInterface $entityManager, CallService $callService, FileSystemHandleService $fileSystemService, RequestService $requestService, SerializerInterface $serializer)
+    public function __construct(EntityManagerInterface $entityManager, CallService $callService, RequestService $requestService, SerializerInterface $serializer)
     {
         $this->entityManager     = $entityManager;
         $this->callService       = $callService;
-        $this->fileSystemService = $fileSystemService;
         $this->requestService    = $requestService;
         $this->serializer        = $serializer;
 
@@ -107,67 +99,29 @@ class ProxySubscriber implements EventSubscriberInterface
         if (!in_array($route, self::PROXY_ROUTES)) {
             return;
         }
-
-        // @Todo rename
+        
         $source = $this->entityManager->getRepository('App:Gateway')->find($event->getRequest()->attributes->get('id'));
         if (!$source instanceof Source) {
             return;
         }
 
         $headers  = array_merge_recursive($source->getHeaders(), $event->getRequest()->headers->all());
-        $endpoint = ($headers['x-endpoint'][0] ?? '');
-        if (empty($endpoint) === false && str_starts_with($endpoint, '/') === false && str_ends_with($source->getLocation(), '/') === false) {
-            $endpoint = '/'.$endpoint;
+        
+        $endpoint = '';
+        if (isset($headers['x-endpoint'][0]) === true) {
+            $endpoint = trim($headers['x-endpoint'][0], '/');
         }
-
-        $endpoint = rtrim($endpoint, '/');
-
-        $method = ($headers['x-method'][0] ?? $event->getRequest()->getMethod());
-        unset($headers['authorization']);
+        $data['path']['{route}'] = $endpoint;
+    
+        $data['method'] = ($headers['x-method'][0] ?? $event->getRequest()->getMethod());
         unset($headers['x-endpoint']);
         unset($headers['x-method']);
-
-        $url = \Safe\parse_url($source->getLocation());
-
-        try {
-            if ($url['scheme'] === 'http' || $url['scheme'] === 'https') {
-                $result = $this->callService->call(
-                    $source,
-                    $endpoint,
-                    $method,
-                    [
-                        'headers' => $headers,
-                        'query'   => $this->requestService->realRequestQueryAll($event->getRequest()->getQueryString()),
-                        'body'    => $event->getRequest()->getContent(),
-                    ]
-                );
-            } else {
-                $result = $this->fileSystemService->call($source, $endpoint);
-                $result = new \GuzzleHttp\Psr7\Response(200, [], $this->serializer->serialize($result, 'json'));
-            }
-        } catch (ServerException | ClientException | RequestException $exception) {
-            $statusCode = ($exception->getCode() ?? 500);
-            if (method_exists(get_class($exception), 'getResponse') === true && $exception->getResponse() !== null) {
-                $body       = $exception->getResponse()->getBody()->getContents();
-                $statusCode = $exception->getResponse()->getStatusCode();
-                $headers    = $exception->getResponse()->getHeaders();
-            }
-
-            $content = $this->serializer->serialize(
-                [
-                    'Message' => $exception->getMessage(),
-                    'Body'    => ($body ?? "Can\'t get a response & body for this type of Exception: ").get_class($exception),
-                ],
-                'json'
-            );
-
-            $result = new \GuzzleHttp\Psr7\Response($statusCode, $headers, $content);
-
-            // If error catched dont pass event->getHeaders (causes infinite loop)
-            $wentWrong = true;
-        }//end try
-
-        $event->setResponse(new Response($result->getBody()->getContents(), $result->getStatusCode(), !isset($wentWrong) ? $result->getHeaders() : []));
+    
+        $data['headers'] = $headers;
+        $data['querystring'] = $event->getRequest()->getQueryString();
+        $data['crude_body'] = $event->getRequest()->getContent();
+        
+        $event->setResponse($this->requestService->proxyHandler($data, [], $source));
 
     }//end proxy()
 }//end class
