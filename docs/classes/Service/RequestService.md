@@ -16,10 +16,10 @@ Handles incoming request from endpoints or controllers that relate to the gatewa
 |[getId](#requestservicegetid)|Get the ID from given parameters.|
 |[getSchema](#requestservicegetschema)|Get the schema from given parameters returns false if no schema could be established.|
 |[getScopes](#requestservicegetscopes)|Get a scopes array for the current user (or of the anonymus if no user s logged in).|
-|[proxyHandler](#requestserviceproxyhandler)||
+|[proxyHandler](#requestserviceproxyhandler)|Handles a proxy Endpoint.|
 |[proxyRequestHandler](#requestserviceproxyrequesthandler)|Determines the proxy source from configuration, then use proxy handler to proxy the request.|
 |[realRequestQueryAll](#requestservicerealrequestqueryall)|A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.|
-|[requestHandler](#requestservicerequesthandler)|Handles incomming requests and is responsible for generating a response.|
+|[requestHandler](#requestservicerequesthandler)|Handles incoming requests and is responsible for generating a response.|
 |[serializeData](#requestserviceserializedata)|Determines the right content type and serializes the data accordingly.|
 |[shouldWeUnsetEmbedded](#requestserviceshouldweunsetembedded)|Handle the Application Endpoint Configuration for embedded. If embedded should be shown or not.|
 
@@ -31,7 +31,7 @@ Handles incoming request from endpoints or controllers that relate to the gatewa
 **Description**
 
 ```php
-public __construct (\EntityManagerInterface $entityManager, \GatewayResourceService $resourceService, \MappingService $mappingService, \ValidationService $validationService, \CacheService $cacheService, \ReadUnreadService $readUnreadService, \LogService $logService, \CallService $callService, \Security $security, \EventDispatcherInterface $eventDispatcher, \SerializerInterface $serializer, \SessionInterface $session, \LoggerInterface $requestLogger, \DownloadService $downloadService)
+public __construct (\EntityManagerInterface $entityManager, \GatewayResourceService $resourceService, \MappingService $mappingService, \ValidationService $validationService, \FileSystemHandleService $fileSystemService, \CacheService $cacheService, \ReadUnreadService $readUnreadService, \LogService $logService, \CallService $callService, \Security $security, \EventDispatcherInterface $eventDispatcher, \SerializerInterface $serializer, \SessionInterface $session, \LoggerInterface $requestLogger, \DownloadService $downloadService)
 ```
 
 The constructor sets al needed variables. 
@@ -44,6 +44,7 @@ The constructor sets al needed variables.
 * `(\GatewayResourceService) $resourceService`
 * `(\MappingService) $mappingService`
 * `(\ValidationService) $validationService`
+* `(\FileSystemHandleService) $fileSystemService`
 * `(\CacheService) $cacheService`
 * `(\ReadUnreadService) $readUnreadService`
 * `(\LogService) $logService`
@@ -199,20 +200,25 @@ Get a scopes array for the current user (or of the anonymus if no user s logged 
 **Description**
 
 ```php
- proxyHandler (void)
+public proxyHandler (array $data, array $configuration)
 ```
 
- 
+Handles a proxy Endpoint. 
 
- 
+todo: we want to merge proxyHandler() and requestHandler() code at some point. 
 
 **Parameters**
 
-`This function has no parameters.`
+* `(array) $data`
+: The data from the call  
+* `(array) $configuration`
+: The configuration from the call  
 
 **Return Values**
 
-`void`
+`\Response`
+
+> The data as returned bij the original source
 
 
 <hr />
@@ -282,9 +288,9 @@ This function will not.
 public requestHandler (array $data, array $configuration)
 ```
 
-Handles incomming requests and is responsible for generating a response. 
+Handles incoming requests and is responsible for generating a response. 
 
- 
+todo: we want to merge requestHandler() and proxyHandler() code at some point. 
 
 **Parameters**
 
