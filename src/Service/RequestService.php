@@ -1009,6 +1009,10 @@ class RequestService
             $result = $this->shouldWeUnsetEmbedded($result, $appEndpointConfig['out']['embedded']);
         }
 
+        if (isset($appEndpointConfig) === true) {
+            $result = $this->handleAppConfigOut($appEndpointConfig, $result);
+        }
+
         if (isset($eventType) === true && isset($result) === true) {
             $event = new ActionEvent($eventType, ['response' => $result, 'entity' => ($this->object->getEntity()->getReference() ?? $this->object->getEntity()->getId()->toString()), 'parameters' => $this->data]);
             $this->eventDispatcher->dispatch($event, $event->getType());
@@ -1035,6 +1039,25 @@ class RequestService
         return $this->createResponse($result);
 
     }//end requestHandler()
+
+    /**
+     * Handle output config of the endpoint.
+     *
+     * @param array $appEndpointConfig The application endpoint config.
+     * @param array $result            The result so far.
+     *
+     * @return array The updated result.
+     */
+    public function handleAppConfigOut(array $appEndpointConfig, array $result): array
+    {
+        // We want to do more abstract functionality for output settings, keep in mind for the future.
+        if (isset($appEndpointConfig['out']['body']['mapping']) === true) {
+            $result = $this->mappingService->mapping($this->resourceService->getMapping($appEndpointConfig['out']['body']['mapping'], 'commongateway/corebundle'), $result);
+        }
+
+        return $result;
+
+    }//end handleAppConfigOut()
 
     /**
      * Gets the application configuration 'in' and/or 'out' for the current endpoint.
