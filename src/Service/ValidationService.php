@@ -503,6 +503,7 @@ class ValidationService
                 new Rules\DateTime('Y-m-dTH:i:s'),
                 new Rules\DateTime('Y-m-d\TH:i:s'),
                 new Rules\DateTime('Y-m-d\U\T\CH:i:s'),
+                new Rules\DateTime('c'),
             );
         case 'array':
             return new Rules\ArrayType();
@@ -614,8 +615,6 @@ class ValidationService
         case 'dutch_pc4':
             return new CustomRules\DutchPostalcode();
         case 'date':
-        case 'date-time':
-        case 'datetime':
             // For now...
         case 'duration':
             // For now...
