@@ -614,6 +614,8 @@ class ValidationService
         case 'dutch_pc4':
             return new CustomRules\DutchPostalcode();
         case 'date':
+        case 'date-time':
+        case 'datetime':
             // For now...
         case 'duration':
             // For now...
