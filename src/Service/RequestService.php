@@ -1004,7 +1004,7 @@ class RequestService
             $result = $this->shouldWeUnsetEmbedded($result, $appEndpointConfig['out']['embedded']);
         }
 
-        if(isset($appEndpointConfig) === true) {
+        if (isset($appEndpointConfig) === true) {
             $result = $this->handleAppOutConfig($appEndpointConfig, $result);
         }
 
@@ -1046,12 +1046,13 @@ class RequestService
     public function handleAppOutConfig(array $appEndpointConfig, array $result): array
     {
         // We want to do more abstract functionality for output settings, keep in mind for the future.
-        if(isset($appEndpointConfig['out']['body']['mapping']) === true) {
+        if (isset($appEndpointConfig['out']['body']['mapping']) === true) {
             $result = $this->mappingService->mapping($this->resourceService->getMapping($appEndpointConfig['out']['body']['mapping'], 'commongateway/corebundle'), $result);
         }
 
         return $result;
-    }
+
+    }//end handleAppOutConfig()
 
     /**
      * Gets the application configuration 'in' and/or 'out' for the current endpoint.
