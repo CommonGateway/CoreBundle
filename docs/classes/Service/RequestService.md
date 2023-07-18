@@ -16,7 +16,7 @@ Handles incoming request from endpoints or controllers that relate to the gatewa
 |[getId](#requestservicegetid)|Get the ID from given parameters.|
 |[getSchema](#requestservicegetschema)|Get the schema from given parameters returns false if no schema could be established.|
 |[getScopes](#requestservicegetscopes)|Get a scopes array for the current user (or of the anonymus if no user s logged in).|
-|[handleAppOutConfig](#requestservicehandleappoutconfig)|Handle output config of the endpoint.|
+|[handleAppConfigOut](#requestservicehandleappconfigout)|Handle output config of the endpoint.|
 |[proxyHandler](#requestserviceproxyhandler)||
 |[proxyRequestHandler](#requestserviceproxyrequesthandler)|Determines the proxy source from configuration, then use proxy handler to proxy the request.|
 |[realRequestQueryAll](#requestservicerealrequestqueryall)|A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.|
@@ -196,12 +196,12 @@ Get a scopes array for the current user (or of the anonymus if no user s logged 
 <hr />
 
 
-### RequestService::handleAppOutConfig  
+### RequestService::handleAppConfigOut  
 
 **Description**
 
 ```php
-public handleAppOutConfig (array $appEndpointConfig, array $result)
+public handleAppConfigOut (array $appEndpointConfig, array $result)
 ```
 
 Handle output config of the endpoint. 
