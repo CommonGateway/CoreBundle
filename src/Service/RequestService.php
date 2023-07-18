@@ -360,13 +360,14 @@ class RequestService
         foreach ($references as $reference) {
             $schemaScope     = "$type.$reference.{$this->data['method']}";
             $loopedSchemas[] = $schemaScope;
-            if (isset($scopes[$schemaScope]) === true) {
+
+            if (in_array($schemaScope, $scopes) === true) {
                 // If true the user is authorized.
                 return null;
             }
         }
 
-        // If the user doesn't have the normal scope and doesn't have the admin scope, return a 403 forbidden.
+            // If the user doesn't have the normal scope and doesn't have the admin scope, return a 403 forbidden.
         if (isset($scopes["admin.{$this->data['method']}"]) === false) {
             $implodeString = implode(', ', $loopedSchemas);
             $this->logger->error("Authentication failed. You do not have any of the required scopes for this endpoint. ($implodeString)");
@@ -607,7 +608,11 @@ class RequestService
         // If we don't have a user, return the anonymous security group its scopes.
         $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous' => true]);
         if ($anonymousSecurityGroup !== null) {
-            return $anonymousSecurityGroup->getScopes();
+            $scopes = [];
+            foreach ($anonymousSecurityGroup->getScopes() as $scope) {
+                $scopes[$scope] = true;
+            }
+            return $scopes;
         }
 
         // If we don't have a user or anonymous security group, return an empty array (this will result in a 403 response in the checkUserScopes function).
