@@ -571,10 +571,15 @@ class RequestService
                 $headers    = $exception->getResponse()->getHeaders();
             }
 
+            // Catch weird statuscodes (like 0).
+            if (strlen($statusCode) < 3) {
+                $statusCode = 502;
+            }
+
             $content  = $this->serializeData(
                 [
-                    'Message' => $exception->getMessage(),
-                    'Body'    => ($body ?? "Can\'t get a response & body for this type of Exception: ").get_class($exception),
+                    'message' => $exception->getMessage(),
+                    'body'    => ($body ?? "Can\'t get a response & body for this type of Exception: ").get_class($exception),
                 ],
                 $contentType
             );
