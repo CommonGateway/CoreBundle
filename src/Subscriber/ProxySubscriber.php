@@ -53,17 +53,17 @@ class ProxySubscriber implements EventSubscriberInterface
     /**
      * The constructor of this subscriber class.
      *
-     * @param EntityManagerInterface  $entityManager     The entity manager
-     * @param CallService             $callService       The call service
-     * @param RequestService          $requestService    The request service
-     * @param SerializerInterface     $serializer        The serializer
+     * @param EntityManagerInterface $entityManager  The entity manager
+     * @param CallService            $callService    The call service
+     * @param RequestService         $requestService The request service
+     * @param SerializerInterface    $serializer     The serializer
      */
     public function __construct(EntityManagerInterface $entityManager, CallService $callService, RequestService $requestService, SerializerInterface $serializer)
     {
-        $this->entityManager     = $entityManager;
-        $this->callService       = $callService;
-        $this->requestService    = $requestService;
-        $this->serializer        = $serializer;
+        $this->entityManager  = $entityManager;
+        $this->callService    = $callService;
+        $this->requestService = $requestService;
+        $this->serializer     = $serializer;
 
     }//end __construct()
 
@@ -99,28 +99,29 @@ class ProxySubscriber implements EventSubscriberInterface
         if (!in_array($route, self::PROXY_ROUTES)) {
             return;
         }
-        
+
         $source = $this->entityManager->getRepository('App:Gateway')->find($event->getRequest()->attributes->get('id'));
         if (!$source instanceof Source) {
             return;
         }
 
-        $headers  = array_merge_recursive($source->getHeaders(), $event->getRequest()->headers->all());
-        
+        $headers = array_merge_recursive($source->getHeaders(), $event->getRequest()->headers->all());
+
         $endpoint = '';
         if (isset($headers['x-endpoint'][0]) === true) {
             $endpoint = trim($headers['x-endpoint'][0], '/');
         }
+
         $data['path']['{route}'] = $endpoint;
-    
+
         $data['method'] = ($headers['x-method'][0] ?? $event->getRequest()->getMethod());
         unset($headers['x-endpoint']);
         unset($headers['x-method']);
-    
-        $data['headers'] = $headers;
+
+        $data['headers']     = $headers;
         $data['querystring'] = $event->getRequest()->getQueryString();
-        $data['crude_body'] = $event->getRequest()->getContent();
-        
+        $data['crude_body']  = $event->getRequest()->getContent();
+
         $event->setResponse($this->requestService->proxyHandler($data, [], $source));
 
     }//end proxy()

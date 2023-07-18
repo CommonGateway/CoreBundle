@@ -61,7 +61,7 @@ class RequestService
      * @var ValidationService
      */
     private ValidationService $validationService;
-    
+
     /**
      * @var FileSystemHandleService The fileSystem service
      */
@@ -467,18 +467,18 @@ class RequestService
 
         // Work around the _ with a custom function for getting clean query parameters from a request
         $this->data['query'] = $this->realRequestQueryAll();
-        
+
         if (isset($data['path']['{route}']) === true) {
             $this->data['path'] = '/'.$data['path']['{route}'];
         } else {
             $this->data['path'] = '';
         }
-        
+
         // Don't pass gateway authorization to the source
         unset($this->data['headers']['authorization']);
-    
+
         $url = \Safe\parse_url($proxy->getLocation());
-        
+
         // Make a guzzle call to the source based on the incoming call.
         try {
             // Check if we are dealing with http, https or something else like a ftp (fileSystem)
@@ -497,7 +497,7 @@ class RequestService
                 $result = $this->fileSystemService->call($proxy, $this->data['path']);
                 $result = new \GuzzleHttp\Psr7\Response(200, [], $this->serializer->serialize($result, 'json'));
             }
-    
+
             // Let create a response from the guzzle call.
             $response = new Response(
                 $result->getBody()->getContents(),
@@ -977,7 +977,7 @@ class RequestService
      *
      * @param string $endpointRef       The reference of the current endpoint
      * @param string $endpoint          The current endpoint path
-     * @param array $applicationConfig  An item of the configuration of the application
+     * @param array  $applicationConfig An item of the configuration of the application
      *
      * @return array The 'in' and 'out' configuration of the Application for the current Endpoint.
      */
@@ -1004,7 +1004,7 @@ class RequestService
 
         return $appEndpointConfig;
 
-    }//end getConfigInOutOrGlobal()
+    }//end getAppConfigInOut()
 
     /**
      * Gets the application configuration 'in' and/or 'out' for the current endpoint.
