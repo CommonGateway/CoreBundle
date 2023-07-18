@@ -617,6 +617,7 @@ class RequestService
             foreach ($anonymousSecurityGroup->getScopes() as $scope) {
                 $scopes[$scope] = true;
             }
+
             return $scopes;
         }
 
