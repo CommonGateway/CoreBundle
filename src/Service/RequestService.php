@@ -1010,7 +1010,7 @@ class RequestService
         }
 
         if (isset($appEndpointConfig) === true) {
-            $result = $this->handleAppOutConfig($appEndpointConfig, $result);
+            $result = $this->handleAppConfigOut($appEndpointConfig, $result);
         }
 
         if (isset($eventType) === true && isset($result) === true) {
@@ -1048,7 +1048,7 @@ class RequestService
      *
      * @return array The updated result.
      */
-    public function handleAppOutConfig(array $appEndpointConfig, array $result): array
+    public function handleAppConfigOut(array $appEndpointConfig, array $result): array
     {
         // We want to do more abstract functionality for output settings, keep in mind for the future.
         if (isset($appEndpointConfig['out']['body']['mapping']) === true) {
