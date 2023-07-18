@@ -1057,7 +1057,7 @@ class RequestService
 
         return $result;
 
-    }//end handleAppOutConfig()
+    }//end handleAppConfigOut()
 
     /**
      * Gets the application configuration 'in' and/or 'out' for the current endpoint.
