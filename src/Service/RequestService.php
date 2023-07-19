@@ -360,13 +360,14 @@ class RequestService
         foreach ($references as $reference) {
             $schemaScope     = "$type.$reference.{$this->data['method']}";
             $loopedSchemas[] = $schemaScope;
-            if (isset($scopes[$schemaScope]) === true) {
+
+            if (in_array($schemaScope, $scopes) === true) {
                 // If true the user is authorized.
                 return null;
             }
         }
 
-        // If the user doesn't have the normal scope and doesn't have the admin scope, return a 403 forbidden.
+            // If the user doesn't have the normal scope and doesn't have the admin scope, return a 403 forbidden.
         if (isset($scopes["admin.{$this->data['method']}"]) === false) {
             $implodeString = implode(', ', $loopedSchemas);
             $this->logger->error("Authentication failed. You do not have any of the required scopes for this endpoint. ($implodeString)");
@@ -571,10 +572,15 @@ class RequestService
                 $headers    = $exception->getResponse()->getHeaders();
             }
 
+            // Catch weird statuscodes (like 0).
+            if (strlen($statusCode) < 3) {
+                $statusCode = 502;
+            }
+
             $content  = $this->serializeData(
                 [
-                    'Message' => $exception->getMessage(),
-                    'Body'    => ($body ?? "Can\'t get a response & body for this type of Exception: ").get_class($exception),
+                    'message' => $exception->getMessage(),
+                    'body'    => ($body ?? "Can\'t get a response & body for this type of Exception: ").get_class($exception),
                 ],
                 $contentType
             );
@@ -607,7 +613,12 @@ class RequestService
         // If we don't have a user, return the anonymous security group its scopes.
         $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous' => true]);
         if ($anonymousSecurityGroup !== null) {
-            return $anonymousSecurityGroup->getScopes();
+            $scopes = [];
+            foreach ($anonymousSecurityGroup->getScopes() as $scope) {
+                $scopes[$scope] = true;
+            }
+
+            return $scopes;
         }
 
         // If we don't have a user or anonymous security group, return an empty array (this will result in a 403 response in the checkUserScopes function).
@@ -897,7 +908,7 @@ class RequestService
             $eventType = 'commongateway.object.update';
 
             // We dont have an id on a PATCH so die.
-            if (isset($this->identification) === true) {
+            if (isset($this->identification) === false) {
                 $this->logger->error('No id could be established for your request');
 
                 return new Response('No id could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
@@ -1004,6 +1015,10 @@ class RequestService
             $result = $this->shouldWeUnsetEmbedded($result, $appEndpointConfig['out']['embedded']);
         }
 
+        if (isset($appEndpointConfig) === true) {
+            $result = $this->handleAppConfigOut($appEndpointConfig, $result);
+        }
+
         if (isset($eventType) === true && isset($result) === true) {
             $event = new ActionEvent($eventType, ['response' => $result, 'entity' => ($this->object->getEntity()->getReference() ?? $this->object->getEntity()->getId()->toString()), 'parameters' => $this->data]);
             $this->eventDispatcher->dispatch($event, $event->getType());
@@ -1030,6 +1045,25 @@ class RequestService
         return $this->createResponse($result);
 
     }//end requestHandler()
+
+    /**
+     * Handle output config of the endpoint.
+     *
+     * @param array $appEndpointConfig The application endpoint config.
+     * @param array $result            The result so far.
+     *
+     * @return array The updated result.
+     */
+    public function handleAppConfigOut(array $appEndpointConfig, array $result): array
+    {
+        // We want to do more abstract functionality for output settings, keep in mind for the future.
+        if (isset($appEndpointConfig['out']['body']['mapping']) === true) {
+            $result = $this->mappingService->mapping($this->resourceService->getMapping($appEndpointConfig['out']['body']['mapping'], 'commongateway/corebundle'), $result);
+        }
+
+        return $result;
+
+    }//end handleAppConfigOut()
 
     /**
      * Gets the application configuration 'in' and/or 'out' for the current endpoint.

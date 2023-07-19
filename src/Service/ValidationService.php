@@ -193,7 +193,7 @@ class ValidationService
             // If we need to check conditionals the $conditionals Rule above will do so in this When Rule below.
             $validator->addRule(
                 new Rules\When(
-                    // IF (the $conditionals Rule does not return any exceptions).
+                // IF (the $conditionals Rule does not return any exceptions).
                     $conditionals,
                     // TRUE (continue with the required rule, incl inversedBy check).
                     $this->checkIfAttRequired($attribute),
@@ -223,7 +223,7 @@ class ValidationService
         if (isset($attribute->getValidations()['requiredIf']) === true && empty($attribute->getValidations()['requiredIf']) === false) {
             // Todo: this works but doesn't give a nice and clear error response why the rule is broken. ("x must be present").
             $requiredIf = new Rules\When(
-                // IF (the requiredIf JsonLogic finds a match / is true).
+            // IF (the requiredIf JsonLogic finds a match / is true).
                 new CustomRules\JsonLogic($attribute->getValidations()['requiredIf']),
                 // TRUE (attribute is required).
                 new Rules\Key($attribute->getName()),
@@ -237,7 +237,7 @@ class ValidationService
         if (isset($attribute->getValidations()['forbiddenIf']) === true && empty($attribute->getValidations()['forbiddenIf']) === false) {
             // Todo: this works but doesn't give a nice and clear error response why the rule is broken. ("x must not be present").
             $forbiddenIf = new Rules\When(
-                // IF (the requiredIf JsonLogic finds a match / is true).
+            // IF (the requiredIf JsonLogic finds a match / is true).
                 new CustomRules\JsonLogic($attribute->getValidations()['forbiddenIf']),
                 // TRUE (attribute should not be present).
                 new Rules\Not(new Rules\Key($attribute->getName())),
@@ -418,7 +418,7 @@ class ValidationService
         // If attribute type is correct continue validation of attribute format.
         $attTypeValidator->addRule(
             new Rules\When(
-                // IF.
+            // IF.
                 $attTypeRule,
                 // TRUE.
                 $this->getAttFormatValidator($attribute),
@@ -451,7 +451,7 @@ class ValidationService
         // If attribute format is correct continue validation of other validationRules.
         $attFormatValidator->addRule(
             new Rules\When(
-                // IF.
+            // IF.
                 $attFormatRule,
                 // TRUE.
                 $this->getAttValidationRulesValidator($attribute),
@@ -503,6 +503,7 @@ class ValidationService
                 new Rules\DateTime('Y-m-dTH:i:s'),
                 new Rules\DateTime('Y-m-d\TH:i:s'),
                 new Rules\DateTime('Y-m-d\U\T\CH:i:s'),
+                new Rules\DateTime('c'),
             );
         case 'array':
             return new Rules\ArrayType();
@@ -559,7 +560,8 @@ class ValidationService
         $objectValidator->addRule(
             new Rules\OneOf(
                 new Rules\ArrayType(),
-                new Rules\Uuid()
+                new Rules\Uuid(),
+                new Rules\Url()
             )
         );
         // If we are allowed to cascade and the input is an array, validate the input array for the Attribute->object Entity.
@@ -602,6 +604,9 @@ class ValidationService
         case 'rsin':
             return new CustomRules\Rsin();
         case 'url':
+            if ($attribute->getType() === 'object') {
+                return new Rules\AlwaysValid();
+            }
             return new Rules\Url();
         case 'uuid':
             return new Rules\Uuid();
@@ -610,10 +615,12 @@ class ValidationService
         case 'phone':
             return new Rules\Phone();
         case 'json':
-            return new Rules\Json();
+            return new Rules\ArrayType();
         case 'dutch_pc4':
             return new CustomRules\DutchPostalcode();
         case 'date':
+        case 'date-time':
+        case 'datetime':
             // For now...
         case 'duration':
             // For now...
@@ -636,7 +643,7 @@ class ValidationService
             return new Rules\AlwaysValid();
         default:
             throw new GatewayException(
-                'Unknown attribute format.',
+                "Unknown attribute format $format.",
                 null,
                 null,
                 [
