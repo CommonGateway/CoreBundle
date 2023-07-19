@@ -21,7 +21,7 @@ env: # Change these to your preferences any image url can also be a base encoded
   FOOTER_LOGO_HREF: "https://conduction.nl"
 
   # Jumbotron
-  JUMBOTRON_TITLE: "Core Bundle"
+  JUMBOTRON_TITLE: "Common Gateway"
   JUMBOTRON_SUBTITLE: "Product page"
   JUMBOTRON_DESCRIPTION: ${{ github.event.repository.description }}
   JUMBOTRON_SVG: "https://www.conduction.nl/wp-content/uploads/2021/07/cropped-Conduction_HOME_0000_afb1-1.png"
