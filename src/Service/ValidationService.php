@@ -476,54 +476,54 @@ class ValidationService
     private function getAttTypeRule(Attribute $attribute): Rules\AbstractRule
     {
         switch ($attribute->getType()) {
-            case 'string':
-            case 'text':
-                return new Rules\StringType();
-            case 'integer':
-            case 'int':
-                return new Rules\IntType();
-            case 'float':
-                return new Rules\FloatType();
-            case 'number':
-                return new Rules\Number();
-            case 'date':
-                return new Rules\OneOf(
-                    new Rules\Date('d-m-Y'),
-                    new Rules\Date('Y-m-d'),
-                );
-            case 'datetime':
-                // Todo: make a custom rule that checks if we can do new DateTime() with the input value to allow multiple formats?
-                // default format for Rules\DateTime = 'c' = ISO standard -> Y-m-dTH:i:s+timezone(00:00).
-                return new Rules\OneOf(
-                    new Rules\DateTime('d-m-Y'),
-                    new Rules\DateTime('d-m-Y H:i:s'),
-                    new Rules\DateTime('d-m-YTH:i:s'),
-                    new Rules\DateTime('Y-m-d'),
-                    new Rules\DateTime('Y-m-d H:i:s'),
-                    new Rules\DateTime('Y-m-dTH:i:s'),
-                    new Rules\DateTime('Y-m-d\TH:i:s'),
-                    new Rules\DateTime('Y-m-d\U\T\CH:i:s'),
-                );
-            case 'array':
-                return new Rules\ArrayType();
-            case 'boolean':
-            case 'bool':
-                return new Rules\BoolType();
-            case 'file':
-                return new CustomRules\Base64File();
-            case 'object':
-                return $this->getObjectValidator($attribute);
-            default:
-                throw new GatewayException(
-                    'Unknown attribute type.',
-                    null,
-                    null,
-                    [
-                        'data'         => $attribute->getType(),
-                        'path'         => $attribute->getEntity()->getName().'.'.$attribute->getName(),
-                        'responseType' => Response::HTTP_BAD_REQUEST,
-                    ]
-                );
+        case 'string':
+        case 'text':
+            return new Rules\StringType();
+        case 'integer':
+        case 'int':
+            return new Rules\IntType();
+        case 'float':
+            return new Rules\FloatType();
+        case 'number':
+            return new Rules\Number();
+        case 'date':
+            return new Rules\OneOf(
+                new Rules\Date('d-m-Y'),
+                new Rules\Date('Y-m-d'),
+            );
+        case 'datetime':
+            // Todo: make a custom rule that checks if we can do new DateTime() with the input value to allow multiple formats?
+            // default format for Rules\DateTime = 'c' = ISO standard -> Y-m-dTH:i:s+timezone(00:00).
+            return new Rules\OneOf(
+                new Rules\DateTime('d-m-Y'),
+                new Rules\DateTime('d-m-Y H:i:s'),
+                new Rules\DateTime('d-m-YTH:i:s'),
+                new Rules\DateTime('Y-m-d'),
+                new Rules\DateTime('Y-m-d H:i:s'),
+                new Rules\DateTime('Y-m-dTH:i:s'),
+                new Rules\DateTime('Y-m-d\TH:i:s'),
+                new Rules\DateTime('Y-m-d\U\T\CH:i:s'),
+            );
+        case 'array':
+            return new Rules\ArrayType();
+        case 'boolean':
+        case 'bool':
+            return new Rules\BoolType();
+        case 'file':
+            return new CustomRules\Base64File();
+        case 'object':
+            return $this->getObjectValidator($attribute);
+        default:
+            throw new GatewayException(
+                'Unknown attribute type.',
+                null,
+                null,
+                [
+                    'data'         => $attribute->getType(),
+                    'path'         => $attribute->getEntity()->getName().'.'.$attribute->getName(),
+                    'responseType' => Response::HTTP_BAD_REQUEST,
+                ]
+            );
         }//end switch
 
     }//end getAttTypeRule()
@@ -596,61 +596,61 @@ class ValidationService
         $format = str_replace(['telephone'], ['phone'], $format);
 
         switch ($format) {
-            case 'countryCode':
-                return new Rules\CountryCode();
-            case 'bsn':
-                return new Rules\Bsn();
-            case 'rsin':
-                return new CustomRules\Rsin();
-            case 'url':
-                if($attribute->getType() === 'object') {
-                    return new Rules\AlwaysValid();
-                }
-                return new Rules\Url();
-            case 'uuid':
-                return new Rules\Uuid();
-            case 'email':
-                return new Rules\Email();
-            case 'phone':
-                return new Rules\Phone();
-            case 'json':
-                return new Rules\ArrayType();
-            case 'dutch_pc4':
-                return new CustomRules\DutchPostalcode();
-            case 'date':
-            case 'date-time':
-            case 'datetime':
-                // For now...
-            case 'duration':
-                // For now...
-            case 'uri':
-                // For now...
-            case 'int64':
-                // For now...
-            case 'byte':
-                // For now...
-            case 'urn':
-                // For now...
-            case 'reverse-dns':
-                // For now...
-            case 'Y-m-d\TH:i:s':
-            case 'Y-m-d':
-                // For now...
-            case 'text':
-            case null:
-                // If attribute has no format return alwaysValid.
+        case 'countryCode':
+            return new Rules\CountryCode();
+        case 'bsn':
+            return new Rules\Bsn();
+        case 'rsin':
+            return new CustomRules\Rsin();
+        case 'url':
+            if ($attribute->getType() === 'object') {
                 return new Rules\AlwaysValid();
-            default:
-                throw new GatewayException(
-                    "Unknown attribute format $format.",
-                    null,
-                    null,
-                    [
-                        'data'         => $format,
-                        'path'         => $attribute->getEntity()->getName().'.'.$attribute->getName(),
-                        'responseType' => Response::HTTP_BAD_REQUEST,
-                    ]
-                );
+            }
+            return new Rules\Url();
+        case 'uuid':
+            return new Rules\Uuid();
+        case 'email':
+            return new Rules\Email();
+        case 'phone':
+            return new Rules\Phone();
+        case 'json':
+            return new Rules\ArrayType();
+        case 'dutch_pc4':
+            return new CustomRules\DutchPostalcode();
+        case 'date':
+        case 'date-time':
+        case 'datetime':
+            // For now...
+        case 'duration':
+            // For now...
+        case 'uri':
+            // For now...
+        case 'int64':
+            // For now...
+        case 'byte':
+            // For now...
+        case 'urn':
+            // For now...
+        case 'reverse-dns':
+            // For now...
+        case 'Y-m-d\TH:i:s':
+        case 'Y-m-d':
+            // For now...
+        case 'text':
+        case null:
+            // If attribute has no format return alwaysValid.
+            return new Rules\AlwaysValid();
+        default:
+            throw new GatewayException(
+                "Unknown attribute format $format.",
+                null,
+                null,
+                [
+                    'data'         => $format,
+                    'path'         => $attribute->getEntity()->getName().'.'.$attribute->getName(),
+                    'responseType' => Response::HTTP_BAD_REQUEST,
+                ]
+            );
         }//end switch
 
     }//end getAttFormatRule()
@@ -715,59 +715,59 @@ class ValidationService
     {
         $validations = $attribute->getValidations();
         switch ($validation) {
-            case 'enum':
-                return new Rules\In($config);
-            case 'multipleOf':
-                return new Rules\Multiple($config);
-            case 'maximum':
-                return new Rules\Max($config);
-            case 'exclusiveMaximum':
-                return new Rules\LessThan($validations['maximum']);
-            case 'minimum':
-                return new Rules\Min($config);
-            case 'exclusiveMinimum':
-                return new Rules\GreaterThan($validations['minimum']);
-            case 'minLength':
-            case 'maxLength':
-                return new Rules\Length(($validations['minLength'] ?? null), ($validations['maxLength'] ?? null));
-            case 'maxItems':
-            case 'minItems':
-                return new Rules\Length(($validations['minItems'] ?? null), ($validations['maxItems'] ?? null));
-            case 'maxProperties':
-            case 'minProperties':
-                return new Rules\Length(($validations['minProperties'] ?? null), ($validations['maxProperties'] ?? null));
-            case 'minDate':
-                return new Rules\Min(new DateTime($config));
-            case 'maxDate':
-                return new Rules\Max(new DateTime($config));
-            case 'maxFileSize':
-            case 'minFileSize':
-                return new Rules\Key(
-                    'base64',
-                    new CustomRules\Base64Size(($validations['minFileSize'] ?? null), ($validations['maxFileSize'] ?? null)),
-                    true
-                );
-            case 'fileTypes':
-                return new Rules\Key(
-                    'base64',
-                    new CustomRules\Base64MimeTypes($config),
-                    true
-                );
-            default:
-                // we should never end up here.
-                if (is_array($config)) {
-                    $config = http_build_query($config, '', ', ');
-                }
-                throw new GatewayException(
-                    'Unknown validation.',
-                    null,
-                    null,
-                    [
-                        'data'         => $validation.' set to '.$config,
-                        'path'         => $attribute->getEntity()->getName().'.'.$attribute->getName(),
-                        'responseType' => Response::HTTP_BAD_REQUEST,
-                    ]
-                );
+        case 'enum':
+            return new Rules\In($config);
+        case 'multipleOf':
+            return new Rules\Multiple($config);
+        case 'maximum':
+            return new Rules\Max($config);
+        case 'exclusiveMaximum':
+            return new Rules\LessThan($validations['maximum']);
+        case 'minimum':
+            return new Rules\Min($config);
+        case 'exclusiveMinimum':
+            return new Rules\GreaterThan($validations['minimum']);
+        case 'minLength':
+        case 'maxLength':
+            return new Rules\Length(($validations['minLength'] ?? null), ($validations['maxLength'] ?? null));
+        case 'maxItems':
+        case 'minItems':
+            return new Rules\Length(($validations['minItems'] ?? null), ($validations['maxItems'] ?? null));
+        case 'maxProperties':
+        case 'minProperties':
+            return new Rules\Length(($validations['minProperties'] ?? null), ($validations['maxProperties'] ?? null));
+        case 'minDate':
+            return new Rules\Min(new DateTime($config));
+        case 'maxDate':
+            return new Rules\Max(new DateTime($config));
+        case 'maxFileSize':
+        case 'minFileSize':
+            return new Rules\Key(
+                'base64',
+                new CustomRules\Base64Size(($validations['minFileSize'] ?? null), ($validations['maxFileSize'] ?? null)),
+                true
+            );
+        case 'fileTypes':
+            return new Rules\Key(
+                'base64',
+                new CustomRules\Base64MimeTypes($config),
+                true
+            );
+        default:
+            // we should never end up here.
+            if (is_array($config)) {
+                $config = http_build_query($config, '', ', ');
+            }
+            throw new GatewayException(
+                'Unknown validation.',
+                null,
+                null,
+                [
+                    'data'         => $validation.' set to '.$config,
+                    'path'         => $attribute->getEntity()->getName().'.'.$attribute->getName(),
+                    'responseType' => Response::HTTP_BAD_REQUEST,
+                ]
+            );
         }//end switch
 
     }//end getValidationRule()
