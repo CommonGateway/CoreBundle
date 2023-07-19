@@ -1031,7 +1031,7 @@ class RequestService
             }
 
             // If we have a response return that.
-            if (isset($event->getData()['response']) === true) {
+            if (isset($event->getData()['response']) === true && empty($event->getData()['response']) === false) {
                 return new Response($this->serializeData($event->getData()['response'], $contentType), $code, ['Content-type' => $contentType]);
             }
         }//end if
