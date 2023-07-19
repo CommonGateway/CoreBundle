@@ -145,7 +145,7 @@ class SynchronizationService
             $synchronization->setEntity($schema);
         }
 
-        $bodyDot  = new Dot($body);
+        $bodyDot = new Dot($body);
 
         if ($idLocation !== null) {
             $sourceId = $bodyDot->get($idLocation);
