@@ -7,7 +7,7 @@ env: # Change these to your preferences any image url can also be a base encoded
   GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
   GITHUB_REPOSITORY_URL: ${{ github.event.repository.url }}
   GITHUB_API_BASE_URL: https://api.github.com/repos/${{ github.repository }}/contents
-  GITHUB_DOCS_DIRECTORY_PATHS: '[{"name": "Services", "location": "/docs/classes/Service"}]'
+  GITHUB_DOCS_DIRECTORY_PATHS: '[{"name": "Features", "location": "/docs/features/"}, {"name": "Services", "location": "/docs/classes/Service"}]'
 
   # Links
   SLACK_URL: "https://join.slack.com/t/conductionworkspace/shared_invite/zt-1y5kerime-amWEvljvnLvo5S3YfU_jzg"
