@@ -99,18 +99,19 @@ class SynchronizationService
      * @param ObjectEntity         $objectEntity    The objectEntity which data we are going to synchronize.
      * @param Schema               $schema          The schema the object we are going to send belongs to.
      * @param string               $location        The path/endpoint we send the request to.
-     * @param string               $idLocation      The location of the id in the response body.
-     * @param string               $method          The request method PUT or POST.
+     * @param string|null          $idLocation      The location of the id in the response body.
+     * @param string|null          $method          The request method PUT or POST.
      *
      * @return array The response body of the outgoing call, or an empty array on error.
      */
-    public function synchronizeTemp(?Synchronization &$synchronization = null, array $objectArray, ObjectEntity $objectEntity, Schema $schema, string $location, string $idLocation, ?string $method = 'POST'): array
+    public function synchronizeTemp(?Synchronization &$synchronization = null, array $objectArray, ObjectEntity $objectEntity, Schema $schema, string $location, ?string $idLocation = null, ?string $method = 'POST'): array
     {
         $objectString = $this->oldSyncService->getObjectString($objectArray);
 
-        $this->logger->info('Sending message with body '.$objectString);
-        isset($this->style) && $this->style->info('Sending message with body '.$objectString);
+        $this->logger->info("Sending $method message with body $objectString");
+        isset($this->style) && $this->style->info("Sending $method  message with body $objectString");
 
+        // note/todo headers removed from given array because we already do this in the ->call function.
         try {
             $result = $this->callService->call(
                 $synchronization->getSource(),
@@ -119,7 +120,7 @@ class SynchronizationService
                 [
                     'body'    => $objectString,
                     // 'query'   => [],
-                    'headers' => $synchronization->getSource()->getHeaders(),
+                    // 'headers' => $synchronization->getSource()->getHeaders()
                 ]
             );
         } catch (Exception | GuzzleException $exception) {
@@ -145,8 +146,17 @@ class SynchronizationService
         }
 
         $bodyDot  = new Dot($body);
-        $sourceId = $bodyDot->get($idLocation);
-        $synchronization->setSourceId($sourceId);
+
+        if ($idLocation !== null) {
+            $sourceId = $bodyDot->get($idLocation);
+            $synchronization->setSourceId($sourceId);
+            $this->logger->info("Succesfull $method with sourceId: $sourceId");
+            isset($this->style) && $this->style->info("Succesfull $method with sourceId: $sourceId");
+        } else {
+            $this->logger->info("Succesfull $method");
+            isset($this->style) && $this->style->info("Succesfull $method");
+        }
+
         $synchronization->setObject($objectEntity);
         $now = new DateTime();
         $synchronization->setLastSynced($now);
@@ -154,7 +164,7 @@ class SynchronizationService
         $synchronization->setLastChecked($now);
         $synchronization->setHash(hash('sha384', serialize($bodyDot->jsonSerialize())));
 
-        $this->logger->error('Synchronize succesfull with response body '.json_encode($body));
+        $this->logger->info('Synchronize '.$method.' succesfull with response body '.json_encode($body));
 
         return $body;
 
