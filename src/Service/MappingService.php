@@ -225,6 +225,9 @@ class MappingService
         if (str_starts_with($cast, 'unsetIfValue==')) {
             $unsetIfValue = substr($cast, 14);
             $cast         = 'unsetIfValue';
+        } else if (str_starts_with($cast, 'countValue:')) {
+            $countValue = substr($cast, 11);
+            $cast       = 'countValue';
         }
 
         // Todo: Add more casts.
@@ -289,6 +292,15 @@ class MappingService
                 || ($unsetIfValue === '' && empty($value))
             ) {
                 $dotArray->delete($key);
+            }
+            break;
+        case 'countValue':
+            if (isset($countValue) === true
+                && empty($countValue) === false
+                && $dotArray->has($countValue)
+                && is_countable($dotArray->get($countValue))
+            ) {
+                $value = count($dotArray->get($countValue));
             }
             break;
         default:

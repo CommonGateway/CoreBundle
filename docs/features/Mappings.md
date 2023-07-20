@@ -325,6 +325,7 @@ strings like {{ 'string 1' ~ 'string 2' }} which can be used as the source data 
 
 The same is achieved with [string interpolation](https://twig.symfony.com/doc/1.x/templates.html#string-interpolation) via a mapping of:
 
+{% raw %}
 ```json
 {
   "title": "A simple mapping",
@@ -336,6 +337,7 @@ The same is achieved with [string interpolation](https://twig.symfony.com/doc/1.
   "unset": ["color"]
 }
 ```
+{% endraw %}
 
 Both turn this original object:
 
@@ -392,6 +394,7 @@ In some cases you might want to make use of mappings that you have created befor
 
 To do this you can access the mapping service from within a mapping trough twig like:
 
+{% raw %}
 ```json
 {
   "title": "A simple mapping",
@@ -402,6 +405,7 @@ To do this you can access the mapping service from within a mapping trough twig 
   }
 }
 ```
+{% endraw %}
 
 The mapping service takes three arguments:
 - reference [required]: Either the reference of the mapping that you want to use
@@ -473,15 +477,17 @@ In some rarer cases you might want to not 'just cast to a different type' but ch
 
 We can change values by including a cast property in our mapping, the following special casts are currently available:
 
-| Cast                    | Description                                                                                                                                                                                               |
-|-------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| nullStringToNull        | This cast checks if the value equals string = 'null' and casts it to actual null.                                                                                                                         |
-| coordinateStringToArray | This cast converts a coordinate string to an array of coordinates.                                                                                                                                        |
-| keyCantBeValue          | This cast checks if the value equals the property name and if so, unsets the property.                                                                                                                    |
-| unsetIfValue            | This cast checks if the value equals a specific value and if so, unsets the property. An example: `"unsetIfValue==example`. This can also be used to check if the value is empty with `"unsetIfValue=="`. |
+| Cast                    | Description                                                                                                                                                                                                                                                                                                                                    |
+|-------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| nullStringToNull        | This cast checks if the value equals string = 'null' and casts it to actual null.                                                                                                                                                                                                                                                              |
+| coordinateStringToArray | This cast converts a coordinate string to an array of coordinates.                                                                                                                                                                                                                                                                             |
+| keyCantBeValue          | This cast checks if the value equals the property name and if so, unsets the property.                                                                                                                                                                                                                                                         |
+| unsetIfValue            | This cast checks if the value equals a specific value and if so, unsets the property. An example: `"unsetIfValue==example`. This can also be used to check if the value is empty with `"unsetIfValue=="`.                                                                                                                                      |
+| countValue              | This cast uses the php [count](https://www.php.net/manual/en/function.count.php) function to count an other value, if that other value [is countable](https://www.php.net/manual/en/function.is-countable.php), sets the property to the count of that other value. An example: `"countValue:example`. This is equals to php `count(example)`. |
 
 That means that we can write a mapping like
 
+{% raw %}
 ```json
 {
   "title": "A more complex mapping",
@@ -495,6 +501,7 @@ That means that we can write a mapping like
   }
 }
 ```
+{% endraw %}
 
 To turn this original object:
 
@@ -552,10 +559,13 @@ Into the new object
 
 Twig natively supports [translations](https://symfony.com/doc/current/translation.html),  but remember that translations are an active filter `|trans`. And thus should be specifically called on values you want to translate. Translations are performed against a translation table. You can read more about configuring your translation table [here]().
 
+{% raw %}
 The base for translations is the locale, as provided in the localization header of a request. When sending data, the base is in the default setting of a gateway environment. You can also translate from a specific table and language by configuring the translation filter e.g. {{ 'greeting' | trans({}, `[table_name]`, `[language]`) }}
+{% endraw %}
 
 The following mapping:
 
+{% raw %}
 ```json
 {
   "title": "A simple mapping",
@@ -566,6 +576,7 @@ The following mapping:
   }
 }
 ```
+{% endraw %}
 
 Wil turn this original object:
 
@@ -589,6 +600,7 @@ Into this new object (on locale nl):
 
 If we want to force German (even if the requester asked for a different language), we'd map like
 
+{% raw %}
 ```json
 {
   "title": "A simple mapping",
@@ -599,6 +611,7 @@ If we want to force German (even if the requester asked for a different language
   }
 }
 ```
+{% endraw %}
 
 And get the following new object:
 
@@ -717,6 +730,8 @@ And, presto! ChatGDP writes a basic mapping for us
 > - Conveniently ChatGDP provides a copy code button in the right top of the codding example that allows us to simply download the provided mapping an import it into the gateway.
 > - We cut the above screenshots short for layout reasons but be sure to include as much from the mapping readme as you can
 > - Always check the code that ChatGDP provided! It is known to make errors ;)
+
+
 
 
 
