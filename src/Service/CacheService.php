@@ -205,7 +205,6 @@ class CacheService
         $this->client->schemas->json->createIndex(['$**' => 'text']);
         $this->client->endpoints->json->createIndex(['$**' => 'text']);
 
-
         $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
         $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
 
@@ -219,7 +218,7 @@ class CacheService
             $this->style->newline();
             $this->style->writeln(["Removing deleted $type", '============']);
         }
-        
+
         $objects = $collection->find()->toArray();
         foreach ($objects as $object) {
             if ($this->entityManager->find($type, $object['_id']) === null) {
