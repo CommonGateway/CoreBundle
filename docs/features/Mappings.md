@@ -486,6 +486,7 @@ We can change values by including a cast property in our mapping, the following 
 
 That means that we can write a mapping like
 
+{% raw %}
 ```json
 {
   "title": "A more complex mapping",
@@ -499,6 +500,7 @@ That means that we can write a mapping like
   }
 }
 ```
+{% endraw %}
 
 To turn this original object:
 
@@ -560,6 +562,7 @@ The base for translations is the locale, as provided in the localization header 
 
 The following mapping:
 
+{% raw %}
 ```json
 {
   "title": "A simple mapping",
@@ -570,6 +573,7 @@ The following mapping:
   }
 }
 ```
+{% endraw %}
 
 Wil turn this original object:
 
@@ -593,6 +597,7 @@ Into this new object (on locale nl):
 
 If we want to force German (even if the requester asked for a different language), we'd map like
 
+{% raw %}
 ```json
 {
   "title": "A simple mapping",
@@ -603,6 +608,7 @@ If we want to force German (even if the requester asked for a different language
   }
 }
 ```
+{% endraw %}
 
 And get the following new object:
 
