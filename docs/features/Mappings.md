@@ -331,7 +331,7 @@ The same is achieved with [string interpolation](https://twig.symfony.com/doc/1.
   "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
   "passthrough": true,
   "mapping": {
-    "metadata.color": "{{ \"The color is #{color}\" }}"
+    "metadata.color": "{{ \"The color is #{color} \" }}"
   },
   "unset": ["color"]
 }
