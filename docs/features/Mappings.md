@@ -325,19 +325,17 @@ strings like {{ 'string 1' ~ 'string 2' }} which can be used as the source data 
 
 The same is achieved with [string interpolation](https://twig.symfony.com/doc/1.x/templates.html#string-interpolation) via a mapping of:
 
-{% raw %}
 ```json
 {
   "title": "A simple mapping",
   "$schema": "https://docs.commongateway.nl/schemas/Mapping.schema.json",
   "passthrough": true,
   "mapping": {
-    "metadata.color": "{{ \"The color is #{color} \" }}"
+    "metadata.color": "{{ \"The color is #{color}\" }}"
   },
   "unset": ["color"]
 }
 ```
-{% endraw %}
 
 Both turn this original object:
 
@@ -529,9 +527,9 @@ Or to turn this original object:
   "name": "example2",
   "doggies": [
     {
-        "name": "doggie",
-        "description": "<- renamed to note by the subMapping",
-        "age": 2
+      "name": "doggie",
+      "description": "<- renamed to note by the subMapping",
+      "age": 2
     }
   ]
 }
@@ -729,6 +727,8 @@ And, presto! ChatGDP writes a basic mapping for us
 > - Conveniently ChatGDP provides a copy code button in the right top of the codding example that allows us to simply download the provided mapping an import it into the gateway.
 > - We cut the above screenshots short for layout reasons but be sure to include as much from the mapping readme as you can
 > - Always check the code that ChatGDP provided! It is known to make errors ;)
+
+
 
 
 
