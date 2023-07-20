@@ -282,11 +282,11 @@ class MappingService
             $value = \Safe\base64_decode($value);
             break;
         case 'json':
-            $value = \Safe\json_encode($value);
+            $value = json_encode($value);
             break;
         case 'jsonToArray':
             $value = str_replace(['&quot;', '&amp;quot;'], '"', $value);
-            $value = \Safe\json_decode($value, true);
+            $value = json_decode($value, true);
             break;
         case 'nullStringToNull':
             if ($value === 'null') {
