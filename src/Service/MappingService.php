@@ -285,7 +285,6 @@ class MappingService
             $value = json_encode($value);
             break;
         case 'jsonToArray':
-            $value = str_replace(['&quot;', '&amp;quot;'], '"', $value);
             $value = json_decode($value, true);
             break;
         case 'nullStringToNull':
