@@ -325,6 +325,7 @@ strings like {{ 'string 1' ~ 'string 2' }} which can be used as the source data 
 
 The same is achieved with [string interpolation](https://twig.symfony.com/doc/1.x/templates.html#string-interpolation) via a mapping of:
 
+{% raw %}
 ```json
 {
   "title": "A simple mapping",
@@ -336,6 +337,7 @@ The same is achieved with [string interpolation](https://twig.symfony.com/doc/1.
   "unset": ["color"]
 }
 ```
+{% endraw %}
 
 Both turn this original object:
 
