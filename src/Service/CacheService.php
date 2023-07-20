@@ -205,10 +205,8 @@ class CacheService
         $this->client->schemas->json->createIndex(['$**' => 'text']);
         $this->client->endpoints->json->createIndex(['$**' => 'text']);
 
-        isset($this->style) === true && $this->style->writeln(['Removing deleted endpoints', '============']);
-        $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
 
-        isset($this->style) === true && $this->style->writeln(['Removing deleted objects', '============']);
+        $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
         $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
 
         return Command::SUCCESS;
@@ -217,6 +215,11 @@ class CacheService
 
     private function removeDataFromCache(Collection $collection, string $type): void
     {
+        if (isset($this->style) === true) {
+            $this->style->newline();
+            $this->style->writeln(["Removing deleted $type", '============']);
+        }
+        
         $objects = $collection->find()->toArray();
         foreach ($objects as $object) {
             if ($this->entityManager->find($type, $object['_id']) === null) {
