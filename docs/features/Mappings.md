@@ -473,7 +473,7 @@ Into the new object
 
 
 ## Special casting (Forcing) change of values
-In some rarer cases you might want to not 'just cast to a different type' but change a value entirely, these casts do not match with just one specific php cast or php function but contain more than one line of code. In most normal cases when you want to cast to (for example) an integer you would only use one cast `["integer"]` but with these cast it isn't unusual to combine multiple casts such as `["jsonToArray", "unsetIfValue=="]`.
+In some rarer cases you might want to not 'just cast to a different type' but change a value entirely, these casts do not match with just one specific php cast or php function but contain more than one line of code (or need some extra explanation on how they work). In most normal cases when you want to cast to (for example) an integer you would only use one cast `["integer"]` but with these cast it isn't unusual to combine multiple casts such as `["jsonToArray", "unsetIfValue=="]`.
 
 We can change values by including a cast property in our mapping, the following special casts are currently available:
 
