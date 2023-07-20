@@ -417,19 +417,24 @@ In some cases you might want to change the properties variable type or if you ar
 
 We can cast values by including a cast property in our mapping, the following type casts are currently available:
 
-| Cast           | Function (php docs)                                                                    | Twig   |
-|----------------|----------------------------------------------------------------------------------------|--------|
-| string         | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)    | No     |
-| bool / boolean | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)    | No     |
-| int / integer  | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)    | No     |
-| float          | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)    |  No     |
-| array          | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)    | No     |
-| date           | [php date function](https://www.php.net/manual/en/function.date)                       |  No     |
-| url            | [php urlencode function](https://www.php.net/manual/en/function.urlencode.php)         |  Yes   |
-| rawurl         | [php rawurlencode function](https://www.php.net/manual/en/function.rawurlencode.php)   |  Yes   |
-| base64         | [php base64-encode function](https://www.php.net/manual/en/function.base64-encode.php) |  Yes   |
-| json           | [php json-encode function](https://www.php.net/manual/en/function.json-encode.php)     |  Yes   |
-| jsonToArray    | [php json-decode function](https://www.php.net/manual/en/function.json-decode.php)     |  Yes   |
+| Cast           | Function (php docs)                                                                              | Twig |
+|----------------|--------------------------------------------------------------------------------------------------|------|
+| string         | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   |
+| bool / boolean | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   |
+| int / integer  | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   |
+| float          | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   |
+| array          | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   |
+| date           | [php date function](https://www.php.net/manual/en/function.date)                                 | No   |
+| url            | [php urlencode function](https://www.php.net/manual/en/function.urlencode.php)                   | Yes  |
+| urlDecode      | [php urldecode function](https://www.php.net/manual/en/function.urldecode.php)                   | Yes  |
+| rawurl         | [php rawurlencode function](https://www.php.net/manual/en/function.rawurlencode.php)             | Yes  |
+| rawurlDecode   | [php rawurldecode function](https://www.php.net/manual/en/function.rawurldecode.php)             | Yes  |
+| html           | [php htmlentities function](https://www.php.net/manual/en/function.htmlentities.php)             | Yes  |
+| htmlDecode     | [php html_entity_decode function](https://www.php.net/manual/en/function.html-entity-decode.php) | Yes  |
+| base64         | [php base64-encode function](https://www.php.net/manual/en/function.base64-encode.php)           | Yes  |
+| base64Decode   | [php base64-decode function](https://www.php.net/manual/en/function.base64-decode.php)           | Yes  |
+| json           | [php json-encode function](https://www.php.net/manual/en/function.json-encode.php)               | Yes  |
+| jsonToArray    | [php json-decode function](https://www.php.net/manual/en/function.json-decode.php)               | Yes  |
 
 That means that we can write a mapping like
 

@@ -260,18 +260,33 @@ class MappingService
         case 'url':
             $value = urlencode($value);
             break;
+        case 'urlDecode':
+            $value = urldecode($value);
+            break;
         case 'rawurl':
             $value = rawurlencode($value);
             break;
+        case 'rawurlDecode':
+            $value = rawurldecode($value);
+            break;
+        case 'html':
+            $value = htmlentities($value);
+            break;
+        case 'htmlDecode':
+            $value = html_entity_decode($value);
+            break;
         case 'base64':
             $value = \Safe\base64_encode($value);
+            break;
+        case 'base64Decode':
+            $value = \Safe\base64_decode($value);
             break;
         case 'json':
             $value = \Safe\json_encode($value);
             break;
         case 'jsonToArray':
             $value = str_replace(['&quot;', '&amp;quot;'], '"', $value);
-            $value = json_decode($value, true);
+            $value = \Safe\json_decode($value, true);
             break;
         case 'nullStringToNull':
             if ($value === 'null') {
