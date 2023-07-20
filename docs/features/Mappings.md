@@ -394,6 +394,7 @@ In some cases you might want to make use of mappings that you have created befor
 
 To do this you can access the mapping service from within a mapping trough twig like:
 
+{% raw %}
 ```json
 {
   "title": "A simple mapping",
@@ -404,6 +405,7 @@ To do this you can access the mapping service from within a mapping trough twig 
   }
 }
 ```
+{% endraw %}
 
 The mapping service takes three arguments:
 - reference [required]: Either the reference of the mapping that you want to use
