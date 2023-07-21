@@ -13,7 +13,7 @@ For our local environment we use [docker desktop](https://www.docker.com/product
 In order to spin up the gateway for local use you will need both docker  [docker desktop](https://www.docker.com/products/docker-desktop/) and a [git client](https://gitforwindows.org/) (we like to use [git kraken](https://www.gitkraken.com/) but any other will suffice, you can also install [git](https://git-scm.com/) on your local machine)
 
 **Steps**
-1. Install [docker desktop](https://www.docker.com/products/docker-desktop/),  [git client](https://gitforwindows.org/)and [google chrome](https://chromeenterprise.google/).
+1. Install [docker desktop](https://www.docker.com/products/docker-desktop/),  [git client](https://gitforwindows.org/) and [google chrome](https://chromeenterprise.google/).
 2. Create a folder where you want install the gateway e.g. documenten/gateway
 3. Open a  command line interface e.g. windows key + cmd + enter
 4. Navigate to the folder you just created e.g. `$ cd documenten/gateway`
