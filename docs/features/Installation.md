@@ -85,7 +85,7 @@ Then run either `$ composer require common-gateway/core-bundle` or the composer 
 
 
 ## Troubleshooting
-During installation it is possible that you run into problems, below you will find common problems and how to deal with them:
+During installation it is possible that you run into problems, below you will find common problems and how to deal with them. If you are still running into problems after reading this or if you have any constructive criticism please seek contact with our development team (info@conduction.nl). 
 > Note: when troubleshooting you will, in most cases, need to run some commands. Unless stated otherwise, these commands should always be executed in the php container.
 
 **You have requested a non-existent service**
