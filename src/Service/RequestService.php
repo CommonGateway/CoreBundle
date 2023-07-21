@@ -530,7 +530,10 @@ class RequestService
                 $result->getHeaders()
             );
         } catch (Exception $exception) {
-            $statusCode = ($exception->getCode() ?? 500);
+            $statusCode = 500;
+            if (array_key_exists($exception->getCode(), Response::$statusTexts)) {
+                $statusCode = $exception->getCode();
+            }
             if (method_exists(get_class($exception), 'getResponse') === true && $exception->getResponse() !== null) {
                 $body       = $exception->getResponse()->getBody()->getContents();
                 $statusCode = $exception->getResponse()->getStatusCode();
@@ -1196,23 +1199,28 @@ class RequestService
         if (empty($result['_id']) === true || ($proxy === null && Uuid::isValid($result['_id']) === false)) {
             return;
         }
-
-        // Note: $this->object is never set if method === 'GET'. And in case we have a Get Collection we have to use _id anyway.
-        $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['_id']]);
-
-        if ($objectEntity instanceof ObjectEntity === false) {
-            if ($proxy === null) {
+    
+        if ($proxy === null) {
+            // Note: $this->object is never set if method === 'GET'. And in case we have a Get Collection we have to use _id anyway.
+            $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['_id']]);
+    
+            if ($objectEntity instanceof ObjectEntity === false) {
                 return;
             }
-
+        } else {
             // Todo: a temporary way to be able to use this function for proxy endpoints, until we figured out a beter way how we can save proxy objects as ObjectEntity.
             $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $result['_self']['schema']['ref']]);
-            if ($objectEntity instanceof Entity === false) {
+            if ($entity instanceof Entity === false) {
                 return;
             }
 
             $synchronization = $this->syncService->findSyncBySource($proxy, $entity, $result['_id']);
-            $objectEntity    = $this->syncService->checkObjectEntity($synchronization);
+            $this->syncService->checkObjectEntity($synchronization);
+            $objectEntity = $synchronization->getObject();
+            // We could do a hydrate here, but will have negative impact on performance.
+            $this->entityManager->flush();
+            // Todo: add something like this?
+//            $result['_id'] = $objectEntity->getId()->toString();
         }
 
         $getItem = false;
