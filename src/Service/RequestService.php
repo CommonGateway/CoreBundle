@@ -243,6 +243,28 @@ class RequestService
         return $content;
 
     }//end serializeData()
+    
+    /**
+     * Determines the right content type and unserializes the content accordingly.
+     *
+     * @param string $content The content to unserialize.
+     * @param string $contentType The content type to use.
+     *
+     * @return array The unserialized data.
+     */
+    private function unserializeData(string $content, string $contentType): array
+    {
+        $xmlEncoder = new XmlEncoder([]);
+        
+        if (str_contains($contentType, 'xml')) {
+            return $xmlEncoder->decode($content, 'xml');
+        }
+        if (str_contains($contentType, 'json')) {
+            return \Safe\json_decode($content, true);
+        }
+        
+        return $data;
+    }
 
     /**
      * A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.
@@ -498,14 +520,14 @@ class RequestService
                 $result = new \GuzzleHttp\Psr7\Response(200, [], $this->serializer->serialize($result, 'json'));
             }
 
-            $resultContent = $result->getBody()->getContents();
+            $resultContent = $this->unserializeData($result->getBody()->getContents(), $result->getHeaders()['content-type'][0]);
 
             // Handle _self metadata, includes adding dateRead
             $this->handleMetadataSelf($resultContent, $proxy);
 
             // Let create a response from the guzzle call.
             $response = new Response(
-                $resultContent,
+                $this->serializeData($resultContent, $result->getHeaders()['content-type'][0]),
                 $result->getStatusCode(),
                 $result->getHeaders()
             );
