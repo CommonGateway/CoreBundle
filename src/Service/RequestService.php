@@ -259,8 +259,9 @@ class RequestService
         if (str_contains($contentType, 'xml')) {
             return $xmlEncoder->decode($content, 'xml');
         }
-    
+
         return \Safe\json_decode($content, true);
+
     }//end unserializeData()
 
     /**
