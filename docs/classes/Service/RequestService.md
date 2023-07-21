@@ -31,7 +31,7 @@ Handles incoming request from endpoints or controllers that relate to the gatewa
 **Description**
 
 ```php
-public __construct (\EntityManagerInterface $entityManager, \GatewayResourceService $resourceService, \MappingService $mappingService, \ValidationService $validationService, \FileSystemHandleService $fileSystemService, \CacheService $cacheService, \ReadUnreadService $readUnreadService, \LogService $logService, \CallService $callService, \Security $security, \EventDispatcherInterface $eventDispatcher, \SerializerInterface $serializer, \SessionInterface $session, \LoggerInterface $requestLogger, \DownloadService $downloadService)
+public __construct (\EntityManagerInterface $entityManager, \GatewayResourceService $resourceService, \MappingService $mappingService, \ValidationService $validationService, \FileSystemHandleService $fileSystemService, \CacheService $cacheService, \ReadUnreadService $readUnreadService, \SynchronizationService $syncService, \CallService $callService, \Security $security, \EventDispatcherInterface $eventDispatcher, \SerializerInterface $serializer, \SessionInterface $session, \LoggerInterface $requestLogger, \DownloadService $downloadService)
 ```
 
 The constructor sets al needed variables. 
@@ -47,7 +47,8 @@ The constructor sets al needed variables.
 * `(\FileSystemHandleService) $fileSystemService`
 * `(\CacheService) $cacheService`
 * `(\ReadUnreadService) $readUnreadService`
-* `(\LogService) $logService`
+* `(\SynchronizationService) $syncService`
+: The SynchronizationService.  
 * `(\CallService) $callService`
 * `(\Security) $security`
 * `(\EventDispatcherInterface) $eventDispatcher`
