@@ -1186,15 +1186,14 @@ class RequestService
                 }
             );
             foreach ($result['results'] as &$collectionItem) {
-                $this->handleMetadataSelf($collectionItem);
+                $this->handleMetadataSelf($collectionItem, $proxy);
             }
 
             return;
         }//end if
 
         // Todo: make $result['_id'] key '_id' configurable? for when using this for proxy endpoints. For now we just add '_id' with Source mapping.
-        if (empty($result['_id']) === true || Uuid::isValid($result['_id']) === false) {
-            // TODO: ^ uuid check weghalen???
+        if (empty($result['_id']) === true || ($proxy === null && Uuid::isValid($result['_id']) === false)) {
             return;
         }
 
