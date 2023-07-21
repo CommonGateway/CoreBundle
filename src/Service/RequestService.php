@@ -259,13 +259,8 @@ class RequestService
         if (str_contains($contentType, 'xml')) {
             return $xmlEncoder->decode($content, 'xml');
         }
-
-        if (str_contains($contentType, 'json')) {
-            return \Safe\json_decode($content, true);
-        }
-
-        return $data;
-
+    
+        return \Safe\json_decode($content, true);
     }//end unserializeData()
 
     /**
@@ -1184,7 +1179,9 @@ class RequestService
             array_walk(
                 $result['results'],
                 function (&$record) {
-                    $record = iterator_to_array($record);
+                    if (is_array($record) === false) {
+                        $record = iterator_to_array($record);
+                    }
                 }
             );
             foreach ($result['results'] as &$collectionItem) {
@@ -1196,6 +1193,7 @@ class RequestService
 
         // Todo: make $result['_id'] key '_id' configurable? for when using this for proxy endpoints. For now we just add '_id' with Source mapping.
         if (empty($result['_id']) === true || Uuid::isValid($result['_id']) === false) {
+            // TODO: ^ uuid check weghalen???
             return;
         }
 
@@ -1203,7 +1201,7 @@ class RequestService
         $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['_id']]);
 
         if ($objectEntity instanceof ObjectEntity === false) {
-            if ($proxy === false) {
+            if ($proxy === null) {
                 return;
             }
 
