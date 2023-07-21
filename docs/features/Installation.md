@@ -49,7 +49,7 @@ Before you continue, make sure you use helm V3 for all the following steps.
 
 And before installing the gateway through Helm charts, make sure you configure cert-manager on your cluster. For more information please visit the [cert-manager documentation](https://cert-manager.io/docs/).
 
-Also make sure to also install the nfs provisioner, see: [ArtifactHub](https://artifacthub.io/packages/helm/kvaps/nfs-server-provisioner). When installing nfs make sure you install with persistance enabled. And make sure to configure at least a persistence size of 1Gi (8Gi or even higher is recommended). The persistence size must be at least as big as the gateway vendor Persistent Volume Claim(s combined) on your cluster.
+Also make sure to also install the nfs provisioner, see: [ArtifactHub](https://artifacthub.io/packages/helm/kvaps/nfs-server-provisioner). When installing nfs make sure you install with persistance enabled. And make sure to configure a persistence size higher than 1Gi (8Gi or even higher is recommended). The persistence size must be higher than the size of the gateway vendor Persistent Volume Claim(s combined) on your cluster.
 
 Helm charts for the Common Gateway are also provided through [ArtifactHub](https://artifacthub.io/packages/helm/commonground-gateway/commonground-gateway). Remember that these Helm files only install the gateway and not any attached applications.
 
@@ -97,13 +97,13 @@ A very common way to check why the Common Ground Gateway is not functioning as e
 
 **You have requested a non-existent service**
 
-If you get the error message "You have requested a non-existent service" then this indicates in most cases that your config/bundles.php file isn't up-to-date. This bundles.php file should contain all installed bundles. If you, for example, get a message that `OpenCatalogi\OpenCatalogiBundle\ActionHandler\ComponentenCatalogusApplicationToGatewayHandler` does not exist, you most likely need to add `OpenCatalogi\OpenCatalogiBundle` to the bundles.php file like this: `OpenCatalogi\OpenCatalogiBundle\OpenCatalogiBundle::class => ['all' => true],` locally you can just edit this file, with a server installation you might want to use something like [vi editor](https://www.redhat.com/sysadmin/introduction-vi-editor) for this.
+This is an error message you will only get when you are trying to install & initialize [plugins](Plugins.md) on the CommonGround Gateway. If you get the error message "You have requested a non-existent service" then this indicates in most cases that your config/bundles.php file isn't up-to-date. This bundles.php file should contain all installed bundles. If you, for example, get a message that `OpenCatalogi\OpenCatalogiBundle\ActionHandler\ComponentenCatalogusApplicationToGatewayHandler` does not exist, you most likely need to add `OpenCatalogi\OpenCatalogiBundle` to the bundles.php file like this: `OpenCatalogi\OpenCatalogiBundle\OpenCatalogiBundle::class => ['all' => true],` locally you can just edit this file, with a server installation you might want to use something like [vi editor](https://www.redhat.com/sysadmin/introduction-vi-editor) for this.
 
 ## Adding the gateway to your existing Symfony project (Beta)
 The gateway is a Symfony bundle and can also be added directly to an existing Symfony project through composer. The basic composer command is `composer require commongateway/corebundle` and you can read more about the installation process on [packagist](https://packagist.org/packages/commongateway/corebundle).
 
 ## Applications
-There are several applications that make use of Common Gateway installation as a backend, best known are [huwelijksplanner (HP)](https://github.com/huwelijksplanner), [Klantinteractie Service Systeem(KISS)](https://github.com/Klantinteractie-Servicesysteem) en [Open Catalogi (OS)](https://opencatalogi.nl/).
+There are several applications that make use of Common Gateway installation as a backend, best known are [huwelijksplanner (HP)](https://github.com/huwelijksplanner), [Klantinteractie Service Systeem(KISS)](https://github.com/Klantinteractie-Servicesysteem) en [Open Catalogi (OC)](https://opencatalogi.nl/).
 
 
 By design front ends are run as separate components or containers (see Common Ground layer architecture). That means that any frontend application using the gateway as a backend for frontend (BFF) should be installed separately.
