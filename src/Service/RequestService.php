@@ -243,11 +243,11 @@ class RequestService
         return $content;
 
     }//end serializeData()
-    
+
     /**
      * Determines the right content type and unserializes the content accordingly.
      *
-     * @param string $content The content to unserialize.
+     * @param string $content     The content to unserialize.
      * @param string $contentType The content type to use.
      *
      * @return array The unserialized data.
@@ -255,16 +255,18 @@ class RequestService
     private function unserializeData(string $content, string $contentType): array
     {
         $xmlEncoder = new XmlEncoder([]);
-        
+
         if (str_contains($contentType, 'xml')) {
             return $xmlEncoder->decode($content, 'xml');
         }
+
         if (str_contains($contentType, 'json')) {
             return \Safe\json_decode($content, true);
         }
-        
+
         return $data;
-    }
+
+    }//end unserializeData()
 
     /**
      * A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.
