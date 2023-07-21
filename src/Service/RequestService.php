@@ -534,6 +534,7 @@ class RequestService
             if (array_key_exists($exception->getCode(), Response::$statusTexts)) {
                 $statusCode = $exception->getCode();
             }
+
             if (method_exists(get_class($exception), 'getResponse') === true && $exception->getResponse() !== null) {
                 $body       = $exception->getResponse()->getBody()->getContents();
                 $statusCode = $exception->getResponse()->getStatusCode();
@@ -1199,11 +1200,11 @@ class RequestService
         if (empty($result['_id']) === true || ($proxy === null && Uuid::isValid($result['_id']) === false)) {
             return;
         }
-    
+
         if ($proxy === null) {
             // Note: $this->object is never set if method === 'GET'. And in case we have a Get Collection we have to use _id anyway.
             $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['_id']]);
-    
+
             if ($objectEntity instanceof ObjectEntity === false) {
                 return;
             }
@@ -1220,8 +1221,8 @@ class RequestService
             // We could do a hydrate here, but will have negative impact on performance.
             $this->entityManager->flush();
             // Todo: add something like this?
-//            $result['_id'] = $objectEntity->getId()->toString();
-        }
+            // $result['_id'] = $objectEntity->getId()->toString();
+        }//end if
 
         $getItem = false;
         if ($this->data['method'] === 'GET' && empty($this->identification) === false) {
