@@ -1,9 +1,11 @@
 # Installation
 
-> **Warning**
-> This file is maintained at the Conduction [Google Drive](https://docs.google.com/document/d/1NfZQwcg7F6as3uMYguuxegASf5Bxsy84gveKNmWJ4OQ/edit). Please make any suggestions of alterations there.
 
-We differ in the installation of the gateway between local en server installations, keep in mind that local installations are meant for development, testing en demo purposes and are (by their nature) not suited for production environments. When installing the gateway for production purposes **ALWAYS** follow the steps as set out under the server installation manual.
+> **Warning**
+> This file is maintained at the Conduction [Google Drive](https://docs.google.com/document/d/1NfZQwcg7F6as3uMYguuxegASf5Bxsy84gveKNmWJ4OQ/edit). Please make any suggestions for alterations there.
+
+
+
 
 ## Local installation
 
@@ -43,7 +45,7 @@ You can add the predefined repository via cli:
 ```cli
 Copy code
 `$ helm repo add helm repo add commonground-gateway-frontend https://raw.githubusercontent.com/ConductionNL/commonground-gateway-frontend/master/helm
-````
+```
 
 And installed with the chart:
 
@@ -52,13 +54,14 @@ Copy code
 `$ helm install my-commonground-gateway commonground-gateway-frontend/commonground-gateway --version 0.1.5
 ```
 
+
 More information about installing via Helm can be found on the Helm. Further information about installation options can be found on [ArtifactHub](https://artifacthub.io/packages/helm/commonground-gateway/commonground-gateway).
 
 > :note:
 > With Helm, the difficulty often lies in finding all possible configuration options. To facilitate this, we have included all options in a so-called values file, which you can find [here](https://artifacthub.io/packages/helm/commonground-gateway/commonground-gateway?modal=values).
 
 ### Installation through docker compose
-The gateway repository contains a docker compose, and an .env file containing all setting options. These are the same files that are used for the local development environment. However when using this route to install the gateway for production you **MUST** set the `APP_ENV` variable to 'PROD` (enabling caching and security features) and you must change all passwords  (conveniently labeled _!ChangeMe!_) **NEVER** run your database from docker compose, docker compose is non persistent and you will lose your data. Alway use a separate managed database solution. 
+The gateway repository contains a docker compose, and an .env file containing all setting options. These are the same files that are used for the local development environment. However when using this route to install the gateway for production you **MUST** set the `APP_ENV` variable to 'PROD` (enabling caching and security features) and you must change all passwords  (conveniently labeled _!ChangeMe!_) **NEVER** run your database from docker compose, docker compose is non persistent and you will lose your data. Alway use a separate managed database solution.
 
 ### Installation through composer (Linux / Lamp)
 Before starting a linux installation make sure you have a basic LAMP setup, you can read more about that [here](https://www.digitalocean.com/community/tutorials/how-to-install-linux-apache-mysql-php-lamp-stack-ubuntu-18-04). Keep in mind that the gateway also has the following requirements that need to be met before installation.
@@ -82,7 +85,7 @@ The gateway is a Symfony bundle and can also be added directly to an existing Sy
 There are several applications that make use of Common Gateway installation as a backend, best known are [huwelijksplanner (HP)](), [Klantinteractie Service Systeem(KISS)](https://github.com/Klantinteractie-Servicesysteem) en [Open Catalogi (OS)](https://opencatalogi.nl/).
 
 
-By design front ends are run as separate components or containers (see Common Ground layer architecture). That means that any frontend application using the gateway as a backend for frontend (BFF) should be installed separately. 
+By design front ends are run as separate components or containers (see Common Ground layer architecture). That means that any frontend application using the gateway as a backend for frontend (BFF) should be installed separately.
 
 ## Production
 
@@ -90,9 +93,9 @@ The gateway is designed to operate differently in a production, then in a develo
 
 ## Cronjobs and the cronrunner
 
-The gateway uses cronjobs to fire repeating events (like synchronisations) at certain intervals. Users can set them up and maintain them through the admin UI. However cronjobs themselves are fired through a cronrunner, meaning that there is a script running that checks every x minutes (5 by default) whether there are cronjobs that need to be fired. That means that the execution of cronjob is limited by the rate set in the cronrunner .e.g if the cronrunner runs every 5 minutes it's impossible to run cronjobs every 2 minutes.
+The gateway uses cronjobs to fire repeating event (like synchronisations) at certain intervals. Users can set them up and maintain them through the admin UI. However cronjobs themselves are fired through a cronrunner, meaning that there is a script running that checks every x minutes (5 by default) whether there are cronjobs that need to be fired. That means that the execution of cronjob is limited by the rate set in the cronrunner .e.g if the cronrunner runs every 5 minutes it's impossible to run cronjobs every 2 minutes.
 
-For docker compose and helm installation the cronrunner is based on the linux crontab demon and included in the installation scripts. If you are however installing the gateway manually you will need to set up your own crontab to fire every x minutes. 
+For docker compose and helm installation the cronrunner is based on the linux crontab demon and included in het installation scripts. If you are however installing the gateway manually you will need to set up your own crontab to fire every x minutes.
 
 
 For your crontab you need to execute the ` bin/console cronjob:command` cli command in the folder where you installed the Common Gateway. e.g. `*/5 * * * * /srv/api bin/console cronjob:command`. If you need help defining your crontab we advise [crontab.guru](https://crontab.guru/every-5-minutes).
@@ -107,4 +110,6 @@ If you are installing the gateway on a linux setup you will need to manually ins
 
 ## Setting up plugins
 
-More about plugins can be found [here]([plugins](https://github.com/CommonGateway/CoreBundle/blob/feature/documentation/docs/features/Plugins.md)https://github.com/CommonGateway/CoreBundle/blob/feature/documentation/docs/features/Plugins.md)
+More about plugins can be found [here](Plugins.md)
+
+
