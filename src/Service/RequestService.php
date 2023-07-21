@@ -10,7 +10,7 @@ use App\Entity\Gateway as Source;
 use App\Entity\ObjectEntity;
 use App\Event\ActionEvent;
 use App\Exception\GatewayException;
-use App\Service\LogService;
+use App\Service\SynchronizationService;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -97,11 +97,11 @@ class RequestService
      * @var ReadUnreadService
      */
     private ReadUnreadService $readUnreadService;
-
+    
     /**
-     * @var LogService
+     * @var SynchronizationService
      */
-    private LogService $logService;
+    private SynchronizationService $syncService;
 
     /**
      * @var CallService
@@ -148,7 +148,7 @@ class RequestService
      * @param FileSystemHandleService  $fileSystemService
      * @param CacheService             $cacheService
      * @param ReadUnreadService        $readUnreadService
-     * @param LogService               $logService
+     * @param SynchronizationService   $syncService        The SynchronizationService.
      * @param CallService              $callService
      * @param Security                 $security
      * @param EventDispatcherInterface $eventDispatcher
@@ -165,7 +165,7 @@ class RequestService
         FileSystemHandleService $fileSystemService,
         CacheService $cacheService,
         ReadUnreadService $readUnreadService,
-        LogService $logService,
+        SynchronizationService $syncService,
         CallService $callService,
         Security $security,
         EventDispatcherInterface $eventDispatcher,
@@ -181,7 +181,7 @@ class RequestService
         $this->validationService = $validationService;
         $this->fileSystemService = $fileSystemService;
         $this->readUnreadService = $readUnreadService;
-        $this->logService        = $logService;
+        $this->syncService       = $syncService;
         $this->callService       = $callService;
         $this->security          = $security;
         $this->eventDispatcher   = $eventDispatcher;
@@ -497,10 +497,15 @@ class RequestService
                 $result = $this->fileSystemService->call($proxy, $this->data['path']);
                 $result = new \GuzzleHttp\Psr7\Response(200, [], $this->serializer->serialize($result, 'json'));
             }
+            
+            $resultContent = $result->getBody()->getContents();
+    
+            // Handle _self metadata, includes adding dateRead
+            $this->handleMetadataSelf($resultContent, $proxy);
 
             // Let create a response from the guzzle call.
             $response = new Response(
-                $result->getBody()->getContents(),
+                $resultContent,
                 $result->getStatusCode(),
                 $result->getHeaders()
             );
@@ -1138,17 +1143,19 @@ class RequestService
         return $result;
 
     }//end checkEmbedded()
-
+    
     /**
      * Add extra parameters to the _self metadata of an Object result. Such as dateRead.
      *
-     * @param array $result
+     * @param array $result The result array containing one or multiple objects. Or a single object from a result array (recursion).
+     * @param Source|null $proxy In case we are dealing with a proxy endpoint, we need the Source in order to create a Synchronization and ObjectEntity.
      *
      * @return void
      */
-    private function handleMetadataSelf(array &$result)
+    private function handleMetadataSelf(array &$result, ?Source $proxy = null)
     {
         // Note: $this->identification is sometimes empty, it should never be an empty string.
+        // Todo: make $result['results'] key 'results' configurable? for when using this for proxy endpoints. For now we just add 'results' with Source mapping.
         if (isset($result['results']) === true && $this->data['method'] === 'GET' && empty($this->identification) === true) {
             array_walk(
                 $result['results'],
@@ -1162,23 +1169,40 @@ class RequestService
 
             return;
         }//end if
-
+    
+        // Todo: make $result['_id'] key '_id' configurable? for when using this for proxy endpoints. For now we just add '_id' with Source mapping.
         if (empty($result['_id']) === true || Uuid::isValid($result['_id']) === false) {
             return;
         }
-
+    
         // Note: $this->object is never set if method === 'GET'. And in case we have a Get Collection we have to use _id anyway.
         $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['_id']]);
-
+    
         if ($objectEntity instanceof ObjectEntity === false) {
-            return;
+            if ($proxy === false) {
+                return;
+            }
+            //Todo: a temporary way to be able to use this function for proxy endpoints, until we figured out a beter way how we can save proxy objects as ObjectEntity.
+            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $result['_self']['schema']['ref']]);
+            if ($objectEntity instanceof Entity === false) {
+                return;
+            }
+            
+            $synchronization = $this->syncService->findSyncBySource($proxy, $entity, $result['_id']);
+            $objectEntity = $this->syncService->checkObjectEntity($synchronization);
         }
 
         $getItem = false;
         if ($this->data['method'] === 'GET' && empty($this->identification) === false) {
             $getItem = true;
         }
+        
+        // Thi should only be possible for proxy endpoints
+        if (isset($result['_self']) === false) {
+            $result['_self'] = [];
+        }
 
+        // Deal with MongoDb objects
         if (is_array($result['_self']) === false) {
             $result['_self'] = iterator_to_array($result['_self']);
         }
