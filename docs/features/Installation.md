@@ -116,7 +116,7 @@ The gateway is designed to operate differently in a production, then in a develo
 
 The gateway uses cronjobs to fire repeating events (like synchronisations) at certain intervals. Users can set them up and maintain them through the admin UI. However cronjobs themselves are fired through a cronrunner, meaning that there is a script running that checks every x minutes (5 by default) whether there are cronjobs that need to be fired. That means that the execution of cronjob is limited by the rate set in the cronrunner .e.g if the cronrunner runs every 5 minutes it's impossible to run cronjobs every 2 minutes.
 
-For docker compose and helm installation the cronrunner is based on the linux crontab demon and included in het installation scripts. If you are however installing the gateway manually you will need to set up your own crontab to fire every x minutes.
+For docker compose and helm installation the cronrunner is based on the linux crontab demon and included in the installation scripts. If you are however installing the gateway manually you will need to set up your own crontab to fire every x minutes.
 
 
 For your crontab you need to execute the ` bin/console cronjob:command` cli command in the folder where you installed the Common Gateway. e.g. `*/5 * * * * /srv/api bin/console cronjob:command`. If you need help defining your crontab we advise [crontab.guru](https://crontab.guru/every-5-minutes).
