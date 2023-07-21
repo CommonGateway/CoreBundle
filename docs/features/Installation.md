@@ -45,26 +45,31 @@ The Common Gateway is a Common Ground application built from separate components
 
 ### Installation through Helm charts (recommended method)
 
-[Helm charts](https://artifacthub.io/packages/helm/commonground-gateway/commonground-gateway)) for the Common Gateway are provided through [ArtifactHub](https://artifacthub.io/packages/helm/commonground-gateway/commonground-gateway). Remember that these Helm files only install the gateway and not any attached applications. You will need Helm v3
+Before you continue, make sure you use helm V3 for all the following steps.
+
+And before installing the gateway through Helm charts, make sure you configure cert-manager on your cluster. For more information please visit the [cert-manager documentation](https://cert-manager.io/docs/).
+
+Also make sure to also install the nfs provisioner, see: [ArtifactHub](https://artifacthub.io/packages/helm/kvaps/nfs-server-provisioner). When installing nfs make sure you install with persistance enabled. And make sure to configure at least a persistence size of 1Gi (8Gi or even higher is recommended). The persistence size must be at least as big as the gateway vendor Persistent Volume Claim(s combined) on your cluster.
+
+Helm charts for the Common Gateway are also provided through [ArtifactHub](https://artifacthub.io/packages/helm/commonground-gateway/commonground-gateway). Remember that these Helm files only install the gateway and not any attached applications.
+
 You can add the predefined repository via cli:
 
 ```cli
-Copy code
 `$ helm repo add helm repo add commonground-gateway-frontend https://raw.githubusercontent.com/ConductionNL/commonground-gateway-frontend/master/helm
 ```
 
 And installed with the chart:
 
 ```cli
-Copy code
 `$ helm install my-commonground-gateway commonground-gateway-frontend/commonground-gateway --version 0.1.5
 ```
 
 
-More information about installing via Helm can be found on the Helm. Further information about installation options can be found on [ArtifactHub](https://artifacthub.io/packages/helm/commonground-gateway/commonground-gateway).
+More information about installing via Helm can be found on the [Helm Documentation](https://helm.sh/docs/). Further information about installation options can be found on [ArtifactHub](https://artifacthub.io/packages/helm/commonground-gateway/commonground-gateway).
 
 > Note:
-> With Helm, the difficulty often lies in finding all possible configuration options. To facilitate this, we have included all options in a so-called values file, which you can find [here](https://artifacthub.io/packages/helm/commonground-gateway/commonground-gateway?modal=values).
+> With Helm, the difficulty often lies in finding all possible configuration options. To facilitate this, we have included all options in a so-called values file, which you can find [here](https://artifacthub.io/packages/helm/commonground-gateway/commonground-gateway?modal=values). One very common value used when installing the gateway through helm is the value --set global.domain={{your domain here}}.
 
 ### Installation through docker compose
 The gateway repository contains a docker compose, and an .env file containing all setting options. These are the same files that are used for the local development environment. However when using this route to install the gateway for production you **MUST** set the `APP_ENV` variable to 'PROD` (enabling caching and security features) and you must change all passwords  (conveniently labeled _!ChangeMe!_) **NEVER** run your database from docker compose, docker compose is non persistent and you will lose your data. Alway use a separate managed database solution.
@@ -85,12 +90,14 @@ Then run either `$ composer require common-gateway/core-bundle` or the composer 
 
 
 ## Troubleshooting
-During installation it is possible that you run into problems, below you will find common problems and how to deal with them. If you are still running into problems after reading this or if you have any constructive criticism please seek contact with our development team (info@conduction.nl). 
+During installation, it is possible that you run into problems, below you will find common problems and how to deal with them. If you are still running into problems after reading this or if you have any constructive criticism please seek contact with our development team (info@conduction.nl).
 > Note: when troubleshooting you will, in most cases, need to run some commands. Unless stated otherwise, these commands should always be executed in the php container.
+
+A very common way to check why the Common Ground Gateway is not functioning as expected is by running the `bin/console doctrine:schema:validate` command. This is a command that validates the mappings of the Commonground Gateway database, but will often return insightful error messages when running into other problems as well.
 
 **You have requested a non-existent service**
 
-If you get the error message "You have requested a non-existent service" then this indicates in most cases that your config/bundles.php file isn't up-to-date. This bundles.php file should contain all installed bundles. If you, for example, get a message that `OpenCatalogi\OpenCatalogiBundle\ActionHandler\ComponentenCatalogusApplicationToGatewayHandler` does not exist, you most likely need to add `OpenCatalogi\OpenCatalogiBundle` to the bundles.php file like this: `OpenCatalogi\OpenCatalogiBundle\OpenCatalogiBundle::class => ['all' => true],` locally you can just edit this file, with a server installation you might want to use something like [vi editor](https://www.redhat.com/sysadmin/introduction-vi-editor)
+If you get the error message "You have requested a non-existent service" then this indicates in most cases that your config/bundles.php file isn't up-to-date. This bundles.php file should contain all installed bundles. If you, for example, get a message that `OpenCatalogi\OpenCatalogiBundle\ActionHandler\ComponentenCatalogusApplicationToGatewayHandler` does not exist, you most likely need to add `OpenCatalogi\OpenCatalogiBundle` to the bundles.php file like this: `OpenCatalogi\OpenCatalogiBundle\OpenCatalogiBundle::class => ['all' => true],` locally you can just edit this file, with a server installation you might want to use something like [vi editor](https://www.redhat.com/sysadmin/introduction-vi-editor) for this.
 
 ## Adding the gateway to your existing Symfony project (Beta)
 The gateway is a Symfony bundle and can also be added directly to an existing Symfony project through composer. The basic composer command is `composer require commongateway/corebundle` and you can read more about the installation process on [packagist](https://packagist.org/packages/commongateway/corebundle).
@@ -124,6 +131,6 @@ If you are installing the gateway on a linux setup you will need to manually ins
 
 ## Setting up plugins
 
-More about plugins can be found [here](Plugins.md)
+After you installed the Commonground Gateway, you can use the Commonground Gateway as it is, or take a look at plugins. More about plugins can be found [here](Plugins.md)
 
 
