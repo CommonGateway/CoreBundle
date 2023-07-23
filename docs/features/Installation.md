@@ -5,7 +5,7 @@
 > This file is maintained at the Conduction [Google Drive](https://docs.google.com/document/d/1NfZQwcg7F6as3uMYguuxegASf5Bxsy84gveKNmWJ4OQ/edit). Please make any suggestions for alterations there.
 
 
-
+We differ in the installation of the gateway between local en server installations, keep in mind that local installations are meant for development, testing en demo purposes and are (by their nature) not suited for production environments. When installing the gateway for production purposes ALWAYS follow the steps as set out under the server installation manual.
 
 ## Local installation
 
@@ -20,8 +20,8 @@ To spin up the gateway for local use, you will need both [Docker Desktop](https:
 3. Open a command line interface e.g. windows key + cmd + enter
 4. Navigate to the folder you just created with our examples. This would be: `$ cd documents/gateway`
 5. Git clone the Common Gateway repository to a folder on your machine (if you like to use the command line interface of git that's `git clone https://github.com/ConductionNL/commonground-gateway.git`
-6. (optional) check out a specific version of the gateway e.g. `git checkout feature/oc-ui`
-7. Change directory into the gateway folder (The folder where you also find the docker-compose.yml file) example: `cd commonground-gateway`
+6. (optional) Check out a specific version of the gateway e.g. `git checkout feature/oc-ui`
+7. Change the directory into the gateway folder (The folder where you also find the docker-compose.yml file) for example: `cd commonground-gateway`
 8. Startup the gateway through `$ docker compose up`.
 9. You should now see the gateway initiating the virtual machines it needs on your command line tool. (this might take some time on the first run, you will see the text ‘Ready to handle connection’ when it is ready to connect)
 10. Additionally, you should now see the containers come up in your docker desktop tool (that you can use from here on)
@@ -30,7 +30,7 @@ To spin up the gateway for local use, you will need both [Docker Desktop](https:
 
 **Troubleshooting**
 
-If during the steps above you run in any problems the following tips might help:
+If during the steps above you run into any problems the following tips might help:
 - If during step 9 the text 'Ready to handle connection' does not appear (keep in mind, this might take a while!) and your docker desktop shows that the php-1 container is not in status running you could be running into an error. If this is the case check your command line tool for any error messages.
 - For more general troubleshooting (relevant for local and server installation) please take a look at [troubleshooting](#troubleshooting)
 
@@ -45,11 +45,11 @@ The Common Gateway is a Common Ground application built from separate components
 
 ### Installation through Helm charts (recommended method)
 
-Before you continue, make sure you use helm V3 for all the following steps.
+Before you continue, make sure you use Helm V3 for all the following steps.
 
 And before installing the gateway through Helm charts, make sure you configure cert-manager on your cluster. For more information please visit the [cert-manager documentation](https://cert-manager.io/docs/).
 
-Also make sure to also install the nfs provisioner, see: [ArtifactHub](https://artifacthub.io/packages/helm/kvaps/nfs-server-provisioner). When installing nfs make sure you install with persistance enabled. And make sure to configure a persistence size higher than 1Gi (8Gi or even higher is recommended). The persistence size must be higher than the size of the gateway vendor Persistent Volume Claim(s combined) on your cluster.
+Also, make sure to also install the nfs provisioner, see: [ArtifactHub](https://artifacthub.io/packages/helm/kvaps/nfs-server-provisioner). When installing nfs make sure you install with persistence enabled. And make sure to configure a persistence size higher than 1Gi (8Gi or even higher is recommended). The persistence size must be higher than the size of the gateway vendor Persistent Volume Claim(s combined) on your cluster.
 
 Helm charts for the Common Gateway are also provided through [ArtifactHub](https://artifacthub.io/packages/helm/commonground-gateway/commonground-gateway). Remember that these Helm files only install the gateway and not any attached applications.
 
@@ -72,20 +72,20 @@ More information about installing via Helm can be found on the [Helm Documentati
 > With Helm, the difficulty often lies in finding all possible configuration options. To facilitate this, we have included all options in a so-called values file, which you can find [here](https://artifacthub.io/packages/helm/commonground-gateway/commonground-gateway?modal=values). One very common value used when installing the gateway through helm is the value --set global.domain={{your domain here}}.
 
 ### Installation through docker compose
-The gateway repository contains a docker compose, and an .env file containing all setting options. These are the same files that are used for the local development environment. However when using this route to install the gateway for production you **MUST** set the `APP_ENV` variable to 'PROD` (enabling caching and security features) and you must change all passwords  (conveniently labeled _!ChangeMe!_) **NEVER** run your database from docker compose, docker compose is non persistent and you will lose your data. Alway use a separate managed database solution.
+The gateway repository contains a docker compose, and a .env file containing all setting options. These are the same files that are used for the local development environment. However when using this route to install the gateway for production you **MUST** set the `APP_ENV` variable to 'PROD` (enabling caching and security features) and you must change all passwords  (conveniently labeled _!ChangeMe!_) **NEVER** run your database from docker compose, docker compose is non-persistent and you will lose your data. Always use a separately managed database solution.
 
 ### Installation through composer (Linux / Lamp)
-Before starting a linux installation make sure you have a basic LAMP setup, you can read more about that [here](https://www.digitalocean.com/community/tutorials/how-to-install-linux-apache-mysql-php-lamp-stack-ubuntu-18-04). Keep in mind that the gateway also has the following requirements that need to be met before installation.
+Before starting a Linux installation make sure you have a basic LAMP setup, you can read more about that [here](https://www.digitalocean.com/community/tutorials/how-to-install-linux-apache-mysql-php-lamp-stack-ubuntu-18-04). Keep in mind that the gateway also has the following requirements that need to be met before installation.
 
 Linux extensions
 Composer
 PHP extensions
-A message que in the form of [RabbitMQ](https://www.rabbitmq.com/).
+A message queue in the form of [RabbitMQ](https://www.rabbitmq.com/).
 A caching mechanism in the form of [Redis](https://redis.io/)
 
 After making sure you meet the requirement you can install the gateway through the following steps.
 
-In your linux environment create a folder for the gateway ( `cd /var/www/gateway`) navigate to that folder (`cd /var/www/gateway`).
+In your Linux environment create a folder for the gateway (`md /var/www/gateway`) and navigate to that folder (`cd /var/www/gateway`).
 Then run either `$ composer require common-gateway/core-bundle` or the composer require command for a specific plugin.
 
 
@@ -93,7 +93,7 @@ Then run either `$ composer require common-gateway/core-bundle` or the composer 
 During installation, it is possible that you run into problems, below you will find common problems and how to deal with them. If you are still running into problems after reading this or if you have any constructive criticism please seek contact with our development team (info@conduction.nl).
 > Note: when troubleshooting you will, in most cases, need to run some commands. Unless stated otherwise, these commands should always be executed in the php container.
 
-A very common way to check why the Common Ground Gateway is not functioning as expected is by running the `bin/console doctrine:schema:validate` command. This is a command that validates the mappings of the Commonground Gateway database, but will often return insightful error messages when running into other problems as well.
+A very common way to check why the Common Ground Gateway is not functioning as expected is by running the `bin/console doctrine:schema:validate` command. This command validates the mappings of the Commonground Gateway database, but will often return insightful error messages when running into other problems.
 
 **You have requested a non-existent service**
 
@@ -110,27 +110,27 @@ By design front ends are run as separate components or containers (see Common Gr
 
 ## Production
 
-The gateway is designed to operate differently in a production, then in a development environment. The main difference being the amount of caching and some security settings.
+The gateway is designed to operate differently in a production, than in a development environment. The main difference is the amount of caching and some security settings.
 
 ## Cronjobs and the cronrunner
 
-The gateway uses cronjobs to fire repeating events (like synchronisations) at certain intervals. Users can set them up and maintain them through the admin UI. However cronjobs themselves are fired through a cronrunner, meaning that there is a script running that checks every x minutes (5 by default) whether there are cronjobs that need to be fired. That means that the execution of cronjob is limited by the rate set in the cronrunner .e.g if the cronrunner runs every 5 minutes it's impossible to run cronjobs every 2 minutes.
+The gateway uses cronjobs to fire repeating events (like synchronizations) at certain intervals. Users can set them up and maintain them through the admin UI. However, cronjobs themselves are fired through a cron runner, meaning that there is a script running that checks every x minutes (5 by default) whether there are cronjobs that need to be fired. That means that the execution of cronjob is limited by the rate set in the cronrunner .e.g if the cronrunner runs every 5 minutes it's impossible to run cronjobs every 2 minutes.
 
-For docker compose and helm installation the cronrunner is based on the linux crontab demon and included in the installation scripts. If you are however installing the gateway manually you will need to set up your own crontab to fire every x minutes.
+For docker compose and helm installation the cron runner is based on the Linux crontab demon and included in the installation scripts. If you are installing the gateway manually you will need to set up your own crontab to fire every x minutes.
 
 
-For your crontab you need to execute the ` bin/console cronjob:command` cli command in the folder where you installed the Common Gateway. e.g. `*/5 * * * * /srv/api bin/console cronjob:command`. If you need help defining your crontab we advise [crontab.guru](https://crontab.guru/every-5-minutes).
+For your crontab, you need to execute the ` bin/console cronjob:command` cli command in the folder where you installed the Common Gateway. e.g. `*/5 * * * * /srv/api bin/console cronjob:command`. If you need help defining your crontab we advise [crontab.guru](https://crontab.guru/every-5-minutes).
 
 ## Workers
 
-The gateway uses workers to asynchronously handle workload, the concept is quite simple the gateway installation sets asynchronous works on a massage queue ([RabbitMQ](https://www.rabbitmq.com/)) other gateway installations then look into the message queue to see if there is any work that they can pick up. In the default helm installation we use 5 gateway containers for this. The amount of workers is however  configurable through the `change.me` parameter.
+The gateway uses workers to asynchronously handle workload, the concept is quite simple the gateway installation sets asynchronous works on a massage queue ([RabbitMQ](https://www.rabbitmq.com/)) other gateway installations then look into the message queue to see if there is any work that they can pick up. In the default helm installation, we use 5 gateway containers for this. The amount of workers is however configurable through the `change.me` parameter.
 
 ![workers.svg](workers.svg)
 
-If you are installing the gateway on a linux setup you will need to manually install workers (preferably on other machines than your main gateway installation) and put them into worker mode by running the command 'bin/console messenger:consume async', and point them to the [RabbitMQ](https://www.rabbitmq.com/) message queue. The RabbitMQ location is defined in the file api/config/messenger.yaml in the variable parameters.env(MESSENGER_TRANSPORT_DSN).
+If you are installing the gateway on a Linux setup you will need to manually install workers (preferably on other machines than your main gateway installation) and put them into worker mode by running the command 'bin/console messenger:consume async', and point them to the [RabbitMQ](https://www.rabbitmq.com/) message queue. The RabbitMQ location is defined in the file api/config/messenger.yaml in the variable parameters.env(MESSENGER_TRANSPORT_DSN).
 
 ## Setting up plugins
 
-After you installed the Commonground Gateway, you can use the Commonground Gateway as it is, or take a look at plugins. More about plugins can be found [here](Plugins.md)
+After you install the Commonground Gateway, you can use the Commonground Gateway as it is, or take a look at plugins. More about plugins can be found [here](Plugins.md)
 
 
