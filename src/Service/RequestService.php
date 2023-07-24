@@ -492,7 +492,7 @@ class RequestService
             // Make sure we do not send this gateway specific query param to the proxy / Source.
             unset($this->data['query']['extend']);
         }
-    
+
         // Make sure we set object to null in the session, for detecting the correct AuditTrails to create. Also used for DateRead to work correctly!
         $this->session->set('object', null);
 
@@ -527,7 +527,7 @@ class RequestService
             }
 
             $resultContent = $this->unserializeData($result->getBody()->getContents(), $result->getHeaders()['content-type'][0]);
-    
+
             // Handle _self metadata, includes adding dateRead
             if (isset($extend) === true) {
                 $this->data['query']['extend'] = $extend;
