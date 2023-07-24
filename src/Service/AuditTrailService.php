@@ -58,12 +58,12 @@ class AuditTrailService
     }//end __construct()
 
     /**
-     * Passes the result of prePersist to preUpdate.
+     * Creates an Audit Trail for the given Object and the current user.
      *
-     * @param ObjectEntity $object
-     * @param array        $config
+     * @param ObjectEntity $object An ObjectEntity to create an Audit Trail for.
+     * @param array        $config Extra configuration that should contain an 'action' (LIST, RETRIEVE, CREATE, UPDATE, PARTIAL_UPDATE, DELETE), a 'result' (HTTP status code) and if needed a 'new' and 'old' body.
      *
-     * @return AuditTrail|null
+     * @return AuditTrail|null The created Audit Trail
      */
     public function createAuditTrail(ObjectEntity $object, array $config): ?AuditTrail
     {
@@ -103,11 +103,11 @@ class AuditTrailService
     }//end createAuditTrail()
 
     /**
-     * Adds some user related information to an AuditTrail.
+     * Adds some user related information to an Audit Trail.
      *
-     * @param AuditTrail $auditTrail The AuditTrial to update.
+     * @param AuditTrail $auditTrail The Audit Trial to update.
      *
-     * @return AuditTrail The updated AuditTrail.
+     * @return AuditTrail The updated Audit Trail.
      */
     private function setAuditTrailUser(AuditTrail $auditTrail): AuditTrail
     {
