@@ -487,6 +487,11 @@ class RequestService
 
         // Work around the _ with a custom function for getting clean query parameters from a request
         $this->data['query'] = $this->realRequestQueryAll();
+        if (isset($this->data['query']['extend']['_self']['dateRead']) === true) {
+            $dateRead = true;
+            // Make sure we do not send this gateway specific query param to the proxy / Source.
+            unset($this->data['query']['extend']['_self']['dateRead']);
+        }
 
         if (isset($data['path']['{route}']) === true) {
             $this->data['path'] = '/'.$data['path']['{route}'];
@@ -521,6 +526,9 @@ class RequestService
             $resultContent = $this->unserializeData($result->getBody()->getContents(), $result->getHeaders()['content-type'][0]);
 
             // Handle _self metadata, includes adding dateRead
+            if (isset($dateRead) === true) {
+                $this->data['query']['extend']['_self']['dateRead'] = true;
+            }
             $this->handleMetadataSelf($resultContent, $proxy);
 
             // Let create a response from the guzzle call.
@@ -1178,6 +1186,11 @@ class RequestService
      */
     private function handleMetadataSelf(array &$result, ?Source $proxy = null)
     {
+        // For now, we only allow this function to be used for dateRead when the extend dateRead query param is given.
+        if (isset($this->data['query']['extend']['_self']['dateRead']) === false) {
+            return;
+        }
+        
         // Note: $this->identification is sometimes empty, it should never be an empty string.
         // Todo: make $result['results'] key 'results' configurable? for when using this for proxy endpoints. For now we just add 'results' with Source mapping.
         if (isset($result['results']) === true && $this->data['method'] === 'GET' && empty($this->identification) === true) {
@@ -1220,8 +1233,8 @@ class RequestService
             $objectEntity = $synchronization->getObject();
             // We could do a hydrate here, but will have negative impact on performance.
             $this->entityManager->flush();
-            // Todo: add something like this?
-            // $result['_id'] = $objectEntity->getId()->toString();
+            // We need to set this $result['id'], so we are able to get it from a GET collection response and use it to set/unset read/unread.
+            $result['id'] = $objectEntity->getId()->toString();
         }//end if
 
         $getItem = false;
