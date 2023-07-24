@@ -13,7 +13,7 @@ This service manages reading if an ObjectEntity is read/unread and marking an Ob
 |[__construct](#readunreadservice__construct)||
 |[addDateRead](#readunreadserviceadddateread)|Adds dateRead to a response, specifically the given metadata array, using the given ObjectEntity to determine the correct dateRead.|
 |[removeUnreads](#readunreadserviceremoveunreads)|After a successful get item call we want to remove unread objects for the logged-in user, this function removes all unread objects for the current user + given object.|
-|[setDateRead](#readunreadservicesetdateread)|Marks the given ObjectEntity for the current user as read. Currently, already/also automatically done in the AuditTrailService after a Get Item call.|
+|[setDateRead](#readunreadservicesetdateread)|Marks the given ObjectEntity for the current user as read, by creating an Audit Trail.|
 |[setUnread](#readunreadservicesetunread)|Checks if there exists an unread object for the given ObjectEntity + current UserId. If not, create one.|
 
 
@@ -109,9 +109,9 @@ After a successful get item call we want to remove unread objects for the logged
 public setDateRead (\AuditTrailService $, string $identification)
 ```
 
-Marks the given ObjectEntity for the current user as read. Currently, already/also automatically done in the AuditTrailService after a Get Item call. 
+Marks the given ObjectEntity for the current user as read, by creating an Audit Trail. 
 
- 
+Currently, already/also automatically done in the AuditTrailService after a Get Item call. 
 
 **Parameters**
 
