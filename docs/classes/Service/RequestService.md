@@ -17,7 +17,7 @@ Handles incoming request from endpoints or controllers that relate to the gatewa
 |[getSchema](#requestservicegetschema)|Get the schema from given parameters returns false if no schema could be established.|
 |[getScopes](#requestservicegetscopes)|Get a scopes array for the current user (or of the anonymus if no user s logged in).|
 |[handleAppConfigOut](#requestservicehandleappconfigout)|Handle output config of the endpoint.|
-|[proxyHandler](#requestserviceproxyhandler)||
+|[proxyHandler](#requestserviceproxyhandler)|Handles a proxy Endpoint.|
 |[proxyRequestHandler](#requestserviceproxyrequesthandler)|Determines the proxy source from configuration, then use proxy handler to proxy the request.|
 |[realRequestQueryAll](#requestservicerealrequestqueryall)|A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.|
 |[requestHandler](#requestservicerequesthandler)|Handles incoming requests and is responsible for generating a response.|
