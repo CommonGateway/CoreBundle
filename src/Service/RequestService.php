@@ -1349,7 +1349,7 @@ class RequestService
             $getItem = true;
         }
 
-        // Thi should only be possible for proxy endpoints
+        // This should only be possible for proxy endpoints
         if (isset($result['_self']) === false) {
             $result['_self'] = [];
         }
