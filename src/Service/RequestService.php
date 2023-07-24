@@ -529,6 +529,7 @@ class RequestService
             if (isset($dateRead) === true) {
                 $this->data['query']['extend']['_self']['dateRead'] = true;
             }
+
             $this->handleMetadataSelf($resultContent, $proxy);
 
             // Let create a response from the guzzle call.
@@ -1190,7 +1191,7 @@ class RequestService
         if (isset($this->data['query']['extend']['_self']['dateRead']) === false) {
             return;
         }
-        
+
         // Note: $this->identification is sometimes empty, it should never be an empty string.
         // Todo: make $result['results'] key 'results' configurable? for when using this for proxy endpoints. For now we just add 'results' with Source mapping.
         if (isset($result['results']) === true && $this->data['method'] === 'GET' && empty($this->identification) === true) {
