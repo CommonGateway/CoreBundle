@@ -11,7 +11,7 @@ This service manages the creation of Audit Trails.
 | Name | Description |
 |------|-------------|
 |[__construct](#audittrailservice__construct)||
-|[createAuditTrail](#audittrailservicecreateaudittrail)|Passes the result of prePersist to preUpdate.|
+|[createAuditTrail](#audittrailservicecreateaudittrail)|Creates an Audit Trail for the given Object and the current user.|
 
 
 
@@ -48,20 +48,22 @@ This service manages the creation of Audit Trails.
 public createAuditTrail (\ObjectEntity $object, array $config)
 ```
 
-Passes the result of prePersist to preUpdate. 
+Creates an Audit Trail for the given Object and the current user. 
 
  
 
 **Parameters**
 
 * `(\ObjectEntity) $object`
+: An ObjectEntity to create an Audit Trail for.  
 * `(array) $config`
+: Extra configuration that should contain an 'action' (LIST, RETRIEVE, CREATE, UPDATE, PARTIAL_UPDATE, DELETE), a 'result' (HTTP status code) and if needed a 'new' and 'old' body.  
 
 **Return Values**
 
 `\AuditTrail|null`
 
-
+> The created Audit Trail
 
 
 <hr />
