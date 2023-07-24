@@ -130,7 +130,7 @@ class ReadUnreadService
         $this->removeUnreads($objectEntity);
 
         $auditTrailConfig = [
-            'action' => 'READ',
+            'action' => 'RETRIEVE',
             'result' => 200,
         ];
 

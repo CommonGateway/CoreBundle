@@ -487,11 +487,14 @@ class RequestService
 
         // Work around the _ with a custom function for getting clean query parameters from a request
         $this->data['query'] = $this->realRequestQueryAll();
-        if (isset($this->data['query']['extend']['_self']['dateRead']) === true) {
-            $dateRead = true;
+        if (isset($this->data['query']['extend'])) {
+            $extend = $this->data['query']['extend'];
             // Make sure we do not send this gateway specific query param to the proxy / Source.
-            unset($this->data['query']['extend']['_self']['dateRead']);
+            unset($this->data['query']['extend']);
         }
+    
+        // Make sure we set object to null in the session, for detecting the correct AuditTrails to create. Also used for DateRead to work correctly!
+        $this->session->set('object', null);
 
         if (isset($data['path']['{route}']) === true) {
             $this->data['path'] = '/'.$data['path']['{route}'];
@@ -524,10 +527,10 @@ class RequestService
             }
 
             $resultContent = $this->unserializeData($result->getBody()->getContents(), $result->getHeaders()['content-type'][0]);
-
+    
             // Handle _self metadata, includes adding dateRead
-            if (isset($dateRead) === true) {
-                $this->data['query']['extend']['_self']['dateRead'] = true;
+            if (isset($extend) === true) {
+                $this->data['query']['extend'] = $extend;
             }
             $this->handleMetadataSelf($resultContent, $proxy);
 
@@ -1187,7 +1190,7 @@ class RequestService
     private function handleMetadataSelf(array &$result, ?Source $proxy = null)
     {
         // For now, we only allow this function to be used for dateRead when the extend dateRead query param is given.
-        if (isset($this->data['query']['extend']['_self']['dateRead']) === false) {
+        if (isset($this->data['query']['extend']) === false || in_array('_self.dateRead', $this->data['query']['extend']) === false) {
             return;
         }
         
