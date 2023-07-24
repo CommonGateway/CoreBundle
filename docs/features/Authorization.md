@@ -37,6 +37,8 @@ In the Common Gateway project, we establish a hierarchy of groups, each inheriti
 
 ## Scopes Definition
 
+### Admin scopes
+
 Scopes within the Common Gateway are defined based on the CRUD (Create, Read, Update, Delete) operations. A scope can be applied to an entire system aspect (e.g., 'cronjobs.READ') or to a specific object (e.g., '[uuid].read').
 
 Below is a breakdown of system aspects and their possible scopes:
@@ -67,6 +69,15 @@ There are also some special scopes
 **Cronjobs/Actions:RUN** The ability to manually run an action or cronjob
 **Objects :REVERT ** The ability to manually revert an object to an earlier version
 **Plugins :UPDATE  ** The ability to manually update a plugin to a newer version
+**admin.method ** The ability to access all /api endpoints based on request method.
+
+The default admin user has all admin.method scopes (admin.GET, admin.POST etc) by default.
+
+### API scopes
+
+API scopes should  be assigned to users through their SecurityGroups which can be added through the admin user interface. If you would like to work with an /api endpoint for a specific Schema the scope format is: `schemas.referenceOfSchema.GET` and an actual example is: `schemas.https://example.com/schema/example.schema.json.GET`.
+
+If you have an endpoint with a configured proxy you need the scope of the source to work with it, the format is: `sources.referenceOfSource.GET` and an example scope is: `sources.https://example.com/source/api.petstore.source.json.GET`.
 
 # Common Gateway: Ownership and Creation
 

@@ -535,9 +535,9 @@ Or to turn this original object:
   "name": "example2",
   "doggies": [
     {
-        "name": "doggie",
-        "description": "<- renamed to note by the subMapping",
-        "age": 2
+      "name": "doggie",
+      "description": "<- renamed to note by the subMapping",
+      "age": 2
     }
   ]
 }
