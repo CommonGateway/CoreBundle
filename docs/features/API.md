@@ -6,7 +6,7 @@
 The gateway provides an API for other applications to use and consume APIs from sources in a way that gateway acts both as a provider and consumer of APIs. How to consume APIs from the gateway is further detailed under the Sources chapters. This chapter deals with providing APIs from the gateway to other applications
 
 ## Endpoints
-Each api consists of an [collection]() of [endpoints](Endpoints.md). These provide the basis location that a call can be made to e.g. `/api/pets`.
+Each api consists of a [collection]() of [endpoints](Endpoints.md). These provide the basis location that a call can be made to e.g. `/api/pets`.
 
 ## Contex
 The gateway always views each call to an endpoint in its own context determined by three main aspects.
