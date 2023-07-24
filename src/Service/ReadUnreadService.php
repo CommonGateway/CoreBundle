@@ -115,7 +115,8 @@ class ReadUnreadService
     }//end getDateRead()
 
     /**
-     * Marks the given ObjectEntity for the current user as read. Currently, already/also automatically done in the AuditTrailService after a Get Item call.
+     * Marks the given ObjectEntity for the current user as read, by creating an Audit Trail.
+     * Currently, already/also automatically done in the AuditTrailService after a Get Item call.
      *
      * @param AuditTrailService The Audit Trail service. Do not set this service in the constructor,
      * because this will create a construct loop with AuditTrailService!
