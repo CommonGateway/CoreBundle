@@ -559,7 +559,7 @@ class RequestService
 
         // Work around the _ with a custom function for getting clean query parameters from a request
         $this->data['query'] = $this->realRequestQueryAll();
-        if (isset($this->data['query']['extend'])) {
+        if (isset($this->data['query']['extend']) === true) {
             $extend = $this->data['query']['extend'];
             // Make sure we do not send this gateway specific query param to the proxy / Source.
             unset($this->data['query']['extend']);
@@ -574,14 +574,14 @@ class RequestService
             $this->data['path'] = '';
         }
 
-        // Don't pass gateway authorization to the source
+        // Don't pass gateway authorization to the source.
         unset($this->data['headers']['authorization']);
 
         $url = \Safe\parse_url($proxy->getLocation());
 
         // Make a guzzle call to the source based on the incoming call.
         try {
-            // Check if we are dealing with http, https or something else like a ftp (fileSystem)
+            // Check if we are dealing with http, https or something else like a ftp (fileSystem).
             if ($url['scheme'] === 'http' || $url['scheme'] === 'https') {
                 $result = $this->callService->call(
                     $proxy,
@@ -615,7 +615,7 @@ class RequestService
             );
         } catch (Exception $exception) {
             $statusCode = 500;
-            if (array_key_exists($exception->getCode(), Response::$statusTexts)) {
+            if (array_key_exists($exception->getCode(), Response::$statusTexts) === true) {
                 $statusCode = $exception->getCode();
             }
 
@@ -1301,25 +1301,10 @@ class RequestService
         // Note: $this->identification is sometimes empty, it should never be an empty string.
         // Todo: make $result['results'] key 'results' configurable? for when using this for proxy endpoints. For now we just add 'results' with Source mapping.
         if (isset($result['results']) === true && $this->data['method'] === 'GET' && empty($this->identification) === true) {
-            array_walk(
-                $result['results'],
-                function (&$record) {
-                    if (is_array($record) === false) {
-                        $record = iterator_to_array($record);
-                    }
-                }
-            );
-            foreach ($result['results'] as &$collectionItem) {
-                $this->handleMetadataSelf($collectionItem, $proxy);
-            }
+            $this->metadataSelfResults($result, $proxy);
 
             return;
         }//end if
-
-        // Todo: make $result['_id'] key '_id' configurable? for when using this for proxy endpoints. For now we just add '_id' with Source mapping.
-        if (empty($result['_id']) === true || ($proxy === null && Uuid::isValid($result['_id']) === false)) {
-            return;
-        }
 
         $objectEntity = $this->metadataSelfObject($result, $proxy);
         if ($objectEntity === null) {
@@ -1346,6 +1331,29 @@ class RequestService
     }//end handleMetadataSelf()
 
     /**
+     * In case we are handling metadata self for an array of objects instead of one.
+     *
+     * @param array       $result The result array containing multiple objects.
+     * @param Source|null $proxy In case we are dealing with a proxy endpoint, we need the Source in order to create a Synchronization and ObjectEntity.
+     *
+     * @return void
+     */
+    private function metadataSelfResults(array $result, ?Source $proxy)
+    {
+        array_walk(
+            $result['results'],
+            function (&$record) {
+                if (is_array($record) === false) {
+                    $record = iterator_to_array($record);
+                }
+            }
+        );
+        foreach ($result['results'] as &$collectionItem) {
+            $this->handleMetadataSelf($collectionItem, $proxy);
+        }
+    }
+    
+    /**
      * Handles getting an ObjectEntity to be used for handleMetadataSelf (includes adding dateRead).
      *
      * @param array       $result The result array of an ObjectEntity from MongoDB.
@@ -1355,6 +1363,11 @@ class RequestService
      */
     private function metadataSelfObject(array &$result, ?Source $proxy): ?ObjectEntity
     {
+        // Todo: make $result['_id'] key '_id' configurable? for when using this for proxy endpoints. For now we just add '_id' with Source mapping.
+        if (empty($result['_id']) === true || ($proxy === null && Uuid::isValid($result['_id']) === false)) {
+            return null;
+        }
+        
         if ($proxy === null) {
             // Note: $this->object is never set if method === 'GET'. And in case we have a Get Collection we have to use _id anyway.
             $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['_id']]);
