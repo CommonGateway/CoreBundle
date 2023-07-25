@@ -1321,28 +1321,10 @@ class RequestService
             return;
         }
 
-        if ($proxy === null) {
-            // Note: $this->object is never set if method === 'GET'. And in case we have a Get Collection we have to use _id anyway.
-            $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['_id']]);
-
-            if ($objectEntity instanceof ObjectEntity === false) {
-                return;
-            }
-        } else {
-            // Todo: a temporary way to be able to use this function for proxy endpoints, until we figured out a beter way how we can save proxy objects as ObjectEntity.
-            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $result['_self']['schema']['ref']]);
-            if ($entity instanceof Entity === false) {
-                return;
-            }
-
-            $synchronization = $this->syncService->findSyncBySource($proxy, $entity, $result['_id']);
-            $this->syncService->checkObjectEntity($synchronization);
-            $objectEntity = $synchronization->getObject();
-            // We could do a hydrate here, but will have negative impact on performance.
-            $this->entityManager->flush();
-            // We need to set this $result['id'], so we are able to get it from a GET collection response and use it to set/unset read/unread.
-            $result['id'] = $objectEntity->getId()->toString();
-        }//end if
+        $objectEntity = $this->metadataSelfObject($result, $proxy);
+        if ($objectEntity === null) {
+            return;
+        }
 
         $getItem = false;
         if ($this->data['method'] === 'GET' && empty($this->identification) === false) {
@@ -1362,6 +1344,45 @@ class RequestService
         $result['_self'] = $this->readUnreadService->addDateRead($result['_self'], $objectEntity, $getItem);
 
     }//end handleMetadataSelf()
+    
+    /**
+     * Handles getting an ObjectEntity to be used for handleMetadataSelf (includes adding dateRead).
+     *
+     * @param array $result The result array of an ObjectEntity from MongoDB.
+     * @param Source|null $proxy A Source in case we are dealing with a proxy endpoint.
+     *
+     * @return ObjectEntity|null The ObjectEntity found or null.
+     */
+    private function metadataSelfObject(array &$result, ?Source $proxy): ?ObjectEntity
+    {
+        if ($proxy === null) {
+            // Note: $this->object is never set if method === 'GET'. And in case we have a Get Collection we have to use _id anyway.
+            $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['_id']]);
+        
+            if ($objectEntity instanceof ObjectEntity === false) {
+                return null;
+            }
+            
+            return $objectEntity;
+        }
+        
+        // Todo: a temporary way to be able to use this function for proxy endpoints, until we figured out a beter way how we can save proxy objects as ObjectEntity.
+        // Todo: For now we just add '_self'.'schema'.'ref' with Source mapping
+        $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $result['_self']['schema']['ref']]);
+        if ($entity instanceof Entity === false) {
+            return null;
+        }
+    
+        $synchronization = $this->syncService->findSyncBySource($proxy, $entity, $result['_id']);
+        $this->syncService->checkObjectEntity($synchronization);
+        $objectEntity = $synchronization->getObject();
+        // We could do a hydrate here, but will have negative impact on performance.
+        $this->entityManager->flush();
+        // We need to set this $result['id'], so we are able to get it from a GET collection response and use it to set/unset read/unread.
+        $result['id'] = $objectEntity->getId()->toString();
+        
+        return $objectEntity;
+    }
 
     /**
      * Determines the proxy source from configuration, then use proxy handler to proxy the request.
