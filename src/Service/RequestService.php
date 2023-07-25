@@ -1338,7 +1338,7 @@ class RequestService
      *
      * @return void
      */
-    private function metadataSelfResults(array $result, ?Source $proxy)
+    private function metadataSelfResults(array &$result, ?Source $proxy)
     {
         array_walk(
             $result['results'],
