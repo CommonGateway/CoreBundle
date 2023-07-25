@@ -1334,7 +1334,7 @@ class RequestService
      * In case we are handling metadata self for an array of objects instead of one.
      *
      * @param array       $result The result array containing multiple objects.
-     * @param Source|null $proxy In case we are dealing with a proxy endpoint, we need the Source in order to create a Synchronization and ObjectEntity.
+     * @param Source|null $proxy  In case we are dealing with a proxy endpoint, we need the Source in order to create a Synchronization and ObjectEntity.
      *
      * @return void
      */
@@ -1351,8 +1351,9 @@ class RequestService
         foreach ($result['results'] as &$collectionItem) {
             $this->handleMetadataSelf($collectionItem, $proxy);
         }
-    }
-    
+
+    }//end metadataSelfResults()
+
     /**
      * Handles getting an ObjectEntity to be used for handleMetadataSelf (includes adding dateRead).
      *
@@ -1367,7 +1368,7 @@ class RequestService
         if (empty($result['_id']) === true || ($proxy === null && Uuid::isValid($result['_id']) === false)) {
             return null;
         }
-        
+
         if ($proxy === null) {
             // Note: $this->object is never set if method === 'GET'. And in case we have a Get Collection we have to use _id anyway.
             $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['_id']]);
