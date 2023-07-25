@@ -10,9 +10,7 @@ use App\Entity\Gateway as Source;
 use App\Entity\ObjectEntity;
 use App\Event\ActionEvent;
 use App\Exception\GatewayException;
-use App\Service\LogService;
-use App\Service\ObjectEntityService;
-use App\Service\ResponseService;
+use App\Service\SynchronizationService;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -65,6 +63,11 @@ class RequestService
     private ValidationService $validationService;
 
     /**
+     * @var FileSystemHandleService The fileSystem service
+     */
+    private FileSystemHandleService $fileSystemService;
+
+    /**
      * @var array
      */
     private array $configuration;
@@ -89,22 +92,16 @@ class RequestService
      */
     private $schema;
     // @Todo: cast to Entity|Boolean in php 8.
-    // @Todo: we might want to move or rewrite code instead of using these services here:
 
     /**
-     * @var ResponseService
+     * @var ReadUnreadService
      */
-    private ResponseService $responseService;
+    private ReadUnreadService $readUnreadService;
 
     /**
-     * @var ObjectEntityService
+     * @var SynchronizationService
      */
-    private ObjectEntityService $objectEntityService;
-
-    /**
-     * @var LogService
-     */
-    private LogService $logService;
+    private SynchronizationService $syncService;
 
     /**
      * @var CallService
@@ -144,31 +141,31 @@ class RequestService
     /**
      * The constructor sets al needed variables.
      *
-     * @param EntityManagerInterface   $entityManager
-     * @param GatewayResourceService   $resourceService
-     * @param MappingService           $mappingService
-     * @param ValidationService        $validationService
-     * @param CacheService             $cacheService
-     * @param ResponseService          $responseService
-     * @param ObjectEntityService      $objectEntityService
-     * @param LogService               $logService
-     * @param CallService              $callService
-     * @param Security                 $security
-     * @param EventDispatcherInterface $eventDispatcher
-     * @param SerializerInterface      $serializer
-     * @param SessionInterface         $session
-     * @param LoggerInterface          $requestLogger
-     * @param DownloadService          $downloadService
+     * @param EntityManagerInterface   $entityManager     The entity manager
+     * @param GatewayResourceService   $resourceService   The resource service
+     * @param MappingService           $mappingService    The mapping service
+     * @param ValidationService        $validationService The validation service
+     * @param FileSystemHandleService  $fileSystemService The file system service
+     * @param CacheService             $cacheService      The cache service
+     * @param ReadUnreadService        $readUnreadService The read unread service
+     * @param SynchronizationService   $syncService       The SynchronizationService.
+     * @param CallService              $callService       The call service
+     * @param Security                 $security          Security
+     * @param EventDispatcherInterface $eventDispatcher   Event dispatcher
+     * @param SerializerInterface      $serializer        The serializer
+     * @param SessionInterface         $session           The current session
+     * @param LoggerInterface          $requestLogger     The logger interface
+     * @param DownloadService          $downloadService   The download service
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         GatewayResourceService $resourceService,
         MappingService $mappingService,
         ValidationService $validationService,
+        FileSystemHandleService $fileSystemService,
         CacheService $cacheService,
-        ResponseService $responseService,
-        ObjectEntityService $objectEntityService,
-        LogService $logService,
+        ReadUnreadService $readUnreadService,
+        SynchronizationService $syncService,
         CallService $callService,
         Security $security,
         EventDispatcherInterface $eventDispatcher,
@@ -177,21 +174,21 @@ class RequestService
         LoggerInterface $requestLogger,
         DownloadService $downloadService
     ) {
-        $this->entityManager       = $entityManager;
-        $this->cacheService        = $cacheService;
-        $this->resourceService     = $resourceService;
-        $this->mappingService      = $mappingService;
-        $this->validationService   = $validationService;
-        $this->responseService     = $responseService;
-        $this->objectEntityService = $objectEntityService;
-        $this->logService          = $logService;
-        $this->callService         = $callService;
-        $this->security            = $security;
-        $this->eventDispatcher     = $eventDispatcher;
-        $this->serializer          = $serializer;
-        $this->session             = $session;
-        $this->logger              = $requestLogger;
-        $this->downloadService     = $downloadService;
+        $this->entityManager     = $entityManager;
+        $this->cacheService      = $cacheService;
+        $this->resourceService   = $resourceService;
+        $this->mappingService    = $mappingService;
+        $this->validationService = $validationService;
+        $this->fileSystemService = $fileSystemService;
+        $this->readUnreadService = $readUnreadService;
+        $this->syncService       = $syncService;
+        $this->callService       = $callService;
+        $this->security          = $security;
+        $this->eventDispatcher   = $eventDispatcher;
+        $this->serializer        = $serializer;
+        $this->session           = $session;
+        $this->logger            = $requestLogger;
+        $this->downloadService   = $downloadService;
 
     }//end __construct()
 
@@ -246,6 +243,26 @@ class RequestService
         return $content;
 
     }//end serializeData()
+
+    /**
+     * Determines the right content type and unserializes the content accordingly.
+     *
+     * @param string $content     The content to unserialize.
+     * @param string $contentType The content type to use.
+     *
+     * @return array The unserialized data.
+     */
+    private function unserializeData(string $content, string $contentType): array
+    {
+        $xmlEncoder = new XmlEncoder([]);
+
+        if (str_contains($contentType, 'xml') === true) {
+            return $xmlEncoder->decode($content, 'xml');
+        }
+
+        return \Safe\json_decode($content, true);
+
+    }//end unserializeData()
 
     /**
      * A function to replace Request->query->all() because Request->query->all() will replace some characters with an underscore.
@@ -498,10 +515,13 @@ class RequestService
     }//end getSchema()
 
     /**
+     * Handles a proxy Endpoint.
+     * todo: we want to merge proxyHandler() and requestHandler() code at some point.
+     *
      * @param array $data          The data from the call
      * @param array $configuration The configuration from the call
      *
-     * @return Response The data as returned bij the origanal source
+     * @return Response The data as returned bij the original source
      */
     public function proxyHandler(array $data, array $configuration, ?Source $proxy = null): Response
     {
@@ -510,8 +530,9 @@ class RequestService
 
         // If we already have a proxy, we can skip these checks.
         if ($proxy instanceof Source === false) {
+            $proxy = $data['endpoint']->getProxy();
             // We only do proxying if the endpoint forces it, and we do not have a proxy.
-            if ($data['endpoint'] instanceof Endpoint === false || ($proxy = $data['endpoint']->getProxy()) === null) {
+            if ($data['endpoint'] instanceof Endpoint === false || $proxy === null) {
                 $message = !$data['endpoint'] instanceof Endpoint ? "No Endpoint in data['endpoint']" : "This Endpoint has no Proxy: {$data['endpoint']->getName()}";
 
                 return new Response(
@@ -538,34 +559,66 @@ class RequestService
 
         // Work around the _ with a custom function for getting clean query parameters from a request
         $this->data['query'] = $this->realRequestQueryAll();
+        if (isset($this->data['query']['extend']) === true) {
+            $extend = $this->data['query']['extend'];
+            // Make sure we do not send this gateway specific query param to the proxy / Source.
+            unset($this->data['query']['extend']);
+        }
+
+        // Make sure we set object to null in the session, for detecting the correct AuditTrails to create. Also used for DateRead to work correctly!
+        $this->session->set('object', null);
+
         if (isset($data['path']['{route}']) === true) {
             $this->data['path'] = '/'.$data['path']['{route}'];
         } else {
             $this->data['path'] = '';
         }
 
+        // Don't pass gateway authorization to the source.
         unset($this->data['headers']['authorization']);
+
+        $url = \Safe\parse_url($proxy->getLocation());
+
         // Make a guzzle call to the source based on the incoming call.
         try {
-            $result = $this->callService->call(
-                $proxy,
-                $this->data['path'],
-                $this->data['method'],
-                [
-                    'query'   => $this->data['query'],
-                    'headers' => $this->data['headers'],
-                    'body'    => $this->data['crude_body'],
-                ]
-            );
+            // Check if we are dealing with http, https or something else like a ftp (fileSystem).
+            if ($url['scheme'] === 'http' || $url['scheme'] === 'https') {
+                $result = $this->callService->call(
+                    $proxy,
+                    $this->data['path'],
+                    $this->data['method'],
+                    [
+                        'query'   => $this->data['query'],
+                        'headers' => $this->data['headers'],
+                        'body'    => $this->data['crude_body'],
+                    ]
+                );
+            } else {
+                $result = $this->fileSystemService->call($proxy, $this->data['path']);
+                $result = new \GuzzleHttp\Psr7\Response(200, [], $this->serializer->serialize($result, 'json'));
+            }
+
+            $resultContent = $this->unserializeData($result->getBody()->getContents(), $result->getHeaders()['content-type'][0]);
+
+            // Handle _self metadata, includes adding dateRead
+            if (isset($extend) === true) {
+                $this->data['query']['extend'] = $extend;
+            }
+
+            $this->handleMetadataSelf($resultContent, $proxy);
 
             // Let create a response from the guzzle call.
             $response = new Response(
-                $result->getBody()->getContents(),
+                $this->serializeData($resultContent, $result->getHeaders()['content-type'][0]),
                 $result->getStatusCode(),
                 $result->getHeaders()
             );
         } catch (Exception $exception) {
-            $statusCode = ($exception->getCode() ?? 500);
+            $statusCode = 500;
+            if (array_key_exists($exception->getCode(), Response::$statusTexts) === true) {
+                $statusCode = $exception->getCode();
+            }
+
             if (method_exists(get_class($exception), 'getResponse') === true && $exception->getResponse() !== null) {
                 $body       = $exception->getResponse()->getBody()->getContents();
                 $statusCode = $exception->getResponse()->getStatusCode();
@@ -627,7 +680,8 @@ class RequestService
     }//end getScopes()
 
     /**
-     * Handles incomming requests and is responsible for generating a response.
+     * Handles incoming requests and is responsible for generating a response.
+     * todo: we want to merge requestHandler() and proxyHandler() code at some point.
      *
      * @param array $data          The data from the call
      * @param array $configuration The configuration from the call
@@ -640,8 +694,6 @@ class RequestService
     {
         $this->data          = $data;
         $this->configuration = $configuration;
-
-        $filters = [];
 
         // Get application configuration in and out for current endpoint/global if this is set on current application.
         if ($this->session->get('application') !== null) {
@@ -714,8 +766,6 @@ class RequestService
             $extend = $dot->all();
         }//end if
 
-        $metadataSelf = ($extend['_self'] ?? []);
-
         // Make a list of schema's that are allowed for this endpoint.
         $allowedSchemas = $this->getAllowedSchemas();
 
@@ -724,6 +774,9 @@ class RequestService
         if ($securityResponse instanceof Response === true) {
             return $securityResponse;
         }
+
+        // Make sure we set object to null in the session, for detecting the correct AuditTrails to create. Also used for DateRead to work correctly!
+        $this->session->set('object', null);
 
         // All prepped so let's go.
         // todo: split these into functions?
@@ -762,9 +815,6 @@ class RequestService
                 $responseLog = new Response(is_string($this->content) === true || is_null($this->content) === true ? $this->content : null, 200, ['CoreBundle' => 'GetItem']);
                 $session     = new Session();
                 $session->set('object', $this->identification);
-
-                // todo: This log is needed so we know an user has 'read' this object.
-                $this->logService->saveLog($this->logService->makeRequest(), $responseLog, 15, is_array($this->content) === true ? json_encode($this->content) : $this->content);
             } else {
                 // $this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
                 $result = $this->cacheService->searchObjects(null, $filters, $allowedSchemas['id']);
@@ -883,7 +933,7 @@ class RequestService
                 if ($validationErrors === null && $this->object->hydrate($this->content, true)) {
                     // This should be an unsafe hydration.
                     if (array_key_exists('@dateRead', $this->content) === true && $this->content['@dateRead'] == false) {
-                        $this->objectEntityService->setUnread($this->object);
+                        $this->readUnreadService->setUnread($this->object);
                     }
 
                     if ($this->schema->getPersist() === true) {
@@ -950,7 +1000,7 @@ class RequestService
                 $validationErrors = $this->validationService->validateData($this->content, $this->schema, 'PATCH');
                 if ($validationErrors === null && $this->object->hydrate($this->content)) {
                     if (array_key_exists('@dateRead', $this->content) && $this->content['@dateRead'] == false) {
-                        $this->objectEntityService->setUnread($this->object);
+                        $this->readUnreadService->setUnread($this->object);
                     }
 
                     if ($this->schema->getPersist() === true) {
@@ -1008,7 +1058,7 @@ class RequestService
         }//end switch
 
         // Handle _self metadata, includes adding dateRead
-        $this->handleMetadataSelf($result, $metadataSelf);
+        $this->handleMetadataSelf($result);
 
         // Handle application configuration out for embedded if we need to do this for the current application and current endpoint.
         if (isset($appEndpointConfig['out']['embedded']) === true) {
@@ -1067,14 +1117,15 @@ class RequestService
 
     /**
      * Gets the application configuration 'in' and/or 'out' for the current endpoint.
+     * Will first check for endpoint reference, then used endpoint (as string) and lastly for 'global' (all endpoints).
      *
      * @param string $endpointRef       The reference of the current endpoint
      * @param string $endpoint          The current endpoint path
-     * @param string $applicationConfig An item of the configuration of the application
+     * @param array  $applicationConfig An item of the configuration of the application
      *
      * @return array The 'in' and 'out' configuration of the Application for the current Endpoint.
      */
-    private function getConfigInOutOrGlobal(string $endpointRef, string $endpoint, array $applicationConfig): array
+    private function getAppConfigInOut(string $endpointRef, string $endpoint, array $applicationConfig): array
     {
         $appEndpointConfig = [];
 
@@ -1097,7 +1148,7 @@ class RequestService
 
         return $appEndpointConfig;
 
-    }//end getConfigInOutOrGlobal()
+    }//end getAppConfigInOut()
 
     /**
      * Gets the application configuration 'in' and/or 'out' for the current endpoint.
@@ -1122,7 +1173,7 @@ class RequestService
 
         $appEndpointConfig = [];
         foreach ($application->getConfiguration() as $applicationConfig) {
-            $appEndpointConfig = $this->getConfigInOutOrGlobal($endpointRef, $endpoint, $applicationConfig);
+            $appEndpointConfig = $this->getAppConfigInOut($endpointRef, $endpoint, $applicationConfig);
         }
 
         return $appEndpointConfig;
@@ -1233,55 +1284,120 @@ class RequestService
     }//end checkEmbedded()
 
     /**
-     * @TODO
+     * Add extra parameters to the _self metadata of an Object result. Such as dateRead.
      *
-     * @param array $result
-     * @param array $metadataSelf
+     * @param array       $result The result array containing one or multiple objects. Or a single object from a result array (recursion).
+     * @param Source|null $proxy  In case we are dealing with a proxy endpoint, we need the Source in order to create a Synchronization and ObjectEntity.
      *
      * @return void
      */
-    private function handleMetadataSelf(&$result, array $metadataSelf)
+    private function handleMetadataSelf(array &$result, ?Source $proxy = null)
     {
-        // @todo: Adding type array before &$result will break this function ^^^.
-        if (empty($metadataSelf) === true) {
+        // For now, we only allow this function to be used for dateRead when the extend dateRead query param is given.
+        if (isset($this->data['query']['extend']) === false || in_array('_self.dateRead', $this->data['query']['extend']) === false) {
             return;
         }
 
-        // todo: $this->identification is sometimes empty, it should never be an empty string.
+        // Note: $this->identification is sometimes empty, it should never be an empty string.
+        // Todo: make $result['results'] key 'results' configurable? for when using this for proxy endpoints. For now we just add 'results' with Source mapping.
         if (isset($result['results']) === true && $this->data['method'] === 'GET' && empty($this->identification) === true) {
-            array_walk(
-                $result['results'],
-                function (&$record) {
-                    $record = iterator_to_array($record);
-                }
-            );
-            foreach ($result['results'] as &$collectionItem) {
-                $this->handleMetadataSelf($collectionItem, $metadataSelf);
-            }
+            $this->metadataSelfResults($result, $proxy);
 
             return;
         }//end if
 
-        if (empty($result['id']) === true || Uuid::isValid($result['id']) === false) {
+        $objectEntity = $this->metadataSelfObject($result, $proxy);
+        if ($objectEntity === null) {
             return;
         }
 
-        $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['id']]);
-
-        if ($objectEntity instanceof ObjectEntity === false) {
-            return;
-        }
-
+        $getItem = false;
         if ($this->data['method'] === 'GET' && empty($this->identification) === false) {
-            $metadataSelf['dateRead'] = 'getItem';
+            $getItem = true;
         }
 
-        $this->responseService->xCommongatewayMetadata = $metadataSelf;
-        $resultMetadataSelf                            = (array) $result['_self'];
-        $this->responseService->addToMetadata($resultMetadataSelf, 'dateRead', $objectEntity);
-        $result['_self'] = $resultMetadataSelf;
+        // This should only be possible for proxy endpoints
+        if (isset($result['_self']) === false) {
+            $result['_self'] = [];
+        }
+
+        // Deal with MongoDb objects
+        if (is_array($result['_self']) === false) {
+            $result['_self'] = iterator_to_array($result['_self']);
+        }
+
+        $result['_self'] = $this->readUnreadService->addDateRead($result['_self'], $objectEntity, $getItem);
 
     }//end handleMetadataSelf()
+
+    /**
+     * In case we are handling metadata self for an array of objects instead of one.
+     *
+     * @param array       $result The result array containing multiple objects.
+     * @param Source|null $proxy  In case we are dealing with a proxy endpoint, we need the Source in order to create a Synchronization and ObjectEntity.
+     *
+     * @return void
+     */
+    private function metadataSelfResults(array $result, ?Source $proxy)
+    {
+        array_walk(
+            $result['results'],
+            function (&$record) {
+                if (is_array($record) === false) {
+                    $record = iterator_to_array($record);
+                }
+            }
+        );
+        foreach ($result['results'] as &$collectionItem) {
+            $this->handleMetadataSelf($collectionItem, $proxy);
+        }
+
+    }//end metadataSelfResults()
+
+    /**
+     * Handles getting an ObjectEntity to be used for handleMetadataSelf (includes adding dateRead).
+     *
+     * @param array       $result The result array of an ObjectEntity from MongoDB.
+     * @param Source|null $proxy  A Source in case we are dealing with a proxy endpoint.
+     *
+     * @return ObjectEntity|null The ObjectEntity found or null.
+     */
+    private function metadataSelfObject(array &$result, ?Source $proxy): ?ObjectEntity
+    {
+        // Todo: make $result['_id'] key '_id' configurable? for when using this for proxy endpoints. For now we just add '_id' with Source mapping.
+        if (empty($result['_id']) === true || ($proxy === null && Uuid::isValid($result['_id']) === false)) {
+            return null;
+        }
+
+        if ($proxy === null) {
+            // Note: $this->object is never set if method === 'GET'. And in case we have a Get Collection we have to use _id anyway.
+            $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['_id']]);
+
+            if ($objectEntity instanceof ObjectEntity === false) {
+                return null;
+            }
+
+            return $objectEntity;
+        }
+
+        // Todo: a temporary way to be able to use this function for proxy endpoints, until we figured out a beter way how we can save proxy objects as ObjectEntity.
+        // Todo: For now we just add '_self'.'schema'.'ref' with Source mapping
+        $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $result['_self']['schema']['ref']]);
+        if ($entity instanceof Entity === false) {
+            return null;
+        }
+
+        $synchronization = $this->syncService->findSyncBySource($proxy, $entity, $result['_id']);
+        $this->syncService->checkObjectEntity($synchronization);
+        $objectEntity = $synchronization->getObject();
+        // We could do a hydrate here, but will have negative impact on performance.
+        $this->entityManager->flush();
+        // We need to set this $result['id'], so we are able to get it from a GET collection response and use it to set/unset read/unread.
+        $result['id'] = $objectEntity->getId()->toString();
+
+        return $objectEntity;
+
+    }//end metadataSelfObject()
 
     /**
      * Determines the proxy source from configuration, then use proxy handler to proxy the request.

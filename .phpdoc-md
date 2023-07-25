@@ -4,6 +4,7 @@ return (object)[
     'destDirectory' => 'docs/classes',
     'format' => 'github',
     'classes' => [
+        '\CommonGateway\CoreBundle\Service\AuditTrailService',
         '\CommonGateway\CoreBundle\Service\AuthenticationService',
         '\CommonGateway\CoreBundle\Service\CacheService',
         '\CommonGateway\CoreBundle\Service\CallService',
@@ -21,6 +22,7 @@ return (object)[
         '\CommonGateway\CoreBundle\Service\NotificationService',
         '\CommonGateway\CoreBundle\Service\OasService',
         '\CommonGateway\CoreBundle\Service\ObjectSyncService',
+        '\CommonGateway\CoreBundle\Service\ReadUnreadService',
         '\CommonGateway\CoreBundle\Service\RequestService',
         '\CommonGateway\CoreBundle\Service\SchemaService',
     ],

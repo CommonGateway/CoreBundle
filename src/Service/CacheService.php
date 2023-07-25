@@ -149,7 +149,7 @@ class CacheService
             ]
         );
 
-        isset($this->style) === true && $this->style->writeln('Connecting to'.$this->parameters->get('cache_url'));
+        isset($this->style) === true && $this->style->writeln('Connecting to '.$this->parameters->get('cache_url'));
 
         // Backwards compatablity.
         if (isset($this->client) === false) {
@@ -205,10 +205,7 @@ class CacheService
         $this->client->schemas->json->createIndex(['$**' => 'text']);
         $this->client->endpoints->json->createIndex(['$**' => 'text']);
 
-        isset($this->style) === true && $this->style->writeln(['Removing deleted endpoints', '============']);
         $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
-
-        isset($this->style) === true && $this->style->writeln(['Removing deleted objects', '============']);
         $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
 
         return Command::SUCCESS;
@@ -217,11 +214,19 @@ class CacheService
 
     private function removeDataFromCache(Collection $collection, string $type): void
     {
-        $endpoints = $collection->find()->toArray();
-        foreach ($endpoints as $endpoint) {
-            if ($this->entityManager->find($type, $endpoint['_id']) === null) {
-                (isset($this->style) === true ?? $this->style->writeln("removing {$endpoint['_id']} from cache"));
-                $collection->findOneAndDelete(['id' => $endpoint['_id']]);
+        if (isset($this->style) === true) {
+            $this->style->newline();
+            $this->style->writeln(["Removing deleted $type", '============']);
+        }
+
+        $objects = $collection->find()->toArray();
+        foreach ($objects as $object) {
+            if ($this->entityManager->find($type, $object['_id']) === null) {
+                if (isset($this->style) === true) {
+                    $this->style->writeln("removing {$object['_id']} from cache");
+                }
+
+                $collection->findOneAndDelete(['id' => $object['_id']]);
             }
         }
 
@@ -400,9 +405,9 @@ class CacheService
      *
      * @throws Exception
      *
-     * @return array|null
+     * @return array
      */
-    public function searchObjects(string $search = null, array $filter = [], array $entities = []): ?array
+    public function searchObjects(string $search = null, array $filter = [], array $entities = []): array
     {
         // Backwards compatablity.
         if (isset($this->client) === false) {
@@ -461,9 +466,9 @@ class CacheService
      * @param array $options
      * @param array $completeFilter
      *
-     * @return array|null $this->handleResultPagination()
+     * @return array $this->handleResultPagination()
      */
-    public function retrieveObjectsFromCache(array $filter, array $options, array $completeFilter = []): ?array
+    public function retrieveObjectsFromCache(array $filter, array $options, array $completeFilter = []): array
     {
         $collection = $this->client->objects->json;
         $results    = $collection->find($filter, $options)->toArray();

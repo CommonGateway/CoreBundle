@@ -413,19 +413,24 @@ In some cases you might want to change the properties variable type or if you ar
 
 We can cast values by including a cast property in our mapping, the following type casts are currently available:
 
-| Cast           | Function (php docs)                                                                    | Twig   |
-|----------------|----------------------------------------------------------------------------------------|--------|
-| string         | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)    | No     |
-| bool / boolean | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)    | No     |
-| int / integer  | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)    | No     |
-| float          | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)    |  No     |
-| array          | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)    | No     |
-| date           | [php date function](https://www.php.net/manual/en/function.date)                       |  No     |
-| url            | [php urlencode function](https://www.php.net/manual/en/function.urlencode.php)         |  Yes   |
-| rawurl         | [php rawurlencode function](https://www.php.net/manual/en/function.rawurlencode.php)   |  Yes   |
-| base64         | [php base64-encode function](https://www.php.net/manual/en/function.base64-encode.php) |  Yes   |
-| json           | [php json-encode function](https://www.php.net/manual/en/function.json-encode.php)     |  Yes   |
-| jsonToArray    | [php json-decode function](https://www.php.net/manual/en/function.json-decode.php)     |  Yes   |
+| Cast           | Function (php docs)                                                                              | Twig |
+|----------------|--------------------------------------------------------------------------------------------------|------|
+| string         | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   |
+| bool / boolean | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   |
+| int / integer  | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   |
+| float          | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   |
+| array          | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   |
+| date           | [php date function](https://www.php.net/manual/en/function.date)                                 | No   |
+| url            | [php urlencode function](https://www.php.net/manual/en/function.urlencode.php)                   | Yes  |
+| urlDecode      | [php urldecode function](https://www.php.net/manual/en/function.urldecode.php)                   | Yes  |
+| rawurl         | [php rawurlencode function](https://www.php.net/manual/en/function.rawurlencode.php)             | Yes  |
+| rawurlDecode   | [php rawurldecode function](https://www.php.net/manual/en/function.rawurldecode.php)             | Yes  |
+| html           | [php htmlentities function](https://www.php.net/manual/en/function.htmlentities.php)             | Yes  |
+| htmlDecode     | [php html_entity_decode function](https://www.php.net/manual/en/function.html-entity-decode.php) | Yes  |
+| base64         | [php base64-encode function](https://www.php.net/manual/en/function.base64-encode.php)           | Yes  |
+| base64Decode   | [php base64-decode function](https://www.php.net/manual/en/function.base64-decode.php)           | Yes  |
+| json           | [php json-encode function](https://www.php.net/manual/en/function.json-encode.php)               | Yes  |
+| jsonToArray    | [php json-decode function](https://www.php.net/manual/en/function.json-decode.php)               | Yes  |
 
 That means that we can write a mapping like
 
@@ -469,16 +474,17 @@ Into the new object
 
 
 ## Special casting (Forcing) change of values
-In some rarer cases you might want to not 'just cast to a different type' but change a value entirely, these casts do not match with just one specific php cast or php function but contain more than one line of code. In most normal cases when you want to cast to (for example) an integer you would only use one cast `["integer"]` but with these cast it isn't unusual to combine multiple casts such as `["jsonToArray", "unsetIfValue=="]`.
+In some rarer cases you might want to not 'just cast to a different type' but change a value entirely, these casts do not match with just one specific php cast or php function but contain more than one line of code (or need some extra explanation on how they work). In most normal cases when you want to cast to (for example) an integer you would only use one cast `["integer"]` but with these cast it isn't unusual to combine multiple casts such as `["jsonToArray", "unsetIfValue=="]`.
 
 We can change values by including a cast property in our mapping, the following special casts are currently available:
 
-| Cast                    | Description                                                                                                                                                                                               |
-|-------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| nullStringToNull        | This cast checks if the value equals string = 'null' and casts it to actual null.                                                                                                                         |
-| coordinateStringToArray | This cast converts a coordinate string to an array of coordinates.                                                                                                                                        |
-| keyCantBeValue          | This cast checks if the value equals the property name and if so, unsets the property.                                                                                                                    |
-| unsetIfValue            | This cast checks if the value equals a specific value and if so, unsets the property. An example: `"unsetIfValue==example`. This can also be used to check if the value is empty with `"unsetIfValue=="`. |
+| Cast                    | Description                                                                                                                                                                                                                                                                                                                                    |
+|-------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| nullStringToNull        | This cast checks if the value equals string = 'null' and casts it to actual null.                                                                                                                                                                                                                                                              |
+| coordinateStringToArray | This cast converts a coordinate string to an array of coordinates.                                                                                                                                                                                                                                                                             |
+| keyCantBeValue          | This cast checks if the value equals the property name and if so, unsets the property.                                                                                                                                                                                                                                                         |
+| unsetIfValue            | This cast checks if the value equals a specific value and if so, unsets the property. An example: `"unsetIfValue==example`. This can also be used to check if the value is empty with `"unsetIfValue=="`.                                                                                                                                      |
+| countValue              | This cast uses the php [count](https://www.php.net/manual/en/function.count.php) function to count an other value, if that other value [is countable](https://www.php.net/manual/en/function.is-countable.php), sets the property to the count of that other value. An example: `"countValue:example`. This is equals to php `count(example)`. |
 
 That means that we can write a mapping like
 
@@ -523,9 +529,9 @@ Or to turn this original object:
   "name": "example2",
   "doggies": [
     {
-      "name": "doggie",
-      "description": "<- renamed to note by the subMapping",
-      "age": 2
+        "name": "doggie",
+        "description": "<- renamed to note by the subMapping",
+        "age": 2
     }
   ]
 }
@@ -717,6 +723,8 @@ And, presto! ChatGDP writes a basic mapping for us
 > - Conveniently ChatGDP provides a copy code button in the right top of the codding example that allows us to simply download the provided mapping an import it into the gateway.
 > - We cut the above screenshots short for layout reasons but be sure to include as much from the mapping readme as you can
 > - Always check the code that ChatGDP provided! It is known to make errors ;)
+
+
 
 
 
