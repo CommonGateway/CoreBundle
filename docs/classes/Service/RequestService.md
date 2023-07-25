@@ -42,21 +42,35 @@ The constructor sets al needed variables.
 **Parameters**
 
 * `(\EntityManagerInterface) $entityManager`
+: The entity manager  
 * `(\GatewayResourceService) $resourceService`
+: The resource service  
 * `(\MappingService) $mappingService`
+: The mapping service  
 * `(\ValidationService) $validationService`
+: The validation service  
 * `(\FileSystemHandleService) $fileSystemService`
+: The file system service  
 * `(\CacheService) $cacheService`
+: The cache service  
 * `(\ReadUnreadService) $readUnreadService`
+: The read unread service  
 * `(\SynchronizationService) $syncService`
 : The SynchronizationService.  
 * `(\CallService) $callService`
+: The call service  
 * `(\Security) $security`
+: Security  
 * `(\EventDispatcherInterface) $eventDispatcher`
+: Event dispatcher  
 * `(\SerializerInterface) $serializer`
+: The serializer  
 * `(\SessionInterface) $session`
+: The current session  
 * `(\LoggerInterface) $requestLogger`
+: The logger interface  
 * `(\DownloadService) $downloadService`
+: The download service  
 
 **Return Values**
 

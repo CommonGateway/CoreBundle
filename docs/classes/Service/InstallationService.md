@@ -163,6 +163,7 @@ Set symfony style in order to output to the console.
 **Parameters**
 
 * `(\SymfonyStyle) $style`
+: The SymfonyStyle.  
 
 **Return Values**
 
