@@ -141,21 +141,21 @@ class RequestService
     /**
      * The constructor sets al needed variables.
      *
-     * @param EntityManagerInterface   $entityManager
-     * @param GatewayResourceService   $resourceService
-     * @param MappingService           $mappingService
-     * @param ValidationService        $validationService
-     * @param FileSystemHandleService  $fileSystemService
-     * @param CacheService             $cacheService
-     * @param ReadUnreadService        $readUnreadService
+     * @param EntityManagerInterface   $entityManager     The entity manager
+     * @param GatewayResourceService   $resourceService   The resource service
+     * @param MappingService           $mappingService    The mapping service
+     * @param ValidationService        $validationService The validation service
+     * @param FileSystemHandleService  $fileSystemService The file system service
+     * @param CacheService             $cacheService      The cache service
+     * @param ReadUnreadService        $readUnreadService The read unread service
      * @param SynchronizationService   $syncService       The SynchronizationService.
-     * @param CallService              $callService
-     * @param Security                 $security
-     * @param EventDispatcherInterface $eventDispatcher
-     * @param SerializerInterface      $serializer
-     * @param SessionInterface         $session
-     * @param LoggerInterface          $requestLogger
-     * @param DownloadService          $downloadService
+     * @param CallService              $callService       The call service
+     * @param Security                 $security          Security
+     * @param EventDispatcherInterface $eventDispatcher   Event dispatcher
+     * @param SerializerInterface      $serializer        The serializer
+     * @param SessionInterface         $session           The current session
+     * @param LoggerInterface          $requestLogger     The logger interface
+     * @param DownloadService          $downloadService   The download service
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -256,7 +256,7 @@ class RequestService
     {
         $xmlEncoder = new XmlEncoder([]);
 
-        if (str_contains($contentType, 'xml')) {
+        if (str_contains($contentType, 'xml') === true) {
             return $xmlEncoder->decode($content, 'xml');
         }
 

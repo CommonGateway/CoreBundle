@@ -222,10 +222,10 @@ class MappingService
         $value = $dotArray->get($key);
 
         // Todo: This works, we should go to php 8.0 later.
-        if (str_starts_with($cast, 'unsetIfValue==')) {
+        if (str_starts_with($cast, 'unsetIfValue==') === true) {
             $unsetIfValue = substr($cast, 14);
             $cast         = 'unsetIfValue';
-        } else if (str_starts_with($cast, 'countValue:')) {
+        } else if (str_starts_with($cast, 'countValue:') === true) {
             $countValue = substr($cast, 11);
             $cast       = 'countValue';
         }
@@ -311,8 +311,8 @@ class MappingService
         case 'countValue':
             if (isset($countValue) === true
                 && empty($countValue) === false
-                && $dotArray->has($countValue)
-                && is_countable($dotArray->get($countValue))
+                && $dotArray->has($countValue) === true
+                && is_countable($dotArray->get($countValue)) === true
             ) {
                 $value = count($dotArray->get($countValue));
             }

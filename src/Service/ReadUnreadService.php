@@ -61,11 +61,10 @@ class ReadUnreadService
         if ($objectEntity->getEntity() === null || $objectEntity->getEntity()->getCreateAuditTrails() === false) {
             return $metadata;
         }
-        
+
         // If the api-call is an getItem call show NOW instead!
-        if ($getItem === true) {
-            $value = new DateTime();
-        } else {
+        $value = new DateTime();
+        if ($getItem === false) {
             $value = $this->getDateRead($objectEntity);
         }
 
@@ -118,9 +117,9 @@ class ReadUnreadService
      * Marks the given ObjectEntity for the current user as read, by creating an Audit Trail.
      * Currently, already/also automatically done in the AuditTrailService after a Get Item call.
      *
-     * @param AuditTrailService The Audit Trail service. Do not set this service in the constructor,
+     * @param AuditTrailService $auditTrailService The Audit Trail service. Do not set this service in the constructor,
      * because this will create a construct loop with AuditTrailService!
-     * @param string                                    $identification The identification of the ObjectEntity we are setting / updating the last dateRead for.
+     * @param string            $identification    The identification of the ObjectEntity we are setting / updating the last dateRead for.
      *
      * @return void
      */
@@ -165,7 +164,6 @@ class ReadUnreadService
         $unread->setUserId($userId);
         $this->entityManager->persist($unread);
         // Do not flush, will always be done after the api-call that triggers this function, if that api-call doesn't throw an exception.
-
     }//end setUnread()
 
     /**
