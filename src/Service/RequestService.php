@@ -202,7 +202,10 @@ class RequestService
      */
     public function serializeData(array $data, &$contentType): string
     {
-        $accept = $this->data['accept'];
+        $accept = 'json';
+        if (isset($this->data['accept']) === true) {
+            $accept = $this->data['accept'];
+        }
 
         if (isset($this->data['endpoint']) === true) {
             $endpoint = $this->data['endpoint'];
