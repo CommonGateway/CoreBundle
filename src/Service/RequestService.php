@@ -571,7 +571,7 @@ class RequestService
         // Make sure we set object to null in the session, for detecting the correct AuditTrails to create. Also used for DateRead to work correctly!
         $this->session->set('object', null);
 
-        if (isset($data['path']['{route}']) === true) {
+        if (isset($data['path']['{route}']) === true && empty($data['path']['{route}']) === false) {
             $this->data['path'] = '/'.$data['path']['{route}'];
         } else {
             $this->data['path'] = '';
