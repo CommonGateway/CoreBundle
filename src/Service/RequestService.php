@@ -597,8 +597,12 @@ class RequestService
                 $result = $this->fileSystemService->call($proxy, $this->data['path']);
                 $result = new \GuzzleHttp\Psr7\Response(200, [], $this->serializer->serialize($result, 'json'));
             }
-
-            $resultContent = $this->unserializeData($result->getBody()->getContents(), $result->getHeaders()['content-type'][0]);
+    
+            $contentType = 'application/json';
+            if (isset($result->getHeaders()['content-type'][0]) === true)  {
+                $contentType = $result->getHeaders()['content-type'][0];
+            }
+            $resultContent = $this->unserializeData($result->getBody()->getContents(), $contentType);
 
             // Handle _self metadata, includes adding dateRead
             if (isset($extend) === true) {
@@ -609,7 +613,7 @@ class RequestService
 
             // Let create a response from the guzzle call.
             $response = new Response(
-                $this->serializeData($resultContent, $result->getHeaders()['content-type'][0]),
+                $this->serializeData($resultContent, $contentType),
                 $result->getStatusCode(),
                 $result->getHeaders()
             );
