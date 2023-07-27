@@ -285,6 +285,7 @@ class MappingService
             $value = json_encode($value);
             break;
         case 'jsonToArray':
+            $value = html_entity_decode($value);
             $value = json_decode($value, true);
             break;
         case 'nullStringToNull':
