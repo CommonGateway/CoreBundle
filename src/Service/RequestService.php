@@ -634,7 +634,7 @@ class RequestService
             }
 
             // Catch weird statuscodes (like 0).
-            if (strlen($statusCode) < 3) {
+            if (array_key_exists($statusCode, Response::$statusTexts) === false) {
                 $statusCode = 502;
             }
 
