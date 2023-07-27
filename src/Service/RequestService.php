@@ -1181,7 +1181,7 @@ class RequestService
 
         $appEndpointConfig = [];
         foreach ($application->getConfiguration() as $applicationConfig) {
-            $appEndpointConfig = $this->getAppConfigInOut($endpointRef, $endpoint, $applicationConfig);
+            $appEndpointConfig = array_merge($this->getAppConfigInOut($endpointRef, $endpoint, $applicationConfig), $appEndpointConfig);
         }
 
         return $appEndpointConfig;
