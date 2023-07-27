@@ -202,7 +202,10 @@ class RequestService
      */
     public function serializeData(array $data, &$contentType): string
     {
-        $accept = $this->data['accept'];
+        $accept = 'json';
+        if (isset($this->data['accept']) === true) {
+            $accept = $this->data['accept'];
+        }
 
         if (isset($this->data['endpoint']) === true) {
             $endpoint = $this->data['endpoint'];
@@ -568,7 +571,7 @@ class RequestService
         // Make sure we set object to null in the session, for detecting the correct AuditTrails to create. Also used for DateRead to work correctly!
         $this->session->set('object', null);
 
-        if (isset($data['path']['{route}']) === true) {
+        if (isset($data['path']['{route}']) === true && empty($data['path']['{route}']) === false) {
             $this->data['path'] = '/'.$data['path']['{route}'];
         } else {
             $this->data['path'] = '';
@@ -631,7 +634,7 @@ class RequestService
             }
 
             // Catch weird statuscodes (like 0).
-            if (strlen($statusCode) < 3) {
+            if (array_key_exists($statusCode, Response::$statusTexts) === false) {
                 $statusCode = 502;
             }
 
