@@ -186,28 +186,28 @@ class EndpointService
         // Determine the accept type.
         $this->logger->debug('Determine accept type from accept header');
         switch ($acceptHeader) {
-        case 'application/pdf':
-            return 'pdf';
-        case 'application/json':
-            return 'json';
-        case 'application/json+hal':
-        case 'application/hal+json':
-            return 'jsonhal';
-        case 'application/json+ld':
-        case 'application/ld+json':
-            return 'jsonld';
-        case 'application/json+fromio':
-        case 'application/formio+json':
-            return 'formio';
-        case 'application/json+schema':
-        case 'application/schema+json':
-            return 'schema';
-        case 'application/json+graphql':
-        case 'application/graphql+json':
-            return 'graphql';
-        case 'text/xml':
-        case 'application/xml':
-            return 'xml';
+            case 'application/pdf':
+                return 'pdf';
+            case 'application/json':
+                return 'json';
+            case 'application/json+hal':
+            case 'application/hal+json':
+                return 'jsonhal';
+            case 'application/json+ld':
+            case 'application/ld+json':
+                return 'jsonld';
+            case 'application/json+fromio':
+            case 'application/formio+json':
+                return 'formio';
+            case 'application/json+schema':
+            case 'application/schema+json':
+                return 'schema';
+            case 'application/json+graphql':
+            case 'application/graphql+json':
+                return 'graphql';
+            case 'text/xml':
+            case 'application/xml':
+                return 'xml';
         }//end switch
 
         // As a backup we look at any file extenstion.
@@ -217,8 +217,8 @@ class EndpointService
         if (count($pathparts) >= 2) {
             $extension = end($pathparts);
             switch ($extension) {
-            case 'pdf':
-                return 'pdf';
+                case 'pdf':
+                    return 'pdf';
             }//end switch
         }
 
@@ -249,14 +249,14 @@ class EndpointService
 
         // Decode the body.
         switch ($contentType) {
-        case 'text/xml':
-        case 'application/xml':
-        case 'xml':
-            $xmlEncoder = new XmlEncoder();
+            case 'text/xml':
+            case 'application/xml':
+            case 'xml':
+                $xmlEncoder = new XmlEncoder();
 
-            return $xmlEncoder->decode($this->request->getContent(), 'xml');
-        default:
-            return json_decode($this->request->getContent(), true);
+                return $xmlEncoder->decode($this->request->getContent(), 'xml');
+            default:
+                return json_decode($this->request->getContent(), true);
         }//end switch
 
     }//end decodeBody()
@@ -281,6 +281,62 @@ class EndpointService
         throw new NotFoundHttpException('No proper endpoint could be determined');
 
     }//end getEndpoint()
+
+    private function getPutData(): array
+    {
+        // Fetch content and determine boundary
+        $raw_data = file_get_contents('php://input');
+        $boundary = substr($raw_data, 0, strpos($raw_data, "\r\n"));
+
+// Fetch each part
+        $parts = array_slice(explode($boundary, $raw_data), 1);
+        $data = array();
+
+        foreach ($parts as $part) {
+            // If this is the last part, break
+            if ($part == "--\r\n") break;
+
+            // Separate content from headers
+            $part = ltrim($part, "\r\n");
+            list($raw_headers, $body) = explode("\r\n\r\n", $part, 2);
+
+            // Parse the headers list
+            $raw_headers = explode("\r\n", $raw_headers);
+            $headers = array();
+            foreach ($raw_headers as $header) {
+                list($name, $value) = explode(':', $header);
+                $headers[strtolower($name)] = ltrim($value, ' ');
+            }
+
+            // Parse the Content-Disposition to get the field name, etc.
+            if (isset($headers['content-disposition'])) {
+                $filename = null;
+                preg_match(
+                    '/^(.+); *name="([^"]+)"(; *filename="([^"]+)")?/',
+                    $headers['content-disposition'],
+                    $matches
+                );
+                list(, $type, $name) = $matches;
+                isset($matches[4]) and $filename = $matches[4];
+
+                // handle your fields here
+                switch ($name) {
+                    // this is a file upload
+                    case 'userfile':
+                        file_put_contents($filename, $body);
+                        break;
+
+                    // default for all other files is to populate $data
+                    default:
+                        $data[$name] = substr($body, 0, strlen($body) - 2);
+                        break;
+                }
+            }
+
+        }
+
+        return $data;
+    }
 
     /**
      * Builds a parameter array from the request.
@@ -325,6 +381,10 @@ class EndpointService
 
         // Let's get all the post variables.
         $parameters['post'] = $this->request->request->all();
+
+        if($parameters['method'] === 'PUT' && $parameters['post'] === []) {
+            $parameters['post'] = $this->getPutData();
+        }
 
         return $parameters;
 
