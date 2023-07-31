@@ -336,7 +336,7 @@ Retrieves objects from a cache collection.
 
 **Return Values**
 
-`array|null`
+`array`
 
 > $this->handleResultPagination()
 
@@ -367,7 +367,7 @@ Searches the object store for objects containing the search string.
 
 **Return Values**
 
-`array|null`
+`array`
 
 
 

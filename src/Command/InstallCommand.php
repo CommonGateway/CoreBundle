@@ -2,6 +2,7 @@
 
 namespace CommonGateway\CoreBundle\Command;
 
+use CommonGateway\CoreBundle\Controller\PluginController;
 use CommonGateway\CoreBundle\Service\InstallationService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;

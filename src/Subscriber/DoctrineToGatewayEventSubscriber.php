@@ -128,7 +128,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         );
 
         // Throw the event.
-        $event = new ActionEvent('commongateway.action.event', ['object' => $object], 'commongateway.object.pre.delete');
+        $event = new ActionEvent('commongateway.action.event', ['object' => $object, 'entity' => ['id' => $object->getEntity()->getId(), 'reference' => $object->getEntity()->getReference()]], 'commongateway.object.pre.delete');
         $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 
     }//end preRemove()
@@ -159,7 +159,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         );
 
         // Throw the event.
-        $event = new ActionEvent('commongateway.action.event', ['object' => $object], 'commongateway.object.pre.create');
+        $event = new ActionEvent('commongateway.action.event', ['object' => $object, 'entity' => ['id' => $object->getEntity()->getId(), 'reference' => $object->getEntity()->getReference()]], 'commongateway.object.pre.create');
         $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 
     }//end prePersist()
@@ -190,7 +190,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         );
 
         // Throw the event.
-        $event = new ActionEvent('commongateway.action.event', ['object' => $object], 'commongateway.object.pre.update');
+        $event = new ActionEvent('commongateway.action.event', ['object' => $object, 'entity' => ['id' => $object->getEntity()->getId(), 'reference' => $object->getEntity()->getReference()]], 'commongateway.object.pre.update');
         $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 
     }//end preUpdate()
@@ -249,7 +249,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         );
 
         // Throw the event.
-        $event = new ActionEvent('commongateway.action.event', ['object' => $object], 'commongateway.object.post.create');
+        $event = new ActionEvent('commongateway.action.event', ['object' => $object, 'entity' => ['id' => $object->getEntity()->getId(), 'reference' => $object->getEntity()->getReference()]], 'commongateway.object.post.create');
         $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 
     }//end postPersist()
@@ -280,7 +280,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         );
 
         // Throw the event.
-        $event = new ActionEvent('commongateway.action.event', ['object' => $object], 'commongateway.object.post.update');
+        $event = new ActionEvent('commongateway.action.event', ['object' => $object, 'entity' => ['id' => $object->getEntity()->getId(), 'reference' => $object->getEntity()->getReference()]], 'commongateway.object.post.update');
         $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 
     }//end postUpdate()

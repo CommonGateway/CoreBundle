@@ -1,5 +1,6 @@
 # CommonGateway\CoreBundle
 
+* [Service\AuditTrailService](Service/AuditTrailService.md) 
 * [Service\AuthenticationService](Service/AuthenticationService.md) 
 * [Service\CacheService](Service/CacheService.md) 
 * [Service\CallService](Service/CallService.md) 
@@ -17,5 +18,6 @@
 * [Service\NotificationService](Service/NotificationService.md) 
 * [Service\OasService](Service/OasService.md) 
 * [Service\ObjectSyncService](Service/ObjectSyncService.md) 
+* [Service\ReadUnreadService](Service/ReadUnreadService.md) 
 * [Service\RequestService](Service/RequestService.md) 
 * [Service\SchemaService](Service/SchemaService.md) 
