@@ -842,6 +842,10 @@ class InstallationService
         }
 
         try {
+            if (isset($this->style) === true && method_exists(get_class($installationService), 'setStyle') === true) {
+                $installationService->setStyle($this->style);
+            }
+
             $install = $installationService->install();
 
             return is_bool($install) === true ? $install : empty($install) === false;
