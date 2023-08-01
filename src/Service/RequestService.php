@@ -380,14 +380,13 @@ class RequestService
         foreach ($references as $reference) {
             $schemaScope     = "$type.$reference.{$this->data['method']}";
             $loopedSchemas[] = $schemaScope;
-
-            if (in_array($schemaScope, $scopes) === true) {
+            if (isset($scopes[$schemaScope]) === true) {
                 // If true the user is authorized.
                 return null;
             }
         }
 
-            // If the user doesn't have the normal scope and doesn't have the admin scope, return a 403 forbidden.
+        // If the user doesn't have the normal scope and doesn't have the admin scope, return a 403 forbidden.
         if (isset($scopes["admin.{$this->data['method']}"]) === false) {
             $implodeString = implode(', ', $loopedSchemas);
             $this->logger->error("Authentication failed. You do not have any of the required scopes for this endpoint. ($implodeString)");
