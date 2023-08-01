@@ -317,7 +317,12 @@ class EndpointService
                     '/^(.+); *name="([^"]+)"(; *filename="([^"]+)")?/',
                     $headers['content-disposition'],
                     $matches
+                ) ?: preg_match(
+                    '/^(.+); *name=([-+.\w]+)(; *filename=([-+.\w]+))?/',
+                    $headers['content-disposition'],
+                    $matches
                 );
+
                 list(, $type, $name)             = $matches;
                 isset($matches[4]) and $filename = $matches[4];
 
