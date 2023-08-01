@@ -635,7 +635,9 @@ class ValidationService
         case 'reverse-dns':
             // For now...
         case 'Y-m-d\TH:i:s':
-        case 'Y-m-d':
+            case 'Y-m-d':
+                // For now...
+        case 'oneOf':
             // For now...
         case 'text':
         case null:
@@ -754,6 +756,10 @@ class ValidationService
                 new CustomRules\Base64MimeTypes($config),
                 true
             );
+        // For now.
+        case 'oneOf':
+            // If attribute has no format return alwaysValid.
+            return new Rules\AlwaysValid();
         default:
             // we should never end up here.
             if (is_array($config)) {
