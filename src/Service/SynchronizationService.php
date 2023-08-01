@@ -109,7 +109,7 @@ class SynchronizationService
         $objectString = $this->oldSyncService->getObjectString($objectArray);
 
         $this->logger->info("Sending $method message with body $objectString");
-        isset($this->style) && $this->style->info("Sending $method  message with body $objectString");
+        isset($this->style) && $this->style->info("Sending $method message with body $objectString");
 
         // note/todo headers removed from given array because we already do this in the ->call function.
         try {
