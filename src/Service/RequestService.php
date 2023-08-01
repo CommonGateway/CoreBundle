@@ -538,7 +538,7 @@ class RequestService
                 $message = !$data['endpoint'] instanceof Endpoint ? "No Endpoint in data['endpoint']" : "This Endpoint has no Proxy: {$data['endpoint']->getName()}";
 
                 return new Response(
-                    $this->serializeData(['Message' => $message], $contentType),
+                    $this->serializeData(['message' => $message], $contentType),
                     Response::HTTP_NOT_FOUND,
                     ['Content-type' => $contentType]
                 );
@@ -884,7 +884,7 @@ class RequestService
                 }
             } else if ($validationErrors !== null) {
                 $result = [
-                    "Message" => 'Validation errors',
+                    "message" => 'Validation errors',
                     'data'    => $validationErrors,
                     'path'    => $this->data['pathRaw'],
                 ];
@@ -951,7 +951,7 @@ class RequestService
                     }
                 } else if ($validationErrors !== null) {
                     $result = [
-                        "Message" => 'Validation errors',
+                        "message" => 'Validation errors',
                         'data'    => $validationErrors,
                         'path'    => $this->data['pathRaw'],
                     ];
@@ -1018,7 +1018,7 @@ class RequestService
                     }
                 } else if ($validationErrors !== null) {
                     $result = [
-                        "Message" => 'Validation errors',
+                        "message" => 'Validation errors',
                         'data'    => $validationErrors,
                         'path'    => $this->data['pathRaw'],
                     ];
@@ -1057,7 +1057,7 @@ class RequestService
             $this->entityManager->flush();
             $this->logger->info('Succesfully deleted object');
 
-            return new Response('', '204', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
+            return new Response('', '204', ['Content-type' => $this->data['endpoint']->getDefaultContentType() ?? 'application/json']);
         default:
             $this->logger->error('Unkown method'.$this->data['method']);
 
