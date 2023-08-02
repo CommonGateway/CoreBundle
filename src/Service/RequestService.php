@@ -795,6 +795,16 @@ class RequestService
                 $this->session->set('object', $this->identification);
                 $result = $this->cacheService->getObject($this->identification);
 
+                if(isset($this->data['query']['versie']) === true) {
+                    $auditTrails = $this->entityManager->getRepository('App:AuditTrail')->findBy(['resource' => $this->identification]);
+
+                    foreach($auditTrails as $auditTrail) {
+                        if($auditTrail->getAmendments()['old']['versie'] === $this->data['query']['versie']) {
+                            $result = $auditTrail->getAmendments()['old'];
+                        }
+                    }
+                }
+
                 // check endpoint throws foreach and set the eventtype.
                 // use event dispatcher.
                 // If we do not have an object we throw an 404.
