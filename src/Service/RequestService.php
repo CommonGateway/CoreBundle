@@ -380,14 +380,13 @@ class RequestService
         foreach ($references as $reference) {
             $schemaScope     = "$type.$reference.{$this->data['method']}";
             $loopedSchemas[] = $schemaScope;
-
-            if (in_array($schemaScope, $scopes) === true) {
+            if (isset($scopes[$schemaScope]) === true) {
                 // If true the user is authorized.
                 return null;
             }
         }
 
-            // If the user doesn't have the normal scope and doesn't have the admin scope, return a 403 forbidden.
+        // If the user doesn't have the normal scope and doesn't have the admin scope, return a 403 forbidden.
         if (isset($scopes["admin.{$this->data['method']}"]) === false) {
             $implodeString = implode(', ', $loopedSchemas);
             $this->logger->error("Authentication failed. You do not have any of the required scopes for this endpoint. ($implodeString)");
@@ -539,7 +538,7 @@ class RequestService
                 $message = !$data['endpoint'] instanceof Endpoint ? "No Endpoint in data['endpoint']" : "This Endpoint has no Proxy: {$data['endpoint']->getName()}";
 
                 return new Response(
-                    $this->serializeData(['Message' => $message], $contentType),
+                    $this->serializeData(['message' => $message], $contentType),
                     Response::HTTP_NOT_FOUND,
                     ['Content-type' => $contentType]
                 );
@@ -885,7 +884,7 @@ class RequestService
                 }
             } else if ($validationErrors !== null) {
                 $result = [
-                    "Message" => 'Validation errors',
+                    "message" => 'Validation errors',
                     'data'    => $validationErrors,
                     'path'    => $this->data['pathRaw'],
                 ];
@@ -952,7 +951,7 @@ class RequestService
                     }
                 } else if ($validationErrors !== null) {
                     $result = [
-                        "Message" => 'Validation errors',
+                        "message" => 'Validation errors',
                         'data'    => $validationErrors,
                         'path'    => $this->data['pathRaw'],
                     ];
@@ -1019,7 +1018,7 @@ class RequestService
                     }
                 } else if ($validationErrors !== null) {
                     $result = [
-                        "Message" => 'Validation errors',
+                        "message" => 'Validation errors',
                         'data'    => $validationErrors,
                         'path'    => $this->data['pathRaw'],
                     ];
@@ -1058,7 +1057,7 @@ class RequestService
             $this->entityManager->flush();
             $this->logger->info('Succesfully deleted object');
 
-            return new Response('', '204', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
+            return new Response('', '204', ['Content-type' => ($this->data['endpoint']->getDefaultContentType() ?? 'application/json')]);
         default:
             $this->logger->error('Unkown method'.$this->data['method']);
 
@@ -1094,8 +1093,8 @@ class RequestService
                 $code = Response::HTTP_BAD_REQUEST;
             }
 
-            // If we have a response return that
-            if ($event->getData()['response']) {
+            // If we have a response return that.
+            if (isset($event->getData()['response']) === true && empty($event->getData()['response']) === false) {
                 return new Response($this->serializeData($event->getData()['response'], $contentType), $code, ['Content-type' => $contentType]);
             }
         }//end if
