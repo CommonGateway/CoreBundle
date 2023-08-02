@@ -664,7 +664,7 @@ class RequestService
         if (isset($user) === true && $user->getRoles() !== null) {
             $scopes = [];
             foreach ($user->getRoles() as $role) {
-                $scopes[str_replace('ROLE_', '', $role)] = true;
+                $scopes[] = str_replace('ROLE_', '', $role);
             }
 
             return $scopes;
@@ -675,7 +675,7 @@ class RequestService
         if ($anonymousSecurityGroup !== null) {
             $scopes = [];
             foreach ($anonymousSecurityGroup->getScopes() as $scope) {
-                $scopes[$scope] = true;
+                $scopes[] = $scope;
             }
 
             return $scopes;
