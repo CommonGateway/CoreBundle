@@ -228,6 +228,10 @@ class CallService
             throw new HttpException('409', "This source is not enabled: {$source->getName()}");
         }
 
+        if (isset($config['headers']['Content-Type']) === true) {
+            $overwriteContentType = $config['headers']['Content-Type'];
+        }
+
         if (empty($source->getConfiguration()) === false) {
             $config = array_merge_recursive($config, $source->getConfiguration());
         }
@@ -249,6 +253,9 @@ class CallService
 
         // Backwards compatible, $source->getHeaders = deprecated.
         $config['headers'] = array_merge(($source->getHeaders() ?? []), $config['headers']);
+        if (isset($overwriteContentType) === true) {
+            $config['headers']['Content-Type'] = $overwriteContentType;
+        }
 
         $config['headers']['host'] = $parsedUrl['host'];
         $config['headers']         = $this->removeEmptyHeaders($config['headers']);
@@ -257,7 +264,6 @@ class CallService
         $this->callLogger->info('Calling url '.$url);
 
         $config = $this->handleEndpointsConfigOut($source, $endpoint, $config);
-
         $this->callLogger->debug('Call configuration: ', $config);
         // Let's make the call.
         try {

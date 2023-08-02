@@ -290,7 +290,7 @@ class CacheService
         $identification = $objectEntity->getId()->toString();
 
         // Add an id field to main object only if the object not already has an id field.
-        if (key_exists('id', $array) === false) {
+        if (key_exists('id', $array) === false || $array['id'] === null) {
             $array['id'] = $identification;
         }
 
