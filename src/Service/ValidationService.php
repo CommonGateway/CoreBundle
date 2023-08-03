@@ -551,7 +551,7 @@ class ValidationService
         // Validate for cascading.
         if (isset($attribute->getValidations()['cascade']) === false || $attribute->getValidations()['cascade'] === false) {
             // Uuid.
-            $objectValidator->addRule(new Rules\Uuid());
+            $objectValidator->addRule(new Rules\OneOf(new Rules\Uuid(), new Rules\Url()));
 
             return $objectValidator;
         }
