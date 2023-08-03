@@ -3,7 +3,7 @@ commongateway_core_metrics:
     prefix:   /
     type:     annotation
 
-commongateway_core_filesupload:
-    resource: "@CoreBundle/src/Controller/FilesController.php"
+commongateway_core_fileupload:
+    resource: "@CoreBundle/src/Controller/FileController.php"
     prefix:   /
     type:     annotation
