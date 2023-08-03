@@ -207,6 +207,7 @@ class RequestService
             $accept = $this->data['accept'];
         }
 
+        $endpoint = null;
         if (isset($this->data['endpoint']) === true) {
             $endpoint = $this->data['endpoint'];
         }
@@ -380,26 +381,26 @@ class RequestService
         foreach ($references as $reference) {
             $schemaScope     = "$type.$reference.{$this->data['method']}";
             $loopedSchemas[] = $schemaScope;
-            if (isset($scopes[$schemaScope]) === true) {
+            if (in_array($schemaScope, $scopes) === true) {
                 // If true the user is authorized.
                 return null;
             }
         }
 
         // If the user doesn't have the normal scope and doesn't have the admin scope, return a 403 forbidden.
-        if (isset($scopes["admin.{$this->data['method']}"]) === false) {
+        if (in_array("admin.{$this->data['method']}", $scopes) === false) {
             $implodeString = implode(', ', $loopedSchemas);
             $this->logger->error("Authentication failed. You do not have any of the required scopes for this endpoint. ($implodeString)");
             return new Response(
-                $this->serializer->serialize(
+                $this->serializeData(
                     [
                         'message' => "Authentication failed. You do not have any of the required scopes for this endpoint.",
                         'scopes'  => ['anyOf' => $loopedSchemas],
                     ],
-                    'json'
+                    $contentType
                 ),
                 Response::HTTP_FORBIDDEN,
-                ['Content-type' => $this->data['endpoint']->getDefaultContentType()]
+                ['Content-type' => $contentType]
             );
         }//end if
 
@@ -794,6 +795,19 @@ class RequestService
                 $this->session->set('object', $this->identification);
                 $result = $this->cacheService->getObject($this->identification);
 
+                if (isset($this->data['query']['versie']) === true) {
+                    $auditTrails = $this->entityManager->getRepository('App:AuditTrail')->findBy(['resource' => $this->identification]);
+
+                    foreach ($auditTrails as $auditTrail) {
+                        if ($auditTrail->getAmendments() !== null
+                            && isset($auditTrail->getAmendments()['old']['versie']) === true
+                            && $auditTrail->getAmendments()['old']['versie'] === (int) $this->data['query']['versie']
+                        ) {
+                            $result = $auditTrail->getAmendments()['old'];
+                        }
+                    }
+                }
+
                 // check endpoint throws foreach and set the eventtype.
                 // use event dispatcher.
                 // If we do not have an object we throw an 404.
@@ -1180,7 +1194,7 @@ class RequestService
 
         $appEndpointConfig = [];
         foreach ($application->getConfiguration() as $applicationConfig) {
-            $appEndpointConfig = $this->getAppConfigInOut($endpointRef, $endpoint, $applicationConfig);
+            $appEndpointConfig = array_merge($this->getAppConfigInOut($endpointRef, $endpoint, $applicationConfig), $appEndpointConfig);
         }
 
         return $appEndpointConfig;

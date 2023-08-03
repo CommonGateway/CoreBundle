@@ -538,10 +538,17 @@ class CallService
         $this->callLogger->debug('Determine content type of response');
 
         // Switch voor obejct.
-        $contentType = $response->getHeader('content-type')[0];
+        if (isset($response->getHeader('content-type')[0]) === true) {
+            $contentType = $response->getHeader('content-type')[0];
+        }
 
         if (isset($contentType) === false || empty($contentType) === true) {
             $contentType = $source->getAccept();
+
+            if ($contentType === null) {
+                $this->callLogger->warning('Accept of the Source '.$source->getReference().' === null');
+                return 'application/json';
+            }
         }
 
         return $contentType;
