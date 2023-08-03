@@ -9,7 +9,7 @@
 
 namespace CommonGateway\CoreBundle\Controller;
 
-// use CommonGateway\CoreBundle\Service\UploadService;
+use CommonGateway\CoreBundle\Service\UploadService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,20 +20,18 @@ use function Safe\json_encode;
 class FileController extends AbstractController
 {
 
-    // /**
-    // * @var UploadService The UploadService.
-    // */
-    // private UploadService $uploadService;
+    /**
+    * @var UploadService The UploadService.
+    */
+    private UploadService $uploadService;
 
     /**
      * The constructor sets al needed variables.
      *
      * @param UploadService $UploadService.
      */
-    public function __construct(
-        // UploadService $UploadService
-    ) {
-        // $this->UploadService = $UploadService;
+    public function __construct(UploadService $uploadService) {
+        $this->uploadService = $uploadService;
     }//end __construct()
 
     /**
@@ -46,12 +44,12 @@ class FileController extends AbstractController
     public function file(Request $request): Response
     {
         // Example code.
-        // $objects = $this->uploadService->upload();
-        // $responseArray = [
-        // 'objects' => $objects
-        // ];
-        // return new Response(json_encode($responseArray), 200, ['Content-type' => $request->headers->get('accept')]);
-        return new Response(json_encode(['message' => 'The FileController works']), 200, ['Content-type' => $request->headers->get('accept')]);
+        $objects = $this->uploadService->upload($request);
+        $responseArray = [
+            'objects' => $objects
+        ];
+        return new Response(json_encode($responseArray), 200, ['Content-type' => $request->headers->get('accept')]);
+        // return new Response(json_encode(['message' => 'The FileController works']), 200, ['Content-type' => $request->headers->get('accept')]);
 
     }//end files()
 }//end class
