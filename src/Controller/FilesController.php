@@ -21,8 +21,8 @@ class FileController extends AbstractController
 {
 
     /**
-    * @var UploadService The UploadService.
-    */
+     * @var UploadService The UploadService.
+     */
     private UploadService $uploadService;
 
     /**
@@ -30,8 +30,10 @@ class FileController extends AbstractController
      *
      * @param UploadService $UploadService.
      */
-    public function __construct(UploadService $uploadService) {
+    public function __construct(UploadService $uploadService)
+    {
         $this->uploadService = $uploadService;
+
     }//end __construct()
 
     /**
@@ -44,12 +46,9 @@ class FileController extends AbstractController
     public function file(Request $request): Response
     {
         // Example code.
-        $objects = $this->uploadService->upload($request);
-        $responseArray = [
-            'objects' => $objects
-        ];
+        $objects       = $this->uploadService->upload($request);
+        $responseArray = ['objects' => $objects];
         return new Response(json_encode($responseArray), 200, ['Content-type' => $request->headers->get('accept')]);
         // return new Response(json_encode(['message' => 'The FileController works']), 200, ['Content-type' => $request->headers->get('accept')]);
-
-    }//end files()
+    }//end file()
 }//end class
