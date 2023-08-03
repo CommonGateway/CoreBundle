@@ -27,7 +27,7 @@ class UploadService
         'json',
         'csv',
         'xml',
-        'yaml'
+        'yaml',
     ];
 
     public function upload(Request $request): string
@@ -49,23 +49,23 @@ class UploadService
         var_dump($fileContent);
 
         switch ($extension) {
-            case 'json':
-                $data = $this->decodeJson($fileContent);
-                break;
-            case 'csv':
-                $data = $this->decodeCsv($fileContent);
-                break;
-            case 'xml':
-                $data = $this->decodeXml($fileContent);
-                break;
-            case 'yaml':
-                $data = $this->decodeYaml($fileContent);
-                break;
+        case 'json':
+            $data = $this->decodeJson($fileContent);
+            break;
+        case 'csv':
+            $data = $this->decodeCsv($fileContent);
+            break;
+        case 'xml':
+            $data = $this->decodeXml($fileContent);
+            break;
+        case 'yaml':
+            $data = $this->decodeYaml($fileContent);
+            break;
         }
 
         $objects = [];
 
         return $objects;
-    }//end writeFile()
 
+    }//end upload()
 }//end class
