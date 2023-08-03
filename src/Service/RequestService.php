@@ -206,7 +206,8 @@ class RequestService
         if (isset($this->data['accept']) === true) {
             $accept = $this->data['accept'];
         }
-
+    
+        $endpoint = null;
         if (isset($this->data['endpoint']) === true) {
             $endpoint = $this->data['endpoint'];
         }
@@ -385,21 +386,21 @@ class RequestService
                 return null;
             }
         }
-
+    
         // If the user doesn't have the normal scope and doesn't have the admin scope, return a 403 forbidden.
-        if (isset($scopes["admin.{$this->data['method']}"]) === false) {
+        if (in_array("admin.{$this->data['method']}", $scopes) === false) {
             $implodeString = implode(', ', $loopedSchemas);
             $this->logger->error("Authentication failed. You do not have any of the required scopes for this endpoint. ($implodeString)");
             return new Response(
-                $this->serializer->serialize(
+                $this->serializeData(
                     [
                         'message' => "Authentication failed. You do not have any of the required scopes for this endpoint.",
                         'scopes'  => ['anyOf' => $loopedSchemas],
                     ],
-                    'json'
+                    $contentType
                 ),
                 Response::HTTP_FORBIDDEN,
-                ['Content-type' => $this->data['endpoint']->getDefaultContentType()]
+                ['Content-type' => $contentType]
             );
         }//end if
 
