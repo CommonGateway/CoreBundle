@@ -329,7 +329,7 @@ class EndpointService
             list($rawHeaders, $body) = explode("\r\n\r\n", $part, 2);
 
             // Parse the headers list
-            $this->parsePutHeaders($rawHeaders);
+            $headers = $this->parsePutHeaders($rawHeaders);
 
             // Parse the Content-Disposition to get the field name, etc.
             if (isset($headers['content-disposition']) === false) {
