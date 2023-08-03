@@ -40,9 +40,9 @@ class FilesController extends AbstractController
     /**
      * Provides a files endpoint.
      *
-     * @return Response
+     * @Route("/admin/files-upload", methods={"POST"})
      *
-     * @Route("/admin/files", methods={"POST"})
+     * @return Response
      */
     public function files(Request $request): Response
     {
@@ -55,5 +55,5 @@ class FilesController extends AbstractController
 
         return new Response(json_encode(['message' => 'The FilesController works']), 200, ['Content-type' => $request->headers->get('accept')]);
 
-    }//end metrics()
+    }//end files()
 }//end class

@@ -2,3 +2,8 @@ commongateway_core_metrics:
     resource: "@CoreBundle/src/Controller/MetricsController.php"
     prefix:   /
     type:     annotation
+
+commongateway_core_filesupload:
+    resource: "@CoreBundle/src/Controller/FilesController.php"
+    prefix:   /
+    type:     annotation
