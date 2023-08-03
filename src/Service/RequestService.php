@@ -380,7 +380,7 @@ class RequestService
         foreach ($references as $reference) {
             $schemaScope     = "$type.$reference.{$this->data['method']}";
             $loopedSchemas[] = $schemaScope;
-            if (isset($scopes[$schemaScope]) === true) {
+            if (in_array($schemaScope, $scopes) === true) {
                 // If true the user is authorized.
                 return null;
             }
