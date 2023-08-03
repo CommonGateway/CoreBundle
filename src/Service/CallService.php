@@ -544,7 +544,7 @@ class CallService
 
         if (isset($contentType) === false || empty($contentType) === true) {
             $contentType = $source->getAccept();
-            
+
             if ($contentType === null) {
                 $this->callLogger->warning('Accept of the Source '.$source->getReference().' === null');
                 return 'application/json';
