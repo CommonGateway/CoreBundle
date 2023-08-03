@@ -206,7 +206,7 @@ class RequestService
         if (isset($this->data['accept']) === true) {
             $accept = $this->data['accept'];
         }
-    
+
         $endpoint = null;
         if (isset($this->data['endpoint']) === true) {
             $endpoint = $this->data['endpoint'];
@@ -386,7 +386,7 @@ class RequestService
                 return null;
             }
         }
-    
+
         // If the user doesn't have the normal scope and doesn't have the admin scope, return a 403 forbidden.
         if (in_array("admin.{$this->data['method']}", $scopes) === false) {
             $implodeString = implode(', ', $loopedSchemas);
