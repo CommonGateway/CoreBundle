@@ -43,7 +43,7 @@ class FileController extends AbstractController
      *
      * @return Response
      */
-    public function file(Request $request): Response
+    public function fileUpload(Request $request): Response
     {
         // Example code.
         // $objects = $this->uploadService->upload();
