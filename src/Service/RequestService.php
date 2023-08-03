@@ -794,11 +794,11 @@ class RequestService
                 $this->session->set('object', $this->identification);
                 $result = $this->cacheService->getObject($this->identification);
 
-                if(isset($this->data['query']['versie']) === true) {
+                if (isset($this->data['query']['versie']) === true) {
                     $auditTrails = $this->entityManager->getRepository('App:AuditTrail')->findBy(['resource' => $this->identification]);
 
-                    foreach($auditTrails as $auditTrail) {
-                        if( $auditTrail->getAmendments() !== null
+                    foreach ($auditTrails as $auditTrail) {
+                        if ($auditTrail->getAmendments() !== null
                             && isset($auditTrail->getAmendments()['old']['versie']) === true
                             && $auditTrail->getAmendments()['old']['versie'] === (int) $this->data['query']['versie']
                         ) {
