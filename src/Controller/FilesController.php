@@ -1,6 +1,6 @@
 <?php
 /**
- * The FilesController handles the endpoint where to send files to.
+ * The FileController handles the endpoint where to send files to.
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
@@ -17,7 +17,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 use function Safe\json_encode;
 
-class FilesController extends AbstractController
+class FileController extends AbstractController
 {
 
     // /**
@@ -40,11 +40,11 @@ class FilesController extends AbstractController
     /**
      * Provides a files endpoint.
      *
-     * @Route("/admin/files-upload", methods={"POST"})
+     * @Route("/admin/file-upload", methods={"POST"})
      *
      * @return Response
      */
-    public function files(Request $request): Response
+    public function file(Request $request): Response
     {
         // Example code.
         // $objects = $this->uploadService->upload();
@@ -53,7 +53,7 @@ class FilesController extends AbstractController
         // ];
         // return new Response(json_encode($responseArray), 200, ['Content-type' => $request->headers->get('accept')]);
 
-        return new Response(json_encode(['message' => 'The FilesController works']), 200, ['Content-type' => $request->headers->get('accept')]);
+        return new Response(json_encode(['message' => 'The FileController works']), 200, ['Content-type' => $request->headers->get('accept')]);
 
     }//end files()
 }//end class
