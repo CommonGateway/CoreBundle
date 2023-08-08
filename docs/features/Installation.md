@@ -99,6 +99,8 @@ If however, your environment is not compliant with the Haven standard (and we su
 - Prometheus
 - Loki
 
+### Setting up NFS correctly
+When installing nfs make sure you install with persistence enabled. And make sure to configure a persistence size higher than 1Gi (8Gi or even higher is recommended). The persistence size must be higher than the size of the gateway vendor Persistent Volume Claim(s combined) on your cluster.
 
 ### Activating LetsEncrypt.
 
