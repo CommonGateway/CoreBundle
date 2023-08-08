@@ -255,9 +255,11 @@ class ActionSubscriber implements EventSubscriberInterface
                 ['Status' => is_null($action->getStatus()) ? null : ($action->getStatus() ? 'True' : 'False')],
             );
             $this->io->block("The configuration of this Action: [{$this->objectEntityService->implodeMultiArray($action->getConfiguration())}]");
-        } else if (isset($this->io)) {
-            $this->io->text("The conditions of the Action {$action->getName()} match with the 'sub'-ActionEvent data");
-        }//end if
+        }
+        // Commented out this log, to avoid log creation overload. Only add back for debug reasons.
+//        else if (isset($this->io)) {
+//            $this->io->text("The conditions of the Action {$action->getName()} match with the 'sub'-ActionEvent data");
+//        }//end if
 
         return $currentCronJobThrow;
 
@@ -283,9 +285,11 @@ class ActionSubscriber implements EventSubscriberInterface
                 ['LastRunTime' => $action->getLastRunTime()],
                 ['Status' => is_null($action->getStatus()) ? null : ($action->getStatus() ? 'True' : 'False')],
             );
-        } else if (isset($this->io)) {
-            $this->io->text("Finished handling the Action {$action->getName()} that matched the 'sub'-ActionEvent data");
         }
+        // Commented out this log, to avoid log creation overload. Only add back for debug reasons.
+//        else if (isset($this->io)) {
+//            $this->io->text("Finished handling the Action {$action->getName()} that matched the 'sub'-ActionEvent data");
+//        }
 
     }//end handleActionIoFinish()
 
@@ -302,34 +306,35 @@ class ActionSubscriber implements EventSubscriberInterface
         $this->logger->info('Handling actions for event: '.$listeningToThrow.', found '.$totalActions.' listening actions');
 
         $ioMessage = "Found $totalActions Action".($totalActions !== 1 ? 's' : '')." listening to \"$listeningToThrow\"";
-        if (isset($this->io)) {
-            $currentCronJobThrow ? $this->io->block($ioMessage) : $this->io->text($ioMessage);
-            if ($totalActions !== 0) {
-                $extraDashesStr = $currentCronJobThrow ? '--' : '';
-                $this->io->text("0/$totalActions --$extraDashesStr Start looping through all Actions listening to \"$listeningToThrow\"...");
-                !$currentCronJobThrow ?: $this->io->newLine();
-            } else {
-                $currentCronJobThrow ?: $this->io->newLine();
-            }
-        }
-
         // Commented out this log, to avoid log creation overload. Only add back for debug reasons.
-        // $this->logger->debug($ioMessage);
+//        if (isset($this->io)) {
+//            $currentCronJobThrow ? $this->io->block($ioMessage) : $this->io->text($ioMessage);
+//            if ($totalActions !== 0) {
+//                $extraDashesStr = $currentCronJobThrow ? '--' : '';
+//                $this->io->text("0/$totalActions --$extraDashesStr Start looping through all Actions listening to \"$listeningToThrow\"...");
+//                !$currentCronJobThrow ?: $this->io->newLine();
+//            } else {
+//                $currentCronJobThrow ?: $this->io->newLine();
+//            }
+//        }
+
+        $this->logger->debug($ioMessage);
+
         foreach ($actions as $key => $action) {
             // Handle Action
             $this->session->set('action', $action->getId()->toString());
             $this->logger->debug('Handling action : '.$action->getName().'('.$action->getId().')');
             $this->handleAction($action, $event);
-
-            if (isset($this->io) && isset($totalActions) && isset($extraDashesStr)) {
-                if ($key !== array_key_last($actions)) {
-                    $keyStr = ($key + 1);
-                    $this->io->text("$keyStr/$totalActions --$extraDashesStr Looping through all Actions listening to \"$listeningToThrow\"...");
-                    // Commented out this log, to avoid log creation overload. Only add back for debug reasons.
-                    // $this->logger->debug("$keyStr/$totalActions -- Looping through all Actions listening to \"$listeningToThrow\"...");
-                    !$currentCronJobThrow ?: $this->io->newLine();
-                }
-            }
+    
+            // Commented out this log, to avoid log creation overload. Only add back for debug reasons.
+//            if (isset($this->io) && isset($totalActions) && isset($extraDashesStr)) {
+//                if ($key !== array_key_last($actions)) {
+//                    $keyStr = ($key + 1);
+//                    $this->io->text("$keyStr/$totalActions --$extraDashesStr Looping through all Actions listening to \"$listeningToThrow\"...");
+//                    $this->logger->debug("$keyStr/$totalActions -- Looping through all Actions listening to \"$listeningToThrow\"...");
+//                    !$currentCronJobThrow ?: $this->io->newLine();
+//                }
+//            }
 
             $this->session->remove('action');
         }
@@ -339,8 +344,8 @@ class ActionSubscriber implements EventSubscriberInterface
             $this->io->newLine();
         }
 
-        // Commented out this log, to avoid log creation overload. Only add back for debug reasons.
-        // $this->logger->info("$totalActions/$totalActions -- Finished looping all Actions listening to \"$listeningToThrow\"");
+        $this->logger->info("$totalActions/$totalActions -- Finished looping all Actions listening to \"$listeningToThrow\"");
+
         return $event;
 
     }//end handleEvent()
@@ -360,12 +365,15 @@ class ActionSubscriber implements EventSubscriberInterface
                 && $this->session->get('currentCronJobThrow') == $event->getType()
                 && $this->session->get('currentCronJobSubThrow') == $event->getSubType()
             ) {
-                $this->io->section("Handle ActionEvent \"{$event->getType()}\"".($event->getSubType() ? " With SubType: \"{$event->getSubType()}\"" : ''));
-                // $this->logger->info("Handle ActionEvent \"{$event->getType()}\"".($event->getSubType() ? " With SubType: \"{$event->getSubType()}\"" : ''));
+                // Commented out this log, to avoid log creation overload. Only add back for debug reasons.
+//                $this->io->section("Handle ActionEvent \"{$event->getType()}\"".($event->getSubType() ? " With SubType: \"{$event->getSubType()}\"" : ''));
+                $this->logger->info("Handle ActionEvent \"{$event->getType()}\"".($event->getSubType() ? " With SubType: \"{$event->getSubType()}\"" : ''));
+
                 return true;
             } else {
-                $this->io->text("Handle 'sub'-ActionEvent \"{$event->getType()}\"".($event->getSubType() ? " With SubType: \"{$event->getSubType()}\"" : ''));
-                // $this->logger->info("Handle 'sub'-ActionEvent \"{$event->getType()}\"".($event->getSubType() ? " With SubType: \"{$event->getSubType()}\"" : ''));
+                // Commented out this log, to avoid log creation overload. Only add back for debug reasons.
+//                $this->io->text("Handle 'sub'-ActionEvent \"{$event->getType()}\"".($event->getSubType() ? " With SubType: \"{$event->getSubType()}\"" : ''));
+                $this->logger->info("Handle 'sub'-ActionEvent \"{$event->getType()}\"".($event->getSubType() ? " With SubType: \"{$event->getSubType()}\"" : ''));
             }
         }
 
