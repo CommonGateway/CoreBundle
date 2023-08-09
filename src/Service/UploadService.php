@@ -11,6 +11,8 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use App\Entity\Entity as Schema;
+use App\Entity\Mapping;
 use Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -38,6 +40,18 @@ class UploadService
         'xml',
         'yaml',
     ];
+
+    private GatewayResourceService $resourceService;
+
+    private ValidationService $validationService;
+
+    public function __construct(
+        GatewayResourceService $resourceService,
+        ValidationService $validationService
+    ) {
+        $this->resourceService   = $resourceService;
+        $this->validationService = $validationService;
+    }
 
     /**
      * Decodes an incoming file based upon its extension.
@@ -95,21 +109,53 @@ class UploadService
 
     }//end decodeFile()
 
+    /**
+     * Processes the decoded objects to fit a schema.
+     *
+     * @param array $objects
+     * @param Schema $schema
+     * @return array
+     */
+    public function processObjects(array $objects, Schema $schema): array
+    {
+        $results = [];
+        foreach ($objects as $object) {
+
+            $results[] = [
+                'action'      => 'CREATE',
+                'object'      => $object,
+                'validations' => $this->validationService->validateData($object, $schema, 'POST'),
+                'id'          => null,
+            ];
+        }
+
+        return $results;
+    }
+
+    /**
+     * Handles a file upload.
+     *
+     * @param Request $request The request containing a file upload.
+     * @return array
+     */
     public function upload(Request $request): array
     {
         // Unsure about what the standard name will be here.
         $file = $request->files->get('upload');
         if ($file instanceof UploadedFile === false) {
-            throw new Exception("No file uploaded.");
+            return new Exception("No file uploaded.");
         }
 
         // Validate file extension.
         $extension = $file->getClientOriginalExtension();
         if (in_array($extension, $this->supportedFileExtensions) === false) {
-            throw new Exception("File extension: $extension not supported.");
+            return new Exception("File extension: $extension not supported.");
         }
 
-        return $this->decodeFile($extension, $file, $request);
+        $schema = $this->resourceService->getSchema($request->request->get('schema'), 'commongateway/corebundle');
+
+        $objects = $this->decodeFile($extension, $file, $request);
+        return $this->processObjects($objects, $schema);
 
     }//end upload()
 
