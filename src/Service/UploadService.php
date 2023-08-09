@@ -54,39 +54,42 @@ class UploadService
         $fileContent = file_get_contents($file->getPathname());
 
         // Create a serializer for the most common formats.
-        $serializer = new Serializer([],
+        $serializer = new Serializer(
+            [],
             [
-                new CsvEncoder([
-                    'no_headers'    => $request->request->get('headers') === 'true' ? false : true,
-                    'csv_delimiter' => $request->request->has('delimiter') ? $request->request->get('delimiter') : ',',
-                ]),
+                new CsvEncoder(
+                    [
+                        'no_headers'    => $request->request->get('headers') === 'true' ? false : true,
+                        'csv_delimiter' => $request->request->has('delimiter') ? $request->request->get('delimiter') : ',',
+                    ]
+                ),
                 new YamlEncoder(),
                 new JsonEncoder(),
-                new XmlEncoder()
+                new XmlEncoder(),
             ]
         );
 
         switch ($extension) {
-            case 'xlsx':
-            case 'ods':
-            case 'xls':
-                // Load the XLSX file using PhpSpreadsheet
-                $spreadsheet = IOFactory::load($file->getPathname());
+        case 'xlsx':
+        case 'ods':
+        case 'xls':
+            // Load the XLSX file using PhpSpreadsheet
+            $spreadsheet = IOFactory::load($file->getPathname());
 
-                // Convert the XLSX data to an array
-                $worksheet = $spreadsheet->getActiveSheet();
-                $data      = $worksheet->toArray();
+            // Convert the XLSX data to an array
+            $worksheet = $spreadsheet->getActiveSheet();
+            $data      = $worksheet->toArray();
 
-                if($request->request->get('headers') === 'true'){
-                    $headers = array_shift($data);
-                    $data = $this->toKeyedRows($data, $headers);
-                }
+            if ($request->request->get('headers') === 'true') {
+                $headers = array_shift($data);
+                $data    = $this->toKeyedRows($data, $headers);
+            }
 
-                $data['objects'] = $data;
+            $data['objects'] = $data;
 
-                break;
-            default:
-                $data = $serializer->decode($fileContent, $extension);
+            break;
+        default:
+            $data = $serializer->decode($fileContent, $extension);
         }//end switch
 
         $objects = $data['objects'];
@@ -112,5 +115,4 @@ class UploadService
         return $this->decodeFile($extension, $file, $request);
 
     }//end upload()
-
 }//end class
