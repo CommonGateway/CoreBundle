@@ -47,10 +47,13 @@ class UploadService
 
     public function __construct(
         GatewayResourceService $resourceService,
-        ValidationService $validationService
+        ValidationService $validationService,
+        MappingService $mappingService
     ) {
         $this->resourceService   = $resourceService;
         $this->validationService = $validationService;
+        $this->mappingService    = $mappingService;
+    }
 
     }//end __construct()
 
@@ -144,6 +147,8 @@ class UploadService
     {
         $results = [];
         foreach ($objects as $object) {
+            $object = $this->mappingService->mapping($mapping, $object);
+
             $results[] = [
                 'action'      => 'CREATE',
                 'object'      => $object,
@@ -177,9 +182,10 @@ class UploadService
         }
 
         $schema = $this->resourceService->getSchema($request->request->get('schema'), 'commongateway/corebundle');
+        $mapping = $this->resourceService->getMapping($request->request->get('mapping'), 'commongateway/corebundle');
 
         $objects = $this->decodeFile($extension, $file, $request);
-        return $this->processObjects($objects, $schema);
+        return $this->processObjects($objects, $schema, $mapping);
 
     }//end upload()
 }//end class
