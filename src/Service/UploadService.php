@@ -52,29 +52,30 @@ class UploadService
         $fileContent = file_get_contents($file->getPathname());
 
         switch ($extension) {
-            case 'xlsx':
-                // Load the XLSX file using PhpSpreadsheet
-                $spreadsheet = IOFactory::load($file->getPathname());
-        
-                // Convert the XLSX data to an array
-                $worksheet = $spreadsheet->getActiveSheet();
-                $data = $worksheet->toArray();
-                break;
-            case 'json':
-                $data = json_decode($fileContent);
-                break;
-            case 'csv':
-                $data = str_getcsv($fileContent);
-                break;
-            case 'xml':
-                $xmlEncoder = new XmlEncoder();
-                $data = $xmlEncoder->decode($fileContent, 'xml');
-                break;
-            case 'yaml':
-                $yamlEncoder = new YamlEncoder();
-                $data = $yamlEncoder->decode($fileContent, 'yaml');
-                break;
-        }
+        case 'xlsx':
+            // Load the XLSX file using PhpSpreadsheet
+            $spreadsheet = IOFactory::load($file->getPathname());
+
+            // Convert the XLSX data to an array
+            $worksheet = $spreadsheet->getActiveSheet();
+            $data      = $worksheet->toArray();
+            break;
+        case 'json':
+            $data = json_decode($fileContent);
+            break;
+        case 'csv':
+            $data = str_getcsv($fileContent);
+            break;
+        case 'xml':
+            $xmlEncoder = new XmlEncoder();
+            $data       = $xmlEncoder->decode($fileContent, 'xml');
+            break;
+        case 'yaml':
+            $yamlEncoder = new YamlEncoder();
+            $data        = $yamlEncoder->decode($fileContent, 'yaml');
+            break;
+        }//end switch
+
         var_dump($data);
 
         $objects = $data['objects'];
