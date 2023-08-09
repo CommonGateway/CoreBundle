@@ -39,6 +39,23 @@ class UploadService
         'yaml',
     ];
 
+
+    /**
+     * Combines the headers of a table into a row to create an associative array.
+     *
+     * @param array $rows    The rows to parse.
+     * @param array $headers The headers of the columns.
+     * @return array
+     */
+    public function makeArrayAssociative (array $rows, array $headers): array
+    {
+        array_walk($rows, function(&$row) use ($headers){
+            $row = array_combine($headers, $row);
+        });
+
+        return $rows;
+    }
+
     /**
      * Decodes an incoming file based upon its extension.
      *
@@ -82,7 +99,7 @@ class UploadService
 
             if ($request->request->get('headers') === 'true') {
                 $headers = array_shift($data);
-                $data    = $this->toKeyedRows($data, $headers);
+                $data    = $this->makeArrayAssociative($data, $headers);
             }
 
             $data['objects'] = $data;
