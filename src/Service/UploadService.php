@@ -27,7 +27,7 @@ class UploadService
 {
 
     /**
-     * Supported file extensions this service can decode.
+     * @var array Supported file extensions this service can decode.
      */
     private array $supportedExtensions = [
         'xlsx',
