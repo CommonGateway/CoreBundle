@@ -74,10 +74,9 @@ class UploadService
         $fileContent = $file->getContent();
 
         $delimiter = ',';
-        if($request->request->has('delimiter') === true) {
+        if ($request->request->has('delimiter') === true) {
             $delimiter = $request->request->get('delimiter');
         }
-
 
         // Create a serializer for the most common formats.
         $serializer = new Serializer(
@@ -116,18 +115,18 @@ class UploadService
             break;
         default:
             $data = $serializer->decode($fileContent, $extension);
-        }
+        }//end switch
 
         $objects = $data['objects'];
 
         return $objects;
 
     }//end decodeFile()
-    
+
     /**
      * Handles a file upload.
      *
-     * @param Request $request The request containing a file upload.
+     * @param  Request $request The request containing a file upload.
      * @return array
      */
     public function upload(Request $request): array
