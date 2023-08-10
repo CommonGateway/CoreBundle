@@ -46,7 +46,7 @@ The constructor of the service.
 **Description**
 
 ```php
-public searchAndReplaceSynchronizations (array $object, \Source $source, \Entity $entity, bool $unsafeHydrate)
+public searchAndReplaceSynchronizations (array $object, \Source $source, \Entity $entity, bool $unsafeHydrate, bool $returnSynchronization)
 ```
 
 Recursively loop through an object, check if a synchronisation exists or create one (if necessary). 
@@ -63,12 +63,14 @@ Recursively loop through an object, check if a synchronisation exists or create 
 : The entity of the (sub)object.  
 * `(bool) $unsafeHydrate`
 : If we should hydrate unsafely or not (when true it will unset non given properties).  
+* `(bool) $returnSynchronization`
+: If we should return the Synchronization of the main object instead of the ObjectEntity/array.  
 
 **Return Values**
 
-`array|\ObjectEntity`
+`array|\ObjectEntity|\Synchronization`
 
-> The resulting object or array.
+> The resulting object, Synchronization or array.
 
 
 <hr />
