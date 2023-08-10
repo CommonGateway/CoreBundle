@@ -45,10 +45,9 @@ class FileController extends AbstractController
      */
     public function fileUpload(Request $request): Response
     {
-        // Example code.
         $objects       = $this->uploadService->upload($request);
         $responseArray = ['objects' => $objects];
         return new Response(json_encode($responseArray), 200, ['Content-type' => $request->headers->get('accept')]);
-        // return new Response(json_encode(['message' => 'The FileController works']), 200, ['Content-type' => $request->headers->get('accept')]);
-    }//end file()
+    }//end fileUpload()
+    
 }//end class
