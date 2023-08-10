@@ -29,7 +29,7 @@ class UploadService
     /**
      * Supported file extensions this service can decode.
      */
-    private array $supportedFileExtensions = [
+    private array $supportedExtensions = [
         'xlsx',
         'xls',
         'ods',
@@ -71,7 +71,13 @@ class UploadService
     public function decodeFile(string $extension, UploadedFile $file, Request $request): array
     {
         // Get the file content as a string.
-        $fileContent = file_get_contents($file->getPathname());
+        $fileContent = $file->getContent();
+
+        $delimiter = ',';
+        if($request->request->has('delimiter') === true) {
+            $delimiter = $request->request->get('delimiter');
+        }
+
 
         // Create a serializer for the most common formats.
         $serializer = new Serializer(
@@ -79,8 +85,8 @@ class UploadService
             [
                 new CsvEncoder(
                     [
-                        'no_headers'    => $request->request->get('headers') === 'true' ? false : true,
-                        'csv_delimiter' => $request->request->has('delimiter') ? $request->request->get('delimiter') : ',',
+                        'no_headers'    => !($request->request->get('headers') === 'true'),
+                        'csv_delimiter' => $delimiter,
                     ]
                 ),
                 new YamlEncoder(),
@@ -93,10 +99,10 @@ class UploadService
         case 'xlsx':
         case 'ods':
         case 'xls':
-            // Load the XLSX file using PhpSpreadsheet
+            // Load the XLSX file using PhpSpreadsheet.
             $spreadsheet = IOFactory::load($file->getPathname());
 
-            // Convert the XLSX data to an array
+            // Convert the XLSX data to an array.
             $worksheet = $spreadsheet->getActiveSheet();
             $data      = $worksheet->toArray();
 
@@ -110,7 +116,7 @@ class UploadService
             break;
         default:
             $data = $serializer->decode($fileContent, $extension);
-        }//end switch
+        }
 
         $objects = $data['objects'];
 
@@ -128,7 +134,7 @@ class UploadService
 
         // Validate file extension.
         $extension = $file->getClientOriginalExtension();
-        if (in_array($extension, $this->supportedFileExtensions) === false) {
+        if (in_array($extension, $this->supportedExtensions) === false) {
             throw new Exception("File extension: $extension not supported.");
         }
 
