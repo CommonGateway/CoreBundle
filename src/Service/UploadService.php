@@ -47,145 +47,145 @@ class UploadService
 
     public function __construct(
         GatewayResourceService $resourceService,
-        ValidationService $validationService,
-        MappingService $mappingService
-    ) {
-        $this->resourceService   = $resourceService;
+        ValidationService      $validationService,
+        MappingService         $mappingService
+    )
+    {
+        $this->resourceService = $resourceService;
         $this->validationService = $validationService;
-        $this->mappingService    = $mappingService;
+        $this->mappingService = $mappingService;
 
     }//end __construct()
-}//end class
 
     /**
      * Combines the headers of a table into a row to create an associative array.
      *
-     * @param  array $rows    The rows to parse.
-     * @param  array $headers The headers of the columns.
+     * @param array $rows The rows to parse.
+     * @param array $headers The headers of the columns.
      * @return array
      */
-public function makeArrayAssociative(array $rows, array $headers): array
-{
-    array_walk(
-        $rows,
-        function (&$row) use ($headers) {
-            $row = array_combine($headers, $row);
-        }
-    );
+    public function makeArrayAssociative(array $rows, array $headers): array
+    {
+        array_walk(
+            $rows,
+            function (&$row) use ($headers) {
+                $row = array_combine($headers, $row);
+            }
+        );
 
-    return $rows;
+        return $rows;
 
-}//end makeArrayAssociative()
+    }//end makeArrayAssociative()
 
     /**
      * Decodes an incoming file based upon its extension.
      *
-     * @param string       $extension The extension of the file to decode.
-     * @param UploadedFile $file      The uploaded file to decode.
-     * @param Request      $request   The incoming request.
+     * @param string $extension The extension of the file to decode.
+     * @param UploadedFile $file The uploaded file to decode.
+     * @param Request $request The incoming request.
      *
      * @return array The array of objects derived from the file.
      */
-public function decodeFile(string $extension, UploadedFile $file, Request $request): array
-{
-    // Get the file content as a string.
-    $fileContent = file_get_contents($file->getPathname());
+    public function decodeFile(string $extension, UploadedFile $file, Request $request): array
+    {
+        // Get the file content as a string.
+        $fileContent = file_get_contents($file->getPathname());
 
-    // Create a serializer for the most common formats.
-    $serializer = new Serializer(
-        [],
-        [
-            new CsvEncoder(
-                [
-                    'no_headers'    => $request->request->get('headers') === 'true' ? false : true,
-                    'csv_delimiter' => $request->request->has('delimiter') ? $request->request->get('delimiter') : ',',
-                ]
-            ),
-            new YamlEncoder(),
-            new JsonEncoder(),
-            new XmlEncoder(),
-        ]
-    );
+        // Create a serializer for the most common formats.
+        $serializer = new Serializer(
+            [],
+            [
+                new CsvEncoder(
+                    [
+                        'no_headers' => $request->request->get('headers') === 'true' ? false : true,
+                        'csv_delimiter' => $request->request->has('delimiter') ? $request->request->get('delimiter') : ',',
+                    ]
+                ),
+                new YamlEncoder(),
+                new JsonEncoder(),
+                new XmlEncoder(),
+            ]
+        );
 
-    switch ($extension) {
-    case 'xlsx':
-    case 'ods':
-    case 'xls':
-        // Load the XLSX file using PhpSpreadsheet
-        $spreadsheet = IOFactory::load($file->getPathname());
+        switch ($extension) {
+            case 'xlsx':
+            case 'ods':
+            case 'xls':
+                // Load the XLSX file using PhpSpreadsheet
+                $spreadsheet = IOFactory::load($file->getPathname());
 
-        // Convert the XLSX data to an array
-        $worksheet = $spreadsheet->getActiveSheet();
-        $data      = $worksheet->toArray();
+                // Convert the XLSX data to an array
+                $worksheet = $spreadsheet->getActiveSheet();
+                $data = $worksheet->toArray();
 
-        if ($request->request->get('headers') === 'true') {
-            $headers = array_shift($data);
-            $data    = $this->makeArrayAssociative($data, $headers);
-        }
+                if ($request->request->get('headers') === 'true') {
+                    $headers = array_shift($data);
+                    $data = $this->makeArrayAssociative($data, $headers);
+                }
 
-        $data['objects'] = $data;
+                $data['objects'] = $data;
 
-        break;
-    default:
-        $data = $serializer->decode($fileContent, $extension);
-    }//end switch
+                break;
+            default:
+                $data = $serializer->decode($fileContent, $extension);
+        }//end switch
 
-    $objects = $data['objects'];
+        $objects = $data['objects'];
 
-    return $objects;
+        return $objects;
 
-}//end decodeFile()
+    }//end decodeFile()
 
     /**
      * Processes the decoded objects to fit a schema.
      *
-     * @param  array  $objects
-     * @param  Schema $schema
+     * @param array $objects
+     * @param Schema $schema
      * @return array
      */
-public function processObjects(array $objects, Schema $schema): array
-{
-    $results = [];
-    foreach ($objects as $object) {
-        $object = $this->mappingService->mapping($mapping, $object);
+    public function processObjects(array $objects, Schema $schema, Mapping $mapping): array
+    {
+        $results = [];
+        foreach ($objects as $object) {
+            $object = $this->mappingService->mapping($mapping, $object);
 
-        $results[] = [
-            'action'      => 'CREATE',
-            'object'      => $object,
-            'validations' => $this->validationService->validateData($object, $schema, 'POST'),
-            'id'          => null,
-        ];
-    }
+            $results[] = [
+                'action' => 'CREATE',
+                'object' => $object,
+                'validations' => $this->validationService->validateData($object, $schema, 'POST'),
+                'id' => null,
+            ];
+        }
 
-    return $results;
+        return $results;
 
-}//end processObjects()
+    }//end processObjects()
 
     /**
      * Handles a file upload.
      *
-     * @param  Request $request The request containing a file upload.
+     * @param Request $request The request containing a file upload.
      * @return array
      */
-public function upload(Request $request): array
-{
-    // Unsure about what the standard name will be here.
-    $file = $request->files->get('upload');
-    if ($file instanceof UploadedFile === false) {
-        return new Exception("No file uploaded.");
-    }
+    public function upload(Request $request): array
+    {
+        // Unsure about what the standard name will be here.
+        $file = $request->files->get('upload');
+        if ($file instanceof UploadedFile === false) {
+            return new Exception("No file uploaded.");
+        }
 
-    // Validate file extension.
-    $extension = $file->getClientOriginalExtension();
-    if (in_array($extension, $this->supportedFileExtensions) === false) {
-        return new Exception("File extension: $extension not supported.");
-    }
+        // Validate file extension.
+        $extension = $file->getClientOriginalExtension();
+        if (in_array($extension, $this->supportedFileExtensions) === false) {
+            return new Exception("File extension: $extension not supported.");
+        }
 
-    $schema  = $this->resourceService->getSchema($request->request->get('schema'), 'commongateway/corebundle');
-    $mapping = $this->resourceService->getMapping($request->request->get('mapping'), 'commongateway/corebundle');
+        $schema = $this->resourceService->getSchema($request->request->get('schema'), 'commongateway/corebundle');
+        $mapping = $this->resourceService->getMapping($request->request->get('mapping'), 'commongateway/corebundle');
 
-    $objects = $this->decodeFile($extension, $file, $request);
-    return $this->processObjects($objects, $schema, $mapping);
+        $objects = $this->decodeFile($extension, $file, $request);
+        return $this->processObjects($objects, $schema, $mapping);
 
-}//end upload()
+    }//end upload()
 }//end class
