@@ -123,7 +123,13 @@ class UploadService
         return $objects;
 
     }//end decodeFile()
-
+    
+    /**
+     * Handles a file upload.
+     *
+     * @param Request $request The request containing a file upload.
+     * @return array
+     */
     public function upload(Request $request): array
     {
         // Unsure about what the standard name will be here.
