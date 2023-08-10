@@ -12,6 +12,7 @@
 * [Service\FileSystemCreateService](Service/FileSystemCreateService.md) 
 * [Service\FileSystemHandleService](Service/FileSystemHandleService.md) 
 * [Service\GatewayResourceService](Service/GatewayResourceService.md) 
+* [Service\HydrationService](Service/HydrationService.md) 
 * [Service\InstallationService](Service/InstallationService.md) 
 * [Service\MappingService](Service/MappingService.md) 
 * [Service\MetricsService](Service/MetricsService.md) 
@@ -21,3 +22,5 @@
 * [Service\ReadUnreadService](Service/ReadUnreadService.md) 
 * [Service\RequestService](Service/RequestService.md) 
 * [Service\SchemaService](Service/SchemaService.md) 
+* [Service\SynchronizationService](Service/SynchronizationService.md) 
+* [Service\ValidationService](Service/ValidationService.md) 
