@@ -12,7 +12,7 @@ use Doctrine\ORM\EntityManagerInterface;
 /**
  * This class hydrates objects and sets synchronisations for (child/sub-)objects if applicable.
  *
- * @author  Conduction BV <info@conduction.nl>, Robert Zondervan <robert@conduction.nl>
+ * @author Conduction BV <info@conduction.nl>, Robert Zondervan <robert@conduction.nl>
  *
  * @license EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
@@ -35,7 +35,6 @@ class HydrationService
      */
     private EntityManagerInterface $entityManager;
 
-
     /**
      * The constructor of the service.
      *
@@ -48,7 +47,6 @@ class HydrationService
         $this->entityManager = $entityManager;
 
     }//end __construct()
-
 
     /**
      * Recursively loop through an object, check if a synchronisation exists or create one (if necessary).
@@ -98,6 +96,4 @@ class HydrationService
         return $object;
 
     }//end searchAndReplaceSynchronizations()
-
-
 }//end class
