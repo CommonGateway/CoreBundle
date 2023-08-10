@@ -21,7 +21,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 /**
  * The synchronization service handles the fetching and sending of data or objects to and from sources (Source/Gateway objects).
  *
- * @author Conduction BV <info@conduction.nl>, Barry Brands <barry@conduction.nl>
+ * @author Conduction BV <info@conduction.nl>, Barry Brands <barry@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
@@ -103,6 +103,8 @@ class SynchronizationService
      * @param string|null          $method          The request method PUT or POST.
      *
      * @return array The response body of the outgoing call, or an empty array on error.
+     *
+     * @throws Exception
      */
     public function synchronizeTemp(?Synchronization &$synchronization = null, array $objectArray, ObjectEntity $objectEntity, Schema $schema, string $location, ?string $idLocation = null, ?string $method = 'POST'): array
     {

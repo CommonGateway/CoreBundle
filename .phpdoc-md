@@ -16,6 +16,7 @@ return (object)[
         '\CommonGateway\CoreBundle\Service\FileSystemCreateService',
         '\CommonGateway\CoreBundle\Service\FileSystemHandleService',
         '\CommonGateway\CoreBundle\Service\GatewayResourceService',
+        '\CommonGateway\CoreBundle\Service\HydrationService',
         '\CommonGateway\CoreBundle\Service\InstallationService',
         '\CommonGateway\CoreBundle\Service\MappingService',
         '\CommonGateway\CoreBundle\Service\MetricsService',
@@ -25,5 +26,7 @@ return (object)[
         '\CommonGateway\CoreBundle\Service\ReadUnreadService',
         '\CommonGateway\CoreBundle\Service\RequestService',
         '\CommonGateway\CoreBundle\Service\SchemaService',
+        '\CommonGateway\CoreBundle\Service\SynchronizationService',
+        '\CommonGateway\CoreBundle\Service\ValidationService',
     ],
 ];
