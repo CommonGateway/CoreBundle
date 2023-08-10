@@ -74,27 +74,29 @@ class HydrationService
                 }
 
                 $object[$key] = $this->searchAndReplaceSynchronizations($value, $source, $subEntity, $flush);
-                
+
                 continue;
             }
-            
+
             // If we are dealing with the $key _sourceId prioritise it over the $key = 'id'
             if ($key === '_sourceId') {
                 // If the value in _sourceId = null we can't create a Synchronization for it.
                 if ($value === null) {
-                    return []; // todo: ?
+                    return [];
+                    // todo: ?
                 }
+
                 $synchronization = $this->syncService->findSyncBySource($source, $entity, $value);
                 unset($object['_sourceId']);
-                
+
                 continue;
             }
-            
+
             // By default, if we find an id field we use that to create a synchronization.
             if (($key === 'id' || $key === '_id') && isset($synchronization) === false) {
                 $synchronization = $this->syncService->findSyncBySource($source, $entity, $value);
             }
-        }
+        }//end foreach
 
         // Todo: here we want to do the default syncToGateway synchronization, without creating extra/duplicate objects though...
         if (isset($synchronization) === true) {
@@ -110,10 +112,11 @@ class HydrationService
                 $this->entityManager->flush();
                 $this->entityManager->flush();
             }
-            
+
             if ($returnSynchronization === true) {
                 return $synchronization;
             }
+
             return $synchronization->getObject();
         }
 
