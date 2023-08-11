@@ -115,25 +115,32 @@ class DownloadService
     }//end downloadPdf()
 
     /**
-     * Creates a CSV download response.
+     * Generates a CSV response from a given CSV string.
+     * 
+     * This method takes a CSV-formatted string and creates a downloadable CSV response.
+     * The client will be prompted to download the resulting file with the name "data.csv".
      *
-     * @param string $csvString.
+     * @param string $csvString The CSV-formatted string to be returned as a downloadable file.
      *
-     * @return Response 
+     * @return Response A Symfony response object that serves the provided CSV string as a downloadable CSV file.
      */
     public function downloadCSV(string $csvString): Response {
         $response = new Response($csvString, 200, ['Content-Type' => 'text/csv']);
         $response->headers->set('Content-Disposition', 'attachment; filename="data.csv"');
 
         return $response;
-    }//end collectionToCSV()
+    }//end downloadCSV()
 
     /**
-     * Creates a XLSX spreadsheet download response.
+     * Generates an XLSX response from a given array of associative arrays.
+     * 
+     * This method takes an array of associative arrays (potentially having nested arrays) and
+     * creates an XLSX spreadsheet with columns for each unique key (using dot notation for nested keys).
+     * The method then streams this spreadsheet as a downloadable XLSX file to the client.
      *
-     * @param array $objects.
+     * @param array $objects An array of associative arrays to convert into an XLSX file.
      *
-     * @return Response 
+     * @return Response A Symfony response object that allows the client to download the generated XLSX file.
      */
     public function downloadXLSX(array $objects): Response {
         $spreadsheet = new Spreadsheet();
@@ -181,7 +188,7 @@ class DownloadService
         $response->headers->set('Content-Disposition', $dispositionHeader);
 
         return $response;
-    }//end collectionToCSV()
+    }//end downloadXLSX()
 
     /**
      * Flattens a nested associative array into a single-level array.
