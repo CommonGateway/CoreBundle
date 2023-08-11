@@ -1116,10 +1116,16 @@ class RequestService
             }
         }//end if
 
-        if (isset($this->data['headers']['accept']) === true && ($this->data['headers']['accept'] === 'text/csv' || in_array('text/csv', $this->data['headers']['accept']))) {
-            $csvString = $this->serializeData($result['results'] ?? $result, $contentType);
-            return $this->downloadService->downloadCSV($csvString);
-        }
+        // Check download accept types.
+        if (isset($this->data['headers']['accept'][0]) === true) {
+            switch ($this->data['headers']['accept'][0]) {
+                case 'text/csv':
+                    $dataAsString = $this->serializeData($result['results'] ?? [$result], $contentType);
+                    return $this->downloadService->downloadCSV($dataAsString);
+                case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                    return $this->downloadService->downloadXLSX($result['results'] ?? [$result]);
+            }
+        }//end if
         
 
         return $this->createResponse($result);
