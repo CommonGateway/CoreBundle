@@ -208,6 +208,8 @@ class EndpointService
         case 'text/xml':
         case 'application/xml':
             return 'xml';
+        case 'text/csv':
+            return 'csv';
         }//end switch
 
         // As a backup we look at any file extenstion.

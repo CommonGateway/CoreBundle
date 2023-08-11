@@ -10,6 +10,9 @@ use Dompdf\Dompdf;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Twig\Environment;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\Encoder\CsvEncoder;
+use Symfony\Component\Serializer\Serializer;
 
 /**
  * Handles incoming notification api-calls by finding or creating a synchronization and synchronizing an object.
@@ -108,4 +111,20 @@ class DownloadService
         return $pdfWriter->output();
 
     }//end downloadPdf()
+
+    /**
+     * Creates a CSV download response.
+     *
+     * @param string $csvString.
+     *
+     * @return Response
+     */
+    public function downloadCSV(string $csvString): Response
+    {
+        $response = new Response($csvString, 200, ['Content-Type' => 'text/csv']);
+        $response->headers->set('Content-Disposition', 'attachment; filename="data.csv"');
+
+        return $response;
+
+    }//end downloadCSV()
 }//end class

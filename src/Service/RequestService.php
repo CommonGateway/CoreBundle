@@ -24,6 +24,8 @@ use Symfony\Component\HttpKernel\Exception\NotAcceptableHttpException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Serializer\Encoder\CsvEncoder;
+use Symfony\Component\Serializer\Serializer;
 
 /**
  * Handles incoming request from endpoints or controllers that relate to the gateways object structure (eav).
@@ -212,21 +214,22 @@ class RequestService
             $endpoint = $this->data['endpoint'];
         }
 
-        $xmlEncoder = new XmlEncoder([]);
+        $serializer = new Serializer([], [new XmlEncoder(), new CsvEncoder()]);
 
         // @TODO: Create hal and ld encoding.
         switch ($accept) {
-        case 'pdf':
-            $content = $this->downloadService->downloadPdf($data);
-            break;
-        case 'xml':
-            $content = $xmlEncoder->encode($data, 'xml');
-            break;
-        case 'jsonld':
-        case 'jsonhal':
-        case 'json':
-        default:
-            $content = \Safe\json_encode($data);
+            case 'pdf':
+                $content = $this->downloadService->downloadPdf($data);
+                break;
+            case 'xml':
+            case 'csv':
+                $content = $serializer->serialize($data, $accept);
+                break;
+            case 'jsonld':
+            case 'jsonhal':
+            case 'json':
+            default:
+                $content = \Safe\json_encode($data);
         }
 
         // @TODO: Preparation for checking if accept header is allowed. We probably should be doing this in the EndpointService instead?
@@ -1095,12 +1098,12 @@ class RequestService
             $this->eventDispatcher->dispatch($event, $event->getType());
 
             switch ($this->data['method']) {
-            case 'POST':
-                $code = Response::HTTP_CREATED;
-                break;
-            default:
-                $code = Response::HTTP_OK;
-                break;
+                case 'POST':
+                    $code = Response::HTTP_CREATED;
+                    break;
+                default:
+                    $code = Response::HTTP_OK;
+                    break;
             }
 
             if (isset($validationErrors)) {
@@ -1112,6 +1115,12 @@ class RequestService
                 return new Response($this->serializeData($event->getData()['response'], $contentType), $code, ['Content-type' => $contentType]);
             }
         }//end if
+
+        if (isset($this->data['headers']['accept']) === true && ($this->data['headers']['accept'] === 'text/csv' || in_array('text/csv', $this->data['headers']['accept']))) {
+            $csvString = $this->serializeData($result['results'] ?? $result, $contentType);
+            return $this->downloadService->downloadCSV($csvString);
+        }
+        
 
         return $this->createResponse($result);
 
