@@ -215,17 +215,15 @@ class RequestService
         }
 
         $serializer = new Serializer([], [new XmlEncoder(), new CsvEncoder()]);
-        
+
         // @TODO: Create hal and ld encoding.
         switch ($accept) {
             case 'pdf':
                 $content = $this->downloadService->downloadPdf($data);
                 break;
             case 'xml':
-                $content = $serializer->serialize($data, 'xml');
-                break;
             case 'csv':
-                $content = $serializer->serialize($data, 'csv');
+                $content = $serializer->serialize($data, $accept);
                 break;
             case 'jsonld':
             case 'jsonhal':
@@ -1100,12 +1098,12 @@ class RequestService
             $this->eventDispatcher->dispatch($event, $event->getType());
 
             switch ($this->data['method']) {
-            case 'POST':
-                $code = Response::HTTP_CREATED;
-                break;
-            default:
-                $code = Response::HTTP_OK;
-                break;
+                case 'POST':
+                    $code = Response::HTTP_CREATED;
+                    break;
+                default:
+                    $code = Response::HTTP_OK;
+                    break;
             }
 
             if (isset($validationErrors)) {
@@ -1119,9 +1117,10 @@ class RequestService
         }//end if
 
         if (isset($this->data['headers']['accept']) === true && ($this->data['headers']['accept'] === 'text/csv' || in_array('text/csv', $this->data['headers']['accept']))) {
-            $csvString = $this->serializeData(($result['results'] ?? $result), $contentType);
+            $csvString = $this->serializeData($result['results'] ?? $result, $contentType);
             return $this->downloadService->downloadCSV($csvString);
         }
+        
 
         return $this->createResponse($result);
 
