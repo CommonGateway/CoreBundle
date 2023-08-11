@@ -138,40 +138,40 @@ class DownloadService
     public function downloadXLSX(array $objects): Response {
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-    
+
         if (empty($objects) === false) {
+            // Flatten the array and get headers.
+            $flatSample = $this->flattenArray($objects[0]);
+            $headers = array_keys($flatSample);
+
             // Set headers.
-            $headers = array_keys($objects[0]);
-            $column = 'A';
+            $columnIndex = 'A';
             foreach ($headers as $header) {
-                $sheet->setCellValue($column . '1', $header);
-                $column++;
+                $sheet->setCellValue($columnIndex . '1', $header);
+                $columnIndex++;
             }
-    
-            // Fill the data.
-            // Starting from the second row, since first row contains headers.
-            $row = 2; 
-            foreach ($objects as $object) {
-                $column = 'A';
-                foreach ($object as $value) {
-                    if (is_array($value) === true) {
-                        $value = json_encode($value);
-                    }
-                    $sheet->setCellValue($column . $row, $value);
-                    $column++;
+
+            // Fill the data
+            $row = 2; // Starting from the second row, since first row contains headers.
+            foreach ($objects as $array) {
+                $flatArray = $this->flattenArray($array);
+                $columnIndex = 'A';
+                foreach ($flatArray as $value) {
+                    $sheet->setCellValue($columnIndex . $row, $value);
+                    $columnIndex++;
                 }
                 $row++;
             }
         }
-    
+
         // Create a streamed response to avoid memory issues with large files.
         $response = new StreamedResponse(
             function () use ($spreadsheet) {
                 $writer = new Xlsx($spreadsheet);
                 $writer->save('php://output');
-            }, 200
+            }
         );
-    
+
         // Set headers for XLSX file download.
         $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         $dispositionHeader = $response->headers->makeDisposition(
@@ -181,6 +181,29 @@ class DownloadService
         $response->headers->set('Content-Disposition', $dispositionHeader);
 
         return $response;
-    }//end downloadXLSX()
+    }//end collectionToCSV()
+
+    /**
+     * Flattens a nested associative array into a single-level array.
+     *
+     * Given an array with potential nested arrays, this method will transform it into a single-level array.
+     * Nested keys will be concatenated with a dot notation.
+     *
+     * @param array  $array  The array to flatten.
+     * @param string $prefix Used for recursive calls to prefix the keys. Generally, this shouldn't be provided during an initial call.
+     *
+     * @return array The flattened array with dot notation keys for nested values.
+     */
+    private function flattenArray(array $array, string $prefix = ''): array {
+        $data = [];
+        foreach ($array as $key => $value) {
+            if (is_array($value) === true) {
+                $data += $this->flattenArray($value, $prefix . $key . '.');
+            } else {
+                $data[$prefix . $key] = $value;
+            }
+        }
+        return $data;
+    }//end flattenArray()
 
 }//end class
