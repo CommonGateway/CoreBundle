@@ -117,13 +117,14 @@ class DownloadService
      *
      * @param string $csvString.
      *
-     * @return Response 
+     * @return Response
      */
-    public function downloadCSV(string $csvString): Response {
+    public function downloadCSV(string $csvString): Response
+    {
         $response = new Response($csvString, 200, ['Content-Type' => 'text/csv']);
         $response->headers->set('Content-Disposition', 'attachment; filename="data.csv"');
 
         return $response;
-    }//end collectionToCSV()
 
+    }//end downloadCSV()
 }//end class
