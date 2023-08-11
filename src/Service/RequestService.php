@@ -218,18 +218,18 @@ class RequestService
 
         // @TODO: Create hal and ld encoding.
         switch ($accept) {
-            case 'pdf':
-                $content = $this->downloadService->downloadPdf($data);
-                break;
-            case 'xml':
-            case 'csv':
-                $content = $serializer->serialize($data, $accept);
-                break;
-            case 'jsonld':
-            case 'jsonhal':
-            case 'json':
-            default:
-                $content = \Safe\json_encode($data);
+        case 'pdf':
+            $content = $this->downloadService->downloadPdf($data);
+            break;
+        case 'xml':
+        case 'csv':
+            $content = $serializer->serialize($data, $accept);
+            break;
+        case 'jsonld':
+        case 'jsonhal':
+        case 'json':
+        default:
+            $content = \Safe\json_encode($data);
         }
 
         // @TODO: Preparation for checking if accept header is allowed. We probably should be doing this in the EndpointService instead?
@@ -1098,12 +1098,12 @@ class RequestService
             $this->eventDispatcher->dispatch($event, $event->getType());
 
             switch ($this->data['method']) {
-                case 'POST':
-                    $code = Response::HTTP_CREATED;
-                    break;
-                default:
-                    $code = Response::HTTP_OK;
-                    break;
+            case 'POST':
+                $code = Response::HTTP_CREATED;
+                break;
+            default:
+                $code = Response::HTTP_OK;
+                break;
             }
 
             if (isset($validationErrors)) {
@@ -1119,14 +1119,13 @@ class RequestService
         // Check download accept types.
         if (isset($this->data['headers']['accept'][0]) === true) {
             switch ($this->data['headers']['accept'][0]) {
-                case 'text/csv':
-                    $dataAsString = $this->serializeData($result['results'] ?? [$result], $contentType);
-                    return $this->downloadService->downloadCSV($dataAsString);
-                case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-                    return $this->downloadService->downloadXLSX($result['results'] ?? [$result]);
+            case 'text/csv':
+                $dataAsString = $this->serializeData(($result['results'] ?? [$result]), $contentType);
+                return $this->downloadService->downloadCSV($dataAsString);
+            case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                return $this->downloadService->downloadXLSX(($result['results'] ?? [$result]));
             }
         }//end if
-        
 
         return $this->createResponse($result);
 
