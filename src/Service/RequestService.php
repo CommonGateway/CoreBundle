@@ -214,24 +214,24 @@ class RequestService
             $endpoint = $this->data['endpoint'];
         }
 
+        $serializer = new Serializer([], [new XmlEncoder(), new CsvEncoder()]);
+        
         // @TODO: Create hal and ld encoding.
         switch ($accept) {
-        case 'pdf':
-            $content = $this->downloadService->downloadPdf($data);
-            break;
-        case 'xml':
-            $xmlEncoder = new XmlEncoder([]);
-            $content    = $xmlEncoder->encode($data, 'xml');
-            break;
-        case 'csv':
-            $serializer = new Serializer([], [new CsvEncoder()]);
-            $content    = $serializer->serialize($data, 'csv');
-            break;
-        case 'jsonld':
-        case 'jsonhal':
-        case 'json':
-        default:
-            $content = \Safe\json_encode($data);
+            case 'pdf':
+                $content = $this->downloadService->downloadPdf($data);
+                break;
+            case 'xml':
+                $content = $serializer->serialize($data, 'xml');
+                break;
+            case 'csv':
+                $content = $serializer->serialize($data, 'csv');
+                break;
+            case 'jsonld':
+            case 'jsonhal':
+            case 'json':
+            default:
+                $content = \Safe\json_encode($data);
         }
 
         // @TODO: Preparation for checking if accept header is allowed. We probably should be doing this in the EndpointService instead?
