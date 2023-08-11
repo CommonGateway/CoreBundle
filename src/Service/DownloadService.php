@@ -11,8 +11,10 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Twig\Environment;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Serializer\Encoder\CsvEncoder;
-use Symfony\Component\Serializer\Serializer;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Handles incoming notification api-calls by finding or creating a synchronization and synchronizing an object.
@@ -117,14 +119,68 @@ class DownloadService
      *
      * @param string $csvString.
      *
-     * @return Response
+     * @return Response 
      */
-    public function downloadCSV(string $csvString): Response
-    {
+    public function downloadCSV(string $csvString): Response {
         $response = new Response($csvString, 200, ['Content-Type' => 'text/csv']);
         $response->headers->set('Content-Disposition', 'attachment; filename="data.csv"');
 
         return $response;
+    }//end collectionToCSV()
 
-    }//end downloadCSV()
+    /**
+     * Creates a XLSX spreadsheet download response.
+     *
+     * @param array $objects.
+     *
+     * @return Response 
+     */
+    public function downloadXLSX(array $objects): Response {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+    
+        if (empty($objects) === false) {
+            // Set headers.
+            $headers = array_keys($objects[0]);
+            $column = 'A';
+            foreach ($headers as $header) {
+                $sheet->setCellValue($column . '1', $header);
+                $column++;
+            }
+    
+            // Fill the data.
+            // Starting from the second row, since first row contains headers.
+            $row = 2; 
+            foreach ($objects as $object) {
+                $column = 'A';
+                foreach ($object as $value) {
+                    if (is_array($value) === true) {
+                        $value = json_encode($value);
+                    }
+                    $sheet->setCellValue($column . $row, $value);
+                    $column++;
+                }
+                $row++;
+            }
+        }
+    
+        // Create a streamed response to avoid memory issues with large files.
+        $response = new StreamedResponse(
+            function () use ($spreadsheet) {
+                $writer = new Xlsx($spreadsheet);
+                $writer->save('php://output');
+            }, 200
+        );
+    
+        // Set headers for XLSX file download.
+        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $dispositionHeader = $response->headers->makeDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            'data.xlsx'
+        );
+        $response->headers->set('Content-Disposition', $dispositionHeader);
+
+        return $response;
+    }//end downloadXLSX()
+
 }//end class
