@@ -41,10 +41,25 @@ class UploadService
         'yaml',
     ];
 
+    /**
+     * @var GatewayResourceService The gateway resource service.
+     */
     private GatewayResourceService $resourceService;
 
+    /**
+     * @var ValidationService The validation service.
+     */
     private ValidationService $validationService;
+    /**
+     * @var MappingService The mapping service.
+     */
+    private MappingService $mappingService;
 
+    /**
+     * @param GatewayResourceService $resourceService The gateway resource service
+     * @param ValidationService $validationService The validation service
+     * @param MappingService $mappingService The mapping service
+     */
     public function __construct(
         GatewayResourceService $resourceService,
         ValidationService $validationService,
@@ -143,11 +158,13 @@ class UploadService
     /**
      * Processes the decoded objects to fit a schema.
      *
-     * @param  array  $objects
-     * @param  Schema $schema
-     * @return array
+     * @param  array        $objects The objects that have been derived from the file.
+     * @param  Schema       $schema  The schema the objects should be stored in.
+     * @param  Mapping|null $mapping The mapping to map the objects in.
+     *
+     * @return array The array of results.
      */
-    public function processObjects(array $objects, Schema $schema, Mapping $mapping): array
+    public function processObjects(array $objects, Schema $schema, ?Mapping $mapping): array
     {
         $results = [];
         foreach ($objects as $object) {
@@ -173,7 +190,8 @@ class UploadService
      * Handles a file upload.
      *
      * @param  Request $request The request containing a file upload.
-     * @return array
+     *
+     * @return array The result of the file upload.
      */
     public function upload(Request $request): array
     {
@@ -192,7 +210,7 @@ class UploadService
         $schema  = $this->resourceService->getSchema($request->request->get('schema'), 'commongateway/corebundle');
         $mapping = null;
 
-        if ($request->request->has('mapping')) {
+        if ($request->request->has('mapping') === true) {
             $mapping = $this->resourceService->getMapping($request->request->get('mapping'), 'commongateway/corebundle');
         }
 
