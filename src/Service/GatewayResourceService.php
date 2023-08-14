@@ -23,6 +23,7 @@ use App\Entity\Mapping;
 use App\Entity\ObjectEntity;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Ramsey\Uuid\Uuid;
 
 class GatewayResourceService
 {
@@ -61,6 +62,11 @@ class GatewayResourceService
     public function getSchema(string $reference, string $pluginName): ?Entity
     {
         $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference]);
+
+        if (Uuid::isValid($reference)) {
+            $entity = $this->entityManager->find('App:Entity', $reference);
+        }
+
         if ($entity === null) {
             $this->pluginLogger->error("No entity found for $reference.", ['plugin' => $pluginName]);
         }//end if
@@ -98,6 +104,11 @@ class GatewayResourceService
     public function getMapping(string $reference, string $pluginName): ?Mapping
     {
         $mapping = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $reference]);
+
+        if (Uuid::isValid($reference) === true && $mapping === null) {
+            $mapping = $this->entityManager->find('App:Mapping', $reference);
+        }
+
         if ($mapping === null) {
             $this->pluginLogger->error("No mapping found for $reference.", ['plugin' => $pluginName]);
         }//end if
@@ -117,6 +128,11 @@ class GatewayResourceService
     public function getSource(string $reference, string $pluginName): ?Source
     {
         $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $reference]);
+
+        if (Uuid::isValid($reference) === true && $source === null) {
+            $source = $this->entityManager->find('App:Gateway', $reference);
+        }
+
         if ($source === null) {
             $this->pluginLogger->error("No source found for $reference.", ['plugin' => $pluginName]);
         }//end if
@@ -164,7 +180,13 @@ class GatewayResourceService
      */
     public function getEndpoint(string $reference, string $pluginName): ?Endpoint
     {
+
         $endpoint = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $reference]);
+
+        if (Uuid::isValid($reference) === true && $endpoint === null) {
+            $endpoint = $this->entityManager->find('App:Endpoint', $reference);
+        }
+
         if ($endpoint === null) {
             $this->pluginLogger->error("No endpoint found for $reference.", ['plugin' => $pluginName]);
         }//end if
@@ -184,6 +206,11 @@ class GatewayResourceService
     public function getAction(string $reference, string $pluginName): ?Action
     {
         $action = $this->entityManager->getRepository('App:Action')->findOneBy(['reference' => $reference]);
+
+        if (Uuid::isValid($reference) === true && $action === null) {
+            $action = $this->entityManager->find('App:Action', $reference);
+        }
+
         if ($action === null) {
             $this->logger->error("No action found for $reference.", ['plugin' => $pluginName]);
         }//end if
