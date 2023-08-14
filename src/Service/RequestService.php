@@ -219,18 +219,18 @@ class RequestService
 
         // @TODO: Create hal and ld encoding.
         switch ($accept) {
-            case 'pdf':
-                $content = $this->downloadService->downloadPdf($data);
-                break;
-            case 'xml':
-            case 'csv':
-                $content = $serializer->serialize($data, $accept);
-                break;
-            case 'jsonld':
-            case 'jsonhal':
-            case 'json':
-            default:
-                $content = \Safe\json_encode($data);
+        case 'pdf':
+            $content = $this->downloadService->downloadPdf($data);
+            break;
+        case 'xml':
+        case 'csv':
+            $content = $serializer->serialize($data, $accept);
+            break;
+        case 'jsonld':
+        case 'jsonhal':
+        case 'json':
+        default:
+            $content = \Safe\json_encode($data);
         }
 
         // @TODO: Preparation for checking if accept header is allowed. We probably should be doing this in the EndpointService instead?
@@ -1099,12 +1099,12 @@ class RequestService
             $this->eventDispatcher->dispatch($event, $event->getType());
 
             switch ($this->data['method']) {
-                case 'POST':
-                    $code = Response::HTTP_CREATED;
-                    break;
-                default:
-                    $code = Response::HTTP_OK;
-                    break;
+            case 'POST':
+                $code = Response::HTTP_CREATED;
+                break;
+            default:
+                $code = Response::HTTP_OK;
+                break;
             }
 
             if (isset($validationErrors)) {
