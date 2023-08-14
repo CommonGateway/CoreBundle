@@ -50,15 +50,16 @@ class UploadService
      * @var ValidationService The validation service.
      */
     private ValidationService $validationService;
+
     /**
      * @var MappingService The mapping service.
      */
     private MappingService $mappingService;
 
     /**
-     * @param GatewayResourceService $resourceService The gateway resource service
-     * @param ValidationService $validationService The validation service
-     * @param MappingService $mappingService The mapping service
+     * @param GatewayResourceService $resourceService   The gateway resource service
+     * @param ValidationService      $validationService The validation service
+     * @param MappingService         $mappingService    The mapping service
      */
     public function __construct(
         GatewayResourceService $resourceService,
@@ -158,9 +159,9 @@ class UploadService
     /**
      * Processes the decoded objects to fit a schema.
      *
-     * @param  array        $objects The objects that have been derived from the file.
-     * @param  Schema       $schema  The schema the objects should be stored in.
-     * @param  Mapping|null $mapping The mapping to map the objects in.
+     * @param array        $objects The objects that have been derived from the file.
+     * @param Schema       $schema  The schema the objects should be stored in.
+     * @param Mapping|null $mapping The mapping to map the objects in.
      *
      * @return array The array of results.
      */
@@ -189,7 +190,7 @@ class UploadService
     /**
      * Handles a file upload.
      *
-     * @param  Request $request The request containing a file upload.
+     * @param Request $request The request containing a file upload.
      *
      * @return array The result of the file upload.
      */
