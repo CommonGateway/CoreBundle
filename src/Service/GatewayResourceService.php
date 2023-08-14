@@ -63,7 +63,7 @@ class GatewayResourceService
     {
         $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference]);
 
-        if (Uuid::isValid($reference)) {
+        if (Uuid::isValid($reference) === true && $entity === null) {
             $entity = $this->entityManager->find('App:Entity', $reference);
         }
 
