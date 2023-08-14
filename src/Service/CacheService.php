@@ -531,7 +531,7 @@ class CacheService
         }
 
         // If the value is a boolean we need a other format.
-        if (is_bool($value) === true) {
+        if (is_bool($value) === true || is_int($value) === true) {
             // Set as key '$eq' with the value.
             $value = ['$eq' => $value];
 
