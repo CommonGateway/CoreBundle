@@ -1135,7 +1135,7 @@ class RequestService
 
     /**
      * Checks and maps headers if they contain valid mapping UUID.
-     * 
+     *
      * This method looks into the headers to find an 'x-mapping' key and checks if it contains
      * a valid UUID. If valid, it retrieves the corresponding mapping and updates the result.
      *
@@ -1150,12 +1150,13 @@ class RequestService
                 $mapping = $this->entityManager->getRepository('App:Mapping')->find($this->data['headers']['x-mapping'][0]);
             }
         }
-        
+
         if (isset($mapping) === true) {
             $result = $this->mapResults($mapping, $result);
         }
 
         return $result;
+
     }//end checkMappingFromHeaders()
 
     /**
@@ -1180,6 +1181,7 @@ class RequestService
         }
 
         return $result;
+
     }//end mapResults()
 
     /**
