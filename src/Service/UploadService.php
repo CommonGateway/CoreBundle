@@ -151,7 +151,11 @@ class UploadService
     {
         $results = [];
         foreach ($objects as $object) {
-            $object = $this->mappingService->mapping($mapping, $object);
+            if($mapping !== null) {
+                $object = $this->mappingService->mapping($mapping, $object);
+            }
+
+            $object['_self']['schema']['id'] = $schema->getId()->toString();
 
             $results[] = [
                 'action'      => 'CREATE',
@@ -186,7 +190,11 @@ class UploadService
         }
 
         $schema  = $this->resourceService->getSchema($request->request->get('schema'), 'commongateway/corebundle');
-        $mapping = $this->resourceService->getMapping($request->request->get('mapping'), 'commongateway/corebundle');
+        $mapping = null;
+
+        if ($request->request->has('mapping')) {
+            $mapping = $this->resourceService->getMapping($request->request->get('mapping'), 'commongateway/corebundle');
+        }
 
         $objects = $this->decodeFile($extension, $file, $request);
         return $this->processObjects($objects, $schema, $mapping);
