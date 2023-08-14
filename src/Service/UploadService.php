@@ -173,7 +173,7 @@ class UploadService
     {
         $objects = $this->cacheService->searchObjects(null, [$field => $id], [$result['object']['_self']['schema']['id']]);
 
-        if(count($objects['results']) === 0) {
+        if (count($objects['results']) === 0) {
             return $result;
         }
 
@@ -181,7 +181,8 @@ class UploadService
         $result['action'] = 'UPDATE';
 
         return $result;
-    }
+
+    }//end getExistingObject()
 
     /**
      * Processes the decoded objects to fit a schema.
@@ -209,15 +210,14 @@ class UploadService
                 'id'          => null,
             ];
 
-            if(isset($object['_id']) === true) {
-                $field  = $mapping->getMapping()['_id'] ?? '_id';
+            if (isset($object['_id']) === true) {
+                $field  = ($mapping->getMapping()['_id'] ?? '_id');
                 $result = $this->getExistingObject($object['_id'], $field, $result);
                 unset($result['object']['_id']);
             }
 
             $results[] = $result;
-
-        }
+        }//end foreach
 
         return $results;
 
