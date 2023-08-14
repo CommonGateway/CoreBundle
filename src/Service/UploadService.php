@@ -151,7 +151,7 @@ class UploadService
     {
         $results = [];
         foreach ($objects as $object) {
-            if($mapping !== null) {
+            if ($mapping !== null) {
                 $object = $this->mappingService->mapping($mapping, $object);
             }
 
