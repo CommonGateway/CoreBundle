@@ -116,7 +116,7 @@ class DownloadService
 
     /**
      * Generates a CSV response from a given CSV string.
-     * 
+     *
      * This method takes a CSV-formatted string and creates a downloadable CSV response.
      * The client will be prompted to download the resulting file with the name "data.csv".
      *
@@ -124,16 +124,18 @@ class DownloadService
      *
      * @return Response A Symfony response object that serves the provided CSV string as a downloadable CSV file.
      */
-    public function downloadCSV(string $csvString): Response {
+    public function downloadCSV(string $csvString): Response
+    {
         $response = new Response($csvString, 200, ['Content-Type' => 'text/csv']);
         $response->headers->set('Content-Disposition', 'attachment; filename="data.csv"');
 
         return $response;
+
     }//end downloadCSV()
 
     /**
      * Generates an XLSX response from a given array of associative arrays.
-     * 
+     *
      * This method takes an array of associative arrays (potentially having nested arrays) and
      * creates an XLSX spreadsheet with columns for each unique key (using dot notation for nested keys).
      * The method then streams this spreadsheet as a downloadable XLSX file to the client.
@@ -142,34 +144,37 @@ class DownloadService
      *
      * @return Response A Symfony response object that allows the client to download the generated XLSX file.
      */
-    public function downloadXLSX(array $objects): Response {
+    public function downloadXLSX(array $objects): Response
+    {
         $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
+        $sheet       = $spreadsheet->getActiveSheet();
 
         if (empty($objects) === false) {
             // Flatten the array and get headers.
             $flatSample = $this->flattenArray($objects[0]);
-            $headers = array_keys($flatSample);
+            $headers    = array_keys($flatSample);
 
             // Set headers.
             $columnIndex = 'A';
             foreach ($headers as $header) {
-                $sheet->setCellValue($columnIndex . '1', $header);
+                $sheet->setCellValue($columnIndex.'1', $header);
                 $columnIndex++;
             }
 
             // Fill the data
-            $row = 2; // Starting from the second row, since first row contains headers.
+            $row = 2;
+            // Starting from the second row, since first row contains headers.
             foreach ($objects as $array) {
-                $flatArray = $this->flattenArray($array);
+                $flatArray   = $this->flattenArray($array);
                 $columnIndex = 'A';
                 foreach ($flatArray as $value) {
-                    $sheet->setCellValue($columnIndex . $row, $value);
+                    $sheet->setCellValue($columnIndex.$row, $value);
                     $columnIndex++;
                 }
+
                 $row++;
             }
-        }
+        }//end if
 
         // Create a streamed response to avoid memory issues with large files.
         $response = new StreamedResponse(
@@ -188,6 +193,7 @@ class DownloadService
         $response->headers->set('Content-Disposition', $dispositionHeader);
 
         return $response;
+
     }//end downloadXLSX()
 
     /**
@@ -201,16 +207,18 @@ class DownloadService
      *
      * @return array The flattened array with dot notation keys for nested values.
      */
-    private function flattenArray(array $array, string $prefix = ''): array {
+    private function flattenArray(array $array, string $prefix = ''): array
+    {
         $data = [];
         foreach ($array as $key => $value) {
             if (is_array($value) === true) {
-                $data += $this->flattenArray($value, $prefix . $key . '.');
+                $data += $this->flattenArray($value, $prefix.$key.'.');
             } else {
-                $data[$prefix . $key] = $value;
+                $data[$prefix.$key] = $value;
             }
         }
-        return $data;
-    }//end flattenArray()
 
+        return $data;
+
+    }//end flattenArray()
 }//end class

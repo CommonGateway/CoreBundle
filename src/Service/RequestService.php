@@ -1121,14 +1121,13 @@ class RequestService
         if (isset($this->data['headers']['accept'][0]) === true) {
             $result = $this->checkMappingFromHeaders($result);
             switch ($this->data['headers']['accept'][0]) {
-                case 'text/csv':
-                    $dataAsString = $this->serializeData($result['results'] ?? [$result], $contentType);
-                    return $this->downloadService->downloadCSV($dataAsString);
-                case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-                    return $this->downloadService->downloadXLSX($result['results'] ?? [$result]);
+            case 'text/csv':
+                $dataAsString = $this->serializeData(($result['results'] ?? [$result]), $contentType);
+                return $this->downloadService->downloadCSV($dataAsString);
+            case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                return $this->downloadService->downloadXLSX(($result['results'] ?? [$result]));
             }
         }//end if
-        
 
         return $this->createResponse($result);
 
