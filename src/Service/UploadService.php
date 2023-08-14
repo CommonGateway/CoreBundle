@@ -11,6 +11,8 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use App\Entity\Entity as Schema;
+use App\Entity\Mapping;
 use Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -38,6 +40,37 @@ class UploadService
         'xml',
         'yaml',
     ];
+
+    /**
+     * @var GatewayResourceService The gateway resource service.
+     */
+    private GatewayResourceService $resourceService;
+
+    /**
+     * @var ValidationService The validation service.
+     */
+    private ValidationService $validationService;
+
+    /**
+     * @var MappingService The mapping service.
+     */
+    private MappingService $mappingService;
+
+    /**
+     * @param GatewayResourceService $resourceService   The gateway resource service
+     * @param ValidationService      $validationService The validation service
+     * @param MappingService         $mappingService    The mapping service
+     */
+    public function __construct(
+        GatewayResourceService $resourceService,
+        ValidationService $validationService,
+        MappingService $mappingService
+    ) {
+        $this->resourceService   = $resourceService;
+        $this->validationService = $validationService;
+        $this->mappingService    = $mappingService;
+
+    }//end __construct()
 
     /**
      * Combines the headers of a table into a row to create an associative array.
@@ -124,17 +157,49 @@ class UploadService
     }//end decodeFile()
 
     /**
+     * Processes the decoded objects to fit a schema.
+     *
+     * @param array        $objects The objects that have been derived from the file.
+     * @param Schema       $schema  The schema the objects should be stored in.
+     * @param Mapping|null $mapping The mapping to map the objects in.
+     *
+     * @return array The array of results.
+     */
+    public function processObjects(array $objects, Schema $schema, ?Mapping $mapping): array
+    {
+        $results = [];
+        foreach ($objects as $object) {
+            if ($mapping !== null) {
+                $object = $this->mappingService->mapping($mapping, $object);
+            }
+
+            $object['_self']['schema']['id'] = $schema->getId()->toString();
+
+            $results[] = [
+                'action'      => 'CREATE',
+                'object'      => $object,
+                'validations' => $this->validationService->validateData($object, $schema, 'POST'),
+                'id'          => null,
+            ];
+        }
+
+        return $results;
+
+    }//end processObjects()
+
+    /**
      * Handles a file upload.
      *
-     * @param  Request $request The request containing a file upload.
-     * @return array
+     * @param Request $request The request containing a file upload.
+     *
+     * @return array The result of the file upload.
      */
     public function upload(Request $request): array
     {
         // Unsure about what the standard name will be here.
         $file = $request->files->get('upload');
         if ($file instanceof UploadedFile === false) {
-            throw new Exception("No file uploaded.");
+            return new Exception("No file uploaded.");
         }
 
         // Validate file extension.
@@ -143,7 +208,15 @@ class UploadService
             throw new Exception("File extension: $extension not supported.");
         }
 
-        return $this->decodeFile($extension, $file, $request);
+        $schema  = $this->resourceService->getSchema($request->request->get('schema'), 'commongateway/corebundle');
+        $mapping = null;
+
+        if ($request->request->has('mapping') === true) {
+            $mapping = $this->resourceService->getMapping($request->request->get('mapping'), 'commongateway/corebundle');
+        }
+
+        $objects = $this->decodeFile($extension, $file, $request);
+        return $this->processObjects($objects, $schema, $mapping);
 
     }//end upload()
 }//end class
