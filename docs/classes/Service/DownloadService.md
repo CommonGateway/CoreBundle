@@ -11,6 +11,7 @@ Handles incoming notification api-calls by finding or creating a synchronization
 | Name | Description |
 |------|-------------|
 |[__construct](#downloadservice__construct)|The constructor sets al needed variables.|
+|[downloadCSV](#downloadservicedownloadcsv)|Creates a CSV download response.|
 |[downloadPdf](#downloadservicedownloadpdf)|Downloads a pdf.|
 |[render](#downloadservicerender)|Renders a pdf.|
 
@@ -41,6 +42,32 @@ The constructor sets al needed variables.
 **Return Values**
 
 `void`
+
+
+<hr />
+
+
+### DownloadService::downloadCSV  
+
+**Description**
+
+```php
+public downloadCSV (string $csvString.)
+```
+
+Creates a CSV download response. 
+
+ 
+
+**Parameters**
+
+* `(string) $csvString.`
+
+**Return Values**
+
+`\Response`
+
+
 
 
 <hr />
