@@ -327,13 +327,14 @@ class AuthenticationService
     /**
      * Sends a post with auth info to fetch a jwt token.
      *
-     * @param Source $source
+     * @param Source     $source
+     * @param array|null $config The updated Source configuration array.
      *
      * @return string accessToken which is a JWT token.
      */
-    private function getPinkToken(Source $source): string
+    private function getPinkToken(Source $source, ?array $config): string
     {
-        $guzzleConfig = $source->getConfiguration();
+        $guzzleConfig = ($config ?? $source->getConfiguration());
         $client       = new Client($guzzleConfig);
         $response     = $client->post($source->getLocation().'/v1/auth/token', ['form_params' => ['client_id' => $source->getUsername(), 'client_secret' => $source->getPassword()]]);
 
@@ -396,18 +397,19 @@ class AuthenticationService
     /**
      * Checks from which type of auth we need to fetch a token from.
      *
-     * @param Source $source
-     * @param string $authType
+     * @param Source     $source
+     * @param string     $authType
+     * @param array|null $config   The optional, updated Source configuration array.
      *
      * @return string|null Fetched JWT token.
      */
-    public function getTokenFromUrl(Source $source, string $authType): ?string
+    public function getTokenFromUrl(Source $source, string $authType, ?array $config = null): ?string
     {
         switch ($authType) {
         case 'vrijbrp-jwt':
             return $this->getVrijbrpToken($source);
         case 'pink-jwt':
-            return $this->getPinkToken($source);
+            return $this->getPinkToken($source, $config);
         case 'oauth':
             return $this->getOauthToken($source);
         }//end switch
@@ -462,15 +464,20 @@ class AuthenticationService
 
     /**
      * Gets the authentication values through various checks.
+     *
+     * @param Source     $source The Source.
+     * @param array|null $config The optional, updated Source configuration array.
+     *
+     * @return array
      */
-    public function getAuthentication(Source $source): array
+    public function getAuthentication(Source $source, ?array $config = null): array
     {
         $requestOptions = [];
         switch ($source->getAuth()) {
         case 'jwt-HS256':
         case 'jwt-RS512':
         case 'jwt':
-            $requestOptions['headers']['Authorization'] = 'Bearer '.$this->getJwtToken($source);
+            $auth = 'Bearer '.$this->getJwtToken($source);
             break;
         case 'username-password':
             $requestOptions['auth'] = [
@@ -481,28 +488,30 @@ class AuthenticationService
         case 'vrijbrp-jwt':
         case 'pink-jwt':
         case 'oauth':
-            $requestOptions['headers']['Authorization'] = "Bearer {$this->getTokenFromUrl($source, $source->getAuth())}";
+            $auth = "Bearer {$this->getTokenFromUrl($source, $source->getAuth(), $config)}";
             break;
         case 'hmac':
-            $requestOptions['headers']['Authorization'] = $this->getHmacToken($requestOptions, $source);
+            $auth = $this->getHmacToken($requestOptions, $source);
             break;
         case 'apikey':
-            if ($source->getAuthorizationHeader()) {
-                switch ($source->getAuthorizationPassthroughMethod()) {
-                case 'query':
-                    $requestOptions['query'][$source->getAuthorizationHeader()] = $source->getApiKey();
-                    break;
-                default:
-                    $requestOptions['headers'][$source->getAuthorizationHeader()] = $source->getApiKey();
-                    break;
-                }
-            } else {
-                $requestOptions['headers']['Authorization'] = $source->getApiKey();
-            }
+            $auth = $source->getApiKey();
             break;
         default:
-            break;
+            return $requestOptions;
         }//end switch
+
+        if (isset($auth) === true && $source->getAuthorizationHeader()) {
+            switch ($source->getAuthorizationPassthroughMethod()) {
+            case 'query':
+                $requestOptions['query'][$source->getAuthorizationHeader()] = $auth;
+                break;
+            default:
+                $requestOptions['headers'][$source->getAuthorizationHeader()] = $auth;
+                break;
+            }
+        } else if (isset($auth) === true) {
+            $requestOptions['headers']['Authorization'] = $auth;
+        }
 
         return $requestOptions;
 
