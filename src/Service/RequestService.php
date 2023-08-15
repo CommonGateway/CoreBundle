@@ -903,7 +903,7 @@ class RequestService
                 $result = [
                     "message" => 'Validation errors',
                     'data'    => $validationErrors,
-                    'path'    => $this->data['pathRaw'],
+                    'path'    => $this->data['pathRaw'] ?? null,
                 ];
                 break;
             }//end if
