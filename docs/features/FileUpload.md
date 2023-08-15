@@ -5,7 +5,8 @@
 The common gateway supports creating objects through file uploads. The file uploads can be done in various file formats and the results of the file uploads can be adapted to fit the schema the objects have to be created in.
 
 ## Uploading a file
-Files can be uploaded to the endpoint /admin/file-upload with x-form-urlencoded or multipart-formdata encoding. The files are expected to be uploaded in the field ‘upload’.
+Files can be uploaded to the endpoint /admin/file-upload with x-form-urlencoded or multipart-formdata encoding. The files are expected to be uploaded in the field ‘upload’. Furthermore the schema of the uploaded objects is defined in the field ‘schema’, which can contain the reference to the schema, as well as the id of the schema. Mapping likewise is set in the field ‘mapping’, and can contain the reference to the mapping as well as the id. Mapping is no required field, the user can upload the file without mapping if a mapping is not required (or to see what the mapping should look like.
+
 The response of this call is in the following format:
 ```json
 {
@@ -28,7 +29,7 @@ The common gateway supports file uploads in the following formats:
 - JSON
 - Yaml
 - XML
-- CSV (default with the `,` as delimiter, but adaptable with request parameters, see below)
+- CSV (default with the `,` as delimiter, but adaptable with request parameters as described below)
 - xlsx (Microsoft Office Excel 2007 and newer)
 - xls (Microsoft Office Excel 2003 and older)
 - ods (LibreOffice and OpenOffice)
@@ -39,6 +40,22 @@ At this time the parameters apply only to spreadsheet files (ods, xls, xlsx and 
 
 The available parameters are:
 
-- `headers`: this parameter decides if the first row of a spreadsheet should be considered a header row, containing the keys for the columns in the rows below. If this parameter is set to `true`, the resulting objects will be converted in such a way that all values can be found using the header
+- `headers`: this parameter decides if the first row of a spreadsheet should be considered a header row, containing the keys for the columns in the rows below. If this parameter is set to true, the resulting objects will be converted in such a way that all values can be found using the header
 - `delimiter`: this parameter sets the delimiter character for csv files. By default this is the comma `,`, however, in many cases, csv files use the semicolon (`;`) as the delimiter (i.e. csv exports from Microsoft Office Excel always use the semicolon as delimiter). If this parameter is set, the character in the parameter is used as delimiter in parsing the CSV file.
+
+## Duplicate detection
+A mechanism to detect duplicates with the existing database is in place, this however depends on the definition of the data. If the data is an export from the same gateway, the detection will work on the `_id` field of the objects that are found in the exports from the gateway.
+
+If another field has to be the unique identifier in the existing data, this can be defined in the Mapping that is used for importing the data from a file. This is done by overriding the field `_id` with the field you want to be the unique identifier. for example:
+
+```json
+{
+  "mapping": {
+     "_id": "identifier"
+    }
+}
+```
+Where `identifier` is the field we want to designate as our unique identifier. Keep in mind that if casts are required to set the `identifier` field, these casts should also be run on the `_id` field.
+
+For further information on mapping, see the [mapping documentation](/docs/features/Mappings.md).
 
