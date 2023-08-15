@@ -612,7 +612,7 @@ class CallService
         }//end try
 
     }//end decodeResponse()
-    
+
     /**
      * Determines the authentication procedure based upon a source.
      *
