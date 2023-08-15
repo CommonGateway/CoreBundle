@@ -197,7 +197,9 @@ class ValueSubscriber implements EventSubscriberInterface
                 }
             }
 
-            $valueObject->getObjectEntity()->setDateModified(new \DateTime());
+            if ($valueObject->getObjectEntity() instanceof ObjectEntity) {
+                $valueObject->getObjectEntity()->setDateModified(new \DateTime());
+            }
         }//end if
 
     }//end preUpdate()
