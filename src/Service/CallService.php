@@ -248,8 +248,8 @@ class CallService
         $parsedUrl = parse_url($source->getLocation());
 
         // Set authentication if needed.
-        $config = array_merge_recursive($this->getAuthentication($source), $config);
         $createCertificates && $this->getCertificate($config);
+        $config = array_merge_recursive($this->getAuthentication($source, $config), $config);
 
         // Backwards compatible, $source->getHeaders = deprecated.
         $config['headers'] = array_merge(($source->getHeaders() ?? []), $config['headers']);
@@ -612,17 +612,18 @@ class CallService
         }//end try
 
     }//end decodeResponse()
-
+    
     /**
      * Determines the authentication procedure based upon a source.
      *
-     * @param Source $source The source to base the authentication procedure on
+     * @param Source     $source The source to base the authentication procedure on
+     * @param array|null $config The optional, updated Source configuration array.
      *
      * @return array The config parameters needed to authenticate on the source
      */
-    private function getAuthentication(Source $source): array
+    private function getAuthentication(Source $source, ?array $config = null): array
     {
-        return $this->authenticationService->getAuthentication($source);
+        return $this->authenticationService->getAuthentication($source, $config);
 
     }//end getAuthentication()
 
