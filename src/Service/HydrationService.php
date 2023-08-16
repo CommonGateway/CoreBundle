@@ -33,7 +33,6 @@ class HydrationService
      */
     private EntityManagerInterface $entityManager;
 
-
     /**
      * The constructor of the service.
      *
@@ -46,7 +45,6 @@ class HydrationService
         $this->entityManager = $entityManager;
 
     }//end __construct()
-
 
     /**
      * Recursively loop through an object, check if a synchronisation exists or create one (if necessary).
@@ -96,6 +94,4 @@ class HydrationService
         return $object;
 
     }//end searchAndReplaceSynchronizations()
-
-
 }//end class
