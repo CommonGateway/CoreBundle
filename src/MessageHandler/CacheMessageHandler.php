@@ -14,16 +14,20 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
 class CacheMessageHandler implements MessageHandlerInterface
 {
+
     private CacheService $cacheService;
+
     private ObjectEntityRepository $repository;
+
     private EntityManagerInterface $entityManager;
 
     public function __construct(CacheService $cacheService, ObjectEntityRepository $repository, EntityManagerInterface $entityManager)
     {
-        $this->cacheService = $cacheService;
-        $this->repository = $repository;
+        $this->cacheService  = $cacheService;
+        $this->repository    = $repository;
         $this->entityManager = $entityManager;
-    }
+
+    }//end __construct()
 
     public function __invoke(CacheMessage $message): void
     {
@@ -33,11 +37,13 @@ class CacheMessageHandler implements MessageHandlerInterface
             if ($object instanceof ObjectEntity) {
                 $this->cacheService->cacheObject($object);
             }
+
             $this->entityManager->clear();
         } catch (Exception $exception) {
             $this->entityManager->clear();
 
             throw $exception;
         }
-    }
-}
+
+    }//end __invoke()
+}//end class
