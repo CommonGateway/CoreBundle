@@ -1,5 +1,11 @@
 <?php
-
+/**
+ * A message to run caches asynchrounous
+ *
+ * @author Robert Zondervan (robert@conduction.nl)
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ */
 namespace CommonGateway\CoreBundle\Message;
 
 use Ramsey\Uuid\UuidInterface;
