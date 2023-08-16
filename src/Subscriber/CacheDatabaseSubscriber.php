@@ -6,12 +6,14 @@ namespace CommonGateway\CoreBundle\Subscriber;
 use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\ObjectEntity;
+use CommonGateway\CoreBundle\Message\CacheMessage;
 use CommonGateway\CoreBundle\Service\CacheService;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
  * @Author Ruben van der Linde <ruben@conduction.nl>, Barry Brands <barry@conduction.nl>, Robert Zondervan <robert@conduction.nl>
@@ -40,14 +42,21 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
      */
     private SessionInterface $session;
 
+    /**
+     * @var MessageBusInterface $messageBus The message bus.
+     */
+    private MessageBusInterface $messageBus;
+
     public function __construct(
         CacheService $cacheService,
         EntityManagerInterface $entityManager,
-        SessionInterface $session
+        SessionInterface $session,
+        MessageBusInterface $messageBus
     ) {
         $this->cacheService  = $cacheService;
         $this->entityManager = $entityManager;
         $this->session       = $session;
+        $this->messageBus    = $messageBus;
 
     }//end __construct()
 
@@ -88,9 +97,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         $object = $args->getObject();
         // if this subscriber only applies to certain entity types,
         if ($object instanceof ObjectEntity === true) {
-            // $this->updateParents($object);
-            $this->cacheService->cacheObject($object);
-
+            $this->messageBus->dispatch(new CacheMessage($object->getId()));
             return;
         }
 
