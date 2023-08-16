@@ -42,6 +42,9 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
      */
     private SessionInterface $session;
 
+    /**
+     * @var MessageBusInterface $messageBus The message bus.
+     */
     private MessageBusInterface $messageBus;
 
     public function __construct(

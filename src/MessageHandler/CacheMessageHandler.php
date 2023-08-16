@@ -29,6 +29,15 @@ class CacheMessageHandler implements MessageHandlerInterface
 
     }//end __construct()
 
+    /**
+     * Handles incoming CacheMessage resources.
+     *
+     * @param CacheMessage $message The incoming message.
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
     public function __invoke(CacheMessage $message): void
     {
         $object = $this->repository->find($message->getObjectEntityId());
