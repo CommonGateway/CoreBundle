@@ -137,7 +137,7 @@ class AuthenticationService
             return new JWK(
                 [
                     'kty' => 'oct',
-                    'k'   => \Safe\base64_encode(addslashes($source->getSecret())),
+                    'k'   => base64_encode(addslashes($source->getSecret())),
                 ]
             );
         } else {
@@ -439,13 +439,13 @@ class AuthenticationService
             }
 
             $md5  = md5($requestOptions['body'], true);
-            $post = \Safe\base64_encode($md5);
+            $post = base64_encode($md5);
             break;
         case 'GET':
             // @Todo: what about a get call?
         default:
             $get  = 'not a UTF-8 string';
-            $post = \Safe\base64_encode($get);
+            $post = base64_encode($get);
             break;
         }
 
@@ -456,7 +456,7 @@ class AuthenticationService
 
         $hmac = $websiteKey.$requestOptions['method'].$uri.$time.$nonce.$post;
         $hash = hash_hmac('sha256', $hmac, $source->getSecret(), true);
-        $hmac = \Safe\base64_encode($hash);
+        $hmac = base64_encode($hash);
 
         return 'hmac '.$websiteKey.':'.$hmac.':'.$nonce.':'.$time;
 

@@ -257,6 +257,11 @@ class CallService
             $config['headers']['Content-Type'] = $overwriteContentType;
         }
 
+        // Make sure we do not have an array of accept headers
+        if (isset($config['headers']['accept']) === true && is_array($config['headers']['accept']) === true) {
+            $config['headers']['accept'] = $config['headers']['accept'][0];
+        }
+
         $config['headers']['host'] = $parsedUrl['host'];
         $config['headers']         = $this->removeEmptyHeaders($config['headers']);
 
