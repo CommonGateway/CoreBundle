@@ -154,7 +154,7 @@ class DownloadService
             foreach ($objects as $key => $object) {
                 $objects[$key] = $object->toArray();
             }
-         }
+        }
 
         if (empty($objects) === false) {
             // Flatten the array and get headers.
