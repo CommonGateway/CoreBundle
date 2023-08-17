@@ -16,6 +16,8 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use MongoDB\Model\BSONDocument;
+use MongoDB\Model\BSONArray;
 
 /**
  * Handles incoming notification api-calls by finding or creating a synchronization and synchronizing an object.
@@ -134,6 +136,33 @@ class DownloadService
 
     }//end downloadCSV()
 
+
+    /**
+     * Converts a BSONDocument or BSONArray object into an associative array.
+     * If the given parameter is a nested BSONDocument or BSONArray, the function 
+     * recursively transforms all nested objects into arrays as well.
+     *
+     * @param mixed $objectsOrObjectOrValue An instance of BSONDocument, BSONArray, 
+     *                                     other objects, array or value.
+     *
+     * @return array|mixed Returns the converted associative array if the input was 
+     *                     a BSONDocument or BSONArray. Otherwise, it returns the 
+     *                     input as it was provided.
+     */
+    private function bsonDocumentToArray($objectsOrObjectOrValue) {
+        if ($objectsOrObjectOrValue instanceof BSONDocument === true || $objectsOrObjectOrValue instanceof BSONArray === true) {
+            $objectsOrObjectOrValue = $objectsOrObjectOrValue->getArrayCopy();
+        }
+    
+        foreach ($objectsOrObjectOrValue as $key => $objectOrValue) {
+            if ($objectOrValue instanceof BSONDocument === true || $objectOrValue instanceof BSONArray === true || is_array($objectOrValue) === true) {
+                $objectsOrObjectOrValue[$key] = $this->bsonDocumentToArray($objectOrValue);
+            }
+        }
+    
+        return $objectsOrObjectOrValue;
+    }//end bsonDocumentToArray()
+
     /**
      * Generates an XLSX response from a given array of associative arrays.
      *
@@ -150,13 +179,11 @@ class DownloadService
         $spreadsheet = new Spreadsheet();
         $sheet       = $spreadsheet->getActiveSheet();
 
-        if (isset($objects[0]) === true && $objects[0] instanceof ObjectEntity === true) {
-            foreach ($objects as $key => $object) {
-                $objects[$key] = $object->toArray();
-            }
-        }
-
         if (empty($objects) === false) {
+            if ($objects[0] instanceof BSONDocument || $objects[0] instanceof BSONArray === true) {
+                $objects = $this->bsonDocumentToArray($objects);
+            }
+
             // Flatten the array and get headers.
             $flatSample = $this->flattenArray($objects[0]);
             $headers    = array_keys($flatSample);
