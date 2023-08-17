@@ -57,18 +57,20 @@ class UploadService
     private MappingService $mappingService;
 
     /**
-     * @param GatewayResourceService $resourceService   The gateway resource service
-     * @param ValidationService      $validationService The validation service
-     * @param MappingService         $mappingService    The mapping service
+     * @var CacheService The cache service.
      */
+    private CacheService $cacheService;
+
     public function __construct(
         GatewayResourceService $resourceService,
         ValidationService $validationService,
-        MappingService $mappingService
+        MappingService $mappingService,
+        CacheService $cacheService
     ) {
         $this->resourceService   = $resourceService;
         $this->validationService = $validationService;
         $this->mappingService    = $mappingService;
+        $this->cacheService      = $cacheService;
 
     }//end __construct()
 
@@ -157,6 +159,32 @@ class UploadService
     }//end decodeFile()
 
     /**
+     * Checks if the object already exists in the database.
+     *
+     * @param mixed  $id     The identifier of the object.
+     * @param string $field  The field the identifier is in.
+     * @param array  $result The result record.
+     *
+     * @return array The updated result record.
+     *
+     * @throws Exception
+     */
+    public function getExistingObject($id, string $field, array $result): array
+    {
+        $objects = $this->cacheService->searchObjects(null, [$field => $id], [$result['object']['_self']['schema']['id']]);
+
+        if (count($objects['results']) === 0) {
+            return $result;
+        }
+
+        $result['id']     = $objects['results'][0]['_id'];
+        $result['action'] = 'UPDATE';
+
+        return $result;
+
+    }//end getExistingObject()
+
+    /**
      * Processes the decoded objects to fit a schema.
      *
      * @param array        $objects The objects that have been derived from the file.
@@ -175,13 +203,21 @@ class UploadService
 
             $object['_self']['schema']['id'] = $schema->getId()->toString();
 
-            $results[] = [
+            $result = [
                 'action'      => 'CREATE',
                 'object'      => $object,
                 'validations' => $this->validationService->validateData($object, $schema, 'POST'),
                 'id'          => null,
             ];
-        }
+
+            if (isset($object['_id']) === true) {
+                $field  = ($mapping->getMapping()['_id'] ?? '_id');
+                $result = $this->getExistingObject($object['_id'], $field, $result);
+                unset($result['object']['_id']);
+            }
+
+            $results[] = $result;
+        }//end foreach
 
         return $results;
 
