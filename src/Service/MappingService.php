@@ -279,7 +279,7 @@ class MappingService
             $value = base64_encode($value);
             break;
         case 'base64Decode':
-            $value = base64_decode($value);
+            $value = \Safe\base64_decode($value);
             break;
         case 'json':
             $value = json_encode($value);

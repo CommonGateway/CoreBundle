@@ -50,7 +50,7 @@ final class Base64String extends AbstractRule
         // Get mimeType using the base64 to open a file and compare it with the mimeType from the base64 input string.
         try {
             // Use the base64 to open a file and get the mimeType.
-            $fileData  = base64_decode($base64);
+            $fileData  = \Safe\base64_decode($base64);
             $file      = finfo_open();
             $mimeType1 = finfo_buffer($file, $fileData, FILEINFO_MIME_TYPE);
             finfo_close($file);
