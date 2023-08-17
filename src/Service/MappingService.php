@@ -276,7 +276,7 @@ class MappingService
             $value = html_entity_decode($value);
             break;
         case 'base64':
-            $value = \Safe\base64_encode($value);
+            $value = base64_encode($value);
             break;
         case 'base64Decode':
             $value = \Safe\base64_decode($value);
