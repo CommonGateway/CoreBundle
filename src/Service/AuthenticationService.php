@@ -89,9 +89,9 @@ class AuthenticationService
     public function convertRSAtoJWK(Source $source): JWK
     {
         if ($source->getPrivateKey()) {
-            $rsa = \Safe\base64_decode($source->getPrivateKey());
+            $rsa = base64_decode($source->getPrivateKey());
         } else {
-            $rsa = \Safe\base64_decode($this->parameterBag->get('jwt.privateKey'));
+            $rsa = base64_decode($this->parameterBag->get('jwt.privateKey'));
         }//end if
 
         $filename = $this->fileService->writeFile('privateKey', $rsa);

@@ -53,7 +53,7 @@ final class Base64MimeTypes extends AbstractRule
 
         try {
             // Use the base64 to open a file and get the mimeType.
-            $fileData = \Safe\base64_decode($base64);
+            $fileData = base64_decode($base64);
             $file     = finfo_open();
             $mimeType = finfo_buffer($file, $fileData, FILEINFO_MIME_TYPE);
             finfo_close($file);

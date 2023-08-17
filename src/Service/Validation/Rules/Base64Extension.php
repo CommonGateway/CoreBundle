@@ -234,7 +234,7 @@ final class Base64Extension extends AbstractRule
 
         // Get mime type from base64.
         $explode_base64 = explode(',', $input['base64']);
-        $imgdata        = \Safe\base64_decode(end($explode_base64));
+        $imgdata        = base64_decode(end($explode_base64));
         $file           = finfo_open();
         $mimeType       = finfo_buffer($file, $imgdata, FILEINFO_MIME_TYPE);
         finfo_close($file);
