@@ -150,7 +150,7 @@ class DownloadService
         $spreadsheet = new Spreadsheet();
         $sheet       = $spreadsheet->getActiveSheet();
 
-        if ($objects[0] instanceof ObjectEntity === true) {
+        if (isset($objects[0]) === true && $objects[0] instanceof ObjectEntity === true) {
             foreach ($objects as $key => $object) {
                 $objects[$key] = $object->toArray();
             }
