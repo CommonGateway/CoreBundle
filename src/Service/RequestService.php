@@ -8,6 +8,7 @@ use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\Gateway as Source;
 use App\Entity\ObjectEntity;
+use App\Entity\Mapping;
 use App\Event\ActionEvent;
 use App\Exception\GatewayException;
 use App\Service\SynchronizationService;
@@ -1116,14 +1117,72 @@ class RequestService
             }
         }//end if
 
-        if (isset($this->data['headers']['accept']) === true && ($this->data['headers']['accept'] === 'text/csv' || in_array('text/csv', $this->data['headers']['accept']))) {
-            $csvString = $this->serializeData(($result['results'] ?? $result), $contentType);
-            return $this->downloadService->downloadCSV($csvString);
-        }
+        // Check download accept types.
+        if (isset($this->data['headers']['accept'][0]) === true) {
+            $result = $this->checkMappingFromHeaders($result);
+            switch ($this->data['headers']['accept'][0]) {
+            case 'text/csv':
+                $dataAsString = $this->serializeData(($result['results'] ?? [$result]), $contentType);
+                return $this->downloadService->downloadCSV($dataAsString);
+            case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                return $this->downloadService->downloadXLSX(($result['results'] ?? [$result]));
+            }
+        }//end if
 
         return $this->createResponse($result);
 
     }//end requestHandler()
+
+    /**
+     * Checks and maps headers if they contain valid mapping UUID.
+     *
+     * This method looks into the headers to find an 'x-mapping' key and checks if it contains
+     * a valid UUID. If valid, it retrieves the corresponding mapping and updates the result.
+     *
+     * @param array $result The current result.
+     *
+     * @return array The updated result after potential mapping.
+     */
+    private function checkMappingFromHeaders(array $result): array
+    {
+        if (isset($this->data['headers']['x-mapping'][0]) === true) {
+            if (Uuid::isValid($this->data['headers']['x-mapping'][0]) === true) {
+                $mapping = $this->entityManager->getRepository('App:Mapping')->find($this->data['headers']['x-mapping'][0]);
+            }
+        }
+
+        if (isset($mapping) === true) {
+            $result = $this->mapResults($mapping, $result);
+        }
+
+        return $result;
+
+    }//end checkMappingFromHeaders()
+
+    /**
+     * Maps the results using the provided mapping.
+     *
+     * This method checks the result for a 'results' key. If it exists, each object inside 'results'
+     * gets mapped using the provided mapping. If not, the entire result gets mapped.
+     *
+     * @param Mapping $mapping The mapping each object needs to be mapped with.
+     * @param array   $result  The current result.
+     *
+     * @return array The updated result after mapping.
+     */
+    private function mapResults(Mapping $mapping, array $result): array
+    {
+        if (isset($result['results']) === true) {
+            foreach ($result['results'] as $key => $object) {
+                $result['results'][$key] = $this->mappingService->mapping($mapping, $object);
+            }
+        } else {
+            $result = $this->mappingService->mapping($mapping, $result);
+        }
+
+        return $result;
+
+    }//end mapResults()
 
     /**
      * Handle output config of the endpoint.

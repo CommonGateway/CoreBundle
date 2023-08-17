@@ -208,6 +208,8 @@ class EndpointService
         case 'text/xml':
         case 'application/xml':
             return 'xml';
+        case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+            return 'xlsx';
         case 'text/csv':
             return 'csv';
         }//end switch

@@ -11,8 +11,9 @@ Handles incoming notification api-calls by finding or creating a synchronization
 | Name | Description |
 |------|-------------|
 |[__construct](#downloadservice__construct)|The constructor sets al needed variables.|
-|[downloadCSV](#downloadservicedownloadcsv)|Creates a CSV download response.|
+|[downloadCSV](#downloadservicedownloadcsv)|Generates a CSV response from a given CSV string.|
 |[downloadPdf](#downloadservicedownloadpdf)|Downloads a pdf.|
+|[downloadXLSX](#downloadservicedownloadxlsx)|Generates an XLSX response from a given array of associative arrays.|
 |[render](#downloadservicerender)|Renders a pdf.|
 
 
@@ -52,22 +53,24 @@ The constructor sets al needed variables.
 **Description**
 
 ```php
-public downloadCSV (string $csvString.)
+public downloadCSV (string $csvString)
 ```
 
-Creates a CSV download response. 
+Generates a CSV response from a given CSV string. 
 
- 
+This method takes a CSV-formatted string and creates a downloadable CSV response.  
+The client will be prompted to download the resulting file with the name "data.csv". 
 
 **Parameters**
 
-* `(string) $csvString.`
+* `(string) $csvString`
+: The CSV-formatted string to be returned as a downloadable file.  
 
 **Return Values**
 
 `\Response`
 
-
+> A Symfony response object that serves the provided CSV string as a downloadable CSV file.
 
 
 <hr />
@@ -95,6 +98,35 @@ Downloads a pdf.
 `string`
 
 > The pdf as string output.
+
+
+<hr />
+
+
+### DownloadService::downloadXLSX  
+
+**Description**
+
+```php
+public downloadXLSX (array $objects)
+```
+
+Generates an XLSX response from a given array of associative arrays. 
+
+This method takes an array of associative arrays (potentially having nested arrays) and  
+creates an XLSX spreadsheet with columns for each unique key (using dot notation for nested keys).  
+The method then streams this spreadsheet as a downloadable XLSX file to the client. 
+
+**Parameters**
+
+* `(array) $objects`
+: An array of associative arrays to convert into an XLSX file.  
+
+**Return Values**
+
+`\Response`
+
+> A Symfony response object that allows the client to download the generated XLSX file.
 
 
 <hr />

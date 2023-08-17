@@ -11,8 +11,10 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Twig\Environment;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Serializer\Encoder\CsvEncoder;
-use Symfony\Component\Serializer\Serializer;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Handles incoming notification api-calls by finding or creating a synchronization and synchronizing an object.
@@ -113,11 +115,14 @@ class DownloadService
     }//end downloadPdf()
 
     /**
-     * Creates a CSV download response.
+     * Generates a CSV response from a given CSV string.
      *
-     * @param string $csvString.
+     * This method takes a CSV-formatted string and creates a downloadable CSV response.
+     * The client will be prompted to download the resulting file with the name "data.csv".
      *
-     * @return Response
+     * @param string $csvString The CSV-formatted string to be returned as a downloadable file.
+     *
+     * @return Response A Symfony response object that serves the provided CSV string as a downloadable CSV file.
      */
     public function downloadCSV(string $csvString): Response
     {
@@ -127,4 +132,93 @@ class DownloadService
         return $response;
 
     }//end downloadCSV()
+
+    /**
+     * Generates an XLSX response from a given array of associative arrays.
+     *
+     * This method takes an array of associative arrays (potentially having nested arrays) and
+     * creates an XLSX spreadsheet with columns for each unique key (using dot notation for nested keys).
+     * The method then streams this spreadsheet as a downloadable XLSX file to the client.
+     *
+     * @param array $objects An array of associative arrays to convert into an XLSX file.
+     *
+     * @return Response A Symfony response object that allows the client to download the generated XLSX file.
+     */
+    public function downloadXLSX(array $objects): Response
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet       = $spreadsheet->getActiveSheet();
+
+        if (empty($objects) === false) {
+            // Flatten the array and get headers.
+            $flatSample = $this->flattenArray($objects[0]);
+            $headers    = array_keys($flatSample);
+
+            // Set headers.
+            $columnIndex = 'A';
+            foreach ($headers as $header) {
+                $sheet->setCellValue($columnIndex.'1', $header);
+                $columnIndex++;
+            }
+
+            // Fill the data
+            $row = 2;
+            // Starting from the second row, since first row contains headers.
+            foreach ($objects as $array) {
+                $flatArray   = $this->flattenArray($array);
+                $columnIndex = 'A';
+                foreach ($flatArray as $value) {
+                    $sheet->setCellValue($columnIndex.$row, $value);
+                    $columnIndex++;
+                }
+
+                $row++;
+            }
+        }//end if
+
+        // Create a streamed response to avoid memory issues with large files.
+        $response = new StreamedResponse(
+            function () use ($spreadsheet) {
+                $writer = new Xlsx($spreadsheet);
+                $writer->save('php://output');
+            }
+        );
+
+        // Set headers for XLSX file download.
+        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $dispositionHeader = $response->headers->makeDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            'data.xlsx'
+        );
+        $response->headers->set('Content-Disposition', $dispositionHeader);
+
+        return $response;
+
+    }//end downloadXLSX()
+
+    /**
+     * Flattens a nested associative array into a single-level array.
+     *
+     * Given an array with potential nested arrays, this method will transform it into a single-level array.
+     * Nested keys will be concatenated with a dot notation.
+     *
+     * @param array  $array  The array to flatten.
+     * @param string $prefix Used for recursive calls to prefix the keys. Generally, this shouldn't be provided during an initial call.
+     *
+     * @return array The flattened array with dot notation keys for nested values.
+     */
+    private function flattenArray(array $array, string $prefix = ''): array
+    {
+        $data = [];
+        foreach ($array as $key => $value) {
+            if (is_array($value) === true) {
+                $data += $this->flattenArray($value, $prefix.$key.'.');
+            } else {
+                $data[$prefix.$key] = $value;
+            }
+        }
+
+        return $data;
+
+    }//end flattenArray()
 }//end class
