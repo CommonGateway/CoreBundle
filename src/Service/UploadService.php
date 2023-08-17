@@ -144,15 +144,12 @@ class UploadService
                 $headers = array_shift($data);
                 $data    = $this->makeArrayAssociative($data, $headers);
             }
-
-            $data['objects'] = $data;
-
             break;
         default:
             $data = $serializer->decode($fileContent, $extension);
         }//end switch
 
-        $objects = $data['objects'];
+        $objects = $data;
 
         return $objects;
 
