@@ -597,19 +597,19 @@ class CallService
         }
 
         switch ($contentType) {
-            case 'text/yaml':
-            case 'text/x-yaml':
-                return $yamlEncoder->decode($responseBody, 'yaml');
-            case 'text/xml':
-            case 'text/xml; charset=utf-8':
-            case 'application/pdf':
-                $this->callLogger->debug('Response content: pdf binary code..');
-                return ['base64' => base64_encode($responseBody)];
-            case 'application/xml':
-                return $xmlEncoder->decode($responseBody, 'xml');
-            case 'application/json':
-            default:
-                $result = json_decode($responseBody, true);
+        case 'text/yaml':
+        case 'text/x-yaml':
+            return $yamlEncoder->decode($responseBody, 'yaml');
+        case 'text/xml':
+        case 'text/xml; charset=utf-8':
+        case 'application/pdf':
+            $this->callLogger->debug('Response content: pdf binary code..');
+            return ['base64' => base64_encode($responseBody)];
+        case 'application/xml':
+            return $xmlEncoder->decode($responseBody, 'xml');
+        case 'application/json':
+        default:
+            $result = json_decode($responseBody, true);
         }//end switch
 
         if (isset($result) === true) {
