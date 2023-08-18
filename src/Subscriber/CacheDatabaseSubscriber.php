@@ -97,7 +97,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         $object = $args->getObject();
         // if this subscriber only applies to certain entity types,
         if ($object instanceof ObjectEntity === true) {
-//            $this->messageBus->dispatch(new CacheMessage($object->getId()));
+            // $this->messageBus->dispatch(new CacheMessage($object->getId()));
             $this->cacheService->cacheObject($object);
             return;
         }
