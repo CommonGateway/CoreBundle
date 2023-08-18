@@ -1125,6 +1125,7 @@ class RequestService
             } else {
                 $result = $result['results'];
             }
+
             switch ($this->data['headers']['accept'][0]) {
             case 'text/csv':
                 $dataAsString = $this->serializeData($result, $contentType);

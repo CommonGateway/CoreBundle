@@ -136,7 +136,6 @@ class DownloadService
 
     }//end downloadCSV()
 
-
     /**
      * Generates an XLSX response from a given array of associative arrays.
      *
