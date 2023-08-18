@@ -16,6 +16,8 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use MongoDB\Model\BSONDocument;
+use MongoDB\Model\BSONArray;
 
 /**
  * Handles incoming notification api-calls by finding or creating a synchronization and synchronizing an object.
@@ -150,13 +152,11 @@ class DownloadService
         $spreadsheet = new Spreadsheet();
         $sheet       = $spreadsheet->getActiveSheet();
 
-        if (isset($objects[0]) === true && $objects[0] instanceof ObjectEntity === true) {
-            foreach ($objects as $key => $object) {
-                $objects[$key] = $object->toArray();
-            }
-        }
-
         if (empty($objects) === false) {
+            if ($objects[0] instanceof BSONDocument || $objects[0] instanceof BSONArray === true) {
+                $objects = \Safe\json_decode(\Safe\json_encode($objects), true);
+            }
+
             // Flatten the array and get headers.
             $flatSample = $this->flattenArray($objects[0]);
             $headers    = array_keys($flatSample);

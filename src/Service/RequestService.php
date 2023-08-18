@@ -1120,12 +1120,18 @@ class RequestService
         // Check download accept types.
         if (isset($this->data['headers']['accept'][0]) === true) {
             $result = $this->checkMappingFromHeaders($result);
+            if (empty($this->identification) === false) {
+                $result = [$result];
+            } else {
+                $result = $result['results'];
+            }
+
             switch ($this->data['headers']['accept'][0]) {
             case 'text/csv':
-                $dataAsString = $this->serializeData(($result['results'] ?? [$result]), $contentType);
+                $dataAsString = $this->serializeData($result, $contentType);
                 return $this->downloadService->downloadCSV($dataAsString);
             case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-                return $this->downloadService->downloadXLSX(($result['results'] ?? [$result]));
+                return $this->downloadService->downloadXLSX($result);
             }
         }//end if
 
