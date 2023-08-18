@@ -1118,7 +1118,7 @@ class RequestService
         }//end if
 
         // Check download accept types.
-        if (isset($this->data['headers']['accept'][0]) === true) {
+        if (isset($this->data['headers']['accept'][0]) === true && in_array($this->data['headers']['accept'][0], ['text/csv', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']) === true) {
             $result = $this->checkMappingFromHeaders($result);
             if (empty($this->identification) === false) {
                 $result = [$result];
