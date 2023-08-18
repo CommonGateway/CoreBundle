@@ -155,7 +155,7 @@ class DownloadService
 
         if (empty($objects) === false) {
             if ($objects[0] instanceof BSONDocument || $objects[0] instanceof BSONArray === true) {
-                $objects = json_decode(json_encode($objects), true);
+                $objects = \Safe\json_decode(\Safe\json_encode($objects), true);
             }
 
             // Flatten the array and get headers.
