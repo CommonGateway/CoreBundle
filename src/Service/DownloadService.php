@@ -138,32 +138,6 @@ class DownloadService
 
 
     /**
-     * Converts a BSONDocument or BSONArray object into an associative array.
-     * If the given parameter is a nested BSONDocument or BSONArray, the function 
-     * recursively transforms all nested objects into arrays as well.
-     *
-     * @param mixed $objectsOrObjectOrValue An instance of BSONDocument, BSONArray, 
-     *                                     other objects, array or value.
-     *
-     * @return array|mixed Returns the converted associative array if the input was 
-     *                     a BSONDocument or BSONArray. Otherwise, it returns the 
-     *                     input as it was provided.
-     */
-    private function bsonDocumentToArray($objectsOrObjectOrValue) {
-        if ($objectsOrObjectOrValue instanceof BSONDocument === true || $objectsOrObjectOrValue instanceof BSONArray === true) {
-            $objectsOrObjectOrValue = $objectsOrObjectOrValue->getArrayCopy();
-        }
-    
-        foreach ($objectsOrObjectOrValue as $key => $objectOrValue) {
-            if ($objectOrValue instanceof BSONDocument === true || $objectOrValue instanceof BSONArray === true || is_array($objectOrValue) === true) {
-                $objectsOrObjectOrValue[$key] = $this->bsonDocumentToArray($objectOrValue);
-            }
-        }
-    
-        return $objectsOrObjectOrValue;
-    }//end bsonDocumentToArray()
-
-    /**
      * Generates an XLSX response from a given array of associative arrays.
      *
      * This method takes an array of associative arrays (potentially having nested arrays) and
@@ -181,7 +155,7 @@ class DownloadService
 
         if (empty($objects) === false) {
             if ($objects[0] instanceof BSONDocument || $objects[0] instanceof BSONArray === true) {
-                $objects = $this->bsonDocumentToArray($objects);
+                $objects = json_decode(json_encode($objects), true);
             }
 
             // Flatten the array and get headers.
