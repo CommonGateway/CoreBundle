@@ -41,6 +41,7 @@ If you don't like to read documentation online there is also a complete [manual]
 * [Features](/docs/features/Features.md)
 * [Federalization](/docs/features/Federalization.md)
 * [File imports](/docs/features/FileUpload.md)
+* [Import & export](/docs/features/ImportExport.md)
 * [Logging](/docs/features/Logging.md)
 * [Mappings](/docs/features/Mappings.md)
 * [Monitoring](/docs/features/Monitoring.md)
