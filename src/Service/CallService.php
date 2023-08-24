@@ -228,17 +228,16 @@ class CallService
             throw new HttpException('409', "This source is not enabled: {$source->getName()}");
         }
 
+        if (empty($source->getLocation()) === true) {
+            throw new HttpException('409', "This source has no location: {$source->getName()}");
+        }
+
         if (isset($config['headers']['Content-Type']) === true) {
             $overwriteContentType = $config['headers']['Content-Type'];
         }
 
         if (empty($source->getConfiguration()) === false) {
             $config = array_merge_recursive($config, $source->getConfiguration());
-        }
-
-        // $log = $this->createDefaultLog($source, $endpoint, $method, $config);
-        if (empty($source->getLocation()) === true) {
-            throw new HttpException('409', "This source has no location: {$source->getName()}");
         }
 
         if (isset($config['headers']) === false) {
@@ -265,12 +264,15 @@ class CallService
         $config['headers']['host'] = $parsedUrl['host'];
         $config['headers']         = $this->removeEmptyHeaders($config['headers']);
 
+        $config = $this->handleEndpointsConfigOut($source, $endpoint, $config);
+
         $url = $source->getLocation().$endpoint;
         $this->callLogger->info('Calling url '.$url);
-
-        $config = $this->handleEndpointsConfigOut($source, $endpoint, $config);
         $this->callLogger->debug('Call configuration: ', $config);
+
         // Let's make the call.
+        $source->setLastCall(new \DateTime());
+        $this->entityManager->persist($source);
         try {
             if ($asynchronous === false) {
                 $response = $this->client->request($method, $url, $config);
@@ -280,12 +282,27 @@ class CallService
 
             $this->callLogger->info("Request to $url succesful");
             $this->callLogger->notice("Request to $url returned {$response->getStatusCode()}");
+
+            $source->setStatus($response->getStatusCode());
+            $this->entityManager->persist($source);
         } catch (ServerException | ClientException | RequestException | Exception $exception) {
-            return $this->handleCallException($exception, $source, $endpoint);
+            $this->callLogger->error('Request failed with error '.$exception);
+
+            $response = $this->handleCallException($exception, $source, $endpoint);
+
+            $source->setStatus($response->getStatusCode());
+            $this->entityManager->persist($source);
+
+            return $response;
         } catch (GuzzleException $exception) {
             $this->callLogger->error('Request failed with error '.$exception);
 
-            return $this->handleEndpointsConfigIn($source, $endpoint, null, $exception, null);
+            $response = $this->handleEndpointsConfigIn($source, $endpoint, null, $exception, null);
+
+            $source->setStatus($response->getStatusCode());
+            $this->entityManager->persist($source);
+
+            return $response;
         }//end try
 
         $createCertificates && $this->removeFiles($config);
