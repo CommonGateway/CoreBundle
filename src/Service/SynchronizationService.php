@@ -57,10 +57,9 @@ class SynchronizationService
     /**
      * Setting up the base class with required services.
      *
-     * @param Environment            $twig.
-     * @param LoggerInterface        $actionLogger.
-     * @param SynchronizationService $syncService   Old one from the gateway.
-     * @param CallService            $callService.
+     * @param LoggerInterface           $actionLogger   .
+     * @param OldSynchronizationService $oldSyncService Old one from the gateway.
+     * @param CallService               $callService    .
      */
     public function __construct(
         LoggerInterface $actionLogger,
@@ -103,6 +102,8 @@ class SynchronizationService
      * @param string|null          $method          The request method PUT or POST.
      *
      * @return array The response body of the outgoing call, or an empty array on error.
+     *
+     * @throws Exception
      */
     public function synchronizeTemp(?Synchronization &$synchronization = null, array $objectArray, ObjectEntity $objectEntity, Schema $schema, string $location, ?string $idLocation = null, ?string $method = 'POST'): array
     {
@@ -132,8 +133,12 @@ class SynchronizationService
                     'message' => ['preMessage' => 'Error while doing syncToSource in zgwToVrijbrpHandler: '],
                 ]
             );
-            $this->logger->error('Could not synchronize object. Error message: '.$exception->getMessage().'\nFull Response'.($exception instanceof ServerException || $exception instanceof ClientException || $exception instanceof RequestException === true ? $exception->getResponse()->getBody() : ''));
-            isset($this->style) && $this->style->error('Could not synchronize object. Error message: '.$exception->getMessage().'\nFull Response'.($exception instanceof ServerException || $exception instanceof ClientException || $exception instanceof RequestException === true ? $exception->getResponse()->getBody() : ''));
+            if (method_exists(get_class($exception), 'getResponse') === true && $exception->getResponse() !== null) {
+                $responseBody = $exception->getResponse()->getBody();
+            }
+
+            $this->logger->error('Could not synchronize object. Error message: '.$exception->getMessage().'\nFull Response: '.($responseBody ?? ''));
+            isset($this->style) && $this->style->error('Could not synchronize object. Error message: '.$exception->getMessage().'\nFull Response: '.($responseBody ?? ''));
 
             return [];
         }//end try
