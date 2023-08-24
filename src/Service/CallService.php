@@ -244,8 +244,6 @@ class CallService
             $config['headers'] = [];
         }
 
-        $parsedUrl = parse_url($source->getLocation());
-
         // Set authentication if needed.
         $createCertificates && $this->getCertificate($config);
         $config = array_merge_recursive($this->getAuthentication($source, $config), $config);
@@ -260,20 +258,21 @@ class CallService
         if (isset($config['headers']['accept']) === true && is_array($config['headers']['accept']) === true) {
             $config['headers']['accept'] = $config['headers']['accept'][0];
         }
-
+    
+        $parsedUrl = parse_url($source->getLocation());
         $config['headers']['host'] = $parsedUrl['host'];
         $config['headers']         = $this->removeEmptyHeaders($config['headers']);
 
         $config = $this->handleEndpointsConfigOut($source, $endpoint, $config);
-
-        $url = $source->getLocation().$endpoint;
-        $this->callLogger->info('Calling url '.$url);
-        $this->callLogger->debug('Call configuration: ', $config);
-
+    
         // Guzzle sets the Content-Type self when using multipart.
         if (isset($config['multipart']) === true && isset($config['headers']['Content-Type']) === true) {
             unset($config['headers']['Content-Type']);
         }
+
+        $url = $source->getLocation().$endpoint;
+        $this->callLogger->info('Calling url '.$url);
+        $this->callLogger->debug('Call configuration: ', $config);
 
         // Let's make the call.
         $source->setLastCall(new \DateTime());
