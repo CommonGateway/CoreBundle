@@ -270,6 +270,12 @@ class CallService
 
         $config = $this->handleEndpointsConfigOut($source, $endpoint, $config);
         $this->callLogger->debug('Call configuration: ', $config);
+
+        // Guzzle sets the Content-Type self when using multipart.
+        if (isset($config['multipart']) === true && isset($config['headers']['Content-Type']) === true) {
+            unset($config['headers']['Content-Type']);
+        }
+
         // Let's make the call.
         try {
             if ($asynchronous === false) {
