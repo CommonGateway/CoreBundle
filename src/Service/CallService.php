@@ -583,17 +583,28 @@ class CallService
             return [];
         }
 
-        $this->callLogger->debug('Response content: '.$responseBody);
+        // This if is statement prevents binary code from being used a string.
+        if ($contentType !== 'application/pdf') {
+            $this->callLogger->debug('Response content: '.$responseBody);
+        }
 
         $xmlEncoder  = new XmlEncoder(['xml_root_node_name' => ($this->configuration['apiSource']['location']['xmlRootNodeName'] ?? 'response')]);
         $yamlEncoder = new YamlEncoder();
-        $contentType = ($this->getContentType($response, $source) ?? $contentType);
+
+        // This if statement is so that any given $contentType other than json doesn't get overwritten here.
+        if ($contentType === 'application/json') {
+            $contentType = ($this->getContentType($response, $source) ?? $contentType);
+        }
+
         switch ($contentType) {
         case 'text/yaml':
         case 'text/x-yaml':
             return $yamlEncoder->decode($responseBody, 'yaml');
         case 'text/xml':
         case 'text/xml; charset=utf-8':
+        case 'application/pdf':
+            $this->callLogger->debug('Response content: pdf binary code..');
+            return ['base64' => base64_encode($responseBody)];
         case 'application/xml':
             return $xmlEncoder->decode($responseBody, 'xml');
         case 'application/json':
