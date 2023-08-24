@@ -53,13 +53,13 @@ class SynchronizationService
      * @var CallService $callService.
      */
     private CallService $callService;
-    
+
     /**
      * Setting up the base class with required services.
      *
-     * @param LoggerInterface $actionLogger .
+     * @param LoggerInterface           $actionLogger   .
      * @param OldSynchronizationService $oldSyncService Old one from the gateway.
-     * @param CallService $callService .
+     * @param CallService               $callService    .
      */
     public function __construct(
         LoggerInterface $actionLogger,
@@ -136,6 +136,7 @@ class SynchronizationService
             if (method_exists(get_class($exception), 'getResponse') === true && $exception->getResponse() !== null) {
                 $responseBody = $exception->getResponse()->getBody();
             }
+
             $this->logger->error('Could not synchronize object. Error message: '.$exception->getMessage().'\nFull Response: '.($responseBody ?? ''));
             isset($this->style) && $this->style->error('Could not synchronize object. Error message: '.$exception->getMessage().'\nFull Response: '.($responseBody ?? ''));
 
