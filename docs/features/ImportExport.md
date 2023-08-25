@@ -4,11 +4,18 @@
 > **Warning**
 > This file is maintained at Conduction’s [Google Drive](https://docs.google.com/document/d/1DNqCl6AXXrVXWzpaF3r55s56NVM0hOoHE2AL8EcyT5g/edit) Please make any suggestions of alterations there.
 Import
-## Import (File uploads)
+## File uploads (File uploads)
 
 The common gateway supports creating objects through file uploads. The file uploads can be done in various file formats and the results of the file uploads can be adapted to fit the schema the objects have to be created in.
 
+
 ### Uploading a file
+
+
+This functionality can be used without the Gateway UI with the information given in this documentation. It is however easier and meant to use with Gateway UI on the Import and upload page.
+
+So without the Gateway UI:
+
 Files can be uploaded to the endpoint /admin/file-upload with x-form-urlencoded or multipart-formdata encoding. The files are expected to be uploaded in the field ‘upload’. Furthermore, the schema of the uploaded objects is defined in the field ‘schema’, which can contain the reference to the schema, as well as the id of the schema. Mapping likewise is set in the field ‘mapping’, and can contain the reference to the mapping as well as the id. Mapping is not a required field, the user can upload the file without mapping if a mapping is not required (or to see what the mapping should look like.
 
 The response of this call is in the following format:
@@ -29,7 +36,7 @@ If the object is detected to be preexisting, the field `action` will indicate `U
 After receiving this information the objects have not yet been stored in the database. If the result does not contain content in the field `validations` this indicates that the object is ready to be uploaded to the database using a POST (if `action` is `CREATE`) or a PUT (if `action` is `UPDATE` and `id` is set) to the `objects` endpoint with a schema.
 
 ### Supported file formats
-The common gateway supports file uploads in the following formats:
+The common gateway supports file uploads in the following formats, these can all be send as a multipart/form-data form and requires the header: Content-Type: multipart/form-data:
 - JSON
 - Yaml
 - XML
@@ -39,7 +46,7 @@ The common gateway supports file uploads in the following formats:
 - ods (LibreOffice and OpenOffice)
 
 ### Parameters
-The behavior of the file upload can be adapted with the help of a number of request parameters.
+The behavior of the file upload can be adapted with the help of a number of request query parameters.
 At this time the parameters apply only to spreadsheet files (ods, xls, xlsx and csv), and one is only applicable to CSV.
 
 The available parameters are:
