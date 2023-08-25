@@ -53,11 +53,11 @@ class InstallCommand extends Command
             ->setHelp('This command allows you to run further installation an configuration actions afther installing a plugin');
 
     }//end configure()
-    
+
     /**
      * Executes this command.
      *
-     * @param InputInterface $input The input interface.
+     * @param InputInterface  $input  The input interface.
      * @param OutputInterface $output The output interface.
      *
      * @return int 1 is successfully executed, else 0.

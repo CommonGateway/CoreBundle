@@ -59,11 +59,11 @@ class UninstallCommand extends Command
             ->setHelp('This command allows you to create a OAS files for your EAV entities');
 
     }//end configure()
-    
+
     /**
      * Executes this command.
      *
-     * @param InputInterface $input The input interface.
+     * @param InputInterface  $input  The input interface.
      * @param OutputInterface $output The output interface.
      *
      * @return int 1 is successfully executed, else 0.
@@ -76,7 +76,7 @@ class UninstallCommand extends Command
         $bundle = $input->getArgument('bundle');
         $data   = $input->getArgument('data');
         $schema = $input->getOption('--no-schema');
-    
+
         $this->installationService->setStyle(new SymfonyStyle($input, $output));
         return $this->installationService->uninstall($io, $bundle, $data, $schema);
 
