@@ -287,7 +287,12 @@ class CallService
             }
 
             $this->callLogger->info("Request to $url succesful");
-            $this->callLogger->notice("Request to $url returned {$response->getStatusCode()}");
+            try {
+                if ($method !== 'GET') {
+                    $responseBody = $response->getBody()->getContents();
+                }
+            } catch (Exception $exception) {}
+            $this->callLogger->notice("$method Request to $url returned {$response->getStatusCode()} with body: ".($responseBody ?? ''));
 
             $source->setStatus($response->getStatusCode());
             $this->entityManager->persist($source);
