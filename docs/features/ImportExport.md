@@ -4,7 +4,7 @@
 > **Warning**
 > This file is maintained at Conduction’s [Google Drive](https://docs.google.com/document/d/1DNqCl6AXXrVXWzpaF3r55s56NVM0hOoHE2AL8EcyT5g/edit) Please make any suggestions of alterations there.
 Import
-## File uploads
+## Import (File uploads)
 
 The common gateway supports creating objects through file uploads. The file uploads can be done in various file formats and the results of the file uploads can be adapted to fit the schema the objects have to be created in.
 
