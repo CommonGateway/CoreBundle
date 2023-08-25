@@ -291,7 +291,9 @@ class CallService
                 if ($method !== 'GET') {
                     $responseBody = $response->getBody()->getContents();
                 }
-            } catch (Exception $exception) {}
+            } catch (Exception $exception) {
+            }
+
             $this->callLogger->notice("$method Request to $url returned {$response->getStatusCode()} with body: ".($responseBody ?? ''));
 
             $source->setStatus($response->getStatusCode());
