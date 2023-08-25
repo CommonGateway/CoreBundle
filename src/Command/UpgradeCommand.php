@@ -3,6 +3,7 @@
 namespace CommonGateway\CoreBundle\Command;
 
 use CommonGateway\CoreBundle\Service\InstallationService;
+use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -43,6 +44,16 @@ class UpgradeCommand extends Command
 
     }//end configure()
 
+    /**
+     * Executes this command.
+     *
+     * @param InputInterface  $input  The input interface.
+     * @param OutputInterface $output The output interface.
+     *
+     * @return int 1 is successfully executed, else 0.
+     *
+     * @throws Exception
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io     = new SymfonyStyle($input, $output);
@@ -50,6 +61,7 @@ class UpgradeCommand extends Command
         $data   = $input->getArgument('data');
         $schema = $input->getOption('--no-schema');
 
+        $this->installationService->setStyle(new SymfonyStyle($input, $output));
         return $this->installationService->upgrade($io, $bundle, $data, $schema);
 
     }//end execute()
