@@ -275,6 +275,8 @@ class CallService
         $this->callLogger->debug('Call configuration: ', $config);
 
         // Let's make the call.
+        // The $source here gets persisted but the flush needs be executed in a Service where this call function has been executed.
+        // Because we don't want to flush/update the Source each time this ->call function gets executed for performance reasons. 
         $source->setLastCall(new \DateTime());
         $this->entityManager->persist($source);
         try {
