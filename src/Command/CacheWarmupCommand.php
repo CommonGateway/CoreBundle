@@ -54,7 +54,7 @@ class CacheWarmupCommand extends Command
     }//end configure()
 
     /**
-     * Executes this commnand.
+     * Executes this command.
      *
      * @param InputInterface  $input  The input interface.
      * @param OutputInterface $output The output interface.
