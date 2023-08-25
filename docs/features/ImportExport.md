@@ -50,7 +50,7 @@ The available parameters are:
 ### Duplicate detection
 A mechanism to detect duplicates with the existing database is in place, this however depends on the definition of the data. If the data is an export from the same gateway, the detection will work on the `_id` field of the objects that are found in the exports from the gateway.
 
-If another field has to be the unique identifier in the existing data, this can be defined in the Mapping that is used for importing the data from a file. This is done by overriding the field `_id` with the field you want to be the unique identifier. for example:
+If another field than `_id` has to be the unique identifier in the existing data, this can be configured using the Mapping used for importing the data from a file. This is done by overriding the field `_id` with the field you want to be the unique identifier. for example:
 
 ```json
 {
@@ -65,8 +65,9 @@ For further information on mapping, see the [mapping documentation](/docs/featur
 
 ## Export
 To retrieve records in a downloadable format, adjust the 'Accept' header in your request as follows:
-CSV Format: Set the 'Accept' header to text/csv.
-Excel Spreadsheet (XLSX): Set the 'Accept' header to application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.
+- CSV Format: Set the 'Accept' header to text/csv.
+- Excel Spreadsheet (XLSX): Set the 'Accept' header to application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.
+
 By specifying the desired format in the header, you signal the gateway to provide the data in either CSV or Excel spreadsheet format, ready for download.
 
 
