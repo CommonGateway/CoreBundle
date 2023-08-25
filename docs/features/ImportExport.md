@@ -9,7 +9,7 @@ Import
 The common gateway supports creating objects through file uploads. The file uploads can be done in various file formats and the results of the file uploads can be adapted to fit the schema the objects have to be created in.
 
 ### Uploading a file
-Files can be uploaded to the endpoint /admin/file-upload with x-form-urlencoded or multipart-formdata encoding. The files are expected to be uploaded in the field ‘upload’. Furthermore the schema of the uploaded objects is defined in the field ‘schema’, which can contain the reference to the schema, as well as the id of the schema. Mapping likewise is set in the field ‘mapping’, and can contain the reference to the mapping as well as the id. Mapping is not a required field, the user can upload the file without mapping if a mapping is not required (or to see what the mapping should look like.
+Files can be uploaded to the endpoint /admin/file-upload with x-form-urlencoded or multipart-formdata encoding. The files are expected to be uploaded in the field ‘upload’. Furthermore, the schema of the uploaded objects is defined in the field ‘schema’, which can contain the reference to the schema, as well as the id of the schema. Mapping likewise is set in the field ‘mapping’, and can contain the reference to the mapping as well as the id. Mapping is not a required field, the user can upload the file without mapping if a mapping is not required (or to see what the mapping should look like.
 
 The response of this call is in the following format:
 ```json
@@ -70,7 +70,6 @@ Excel Spreadsheet (XLSX): Set the 'Accept' header to application/vnd.openxmlform
 By specifying the desired format in the header, you signal the gateway to provide the data in either CSV or Excel spreadsheet format, ready for download.
 
 
-Additionally, if you wish to retrieve records and map them to a different looking object with a Mapping, you can provide the id of that Mapping in the request headers as: x-mapping: {id}.
+Additionally, if you wish to retrieve records and map them to a different-looking object with a Mapping, you can provide the id of that Mapping in the request headers as: x-mapping: {id}.
 
 Ensure you replace {id} with the actual ID of the Mapping object you want to use.
-
