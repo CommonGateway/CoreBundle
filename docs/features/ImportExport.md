@@ -4,7 +4,7 @@
 > **Warning**
 > This file is maintained at Conduction’s [Google Drive](https://docs.google.com/document/d/1DNqCl6AXXrVXWzpaF3r55s56NVM0hOoHE2AL8EcyT5g/edit) Please make any suggestions of alterations there.
 Import
-## File uploads (File uploads)
+## File uploads (Import)
 
 The common gateway supports creating objects through file uploads. The file uploads can be done in various file formats and the results of the file uploads can be adapted to fit the schema the objects have to be created in.
 
@@ -12,11 +12,11 @@ The common gateway supports creating objects through file uploads. The file uplo
 ### Uploading a file
 
 
-This functionality can be used without the Gateway UI with the information given in this documentation. It is however easier and meant to use with Gateway UI on the Import and upload page.
+This functionality can be used without the Gateway UI with the information given in this documentation. It is however easier and developed for use with Gateway UI on the Import and upload page.
 
 So without the Gateway UI:
 
-Files can be uploaded to the endpoint /admin/file-upload with x-form-urlencoded or multipart-formdata encoding. The files are expected to be uploaded in the field ‘upload’. Furthermore, the schema of the uploaded objects is defined in the field ‘schema’, which can contain the reference to the schema, as well as the id of the schema. Mapping likewise is set in the field ‘mapping’, and can contain the reference to the mapping as well as the id. Mapping is not a required field, the user can upload the file without mapping if a mapping is not required (or to see what the mapping should look like.
+Files can be uploaded to the endpoint /admin/file-upload with x-form-urlencoded or multipart-formdata encoding. The files are expected to be uploaded in the field ‘upload’. Furthermore, the schema for the uploaded objects has to be defined in the field ‘schema’, which can contain the reference to the schema, as well as the id of the schema. Mapping likewise can be defined in the field ‘mapping’, and can contain the reference to the mapping as well as the id. Mapping is not a required field, the user can upload the file without mapping if a mapping is not required (or to see what the mapping should look like.
 
 The response of this call is in the following format:
 ```json
