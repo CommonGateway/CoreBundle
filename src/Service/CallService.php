@@ -294,7 +294,7 @@ class CallService
             } catch (Exception $exception) {
             }
 
-            $this->callLogger->notice("$method Request to $url returned {$response->getStatusCode()} with body: ".($responseBody ?? ''));
+            $this->callLogger->notice("$method Request to $url returned {$response->getStatusCode()}");
 
             $source->setStatus($response->getStatusCode());
             $this->entityManager->persist($source);
@@ -609,7 +609,8 @@ class CallService
         // resultaat omzetten.
         // als geen content-type header dan content-type header is accept header.
         $responseBody = $response->getBody()->getContents();
-        if (isset($responseBody) === false) {
+        if (isset($responseBody) === false || empty($responseBody) === true) {
+            $this->callLogger->error('Cannot decode an empty response body');
             return [];
         }
 
@@ -629,15 +630,19 @@ class CallService
         switch ($contentType) {
         case 'text/yaml':
         case 'text/x-yaml':
+        case 'text/yaml; charset=utf-8':
             return $yamlEncoder->decode($responseBody, 'yaml');
         case 'text/xml':
         case 'text/xml; charset=utf-8':
         case 'application/pdf':
+        case 'application/pdf; charset=utf-8':
             $this->callLogger->debug('Response content: pdf binary code..');
             return ['base64' => base64_encode($responseBody)];
         case 'application/xml':
+        case 'application/xml; charset=utf-8':
             return $xmlEncoder->decode($responseBody, 'xml');
         case 'application/json':
+        case 'application/json; charset=utf-8':
         default:
             $result = json_decode($responseBody, true);
         }//end switch
