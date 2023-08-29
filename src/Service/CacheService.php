@@ -330,7 +330,7 @@ class CacheService
     private function getObjectUser(ObjectEntity $objectEntity): ?User
     {
         if (Uuid::isValid($objectEntity->getOwner()) === false) {
-            $this->logger->warning("User {$objectEntity->getOwner()} is not a user object but an external user.");
+            $this->logger->info("Owner: '{$objectEntity->getOwner()}' for Object: '{$objectEntity->getId()->toString()}' is not a valid UUID.");
 
             return null;
         }
@@ -338,7 +338,7 @@ class CacheService
         $user = $this->entityManager->getRepository('App:User')->findOneBy(['id' => $objectEntity->getOwner()]);
 
         if ($user === null) {
-            $this->logger->warning("Could not find a User with id = {$objectEntity->getOwner()} for Object: {$objectEntity->getId()->toString()}");
+            $this->logger->warning("Could not find a User with id = {$objectEntity->getOwner()} for the owner of Object: {$objectEntity->getId()->toString()}");
         }
 
         return $user;
