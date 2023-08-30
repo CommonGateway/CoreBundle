@@ -419,7 +419,7 @@ class AuthenticationService
     }//end getTokenFromUrl()
 
     /**
-     * Gets a hmac token.
+     * Generates a hmac token.
      *
      * @param array  $requestOptions Array of request options like method, url & body.
      * @param Source $source         A Source.
@@ -434,31 +434,42 @@ class AuthenticationService
 
         switch ($requestOptions['method']) {
         case 'POST':
-            if (isset($requestOptions['body']) === false) {
+            if (isset($requestOptions['body']) === false || empty($requestOptions['body']) === true) {
                 return "";
             }
 
+            // Body needs to be hashed and encoded.
             $md5  = md5($requestOptions['body'], true);
-            $post = base64_encode($md5);
+            $encodedBody = base64_encode($md5);
             break;
         case 'GET':
             // @Todo: what about a get call?
         default:
             $get  = 'not a UTF-8 string';
-            $post = base64_encode($get);
+            $encodedBody = base64_encode($get);
             break;
         }
 
         $websiteKey = $source->getApikey();
-        $uri        = strtolower(urlencode($requestOptions['url']));
-        $nonce      = 'nonce_'.rand(0000000, 9999999);
-        $time       = time();
 
-        $hmac = $websiteKey.$requestOptions['method'].$uri.$time.$nonce.$post;
+        // Method needs to be uppercase.
+        $method = strtoupper($requestOptions['method']);
+
+        // Uri needs to be without https://.
+        $uriRemovedHttps = str_replace('https://', "", $requestOptions['url']);
+        $encodedUri    = strtolower(urlencode($uriRemovedHttps));
+
+        // Nonce needs to be a random unqiue string.
+        $nonce = 'nonce_'.rand(0000000, 9999999);
+        $time  = time();
+
+        // key:method:url:timestamp:nonce:encodedBody
+        $hmac = $websiteKey.$method.$encodedUri.$time.$nonce.$encodedBody;
         $hash = hash_hmac('sha256', $hmac, $source->getSecret(), true);
-        $hmac = base64_encode($hash);
+        $hmacSHA256Encoded = base64_encode($hash);
+        $finalHmac =  "hmac $websiteKey:$hmacSHA256Encoded:$nonce:$time";
 
-        return 'hmac '.$websiteKey.':'.$hmac.':'.$nonce.':'.$time;
+        return $finalHmac;
 
     }//end getHmacToken()
 
@@ -467,10 +478,11 @@ class AuthenticationService
      *
      * @param Source     $source The Source.
      * @param array|null $config The optional, updated Source configuration array.
+     * @param array|null $requestInfo The optional, given request info.
      *
      * @return array
      */
-    public function getAuthentication(Source $source, ?array $config = null): array
+    public function getAuthentication(Source $source, ?array $config = null, ?array $requestInfo = []): array
     {
         $requestOptions = [];
         switch ($source->getAuth()) {
@@ -491,7 +503,7 @@ class AuthenticationService
             $auth = "Bearer {$this->getTokenFromUrl($source, $source->getAuth(), $config)}";
             break;
         case 'hmac':
-            $auth = $this->getHmacToken($requestOptions, $source);
+            $auth = $this->getHmacToken($requestInfo, $source);
             break;
         case 'apikey':
             $auth = $source->getApiKey();
