@@ -248,8 +248,12 @@ class CallService
 
         // Set authentication if needed.
         $createCertificates && $this->getCertificate($config);
-        $requestInfo = ['url' => $url, 'method' => $method, 'body' => $config['body'] ?? ""];
-        $config = array_merge_recursive($this->getAuthentication($source, $config, $requestInfo), $config);
+        $requestInfo = [
+            'url'    => $url,
+            'method' => $method,
+            'body'   => ($config['body'] ?? ""),
+        ];
+        $config      = array_merge_recursive($this->getAuthentication($source, $config, $requestInfo), $config);
 
         // Backwards compatible, $source->getHeaders = deprecated.
         $config['headers'] = array_merge(($source->getHeaders() ?? []), $config['headers']);

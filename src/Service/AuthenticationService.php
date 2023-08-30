@@ -439,13 +439,13 @@ class AuthenticationService
             }
 
             // Body needs to be hashed and encoded.
-            $md5  = md5($requestOptions['body'], true);
+            $md5         = md5($requestOptions['body'], true);
             $encodedBody = base64_encode($md5);
             break;
         case 'GET':
             // @Todo: what about a get call?
         default:
-            $get  = 'not a UTF-8 string';
+            $get         = 'not a UTF-8 string';
             $encodedBody = base64_encode($get);
             break;
         }
@@ -457,17 +457,17 @@ class AuthenticationService
 
         // Uri needs to be without https://.
         $uriRemovedHttps = str_replace('https://', "", $requestOptions['url']);
-        $encodedUri    = strtolower(urlencode($uriRemovedHttps));
+        $encodedUri      = strtolower(urlencode($uriRemovedHttps));
 
         // Nonce needs to be a random unqiue string.
         $nonce = 'nonce_'.rand(0000000, 9999999);
         $time  = time();
 
         // key:method:url:timestamp:nonce:encodedBody
-        $hmac = $websiteKey.$method.$encodedUri.$time.$nonce.$encodedBody;
-        $hash = hash_hmac('sha256', $hmac, $source->getSecret(), true);
+        $hmac              = $websiteKey.$method.$encodedUri.$time.$nonce.$encodedBody;
+        $hash              = hash_hmac('sha256', $hmac, $source->getSecret(), true);
         $hmacSHA256Encoded = base64_encode($hash);
-        $finalHmac =  "hmac $websiteKey:$hmacSHA256Encoded:$nonce:$time";
+        $finalHmac         = "hmac $websiteKey:$hmacSHA256Encoded:$nonce:$time";
 
         return $finalHmac;
 
@@ -476,8 +476,8 @@ class AuthenticationService
     /**
      * Gets the authentication values through various checks.
      *
-     * @param Source     $source The Source.
-     * @param array|null $config The optional, updated Source configuration array.
+     * @param Source     $source      The Source.
+     * @param array|null $config      The optional, updated Source configuration array.
      * @param array|null $requestInfo The optional, given request info.
      *
      * @return array
