@@ -122,7 +122,11 @@ class ProxySubscriber implements EventSubscriberInterface
         $data['querystring'] = $event->getRequest()->getQueryString();
         $data['crude_body']  = $event->getRequest()->getContent();
 
-        $event->setResponse($this->requestService->proxyHandler($data, [], $source));
+        $response = $this->requestService->proxyHandler($data, [], $source);
+        // Content-Length isn't right which causes problems when returning/rendering the response.
+        $response->headers->remove('Content-Length');
+
+        $event->setResponse($response);
 
     }//end proxy()
 }//end class
