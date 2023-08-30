@@ -244,9 +244,12 @@ class CallService
             $config['headers'] = [];
         }
 
+        $url = $source->getLocation().$endpoint;
+
         // Set authentication if needed.
         $createCertificates && $this->getCertificate($config);
-        $config = array_merge_recursive($this->getAuthentication($source, $config), $config);
+        $requestInfo = ['url' => $url, 'method' => $method, 'body' => $config['body'] ?? ""];
+        $config = array_merge_recursive($this->getAuthentication($source, $config, $requestInfo), $config);
 
         // Backwards compatible, $source->getHeaders = deprecated.
         $config['headers'] = array_merge(($source->getHeaders() ?? []), $config['headers']);
@@ -270,7 +273,6 @@ class CallService
             unset($config['headers']['Content-Type']);
         }
 
-        $url = $source->getLocation().$endpoint;
         $this->callLogger->info('Calling url '.$url);
         $this->callLogger->debug('Call configuration: ', $config);
 
@@ -667,14 +669,15 @@ class CallService
     /**
      * Determines the authentication procedure based upon a source.
      *
-     * @param Source     $source The source to base the authentication procedure on
-     * @param array|null $config The optional, updated Source configuration array.
+     * @param Source     $source      The source to base the authentication procedure on
+     * @param array|null $config      The optional, updated Source configuration array.
+     * @param array|null $requestInfo The optional, given request info.
      *
      * @return array The config parameters needed to authenticate on the source
      */
-    private function getAuthentication(Source $source, ?array $config = null): array
+    private function getAuthentication(Source $source, ?array $config = null, ?array $requestInfo = []): array
     {
-        return $this->authenticationService->getAuthentication($source, $config);
+        return $this->authenticationService->getAuthentication($source, $config, $requestInfo);
 
     }//end getAuthentication()
 
