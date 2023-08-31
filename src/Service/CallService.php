@@ -292,12 +292,6 @@ class CallService
             }
 
             $this->callLogger->info("Request to $url succesful");
-            try {
-                if ($method !== 'GET') {
-                    $responseBody = $response->getBody()->getContents();
-                }
-            } catch (Exception $exception) {
-            }
 
             $this->callLogger->notice("$method Request to $url returned {$response->getStatusCode()}");
 
