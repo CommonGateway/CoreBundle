@@ -436,21 +436,21 @@ class AuthenticationService
         $method = strtoupper($requestOptions['method']);
 
         switch ($method) {
-            case 'POST':
-                if (isset($requestOptions['body']) === false || empty($requestOptions['body']) === true) {
-                    return "";
-                }
+        case 'POST':
+            if (isset($requestOptions['body']) === false || empty($requestOptions['body']) === true) {
+                return "";
+            }
 
-                // Body needs to be hashed and encoded.
-                $md5         = md5($requestOptions['body'], true);
-                $encodedBody = base64_encode($md5);
-                break;
-            case 'GET':
-                // @Todo: what about a get call?
-            default:
-                $get         = 'not a UTF-8 string';
-                $encodedBody = base64_encode($get);
-                break;
+            // Body needs to be hashed and encoded.
+            $md5         = md5($requestOptions['body'], true);
+            $encodedBody = base64_encode($md5);
+            break;
+        case 'GET':
+            // @Todo: what about a get call?
+        default:
+            $get         = 'not a UTF-8 string';
+            $encodedBody = base64_encode($get);
+            break;
         }
 
         $websiteKey = $source->getApikey();
@@ -503,8 +503,8 @@ class AuthenticationService
             $auth = "Bearer {$this->getTokenFromUrl($source, $source->getAuth(), $config)}";
             break;
         case 'hmac':
-            $requestInfo['body'] = $config['body'] ?? [];
-            $auth = $this->getHmacToken($requestInfo, $source);
+            $requestInfo['body'] = ($config['body'] ?? []);
+            $auth                = $this->getHmacToken($requestInfo, $source);
             break;
         case 'apikey':
             $auth = $source->getApiKey();
