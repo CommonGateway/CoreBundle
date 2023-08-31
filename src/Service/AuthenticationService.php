@@ -431,35 +431,35 @@ class AuthenticationService
         if (isset($requestOptions['method']) === false || isset($requestOptions['url']) === false) {
             return "";
         }
+        $method = strtoupper($requestOptions['method']);
 
-        switch ($requestOptions['method']) {
-        case 'POST':
-            if (isset($requestOptions['body']) === false || empty($requestOptions['body']) === true) {
-                return "";
-            }
+        switch ($method) {
+            case 'POST':
+                if (isset($requestOptions['body']) === false || empty($requestOptions['body']) === true) {
+                    return "";
+                }
 
-            // Body needs to be hashed and encoded.
-            $md5         = md5($requestOptions['body'], true);
-            $encodedBody = base64_encode($md5);
-            break;
-        case 'GET':
-            // @Todo: what about a get call?
-        default:
-            $get         = 'not a UTF-8 string';
-            $encodedBody = base64_encode($get);
-            break;
+                // Body needs to be hashed and encoded.
+                $md5         = md5($requestOptions['body'], true);
+                $encodedBody = base64_encode($md5);
+                break;
+            case 'GET':
+                // @Todo: what about a get call?
+            default:
+                $get         = 'not a UTF-8 string';
+                $encodedBody = base64_encode($get);
+                break;
         }
 
         $websiteKey = $source->getApikey();
 
         // Method needs to be uppercase.
-        $method = strtoupper($requestOptions['method']);
 
         // Uri needs to be without https://.
         $uriRemovedHttps = str_replace('https://', "", $requestOptions['url']);
         $encodedUri      = strtolower(urlencode($uriRemovedHttps));
 
-        // Nonce needs to be a random unqiue string.
+        // Nonce needs to be a random unique string.
         $nonce = 'nonce_'.rand(0000000, 9999999);
         $time  = time();
 
