@@ -154,9 +154,15 @@ class SynchronizationService
 
         if ($idLocation !== null) {
             $sourceId = $bodyDot->get($idLocation);
-            $synchronization->setSourceId($sourceId);
-            $this->logger->info("Succesfull $method with sourceId: $sourceId");
-            isset($this->style) && $this->style->info("Succesfull $method with sourceId: $sourceId");
+            if ($sourceId == null) {
+                $jsonBody = json_encode($body);
+                $this->logger->error("Could not find sourceId: $idLocation in response body: $jsonBody");
+                isset($this->style) && $this->style->error("Could not find sourceId: $idLocation in response body: $jsonBody");
+            } else {
+                $synchronization->setSourceId($sourceId);
+                $this->logger->info("Succesfull $method with sourceId: $sourceId");
+                isset($this->style) && $this->style->info("Succesfull $method with sourceId: $sourceId");
+            }
         } else {
             $this->logger->info("Succesfull $method");
             isset($this->style) && $this->style->info("Succesfull $method");
