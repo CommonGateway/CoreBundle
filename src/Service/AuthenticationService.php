@@ -431,6 +431,8 @@ class AuthenticationService
         if (isset($requestOptions['method']) === false || isset($requestOptions['url']) === false) {
             return "";
         }
+
+        // Method needs to be uppercase.
         $method = strtoupper($requestOptions['method']);
 
         switch ($method) {
@@ -452,8 +454,6 @@ class AuthenticationService
         }
 
         $websiteKey = $source->getApikey();
-
-        // Method needs to be uppercase.
 
         // Uri needs to be without https://.
         $uriRemovedHttps = str_replace('https://', "", $requestOptions['url']);
