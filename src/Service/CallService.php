@@ -250,8 +250,7 @@ class CallService
         $createCertificates && $this->getCertificate($config);
         $requestInfo = [
             'url'    => $url,
-            'method' => $method,
-            'body'   => ($config['body'] ?? ""),
+            'method' => $method
         ];
         $config      = array_merge_recursive($this->getAuthentication($source, $config, $requestInfo), $config);
 

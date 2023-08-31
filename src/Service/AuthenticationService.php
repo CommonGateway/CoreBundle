@@ -503,6 +503,7 @@ class AuthenticationService
             $auth = "Bearer {$this->getTokenFromUrl($source, $source->getAuth(), $config)}";
             break;
         case 'hmac':
+            $requestInfo['body'] = $config['body'] ?? [];
             $auth = $this->getHmacToken($requestInfo, $source);
             break;
         case 'apikey':
