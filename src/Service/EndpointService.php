@@ -120,7 +120,6 @@ class EndpointService
         $parameters['accept']   = $accept;
         $parameters['body']     = $this->decodeBody();
 
-
         // Get all headers from the request.
         $requestHeaders = $request->headers->all();
         // Loop through the loggingConfig headers of the current endpoint.
