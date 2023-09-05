@@ -9,23 +9,23 @@ We differ in the installation of the gateway between local en server installatio
 
 ## Local installation
 
-For our local environment, we use [docker desktop](https://www.docker.com/products/docker-desktop/). This allows us to spin up virtual machines that mimic production servers easily. In other words, it helps us ensure that the code we test/develop locally will also work online. The same can also be said for configurations.
+For our local environment, we use [Docker Desktop](https://www.docker.com/products/docker-desktop/). This allows us to spin up virtual machines that mimic production servers easily. In other words, it helps us ensure that the code we test/develop locally will also work online. The same can also be said for configurations.
 
 
-To spin up the gateway for local use, you will need both [Docker Desktop](https://www.docker.com/products/docker-desktop/) and a [git client](https://gitforwindows.org/) (we like to use [git kraken](https://www.gitkraken.com/) but any other will suffice, you can also install [git](https://git-scm.com/) on your local machine)
+To spin up the gateway for local use, you will need both [Docker Desktop](https://www.docker.com/products/docker-desktop/) and a [Git client](https://gitforwindows.org/) (we like to use [GitKraken](https://www.gitkraken.com/) but any other will suffice, you can also install [Git](https://git-scm.com/) on your local machine)
 
 **Steps**
-1. Install [docker desktop](https://www.docker.com/products/docker-desktop/), [git client](https://gitforwindows.org/) and a browser like [google chrome](https://chromeenterprise.google/).
+1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/), [Git client](https://gitforwindows.org/) and a browser like [Google Chrome](https://chromeenterprise.google/).
 2. Create a folder where you want to install the gateway, for example: documents/gateway
-3. Open a command line interface e.g. windows key + cmd + enter
+3. Open a command line interface e.g. `windows key + cmd + enter`
 4. Navigate to the folder you just created with our examples. This would be: `$ cd documents/gateway`
 5. Git clone the Common Gateway repository to a folder on your machine (if you like to use the command line interface of git that's `git clone https://github.com/ConductionNL/commonground-gateway.git`
 6. (optional) Check out a specific version of the gateway e.g. `git checkout feature/oc-ui`
 7. Change the directory into the gateway folder (The folder where you also find the docker-compose.yml file) for example: `cd commonground-gateway`
-8. Startup the gateway through `$ docker compose up`.
-9. You should now see the gateway initiating the virtual machines it needs on your command line tool. (this might take some time on the first run, you will see the text ‘Ready to handle connection’ when it is ready to connect)
-10. Additionally, you should now see the containers come up in your docker desktop tool (that you can use from here on)
-11. When it is done you can find the Gateway API in your browser under [localhost](http://localhost/), the Gateway UI under [localhost:8000](http://localhost:8000), and any additional web apps that are part of your ecosystem under [localhost:81](http://localhost:81).
+8. Startup the gateway through `$ docker compose up`. You need to add the `--build` flag the first time. 
+10. You should now see the gateway initiating the virtual machines it needs on your command line tool. (this might take some time on the first run, you will see the text ‘Ready to handle connection’ when it is ready to connect)
+11. Additionally, you should now see the containers come up in your Docker Desktop tool (that you can use from here on)
+12. When it is done you can find the Gateway API in your browser under [localhost](http://localhost/), the Gateway UI under [localhost:8000](http://localhost:8000), and any additional web apps that are part of your ecosystem under [localhost:81](http://localhost:81).
 >__Note__: Read more about command line tools [here](https://developers.google.com/web/shows/ttt/series-2/windows-commandline) and how to [navigate](https://www.codecademy.com/learn/learn-the-command-line/modules/learn-the-command-line-navigation/cheatsheet)
 
 **Troubleshooting**
@@ -37,7 +37,7 @@ If during the steps above you run into any problems the following tips might hel
 
 ## Server Installation
 
-There are three main routes to install the Common gateway, but we advise using the [helm](https://helm.sh/) route for the Kubernetes environment. However, if you want, you can install the gateway on a Linux machine or use a docker-compose installation.
+There are three main routes to install the Common Gateway, but we advise using the [helm](https://helm.sh/) route for the Kubernetes environment. However, if you want, you can install the gateway on a Linux machine or use a docker-compose installation.
 
 ### Haven / Kubernetes
 The Common Gateway is a Common Ground application built from separate components. To make these components optional, they are housed in separate [Kubernetes containers](https://kubernetes.io/docs/concepts/containers/). This means that a total installation of The Common Gateway requires several Containers. You can find which containers these are under [architecture](Architecture.md).
@@ -57,7 +57,7 @@ $ helm repo add common-gateway https://raw.githubusercontent.com/ConductionNL/co
 ````
 
 
-After that, you can simply install the Gateway to your cluster using the Helm installer. If you are using a kubeconfig file to authenticate yourself, you need to add that as a --kubeconfig flag. However, if you are using another authentication method, you can omit the flag. When installing an application to Helm, always choose a name that helps you identify the application and put that in place of [my-installation].
+After that, you can simply install the Gateway to your cluster using the Helm installer. If you are using a kubeconfig file to authenticate yourself, you need to add that as a `--kubeconfig` flag. However, if you are using another authentication method, you can omit the flag. When installing an application to Helm, always choose a name that helps you identify the application and put that in place of [my-installation].
 
 
 ````helm
@@ -76,7 +76,7 @@ Or for the headless version
 $ helm upgrade [my-gateway] common-gateway/commonground-gateway --kubeconfig=[path-to-your-kubeconfig] --set cronrunner.enabled=true,php.tag=dev,nginx.tag=dev,ingress.enabled=true,global.domain=[my-domain.com]
 ````
 
-The helm install and upgrade commandos can also be put together:
+The Helm install and upgrade commandos can also be put together:
 
 ````helm
 $ helm upgrade [my-gateway] common-gateway/commonground-gateway --kubeconfig=[path-to-your-kubeconfig] --set cronrunner.enabled=true,php.tag=dev,nginx.tag=dev,ingress.enabled=true,global.domain=[my-domain.com] --namespace [namespace] --install
@@ -113,12 +113,12 @@ $ kubectl apply -f letsencrypt-ci.yaml --kubeconfig=[path-to-your-kubeconfig]
 ````
 
 ### Installed dependencies
-The common gateway relies on a number of software dependencies the helm chart installs alongside the common gateway. If you want however to connect to existing versions of these dependencies, you can disable them.
+The Common Gateway relies on a number of software dependencies the Helm chart installs alongside the Common Gateway. However, if you want to connect to existing versions of these dependencies, you can disable these.
 
 #### PostgreSQL
-The common gateway is dependent on a SQL database for internal operations. We recommend to use PostgreSQL as the database type the common gateway was designed with. However we also support MySQL, MariaDB and Microsoft SQL Server, although the latter defers from newer standards and henceforth can cause some issues and therefore is not recommended.
+The Common Gateway is dependent on a SQL database for internal operations. We recommend to use PostgreSQL as the database type the Common Gateway was designed with. However we also support MySQL, MariaDB and Microsoft SQL Server, although the latter defers from newer standards and henceforth can cause some issues and therefore is not recommended.
 
-To disable PostgreSQL: set the setting `postgresql.enabled` to `false`, and enter a SQL url (`pgsql://`, `psql://` for postgres, `mysqli://` for MySQL and MariaDB or `pdo_sqlsrv://`) in the field `postgresql.url`. Also, if the database is a Microsoft SQL Server database, don't forget to change the field `databaseType` to mssql.
+To disable PostgreSQL: set the setting `postgresql.enabled` to `false`, and enter a SQL URL (`pgsql://`, `psql://` for PostgreSQL, `mysqli://` for MySQL and MariaDB or `pdo_sqlsrv://`) in the field `postgresql.url`. Also, if the database is a Microsoft SQL Server database, don't forget to change the field `databaseType` to mssql.
 
 The PostgreSQL database that is installed if `postgresql.enabled` is set to `true` is installed with [this chart](https://artifacthub.io/packages/helm/bitnami/postgresql/12.1.2). This chart contains default resource requests that are not overwritten.
 
@@ -134,7 +134,7 @@ The default requests are 256Mi memory and 200m vCPU.
 
 
 #### MongoDB
-For serving content quickly the common gateway relies on a document cache which is run in MongoDB. MongoDB is also used to store the logs of the common gateway.
+For serving content quickly the Common Gateway relies on a document cache which is run in MongoDB. MongoDB is also used to store the logs of the Common Gateway.
 
 To disable MongoDB: set the setting `mongodb.enabled` to `false`, and enter a SQL url (`mongodb://`) in the field `mongodb.url`.
 
@@ -185,7 +185,7 @@ memory: 128Mi
 ```
 
 #### Gateway UI
-The common gateway also offers its own User Interface for admin.
+The Common Gateway also offers its own User Interface for admin.
 
 This user interface is installed with [this chart](https://raw.githubusercontent.com/ConductionNL/gateway-ui/development/helm/).
 
@@ -200,10 +200,10 @@ memory: 128Mi
 ```
 
 > Note:
-> With Helm, the difficulty often lies in finding all possible configuration options. To facilitate this, we have included all options in a so-called values file, which you can find [here](https://artifacthub.io/packages/helm/commonground-gateway/commonground-gateway?modal=values). One very common value used when installing the gateway through helm is the value --set global.domain={{your domain here}}.
+> With Helm, the difficulty often lies in finding all possible configuration options. To facilitate this, we have included all options in a so-called values file, which you can find [here](https://artifacthub.io/packages/helm/commonground-gateway/commonground-gateway?modal=values). One very common value used when installing the gateway through Helm is the value `--set global.domain={{your domain here}}`.
 
 ### Installation through docker compose
-The gateway repository contains a docker compose, and a .env file containing all setting options. These are the same files that are used for the local development environment. However when using this route to install the gateway for production you **MUST** set the `APP_ENV` variable to 'PROD` (enabling caching and security features) and you must change all passwords  (conveniently labeled _!ChangeMe!_) **NEVER** run your database from docker compose, docker compose is non-persistent and you will lose your data. Always use a separately managed database solution.
+The gateway repository contains a docker compose, and a `.env` file containing all setting options. These are the same files that are used for the local development environment. However when using this route to install the gateway for production you **MUST** set the `APP_ENV` variable to `PROD` (enabling caching and security features) and you must change all passwords  (conveniently labeled _!ChangeMe!_) **NEVER** run your database from docker compose, docker compose is non-persistent and you will lose your data. Always use a separately managed database solution.
 
 ### Installation through composer (Linux / Lamp)
 Before starting a Linux installation make sure you have a basic LAMP setup, you can read more about that [here](https://www.digitalocean.com/community/tutorials/how-to-install-linux-apache-mysql-php-lamp-stack-ubuntu-18-04). Keep in mind that the gateway also has the following requirements that need to be met before installation.
@@ -228,13 +228,13 @@ A very common way to check why the Common Ground Gateway is not functioning as e
 
 **You have requested a non-existent service**
 
-This is an error message you will only get when you are trying to install & initialize [plugins](Plugins.md) on the CommonGround Gateway. If you get the error message "You have requested a non-existent service" then this indicates in most cases that you are missing a specific plugin, if you have already installed this plugin (or tried to) however, your config/bundles.php file is most likely not up-to-date. This bundles.php file should contain all installed bundles. If you, for example, get a message that `OpenCatalogi\OpenCatalogiBundle\ActionHandler\ComponentenCatalogusApplicationToGatewayHandler` does not exist, you most likely need to add `OpenCatalogi\OpenCatalogiBundle` to the bundles.php file like this: `OpenCatalogi\OpenCatalogiBundle\OpenCatalogiBundle::class => ['all' => true],` locally you can just edit this file, with a server installation you might want to use something like [vi editor](https://www.redhat.com/sysadmin/introduction-vi-editor) for this.
+This is an error message you will only get when you are trying to install & initialize [plugins](Plugins.md) on the CommonGround Gateway. If you get the error message "You have requested a non-existent service" then this indicates in most cases that you are missing a specific plugin, if you have already installed this plugin (or tried to) however, your config/bundles.php file is most likely not up-to-date. This bundles.php file should contain all installed bundles. If you, for example, get a message that `OpenCatalogi\OpenCatalogiBundle\ActionHandler\ComponentenCatalogusApplicationToGatewayHandler` does not exist, you most likely need to add `OpenCatalogi\OpenCatalogiBundle` to the `bundles.php` file like this: `OpenCatalogi\OpenCatalogiBundle\OpenCatalogiBundle::class => ['all' => true],` locally you can just edit this file, with a server installation you might want to use something like [vi editor](https://www.redhat.com/sysadmin/introduction-vi-editor) for this.
 
 ## Adding the gateway to your existing Symfony project (Beta)
 The gateway is a Symfony bundle and can also be added directly to an existing Symfony project through composer. The basic composer command is `composer require commongateway/corebundle` and you can read more about the installation process on [packagist](https://packagist.org/packages/commongateway/corebundle).
 
 ## Applications
-There are several applications that make use of Common Gateway installation as a backend, best known are [huwelijksplanner (HP)](https://github.com/huwelijksplanner), [Klantinteractie Service Systeem(KISS)](https://github.com/Klantinteractie-Servicesysteem) en [Open Catalogi (OC)](https://opencatalogi.nl/).
+There are several applications that make use of Common Gateway installation as a backend, best known are [huwelijksplanner (HP)](https://github.com/huwelijksplanner), [Klantinteractie Service Systeem(KISS)](https://github.com/Klantinteractie-Servicesysteem) en [OpenCatalogi (OC)](https://opencatalogi.nl/).
 
 
 By design front ends are run as separate components or containers (see Common Ground layer architecture). That means that any frontend application using the gateway as a backend for frontend (BFF) should be installed separately.
@@ -245,9 +245,9 @@ The gateway is designed to operate differently in a production, than in a develo
 
 ## Cronjobs and the cronrunner
 
-The gateway uses cronjobs to fire repeating events (like synchronizations) at certain intervals. Users can set them up and maintain them through the admin UI. However, cronjobs themselves are fired through a cron runner, meaning that there is a script running that checks every x minutes (5 by default) whether there are cronjobs that need to be fired. That means that the execution of cronjob is limited by the rate set in the cronrunner .e.g if the cronrunner runs every 5 minutes it's impossible to run cronjobs every 2 minutes.
+The gateway uses cronjobs to fire repeating events (like synchronizations) at certain intervals. Users can set them up and maintain them through the admin UI. However, cronjobs themselves are fired through a cronrunner, meaning that there is a script running that checks every x minutes (5 by default) whether there are cronjobs that need to be fired. That means that the execution of cronjob is limited by the rate set in the cronrunner. E.g., if the cronrunner runs every 5 minutes it's impossible to run cronjobs every 2 minutes.
 
-For docker compose and helm installation the cron runner is based on the Linux crontab demon and included in the installation scripts. If you are installing the gateway manually you will need to set up your own crontab to fire every x minutes.
+For docker compose and Helm installation the cronrunner is based on the Linux crontab demon and included in the installation scripts. If you are installing the gateway manually you will need to set up your own crontab to fire every x minutes.
 
 
 For your crontab, you need to execute the ` bin/console cronjob:command` cli command in the folder where you installed the Common Gateway. e.g. `*/5 * * * * /srv/api bin/console cronjob:command`. If you need help defining your crontab we advise [crontab.guru](https://crontab.guru/every-5-minutes).
@@ -262,6 +262,6 @@ If you are installing the gateway on a Linux setup you will need to manually ins
 
 ## Setting up plugins
 
-After you install the Commonground Gateway, you can use the Commonground Gateway as it is, or take a look at plugins. More about plugins can be found [here](Plugins.md)
+After you install the Common Gateway, you can use the Common Gateway as it is, or take a look at plugins. More about plugins can be found [here](Plugins.md)
 
 
