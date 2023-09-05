@@ -120,6 +120,20 @@ class EndpointService
         $parameters['accept']   = $accept;
         $parameters['body']     = $this->decodeBody();
 
+
+        // Get all headers from the request.
+        $requestHeaders = $request->headers->all();
+        // Loop through the loggingConfig headers of the current endpoint.
+        foreach ($endpoint->getLoggingConfig()['headers'] as $logConfig) {
+            // If the header is set on the request headers, then unset the key so we don't log it.
+            if (key_exists($logConfig, $requestHeaders) === true) {
+                unset($requestHeaders[$logConfig]);
+            }
+        }
+
+        // Log the headers of the request without the headers from the loggingConfig of the endpoint.
+        $this->logger->info('The headers from the request for endpoint '.$endpoint->getName(), ['headers' => $requestHeaders]);
+
         if (json_decode($request->get('payload'), true)) {
             $parameters['payload'] = json_decode($request->get('payload'), true);
         }
