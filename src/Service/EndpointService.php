@@ -193,7 +193,8 @@ class EndpointService
 
         // Log the headers of the request without the headers from the loggingConfig of the endpoint.
         $this->logger->info('The headers from the request for endpoint '.$endpoint->getName(), ['headers' => $headers]);
-    }
+
+    }//end logRequestHeaders()
 
     /**
      * Gets the accept type based on the request.
