@@ -120,6 +120,9 @@ class EndpointService
         $parameters['accept']   = $accept;
         $parameters['body']     = $this->decodeBody();
 
+        // Logs the request headers.
+        $this->logRequestHeaders($request, $endpoint);
+
         if (json_decode($request->get('payload'), true)) {
             $parameters['payload'] = json_decode($request->get('payload'), true);
         }
@@ -164,6 +167,34 @@ class EndpointService
         throw new Exception('No proxy, schema or events could be established for this endpoint');
 
     }//end handleRequest()
+
+    /**
+     * This function logs the headers of the request and uses the endpoint->getLoggingConfig()['headers'] to unset the headers that don't need to be logged.
+     *
+     * @return void
+     */
+    public function logRequestHeaders(Request $request, Endpoint $endpoint): void
+    {
+        // Get all headers from the request.
+        $headers = [];
+        foreach ($request->headers->all() as $key => $value) {
+            $headers[$key] = $request->headers->get($key);
+        }
+
+        if (key_exists('headers', $endpoint->getLoggingConfig()) === true) {
+            // Loop through the loggingConfig headers of the current endpoint.
+            foreach ($endpoint->getLoggingConfig()['headers'] as $logConfig) {
+                // If the header is set on the request headers, then unset the key so we don't log it.
+                if (key_exists($logConfig, $headers) === true) {
+                    unset($headers[$logConfig]);
+                }
+            }
+        }
+
+        // Log the headers of the request without the headers from the loggingConfig of the endpoint.
+        $this->logger->info('The headers from the request for endpoint '.$endpoint->getName(), ['headers' => $headers]);
+
+    }//end logRequestHeaders()
 
     /**
      * Gets the accept type based on the request.
