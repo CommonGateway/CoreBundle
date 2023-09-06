@@ -49,7 +49,7 @@ cronjob: The cronjob that triggered the call
 command: The command options and input that triggered the call, [based on](https://github.com/symfony/symfony/blob/6.2/src/Symfony/Bridge/Monolog/Processor/ConsoleCommandProcessor.php)
 headers: The headers of the request.
 
-> **Note:** That PHP will lowercase the incoming headers (for HTTP/1), or the HTTP client will lowercase the headers (for HTTP/2). According to RFC 7230, headers in HTTP/1 are case-insensitive, and according to RFC 7540, headers in HTTP/2 may only be lowercase.
+> **Note:** PHP will lowercase the incoming headers (for HTTP/1), or the HTTP client will lowercase the headers (for HTTP/2). According to RFC 7230, headers in HTTP/1 are case-insensitive, and according to RFC 7540, headers in HTTP/2 may only be lowercase. This means that the headers can only be found in lowercase in the logs
 
 The plugin identifier is not automatically added to logs, but plugins are required to add that value themself so that logs are easily traced back to an specific plugin
 
