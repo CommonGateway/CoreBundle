@@ -81,3 +81,22 @@ By specifying the desired format in the header, you signal the gateway to provid
 Additionally, if you wish to retrieve records and map them to a different-looking object with a Mapping, you can provide the id of that Mapping in the request headers as: x-mapping: {id}.
 
 Ensure you replace {id} with the actual ID of the Mapping object you want to use.
+
+### Export a single object
+The gateway is also able to export single objects to downloadable formats: PDF, docx and html. However, to be able to do this we need to do a bit of configuration:
+
+First, we should make a template that contains a html/twig template to render the object in the desired format. This can be done in the Gateway UI under the tab ‘Templates’ (and click on add template). Also, a simple example can be found below:
+
+```json
+{
+    "name": "A simple test template",
+    "description": "Show the resource as a table",
+    "content": "<html><body><h1>{{ object._self.name }}</h1><hr><table>{% for key,value in object %}<tr><th>{{ key }}</th><td>{% if value is iterable %}{% for subkey,subvalue in value %}{{ subkey }}: {%if subvalue is iterable %}array{%else%}{{subvalue}}{%endif%}<br>{% endfor %}{% else %}{{ value }}{% endif %}</td></tr>{% endfor %}</table></body></html>",
+    "organization": "/admin/organisations/a1c8e0b6-2f78-480d-a9fb-9792142f4761",
+    "supportedSchemas": ["b6bd2cfc-c83d-486a-869f-16d6986240cf", "dd5e3008-74aa-451f-82a6-c6edcbbbe69e"]
+}
+```
+Note that the schema of the object to render should be in the list of supported schemas of the template.
+
+Once this template is created, the single object can be downloaded using the endpoints that can be used to fetch the object (both /admin/objects/{id} and /api/{schema}/{id} will work) by changing the Accept header to ‘application/pdf’, ‘text/html’ or ‘application/vnd.openxmlformats-officedocument.wordprocessingml.document’ for pdf, html and docx respectively.
+
