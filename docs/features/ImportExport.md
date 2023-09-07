@@ -83,9 +83,9 @@ Additionally, if you wish to retrieve records and map them to a different-lookin
 Ensure you replace {id} with the actual ID of the Mapping object you want to use.
 
 ### Export a single object
-The gateway is also able to export single objects to downloadable formats, being PDF, docx and html. However, to be able to do this we need to do a bit of configuration:
+The gateway is also able to export single objects to downloadable formats: PDF, docx and html. However, to be able to do this we need to do a bit of configuration:
 
-First, we should make a template that contains a html/twig template to render the object in the desired format. This can be done in the Admin-UI under the tab ‘Templates’ (and click on add template). Also, a simple example can be found below:
+First, we should make a template that contains a html/twig template to render the object in the desired format. This can be done in the Gateway UI under the tab ‘Templates’ (and click on add template). Also, a simple example can be found below:
 
 ```json
 {
@@ -98,5 +98,5 @@ First, we should make a template that contains a html/twig template to render th
 ```
 Note that the schema of the object to render should be in the list of supported schemas of the template.
 
-Once this template is created, the single object can be downloaded by changing the Accept header to ‘application/pdf’, ‘text/html’ or ‘application/vnd.openxmlformats-officedocument.wordprocessingml.document’ for pdf, html and docx respectively.
+Once this template is created, the single object can be downloaded using the endpoints that can be used to fetch the object (both /admin/objects/{id} and /api/{schema}/{id} will work) by changing the Accept header to ‘application/pdf’, ‘text/html’ or ‘application/vnd.openxmlformats-officedocument.wordprocessingml.document’ for pdf, html and docx respectively.
 
