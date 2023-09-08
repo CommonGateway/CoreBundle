@@ -14,6 +14,7 @@ use App\Entity\Mapping;
 use App\Entity\ObjectEntity;
 use App\Entity\Organization;
 use App\Entity\SecurityGroup;
+use App\Entity\Template;
 use App\Entity\User;
 use App\Kernel;
 use Doctrine\ORM\EntityManagerInterface;
@@ -821,6 +822,9 @@ class InstallationService
         // Set the default source for a schema.
         $this->editSchemaProperties(($data['schemas'] ?? []));
 
+        // Create template
+        $this->createTemplates(($data['templates'] ?? []));
+
         if (isset($data['installationService']) === false || empty($data['installationService']) === true) {
             $this->logger->error($file->getFilename().' Doesn\'t contain an installation service');
 
@@ -938,6 +942,77 @@ class InstallationService
         }
 
     }//end addSchemasToCollection()
+
+    /**
+     * This function creates templates for an array of schema references.
+     *
+     * @param array $templatesData An array of data used for creating templates.
+     *
+     * @return array An array of templates
+     */
+    private function createTemplates(array $templatesData = []): array
+    {
+        $templates = [];
+
+        // Let's loop through the templatesData.
+        foreach ($templatesData as $templateData) {
+            // Create the base Endpoint.
+            $template = $this->createTemplate($templateData);
+            if ($template === null) {
+                continue;
+            }
+
+            $templates[] = $template;
+        }//end foreach
+
+        $this->logger->info(count($templates).' Templates Created');
+
+        return $templates;
+
+    }//end createTemplates()
+
+    /**
+     * Creates a single endpoint for an Entity or a Source using the data from installation.json.
+     *
+     * @param array $templateData The data used to create an Template.
+     *
+     * @return Template|null The created Template or null.
+     */
+    private function createTemplate(array $templateData): ?Template
+    {
+        $repository = $this->entityManager->getRepository('App:Entity');
+
+        $supportedSchemas = [];
+        foreach ($templateData['supportedSchemas'] as $schema) {
+            $supportedSchemas[] = $this->checkIfObjectExists($repository, $schema, 'Template')->getId()->toString();
+        }
+
+        unset($templateData['supportedSchemas']);
+        $templateData['supportedSchemas'] = $supportedSchemas;
+
+        if (key_exists('organization', $templateData) === true) {
+            $orgRepository = $this->entityManager->getRepository('App:Organization');
+            $organization  = $this->checkIfObjectExists($orgRepository, $templateData['organization'], 'Organization');
+
+            unset($templateData['organization']);
+            $templateData['organization'] = $organization;
+        }
+
+        $template = $this->entityManager->getRepository('App:Template')->findOneBy(['reference' => $templateData['$id']]);
+        if ($template !== null) {
+            $this->logger->debug('Template found with reference '.$templateData['$id']);
+
+            return null;
+        }
+
+        $template = new Template($templateData);
+
+        $this->entityManager->persist($template);
+        $this->logger->debug('Template created with reference: '.$templateData['$id']);
+
+        return $template;
+
+    }//end createTemplate()
 
     /**
      * This function creates endpoints for an array of schema references or source references.
@@ -1080,7 +1155,7 @@ class InstallationService
     {
         $object = $repository->findOneBy(['reference' => $reference]);
         if ($object === null) {
-            $this->logger->error('No object found for '.$reference.' while trying to create an Endpoint or User.', ['type' => $type]);
+            $this->logger->error('No object found for '.$reference.' while trying to create an Endpoint, User or Template.', ['type' => $type]);
 
             return null;
         }
@@ -1722,12 +1797,12 @@ class InstallationService
             case 'organizations':
                 $repository = $this->entityManager->getRepository('App:Organization');
                 break;
-            // case 'securityGroups':
-            // $repository = $this->entityManager->getRepository('App:SecurityGroup');
-            // break;
-            // case 'users':
-            // $repository = $this->entityManager->getRepository('App:User');
-            // break;
+                // case 'securityGroups':
+                // $repository = $this->entityManager->getRepository('App:SecurityGroup');
+                // break;
+                // case 'users':
+                // $repository = $this->entityManager->getRepository('App:User');
+                // break;
             default:
                 // We can't do anything so...
                 $this->logger->error('Unknown type used for the creation of a dashboard card: '.$type);
