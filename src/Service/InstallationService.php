@@ -397,20 +397,20 @@ class InstallationService
     {
         foreach (array_keys($this->objects) as $translateFrom) {
             switch ($translateFrom) {
-            case 'https://json-schema.org/draft/2020-12/action':
-                $translateTo = 'https://docs.commongateway.nl/schemas/Action.schema.json';
-                break;
-            case 'https://json-schema.org/draft/2020-12/schema':
-                $translateTo = 'https://docs.commongateway.nl/schemas/Entity.schema.json';
-                break;
-            case 'https://json-schema.org/draft/2020-12/source':
-                $translateTo = 'https://docs.commongateway.nl/schemas/Gateway.schema.json';
-                break;
-            case 'https://json-schema.org/draft/2020-12/mapping':
-                $translateTo = 'https://docs.commongateway.nl/schemas/Mapping.schema.json';
-                break;
-            default:
-                continue 2;
+                case 'https://json-schema.org/draft/2020-12/action':
+                    $translateTo = 'https://docs.commongateway.nl/schemas/Action.schema.json';
+                    break;
+                case 'https://json-schema.org/draft/2020-12/schema':
+                    $translateTo = 'https://docs.commongateway.nl/schemas/Entity.schema.json';
+                    break;
+                case 'https://json-schema.org/draft/2020-12/source':
+                    $translateTo = 'https://docs.commongateway.nl/schemas/Gateway.schema.json';
+                    break;
+                case 'https://json-schema.org/draft/2020-12/mapping':
+                    $translateTo = 'https://docs.commongateway.nl/schemas/Mapping.schema.json';
+                    break;
+                default:
+                    continue 2;
             }
 
             if (isset($this->objects[$translateTo]) === false) {
@@ -703,32 +703,32 @@ class InstallationService
     private function createNewObjectType(string $type): ?object
     {
         switch ($type) {
-        case 'Action':
-            return new Action();
-        case 'Application':
-            return new Application();
-        case 'CollectionEntity':
-            return new CollectionEntity();
-        case 'Cronjob':
-            return new Cronjob();
-        case 'DashboardCard':
-            return new DashboardCard();
-        case 'Endpoint':
-            return new Endpoint();
-        case 'Entity':
-            return new Entity();
-        case 'Gateway':
-            return new Source();
-        case 'Mapping':
-            return new Mapping();
-        case 'Organization':
-            return new Organization();
-        case 'SecurityGroup':
-            return new SecurityGroup();
-        case 'User':
-            return new User();
-        default:
-            return null;
+            case 'Action':
+                return new Action();
+            case 'Application':
+                return new Application();
+            case 'CollectionEntity':
+                return new CollectionEntity();
+            case 'Cronjob':
+                return new Cronjob();
+            case 'DashboardCard':
+                return new DashboardCard();
+            case 'Endpoint':
+                return new Endpoint();
+            case 'Entity':
+                return new Entity();
+            case 'Gateway':
+                return new Source();
+            case 'Mapping':
+                return new Mapping();
+            case 'Organization':
+                return new Organization();
+            case 'SecurityGroup':
+                return new SecurityGroup();
+            case 'User':
+                return new User();
+            default:
+                return null;
         }//end switch
 
     }//end createNewObjectType()
@@ -823,7 +823,7 @@ class InstallationService
         $this->editSchemaProperties(($data['schemas'] ?? []));
 
         // Create template
-        $this->createTemplates(($data['templates'] ?? []));
+        $this->createTemplates($data['templates'] ?? []);
 
         if (isset($data['installationService']) === false || empty($data['installationService']) === true) {
             $this->logger->error($file->getFilename().' Doesn\'t contain an installation service');
@@ -956,6 +956,7 @@ class InstallationService
 
         // Let's loop through the templatesData.
         foreach ($templatesData as $templateData) {
+
             // Create the base Endpoint.
             $template = $this->createTemplate($templateData);
             if ($template === null) {
@@ -974,7 +975,7 @@ class InstallationService
     /**
      * Creates a single endpoint for an Entity or a Source using the data from installation.json.
      *
-     * @param array $templateData The data used to create an Template.
+     * @param array  $templateData The data used to create an Template.
      *
      * @return Template|null The created Template or null.
      */
@@ -982,9 +983,16 @@ class InstallationService
     {
         $repository = $this->entityManager->getRepository('App:Entity');
 
+        if(isset($templateData['supportedSchemas']) === false) {
+            return null;
+        }
+
         $supportedSchemas = [];
         foreach ($templateData['supportedSchemas'] as $schema) {
-            $supportedSchemas[] = $this->checkIfObjectExists($repository, $schema, 'Template')->getId()->toString();
+            $schemaObject = $this->checkIfObjectExists($repository, $schema, 'Template');
+            if($schemaObject !== null) {
+                $supportedSchemas[] = $schemaObject->getId()->toString();
+            }
         }
 
         unset($templateData['supportedSchemas']);
@@ -992,10 +1000,13 @@ class InstallationService
 
         if (key_exists('organization', $templateData) === true) {
             $orgRepository = $this->entityManager->getRepository('App:Organization');
-            $organization  = $this->checkIfObjectExists($orgRepository, $templateData['organization'], 'Organization');
+            $organization = $this->checkIfObjectExists($orgRepository, $templateData['organization'], 'Organization');
 
             unset($templateData['organization']);
             $templateData['organization'] = $organization;
+        } else {
+            echo 'setting default organization';
+            $templateData['organization'] = $this->entityManager->getRepository('App:Organization')->find('a1c8e0b6-2f78-480d-a9fb-9792142f4761');
         }
 
         $template = $this->entityManager->getRepository('App:Template')->findOneBy(['reference' => $templateData['$id']]);
@@ -1012,7 +1023,7 @@ class InstallationService
 
         return $template;
 
-    }//end createTemplate()
+    }//end createEndpoint()
 
     /**
      * This function creates endpoints for an array of schema references or source references.
@@ -1128,12 +1139,12 @@ class InstallationService
     {
         // todo ? maybe create a second constructor? So we can do Endpoint($object, $endpointData);
         switch ($type) {
-        case 'sources':
-            return new Endpoint(null, $object, $endpointData);
-        case 'schemas':
-            return new Endpoint($object, null, $endpointData);
-        case 'multipleSchemas':
-            return new Endpoint(null, null, $endpointData);
+            case 'sources':
+                return new Endpoint(null, $object, $endpointData);
+            case 'schemas':
+                return new Endpoint($object, null, $endpointData);
+            case 'multipleSchemas':
+                return new Endpoint(null, null, $endpointData);
         }
 
         $this->logger->error('Unknown type used for endpoint construction: '.$type);
@@ -1467,27 +1478,27 @@ class InstallationService
         $defaultConfig = [];
         foreach ($actionHandler->getConfiguration()['properties'] as $key => $value) {
             switch ($value['type']) {
-            case 'string':
-            case 'array':
-                if (isset($value['example']) === true) {
-                    $defaultConfig[$key] = $value['example'];
-                }
-                break;
-            case 'object':
-                break;
-            case 'uuid':
-                if (isset($value['$ref']) === true) {
-                    try {
-                        $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $value['$ref']]);
-                    } catch (Exception $exception) {
-                        $this->logger->error("No entity found with reference {$value['$ref']} (addActionConfiguration() for installation.json)");
+                case 'string':
+                case 'array':
+                    if (isset($value['example']) === true) {
+                        $defaultConfig[$key] = $value['example'];
                     }
+                    break;
+                case 'object':
+                    break;
+                case 'uuid':
+                    if (isset($value['$ref']) === true) {
+                        try {
+                            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $value['$ref']]);
+                        } catch (Exception $exception) {
+                            $this->logger->error("No entity found with reference {$value['$ref']} (addActionConfiguration() for installation.json)");
+                        }
 
-                    $defaultConfig[$key] = $entity->getId()->toString();
-                }
-                break;
-            default:
-                // throw error.
+                        $defaultConfig[$key] = $entity->getId()->toString();
+                    }
+                    break;
+                default:
+                    // throw error.
             }//end switch
         }//end foreach
 
@@ -1767,46 +1778,46 @@ class InstallationService
         foreach ($cardsData as $type => $references) {
             // Let's determine the proper repo to use.
             switch ($type) {
-            case 'actions':
-                $repository = $this->entityManager->getRepository('App:Action');
-                break;
-            case 'applications':
-                $repository = $this->entityManager->getRepository('App:Application');
-                break;
-            case 'collections':
-                $repository = $this->entityManager->getRepository('App:CollectionEntity');
-                break;
-            case 'cronjobs':
-                $repository = $this->entityManager->getRepository('App:Cronjob');
-                break;
-            case 'endpoints':
-                $repository = $this->entityManager->getRepository('App:Endpoint');
-                break;
-            case 'schemas':
-                $repository = $this->entityManager->getRepository('App:Entity');
-                break;
-            case 'sources':
-                $repository = $this->entityManager->getRepository('App:Gateway');
-                break;
-            case 'mappings':
-                $repository = $this->entityManager->getRepository('App:Mapping');
-                break;
-            case 'objects':
-                $repository = $this->entityManager->getRepository('App:ObjectEntity');
-                break;
-            case 'organizations':
-                $repository = $this->entityManager->getRepository('App:Organization');
-                break;
+                case 'actions':
+                    $repository = $this->entityManager->getRepository('App:Action');
+                    break;
+                case 'applications':
+                    $repository = $this->entityManager->getRepository('App:Application');
+                    break;
+                case 'collections':
+                    $repository = $this->entityManager->getRepository('App:CollectionEntity');
+                    break;
+                case 'cronjobs':
+                    $repository = $this->entityManager->getRepository('App:Cronjob');
+                    break;
+                case 'endpoints':
+                    $repository = $this->entityManager->getRepository('App:Endpoint');
+                    break;
+                case 'schemas':
+                    $repository = $this->entityManager->getRepository('App:Entity');
+                    break;
+                case 'sources':
+                    $repository = $this->entityManager->getRepository('App:Gateway');
+                    break;
+                case 'mappings':
+                    $repository = $this->entityManager->getRepository('App:Mapping');
+                    break;
+                case 'objects':
+                    $repository = $this->entityManager->getRepository('App:ObjectEntity');
+                    break;
+                case 'organizations':
+                    $repository = $this->entityManager->getRepository('App:Organization');
+                    break;
                 // case 'securityGroups':
                 // $repository = $this->entityManager->getRepository('App:SecurityGroup');
                 // break;
                 // case 'users':
                 // $repository = $this->entityManager->getRepository('App:User');
                 // break;
-            default:
-                // We can't do anything so...
-                $this->logger->error('Unknown type used for the creation of a dashboard card: '.$type);
-                continue 2;
+                default:
+                    // We can't do anything so...
+                    $this->logger->error('Unknown type used for the creation of a dashboard card: '.$type);
+                    continue 2;
             }//end switch
 
             // Then we can handle some data.
