@@ -9,6 +9,7 @@ use App\Service\SynchronizationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -49,6 +50,11 @@ class NotificationService
     private SynchronizationService $syncService;
 
     /**
+     * @var CallService
+     */
+    private CallService $callService;
+
+    /**
      * @var GatewayResourceService
      */
     private GatewayResourceService $resourceService;
@@ -59,17 +65,20 @@ class NotificationService
      * @param EntityManagerInterface $entityManager      The EntityManager.
      * @param LoggerInterface        $notificationLogger The notification logger.
      * @param SynchronizationService $syncService        The SynchronizationService.
+     * @param CallService            $callService        The Call Service.
      * @param GatewayResourceService $resourceService    The GatewayResourceService.
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         LoggerInterface $notificationLogger,
         SynchronizationService $syncService,
+        CallService $callService,
         GatewayResourceService $resourceService
     ) {
         $this->entityManager   = $entityManager;
         $this->logger          = $notificationLogger;
         $this->syncService     = $syncService;
+        $this->callService     = $callService;
         $this->resourceService = $resourceService;
 
     }//end __construct()
@@ -104,7 +113,19 @@ class NotificationService
             return ['response' => new Response($response, $exception->getCode(), ['Content-type' => 'application/json'])];
         }
 
-        $this->syncService->synchronize($synchronization);
+        try {
+            $response = $this->callService->call(
+                $synchronization->getSource(),
+                $synchronization->getEndpoint(),
+                'GET'
+            );
+        } catch (\Exception $exception) {
+            // Todo set error log
+            throw new Exception($exception->getMessage());
+        }//end try
+
+        $sourceResponse = json_decode($response->getBody()->getContents(), true);
+        $this->syncService->synchronize($synchronization, $sourceResponse);
 
         $this->entityManager->flush();
 
