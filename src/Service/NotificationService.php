@@ -65,7 +65,7 @@ class NotificationService
      * @param EntityManagerInterface $entityManager      The EntityManager.
      * @param LoggerInterface        $notificationLogger The notification logger.
      * @param SynchronizationService $syncService        The SynchronizationService.
-     * @param CallService $callService The Call Service.
+     * @param CallService            $callService        The Call Service.
      * @param GatewayResourceService $resourceService    The GatewayResourceService.
      */
     public function __construct(
@@ -78,7 +78,7 @@ class NotificationService
         $this->entityManager   = $entityManager;
         $this->logger          = $notificationLogger;
         $this->syncService     = $syncService;
-        $this->callService = $callService;
+        $this->callService     = $callService;
         $this->resourceService = $resourceService;
 
     }//end __construct()
@@ -120,7 +120,6 @@ class NotificationService
                 'GET'
             );
         } catch (\Exception $exception) {
-
             // Todo set error log
             throw new Exception($exception->getMessage());
         }//end try
