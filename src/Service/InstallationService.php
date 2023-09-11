@@ -982,9 +982,16 @@ class InstallationService
     {
         $repository = $this->entityManager->getRepository('App:Entity');
 
+        if (isset($templateData['supportedSchemas']) === false) {
+            return null;
+        }
+
         $supportedSchemas = [];
         foreach ($templateData['supportedSchemas'] as $schema) {
-            $supportedSchemas[] = $this->checkIfObjectExists($repository, $schema, 'Template')->getId()->toString();
+            $schemaObject = $this->checkIfObjectExists($repository, $schema, 'Template');
+            if ($schemaObject !== null) {
+                $supportedSchemas[] = $schemaObject->getId()->toString();
+            }
         }
 
         unset($templateData['supportedSchemas']);
@@ -996,6 +1003,9 @@ class InstallationService
 
             unset($templateData['organization']);
             $templateData['organization'] = $organization;
+        } else {
+            echo 'setting default organization';
+            $templateData['organization'] = $this->entityManager->getRepository('App:Organization')->find('a1c8e0b6-2f78-480d-a9fb-9792142f4761');
         }
 
         $template = $this->entityManager->getRepository('App:Template')->findOneBy(['reference' => $templateData['$id']]);
