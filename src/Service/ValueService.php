@@ -29,7 +29,7 @@ class ValueService
     /**
      * @var SynchronizationService
      */
-    private SynchronizationService $synchronizationService;
+    private SynchronizationService $syncService;
 
     /**
      * @var ParameterBagInterface
@@ -39,23 +39,23 @@ class ValueService
     private CacheService $cacheService;
 
     /**
-     * @param EntityManagerInterface $entityManager
-     * @param LoggerInterface        $valueSubscriberLogger
-     * @param SynchronizationService $synchronizationService
-     * @param ParameterBagInterface  $parameterBag
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param LoggerInterface        $objectLogger  The logger.
+     * @param SynchronizationService $syncService   The synchronization service.
+     * @param ParameterBagInterface  $parameterBag  The parameter bag.
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        LoggerInterface $valueSubscriberLogger,
-        SynchronizationService $synchronizationService,
-        ParameterBagInterface $parameterBag,
-        CacheService $cacheService
+        LoggerInterface        $objectLogger,
+        SynchronizationService $syncService,
+        ParameterBagInterface  $parameterBag,
+        CacheService           $cacheService
     ) {
-        $this->entityManager          = $entityManager;
-        $this->logger                 = $valueSubscriberLogger;
-        $this->synchronizationService = $synchronizationService;
-        $this->parameterBag           = $parameterBag;
-        $this->cacheService           = $cacheService;
+        $this->entityManager = $entityManager;
+        $this->logger        = $objectLogger;
+        $this->syncService   = $syncService;
+        $this->parameterBag  = $parameterBag;
+        $this->cacheService  = $cacheService;
 
     }//end __construct()
 
@@ -85,7 +85,8 @@ class ValueService
     public function getSubObjectById(string $uuid, Value $valueObject): ?ObjectEntity
     {
         $parentObject = $valueObject->getObjectEntity();
-        if (!$subObject = $this->entityManager->find(ObjectEntity::class, $uuid)) {
+        $subObject = $this->entityManager->find(ObjectEntity::class, $uuid);
+        if ($subObject === null) {
             try {
                 $subObject = $this->entityManager->getRepository(ObjectEntity::class)->findByAnyId($uuid);
             } catch (NonUniqueResultException $exception) {
@@ -95,14 +96,14 @@ class ValueService
             }
         }
 
-        if (!$subObject instanceof ObjectEntity) {
+        if ($subObject instanceof ObjectEntity === false) {
             $this->logger->error(
                 "No subObjectEntity found with uuid ($uuid) or with a synchronization with sourceId = uuid for ParentObject",
                 [
                     'uuid'         => $uuid,
                     'ParentObject' => [
                         'id'     => $parentObject->getId()->toString(),
-                        'entity' => $parentObject->getEntity() ? [
+                        'entity' => $parentObject->getEntity() !== null ? [
                             'id'   => $parentObject->getEntity()->getId()->toString(),
                             'name' => $parentObject->getEntity()->getName(),
                         ] : null,
@@ -149,7 +150,7 @@ class ValueService
             return $synchronization->getObject();
         }
 
-        return $this->synchronizationService->aquireObject($url, $valueObject->getAttribute()->getObject());
+        return $this->syncService->aquireObject($url, $valueObject->getAttribute()->getObject());
 
     }//end getSubObjectByUrl()
 
@@ -163,9 +164,9 @@ class ValueService
      */
     public function findSubobject(string $identifier, Value $valueObject): ?ObjectEntity
     {
-        if (Uuid::isValid($identifier)) {
+        if (Uuid::isValid($identifier) === true) {
             return $this->getSubObjectById($identifier, $valueObject);
-        } else if (filter_var($identifier, FILTER_VALIDATE_URL)) {
+        } else if (filter_var($identifier, FILTER_VALIDATE_URL) === true) {
             return $this->getSubObjectByUrl($identifier, $valueObject);
         }
 
@@ -180,7 +181,7 @@ class ValueService
      */
     public function connectSubObjects(Value $value): void
     {
-        if ($value->getArrayValue()) {
+        if ($value->getArrayValue() !== []) {
             foreach ($value->getArrayValue() as $identifier) {
                 $subobject = $this->findSubobject($identifier, $value);
                 if ($subobject !== null) {
@@ -189,7 +190,7 @@ class ValueService
             }
 
             $value->setArrayValue([]);
-        } else if ((Uuid::isValid($value->getStringValue()) || filter_var($value->getStringValue(), FILTER_VALIDATE_URL)) && $identifier = $value->getStringValue()) {
+        } else if ((Uuid::isValid($value->getStringValue()) === false || filter_var($value->getStringValue(), FILTER_VALIDATE_URL)) === true && $identifier = $value->getStringValue()) {
             foreach ($value->getObjects() as $object) {
                 $value->removeObject($object);
             }
