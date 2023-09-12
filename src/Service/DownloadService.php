@@ -108,7 +108,7 @@ class DownloadService
     {
         $raw = $this->render($data);
 
-        $response = new Response($raw, 200, ['Content-Type' => 'text/html']);
+        $response          = new Response($raw, 200, ['Content-Type' => 'text/html']);
         $dispositionHeader = $response->headers->makeDisposition(
             ResponseHeaderBag::DISPOSITION_ATTACHMENT,
             'data.html'
@@ -116,6 +116,7 @@ class DownloadService
         $response->headers->set('Content-Disposition', $dispositionHeader);
 
         return $response;
+
     }//end downloadHtml()
 
     /**
