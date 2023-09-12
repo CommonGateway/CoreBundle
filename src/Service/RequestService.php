@@ -222,6 +222,9 @@ class RequestService
         case 'pdf':
             $content = $this->downloadService->downloadPdf($data);
             break;
+        case 'html':
+            $content = $this->downloadService->downloadHtml($data);
+            break;
         case 'xml':
         case 'csv':
             $content = $serializer->serialize($data, $accept);
