@@ -46,10 +46,10 @@ class ValueService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        LoggerInterface        $objectLogger,
+        LoggerInterface $objectLogger,
         SynchronizationService $syncService,
-        ParameterBagInterface  $parameterBag,
-        CacheService           $cacheService
+        ParameterBagInterface $parameterBag,
+        CacheService $cacheService
     ) {
         $this->entityManager = $entityManager;
         $this->logger        = $objectLogger;
@@ -85,7 +85,7 @@ class ValueService
     public function getSubObjectById(string $uuid, Value $valueObject): ?ObjectEntity
     {
         $parentObject = $valueObject->getObjectEntity();
-        $subObject = $this->entityManager->find(ObjectEntity::class, $uuid);
+        $subObject    = $this->entityManager->find(ObjectEntity::class, $uuid);
         if ($subObject === null) {
             try {
                 $subObject = $this->entityManager->getRepository(ObjectEntity::class)->findByAnyId($uuid);
