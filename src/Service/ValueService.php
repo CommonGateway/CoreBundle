@@ -1,5 +1,11 @@
 <?php
-
+/**
+ * A service to run automated mutations on values.
+ *
+ * @author Robert Zondervan (robert@conduction.nl)
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ */
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\ObjectEntity;
