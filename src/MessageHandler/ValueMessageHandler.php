@@ -9,27 +9,31 @@
 namespace CommonGateway\CoreBundle\MessageHandler;
 
 use App\Entity\ObjectEntity;
+use App\Entity\Value;
+use App\Repository\ValueRepository;
 use CommonGateway\CoreBundle\Message\CacheMessage;
 use App\Repository\ActionRepository;
 use App\Repository\ObjectEntityRepository;
+use CommonGateway\CoreBundle\Message\ValueMessage;
 use CommonGateway\CoreBundle\Service\CacheService;
+use CommonGateway\CoreBundle\Service\ValueService;
 use CommonGateway\CoreBundle\Subscriber\ActionSubscriber;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
-class CacheMessageHandler implements MessageHandlerInterface
+class ValueMessageHandler implements MessageHandlerInterface
 {
 
-    private CacheService $cacheService;
+    private ValueService $valueService;
 
-    private ObjectEntityRepository $repository;
+    private ValueRepository $repository;
 
     private EntityManagerInterface $entityManager;
 
-    public function __construct(CacheService $cacheService, ObjectEntityRepository $repository, EntityManagerInterface $entityManager)
+    public function __construct(ValueService $valueService, ValueRepository $repository, EntityManagerInterface $entityManager)
     {
-        $this->cacheService  = $cacheService;
+        $this->valueService  = $valueService;
         $this->repository    = $repository;
         $this->entityManager = $entityManager;
 
@@ -44,17 +48,15 @@ class CacheMessageHandler implements MessageHandlerInterface
      *
      * @throws Exception
      */
-    public function __invoke(CacheMessage $message): void
+    public function __invoke(ValueMessage $message): void
     {
-        $object = $this->repository->find($message->getObjectEntityId());
+        $value = $this->repository->find($message->getValueId());
 
         try {
-            if ($object instanceof ObjectEntity) {
-                $this->cacheService->cacheObject($object);
+            if ($value instanceof Value) {
+                $this->valueService->connectSubObjects($value);
             }
-
         } catch (Exception $exception) {
-
             throw $exception;
         }
 
