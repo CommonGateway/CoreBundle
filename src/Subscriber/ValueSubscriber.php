@@ -25,13 +25,12 @@ class ValueSubscriber implements EventSubscriberInterface
      */
     private MessageBusInterface $messageBus;
 
-
     /**
      * @param MessageBusInterface $messageBus
      */
     public function __construct(
-        MessageBusInterface $messageBus)
-    {
+        MessageBusInterface $messageBus
+    ) {
         $this->messageBus = $messageBus;
 
     }//end __construct()
@@ -68,7 +67,8 @@ class ValueSubscriber implements EventSubscriberInterface
         ) {
             $this->messageBus->dispatch(new ValueMessage($value->getObject()->getId()));
         }//end if
-    }//end preUpdate()
+
+    }//end postUpdate()
 
     /**
      * Passes the result of prePersist to preUpdate.
@@ -79,7 +79,7 @@ class ValueSubscriber implements EventSubscriberInterface
     {
         $this->postUpdate($args);
 
-    }//end prePersist()
+    }//end postPersist()
 
     public function preRemove(LifecycleEventArgs $args): void
     {

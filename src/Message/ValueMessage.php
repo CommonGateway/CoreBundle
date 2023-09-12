@@ -25,5 +25,5 @@ class ValueMessage
     {
         return $this->objectEntityId;
 
-    }//end getObjectEntityId()
+    }//end getValueId()
 }//end class

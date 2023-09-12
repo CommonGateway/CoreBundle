@@ -52,9 +52,7 @@ class CacheMessageHandler implements MessageHandlerInterface
             if ($object instanceof ObjectEntity) {
                 $this->cacheService->cacheObject($object);
             }
-
         } catch (Exception $exception) {
-
             throw $exception;
         }
 

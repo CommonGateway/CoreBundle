@@ -15,6 +15,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class ValueService
 {
+
     /**
      * @var EntityManagerInterface
      */
@@ -49,13 +50,13 @@ class ValueService
         SynchronizationService $synchronizationService,
         ParameterBagInterface $parameterBag,
         CacheService $cacheService
-    )
-    {
+    ) {
         $this->entityManager          = $entityManager;
         $this->logger                 = $valueSubscriberLogger;
         $this->synchronizationService = $synchronizationService;
         $this->parameterBag           = $parameterBag;
         $this->cacheService           = $cacheService;
+
     }//end __construct()
 
     /**
@@ -201,7 +202,6 @@ class ValueService
 
         if ($value->getObjectEntity() instanceof ObjectEntity) {
             $value->getObjectEntity()->setDateModified(new \DateTime());
-
         }
 
         $this->entityManager->persist($value);
@@ -209,5 +209,5 @@ class ValueService
         $this->entityManager->flush();
         $this->cacheService->cacheObject($value->getObjectEntity());
 
-    }
-}
+    }//end connectSubObjects()
+}//end class
