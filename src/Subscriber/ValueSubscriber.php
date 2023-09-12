@@ -59,9 +59,9 @@ class ValueSubscriber implements EventSubscriberInterface
     {
         $valueObject = $value->getObject();
 
-        if ($valueObject instanceof Value
-            && $valueObject->getAttribute()->getType() == 'object'
-            && ($valueObject->getArrayValue()
+        if ($valueObject instanceof Value === true
+            && $valueObject->getAttribute()->getType() === 'object'
+            && ($valueObject->getArrayValue() !== []
             || Uuid::isValid($valueObject->getStringValue())
             || filter_var($valueObject->getStringValue(), FILTER_VALIDATE_URL))
         ) {
