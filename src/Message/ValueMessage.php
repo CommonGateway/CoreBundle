@@ -13,14 +13,27 @@ use Ramsey\Uuid\UuidInterface;
 class ValueMessage
 {
 
+    /**
+     * @var UuidInterface The id of the value to check.
+     */
     private UuidInterface $valueId;
 
+    /**
+     * Constructor.
+     *
+     * @param UuidInterface $valueId The id of the value to check./
+     */
     public function __construct(UuidInterface $valueId)
     {
-        $this->objectEntityId = $valueId;
+        $this->valueId = $valueId;
 
     }//end __construct()
 
+    /**
+     * Get the id of the value.
+     *
+     * @return UuidInterface The id of the value to check.
+     */
     public function getValueId(): UuidInterface
     {
         return $this->objectEntityId;
