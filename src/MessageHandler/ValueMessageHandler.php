@@ -38,13 +38,13 @@ class ValueMessageHandler implements MessageHandlerInterface
     /**
      * Constructor.
      *
-     * @param ValueService $valueService The value service.
-     * @param ValueRepository $repository The value repository.
+     * @param ValueService    $valueService The value service.
+     * @param ValueRepository $repository   The value repository.
      */
     public function __construct(ValueService $valueService, ValueRepository $repository)
     {
-        $this->valueService  = $valueService;
-        $this->repository    = $repository;
+        $this->valueService = $valueService;
+        $this->repository   = $repository;
 
     }//end __construct()
 
