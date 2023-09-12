@@ -1,6 +1,6 @@
 <?php
 /**
- * A message to run caches asynchrounous
+ * A message to run coupling subobjects asynchrounous
  *
  * @author Robert Zondervan (robert@conduction.nl)
  *
