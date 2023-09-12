@@ -243,7 +243,7 @@ class EndpointService
             return 'xlsx';
         case 'text/csv':
             return 'csv';
-        case 'text/html':    
+        case 'text/html':
             return 'html';
             break;
         }//end switch
