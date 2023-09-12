@@ -25,17 +25,26 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 class ValueMessageHandler implements MessageHandlerInterface
 {
 
+    /**
+     * @var ValueService The value service.
+     */
     private ValueService $valueService;
 
+    /**
+     * @var ValueRepository The value repository.
+     */
     private ValueRepository $repository;
 
-    private EntityManagerInterface $entityManager;
-
-    public function __construct(ValueService $valueService, ValueRepository $repository, EntityManagerInterface $entityManager)
+    /**
+     * Constructor.
+     *
+     * @param ValueService $valueService The value service.
+     * @param ValueRepository $repository The value repository.
+     */
+    public function __construct(ValueService $valueService, ValueRepository $repository)
     {
         $this->valueService  = $valueService;
         $this->repository    = $repository;
-        $this->entityManager = $entityManager;
 
     }//end __construct()
 
