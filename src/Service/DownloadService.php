@@ -98,6 +98,27 @@ class DownloadService
     }//end render()
 
     /**
+     * Downloads a html.
+     *
+     * @param array $data The data to render for this html.
+     *
+     * @return Response The html as file output.
+     */
+    public function downloadHtml(array $data): Response
+    {
+        $raw = $this->render($data);
+
+        $response = new Response($raw, 200, ['Content-Type' => 'text/html']);
+        $dispositionHeader = $response->headers->makeDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            'data.html'
+        );
+        $response->headers->set('Content-Disposition', $dispositionHeader);
+
+        return $response;
+    }//end downloadHtml()
+
+    /**
      * Downloads a pdf.
      *
      * @param array $data The data to render for this pdf.
