@@ -243,6 +243,9 @@ class EndpointService
             return 'xlsx';
         case 'text/csv':
             return 'csv';
+        case 'text/html':
+            return 'html';
+            break;
         }//end switch
 
         // As a backup we look at any file extenstion.
