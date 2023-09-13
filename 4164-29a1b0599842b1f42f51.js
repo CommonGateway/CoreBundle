@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkproduct_website_template=self.webpackChunkproduct_website_template||[]).push([[4164],{4164:function(t,e,r){r.r(e),r.d(e,{utrecht_table_body:function(){return o}});var s=r(8281);const o=class{constructor(t){(0,s.r)(this,t)}render(){return(0,s.h)(s.H,{role:"rowgroup"},(0,s.h)("slot",null))}};o.style=":host{display:table-row-group}"}}]);
-//# sourceMappingURL=4164-29a1b0599842b1f42f51.js.map
