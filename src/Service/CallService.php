@@ -228,38 +228,62 @@ class CallService
             throw new HttpException('409', "This source is not enabled: {$source->getName()}");
         }
 
-        if (empty($source->getConfiguration()) === false) {
-            $config = array_merge_recursive($config, $source->getConfiguration());
-        }
-
-        // $log = $this->createDefaultLog($source, $endpoint, $method, $config);
         if (empty($source->getLocation()) === true) {
             throw new HttpException('409', "This source has no location: {$source->getName()}");
+        }
+
+        if (isset($config['headers']['Content-Type']) === true) {
+            $overwriteContentType = $config['headers']['Content-Type'];
+        }
+
+        if (empty($source->getConfiguration()) === false) {
+            $config = array_merge_recursive($config, $source->getConfiguration());
         }
 
         if (isset($config['headers']) === false) {
             $config['headers'] = [];
         }
 
-        $parsedUrl = parse_url($source->getLocation());
+        $url = $source->getLocation().$endpoint;
 
         // Set authentication if needed.
-        $config = array_merge_recursive($this->getAuthentication($source), $config);
         $createCertificates && $this->getCertificate($config);
+        $requestInfo = [
+            'url'    => $url,
+            'method' => $method,
+        ];
+        $config      = array_merge_recursive($this->getAuthentication($source, $config, $requestInfo), $config);
 
         // Backwards compatible, $source->getHeaders = deprecated.
         $config['headers'] = array_merge(($source->getHeaders() ?? []), $config['headers']);
+        if (isset($overwriteContentType) === true) {
+            $config['headers']['Content-Type'] = $overwriteContentType;
+        }
 
+        // Make sure we do not have an array of accept headers
+        if (isset($config['headers']['accept']) === true && is_array($config['headers']['accept']) === true) {
+            $config['headers']['accept'] = $config['headers']['accept'][0];
+        }
+
+        $parsedUrl                 = parse_url($source->getLocation());
         $config['headers']['host'] = $parsedUrl['host'];
         $config['headers']         = $this->removeEmptyHeaders($config['headers']);
 
-        $url = $source->getLocation().$endpoint;
-        $this->callLogger->info('Calling url '.$url);
-
         $config = $this->handleEndpointsConfigOut($source, $endpoint, $config);
 
+        // Guzzle sets the Content-Type self when using multipart.
+        if (isset($config['multipart']) === true && isset($config['headers']['Content-Type']) === true) {
+            unset($config['headers']['Content-Type']);
+        }
+
+        $this->callLogger->info('Calling url '.$url);
         $this->callLogger->debug('Call configuration: ', $config);
+
         // Let's make the call.
+        // The $source here gets persisted but the flush needs be executed in a Service where this call function has been executed.
+        // Because we don't want to flush/update the Source each time this ->call function gets executed for performance reasons.
+        $source->setLastCall(new \DateTime());
+        $this->entityManager->persist($source);
         try {
             if ($asynchronous === false) {
                 $response = $this->client->request($method, $url, $config);
@@ -268,12 +292,29 @@ class CallService
             }
 
             $this->callLogger->info("Request to $url succesful");
+
+            $this->callLogger->notice("$method Request to $url returned {$response->getStatusCode()}");
+
+            $source->setStatus($response->getStatusCode());
+            $this->entityManager->persist($source);
         } catch (ServerException | ClientException | RequestException | Exception $exception) {
-            return $this->handleCallException($exception, $source, $endpoint);
+            $this->callLogger->error('Request failed with error '.$exception);
+
+            $response = $this->handleCallException($exception, $source, $endpoint);
+
+            $source->setStatus($response->getStatusCode());
+            $this->entityManager->persist($source);
+
+            return $response;
         } catch (GuzzleException $exception) {
             $this->callLogger->error('Request failed with error '.$exception);
 
-            return $this->handleEndpointsConfigIn($source, $endpoint, null, $exception, null);
+            $response = $this->handleEndpointsConfigIn($source, $endpoint, null, $exception, null);
+
+            $source->setStatus($response->getStatusCode());
+            $this->entityManager->persist($source);
+
+            return $response;
         }//end try
 
         $createCertificates && $this->removeFiles($config);
@@ -531,10 +572,17 @@ class CallService
         $this->callLogger->debug('Determine content type of response');
 
         // Switch voor obejct.
-        $contentType = $response->getHeader('content-type')[0];
+        if (isset($response->getHeader('content-type')[0]) === true) {
+            $contentType = $response->getHeader('content-type')[0];
+        }
 
         if (isset($contentType) === false || empty($contentType) === true) {
             $contentType = $source->getAccept();
+
+            if ($contentType === null) {
+                $this->callLogger->warning('Accept of the Source '.$source->getReference().' === null');
+                return 'application/json';
+            }
         }
 
         return $contentType;
@@ -560,24 +608,40 @@ class CallService
         // resultaat omzetten.
         // als geen content-type header dan content-type header is accept header.
         $responseBody = $response->getBody()->getContents();
-        if (isset($responseBody) === false) {
+        if (isset($responseBody) === false || empty($responseBody) === true) {
+            $this->callLogger->error('Cannot decode an empty response body');
             return [];
         }
 
-        $this->callLogger->debug('Response content: '.$responseBody);
+        // This if is statement prevents binary code from being used a string.
+        if ($contentType !== 'application/pdf') {
+            $this->callLogger->debug('Response content: '.$responseBody);
+        }
 
         $xmlEncoder  = new XmlEncoder(['xml_root_node_name' => ($this->configuration['apiSource']['location']['xmlRootNodeName'] ?? 'response')]);
         $yamlEncoder = new YamlEncoder();
-        $contentType = ($this->getContentType($response, $source) ?? $contentType);
+
+        // This if statement is so that any given $contentType other than json doesn't get overwritten here.
+        if ($contentType === 'application/json') {
+            $contentType = ($this->getContentType($response, $source) ?? $contentType);
+        }
+
         switch ($contentType) {
         case 'text/yaml':
         case 'text/x-yaml':
+        case 'text/yaml; charset=utf-8':
             return $yamlEncoder->decode($responseBody, 'yaml');
         case 'text/xml':
         case 'text/xml; charset=utf-8':
+        case 'application/pdf':
+        case 'application/pdf; charset=utf-8':
+            $this->callLogger->debug('Response content: pdf binary code..');
+            return ['base64' => base64_encode($responseBody)];
         case 'application/xml':
+        case 'application/xml; charset=utf-8':
             return $xmlEncoder->decode($responseBody, 'xml');
         case 'application/json':
+        case 'application/json; charset=utf-8':
         default:
             $result = json_decode($responseBody, true);
         }//end switch
@@ -602,13 +666,15 @@ class CallService
     /**
      * Determines the authentication procedure based upon a source.
      *
-     * @param Source $source The source to base the authentication procedure on
+     * @param Source     $source      The source to base the authentication procedure on
+     * @param array|null $config      The optional, updated Source configuration array.
+     * @param array|null $requestInfo The optional, given request info.
      *
      * @return array The config parameters needed to authenticate on the source
      */
-    private function getAuthentication(Source $source): array
+    private function getAuthentication(Source $source, ?array $config = null, ?array $requestInfo = []): array
     {
-        return $this->authenticationService->getAuthentication($source);
+        return $this->authenticationService->getAuthentication($source, $config, $requestInfo);
 
     }//end getAuthentication()
 

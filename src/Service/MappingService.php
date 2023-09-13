@@ -122,16 +122,16 @@ class MappingService
 
         $input = $this->encodeArrayKeys($input, '.', '&#46;');
 
-        isset($this->style) === true && $this->style->debug('Mapping array based on mapping object '.$mappingObject->getName().' (id:'.$mappingObject->getId()->toString().' / ref:'.$mappingObject->getReference().') v:'.$mappingObject->getversion());
+        isset($this->style) === true && $this->style->info('Mapping array based on mapping object '.$mappingObject->getName().' (id:'.$mappingObject->getId()->toString().' / ref:'.$mappingObject->getReference().') v:'.$mappingObject->getversion());
 
         // Determine pass trough.
         // Let's get the dot array based on https://github.com/adbario/php-dot-notation.
         if ($mappingObject->getPassTrough()) {
             $dotArray = new Dot($input);
-            isset($this->style) === true && $this->style->debug('Mapping *with* pass trough');
+            isset($this->style) === true && $this->style->info('Mapping *with* pass trough');
         } else {
             $dotArray = new Dot();
-            isset($this->style) === true && $this->style->debug('Mapping *without* pass trough');
+            isset($this->style) === true && $this->style->info('Mapping *without* pass trough');
         }
 
         $dotInput = new Dot($input);
@@ -152,25 +152,33 @@ class MappingService
         $unsets = ($mappingObject->getUnset() ?? []);
         foreach ($unsets as $unset) {
             if ($dotArray->has($unset) === false) {
-                isset($this->style) === true && $this->style->debug("Trying to unset an property that doesn't exist during mapping");
+                isset($this->style) === true && $this->style->info("Trying to unset an property that doesn't exist during mapping");
                 continue;
             }
+
+            $dotArray->delete($unset);
         }
 
         // Cast values to a specific type.
         $casts = ($mappingObject->getCast() ?? []);
+
         foreach ($casts as $key => $cast) {
             if ($dotArray->has($key) === false) {
-                isset($this->style) === true && $this->style->debug("Trying to cast an property that doesn't exist during mapping");
+                isset($this->style) === true && $this->style->info("Trying to cast an property that doesn't exist during mapping");
                 continue;
             }
 
-            if (is_array($cast) === true) {
-                foreach ($cast as $singleCast) {
-                    $this->handleCast($dotArray, $key, $singleCast);
-                }
+            if (is_array($cast) === false) {
+                $cast = explode(',', $cast);
+            }
 
-                $this->handleCast($dotArray, $key, $cast);
+            if ($cast === false) {
+                isset($this->style) === true && $this->style->info("Cast for property $key is an empty string");
+                continue;
+            }
+
+            foreach ($cast as $singleCast) {
+                $this->handleCast($dotArray, $key, $singleCast);
             }
         }
 
@@ -186,7 +194,7 @@ class MappingService
         }
 
         // Log the result.
-        isset($this->style) === true && $this->style->debug(
+        isset($this->style) === true && $this->style->info(
             'Mapped object',
             [
                 'input'      => $input,
@@ -214,28 +222,79 @@ class MappingService
         $value = $dotArray->get($key);
 
         // Todo: This works, we should go to php 8.0 later.
-        if (str_starts_with($cast, 'unsetIfValue==')) {
+        if (str_starts_with($cast, 'unsetIfValue==') === true) {
             $unsetIfValue = substr($cast, 14);
             $cast         = 'unsetIfValue';
+        } else if (str_starts_with($cast, 'countValue:') === true) {
+            $countValue = substr($cast, 11);
+            $cast       = 'countValue';
         }
 
         // Todo: Add more casts.
         switch ($cast) {
-        case 'int':
-        case 'integer':
-            $value = (int) $value;
+        case 'string':
+            $value = (string) $value;
             break;
         case 'bool':
         case 'boolean':
-            if ((int) $value === 1 || $value === 'true' || $value === 'True' || $value === 'TRUE') {
+            if ((int) $value === 1 || strtolower($value) === 'true' || strtolower($value) === 'yes') {
                 $value = true;
                 break;
             }
 
             $value = false;
             break;
-        case 'string':
-            $value = (string) $value;
+        case 'int':
+        case 'integer':
+            $value = (int) $value;
+            break;
+        case 'float':
+            $value = (float) $value;
+            break;
+        case 'array':
+            $value = (array) $value;
+            break;
+        case 'date':
+            $value = date($value);
+            break;
+        case 'url':
+            $value = urlencode($value);
+            break;
+        case 'urlDecode':
+            $value = urldecode($value);
+            break;
+        case 'rawurl':
+            $value = rawurlencode($value);
+            break;
+        case 'rawurlDecode':
+            $value = rawurldecode($value);
+            break;
+        case 'html':
+            $value = htmlentities($value);
+            break;
+        case 'htmlDecode':
+            $value = html_entity_decode($value);
+            break;
+        case 'base64':
+            $value = base64_encode($value);
+            break;
+        case 'base64Decode':
+            $value = \Safe\base64_decode($value);
+            break;
+        case 'json':
+            $value = json_encode($value);
+            break;
+        case 'jsonToArray':
+            $value = html_entity_decode($value);
+            $value = json_decode($value, true);
+            break;
+        case 'nullStringToNull':
+            if ($value === 'null') {
+                $value = null;
+            }
+            break;
+        case 'coordinateStringToArray':
+            $value = $this->coordinateStringToArray($value);
             break;
         case 'keyCantBeValue':
             if ($key == $value) {
@@ -250,15 +309,17 @@ class MappingService
                 $dotArray->delete($key);
             }
             break;
-        case 'jsonToArray':
-            $value = str_replace(['&quot;', '&amp;quot;'], '"', $value);
-            $value = json_decode($value, true);
-            break;
-        case 'coordinateStringToArray':
-            $value = $this->coordinateStringToArray($value);
+        case 'countValue':
+            if (isset($countValue) === true
+                && empty($countValue) === false
+                && $dotArray->has($countValue) === true
+                && is_countable($dotArray->get($countValue)) === true
+            ) {
+                $value = count($dotArray->get($countValue));
+            }
             break;
         default:
-            isset($this->style) === true && $this->style->debug('Trying to cast to an unsupported cast type: '.$cast);
+            isset($this->style) === true && $this->style->info('Trying to cast to an unsupported cast type: '.$cast);
             break;
         }//end switch
 

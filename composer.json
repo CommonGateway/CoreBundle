@@ -54,6 +54,7 @@
     "nelmio/cors-bundle": "^2.1",
     "phpdocumentor/reflection-docblock": "^5.2",
     "phpoffice/phpword": "^0.18.2",
+    "phpoffice/phpspreadsheet": "^1.29",
     "respect/validation": "^2.2",
     "setono/cron-expression-bundle": "^1.5",
     "symfony/asset": "5.3.*",

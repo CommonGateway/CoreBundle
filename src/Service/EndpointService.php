@@ -120,6 +120,9 @@ class EndpointService
         $parameters['accept']   = $accept;
         $parameters['body']     = $this->decodeBody();
 
+        // Logs the request headers.
+        $this->logRequestHeaders($request, $endpoint);
+
         if (json_decode($request->get('payload'), true)) {
             $parameters['payload'] = json_decode($request->get('payload'), true);
         }
@@ -166,6 +169,34 @@ class EndpointService
     }//end handleRequest()
 
     /**
+     * This function logs the headers of the request and uses the endpoint->getLoggingConfig()['headers'] to unset the headers that don't need to be logged.
+     *
+     * @return void
+     */
+    public function logRequestHeaders(Request $request, Endpoint $endpoint): void
+    {
+        // Get all headers from the request.
+        $headers = [];
+        foreach ($request->headers->all() as $key => $value) {
+            $headers[$key] = $request->headers->get($key);
+        }
+
+        if (key_exists('headers', $endpoint->getLoggingConfig()) === true) {
+            // Loop through the loggingConfig headers of the current endpoint.
+            foreach ($endpoint->getLoggingConfig()['headers'] as $logConfig) {
+                // If the header is set on the request headers, then unset the key so we don't log it.
+                if (key_exists($logConfig, $headers) === true) {
+                    unset($headers[$logConfig]);
+                }
+            }
+        }
+
+        // Log the headers of the request without the headers from the loggingConfig of the endpoint.
+        $this->logger->info('The headers from the request for endpoint '.$endpoint->getName(), ['headers' => $headers]);
+
+    }//end logRequestHeaders()
+
+    /**
      * Gets the accept type based on the request.
      *
      * This method breaks complexity rules but since a switch is the most efficent and performent way to do this we made a design decicion to allow it
@@ -208,6 +239,15 @@ class EndpointService
         case 'text/xml':
         case 'application/xml':
             return 'xml';
+        case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+            return 'xlsx';
+        case 'text/csv':
+            return 'csv';
+        case 'text/html':
+            return 'html';
+        case 'text/docx':
+            return 'docx';
+            break;
         }//end switch
 
         // As a backup we look at any file extenstion.
@@ -264,9 +304,8 @@ class EndpointService
     /**
      * Gets the endpoint based on the request.
      *
-     * @throws Exception
-     *
      * @return Endpoint The found endpoint
+     * @throws Exception
      */
     public function getEndpoint(): Endpoint
     {
@@ -281,6 +320,96 @@ class EndpointService
         throw new NotFoundHttpException('No proper endpoint could be determined');
 
     }//end getEndpoint()
+
+    /**
+     * Parse headers from multipart/form-data requests on put, as PHP does not parse them itself
+     *
+     * @param string $rawHeaders The raw headers.
+     *
+     * @return array The parsed headers.
+     */
+    private function parsePutHeaders(string $rawHeaders): array
+    {
+        $rawHeaders = explode("\r\n", $rawHeaders);
+        $headers    = [];
+        foreach ($rawHeaders as $header) {
+            list($name, $value)         = explode(':', $header);
+            $headers[strtolower($name)] = ltrim($value, ' ');
+        }
+
+        return $headers;
+
+    }//end parsePutHeaders()
+
+    /**
+     * Retrieves data from input on PUT requests where multipart/form-data is not natively supported by PHP
+     *
+     * @return array The data from the PUT request parsed into an array
+     *
+     * @throws \Safe\Exceptions\FilesystemException
+     */
+    private function getPutData(): array
+    {
+        // Fetch content and determine boundary.
+        $raw_data = \Safe\file_get_contents('php://input');
+        $boundary = substr($raw_data, 0, strpos($raw_data, "\r\n"));
+
+        // Fetch each part.
+        $parts = array_slice(explode($boundary, $raw_data), 1);
+        $data  = [];
+
+        foreach ($parts as $part) {
+            // If this is the last part, break.
+            if ($part === "--\r\n") {
+                break;
+            }
+
+            // Separate content from headers.
+            $part                    = ltrim($part, "\r\n");
+            list($rawHeaders, $body) = explode("\r\n\r\n", $part, 2);
+
+            // Parse the headers list
+            $headers = $this->parsePutHeaders($rawHeaders);
+
+            // Parse the Content-Disposition to get the field name, etc.
+            if (isset($headers['content-disposition']) === false) {
+                continue;
+            }
+
+            $filename = null;
+            if (preg_match(
+                '/^(.+); *name="([^"]+)"(; *filename="([^"]+)")?/',
+                $headers['content-disposition'],
+                $matches
+            ) === false
+            ) {
+                preg_match(
+                    '/^(.+); *name=([-+.\w]+)(; *filename=([-+.\w]+))?/',
+                    $headers['content-disposition'],
+                    $matches
+                );
+            }
+
+            list(, $type, $name)             = $matches;
+            isset($matches[4]) and $filename = $matches[4];
+
+            // Handle your fields here.
+            switch ($name) {
+                // This is a file upload.
+            case 'userfile':
+                file_put_contents($filename, $body);
+                break;
+
+                // Default for all other files is to populate $data.
+            default:
+                $data[$name] = substr($body, 0, (strlen($body) - 2));
+                break;
+            }
+        }//end foreach
+
+        return $data;
+
+    }//end getPutData()
 
     /**
      * Builds a parameter array from the request.
@@ -325,6 +454,10 @@ class EndpointService
 
         // Let's get all the post variables.
         $parameters['post'] = $this->request->request->all();
+
+        if ($parameters['method'] === 'PUT' && $parameters['post'] === []) {
+            $parameters['post'] = $this->getPutData();
+        }
 
         return $parameters;
 

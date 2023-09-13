@@ -3,10 +3,13 @@
 namespace CommonGateway\CoreBundle\Command;
 
 use CommonGateway\CoreBundle\Service\InstallationService;
+use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * @Author Ruben van der Linde <ruben@conduction.nl>, Barry Brands <barry@conduction.nl>
@@ -52,9 +55,16 @@ class InstallCommand extends Command
     }//end configure()
 
     /**
-     * Executes installation of a bundle.
+     * Executes this command.
+     *
+     * @param InputInterface  $input  The input interface.
+     * @param OutputInterface $output The output interface.
+     *
+     * @return int 1 is successfully executed, else 0.
+     *
+     * @throws Exception
      */
-    protected function execute(InputInterface $input): int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $bundle = $input->getArgument('bundle');
 
@@ -65,7 +75,12 @@ class InstallCommand extends Command
             'unsafe'   => $input->getOption('unsafe'),
         ];
 
-        return $this->installationService->install($bundle, $options);
+        $this->installationService->setStyle(new SymfonyStyle($input, $output));
+        if ($this->installationService->install($bundle, $options) === true) {
+            return 0;
+        } else {
+            return 1;
+        }
 
     }//end execute()
 }//end class

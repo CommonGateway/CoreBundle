@@ -15,6 +15,7 @@
 |[getAction](#gatewayresourceservicegetaction)|Get an action by reference.|
 |[getEndpoint](#gatewayresourceservicegetendpoint)|Get a endpoint by reference.|
 |[getMapping](#gatewayresourceservicegetmapping)|Get a mapping by reference.|
+|[getObject](#gatewayresourceservicegetobject)|Get a object by identifier.|
 |[getSchema](#gatewayresourceservicegetschema)|Get a schema by reference.|
 |[getSource](#gatewayresourceservicegetsource)|Get a source by reference.|
 
@@ -155,6 +156,33 @@ Get a mapping by reference.
 **Return Values**
 
 `\Mapping|null`
+
+
+
+
+<hr />
+
+
+### GatewayResourceService::getObject  
+
+**Description**
+
+```php
+public getObject (string $id)
+```
+
+Get a object by identifier. 
+
+ 
+
+**Parameters**
+
+* `(string) $id`
+: The id to look for.  
+
+**Return Values**
+
+`\ObjectEntity|null`
 
 
 
