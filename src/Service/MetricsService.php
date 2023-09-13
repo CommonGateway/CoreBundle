@@ -81,7 +81,12 @@ class MetricsService
 
         $metricsString = '';
         foreach ($metrics as $metric) {
-            $metricsString .= "{$metric['name']}{help=\"{$metric['help']}\"} {$metric['value']}\n";
+            // TODO: app_version doesn't work yet. It needs to be a string.
+            if ($metric['name'] === 'app_version') {
+                continue;
+            }
+
+            $metricsString.= "{$metric['name']}{help=\"{$metric['help']}\"} {$metric['value']}\n";
         }
 
         return $metricsString;
