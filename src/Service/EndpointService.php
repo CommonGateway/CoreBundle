@@ -245,6 +245,8 @@ class EndpointService
             return 'csv';
         case 'text/html':
             return 'html';
+        case 'text/docx':
+            return 'docx';
             break;
         }//end switch
 
