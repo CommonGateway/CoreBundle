@@ -27,8 +27,6 @@ The common gateway supports several metrics
 | Name | Type | Help |
 |------|------|------|
 | app_version | gauge | The current version of the application. |
-| app_name | gauge | The name of the current version of the application. |
-| app_description | gauge | The description of the current version of the application. |
 | app_users | gauge | The current amount of users |
 | app_organisations | gauge | The current amount of organisations |
 | app_applications | gauge | The current amount of applications |
