@@ -75,6 +75,27 @@ class MetricsService
      *
      * @return array
      */
+    public function getMetricsAsString(): string
+    {
+        $metrics = $this->getAll();
+
+        $metricsString = '';
+        foreach ($metrics as $metric) {
+            $metricsString.= "{$metric['name']}{help=\"{$metric['help']}\"} {$metric['value']}\n";
+        }
+
+        return $metricsString;
+    }
+
+
+
+    /**
+     * Search for a given term.
+     *
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     *
+     * @return array
+     */
     public function getAll(): array
     {
         $coreBundle = $this->composerService->getSingle('commongateway/corebundle');
@@ -89,18 +110,6 @@ class MetricsService
                 'type'  => 'gauge',
                 'help'  => 'The current version of the application.',
                 'value' => $coreBundle['version'],
-            ],
-            [
-                'name'  => 'app_name',
-                'type'  => 'gauge',
-                'help'  => 'The name of the current version of the application.',
-                'value' => $coreBundle['name'],
-            ],
-            [
-                'name'  => 'app_description',
-                'type'  => 'gauge',
-                'help'  => 'The description of the current version of the application.',
-                'value' => $coreBundle['description'],
             ],
             [
                 'name'  => 'app_users',
@@ -136,6 +145,7 @@ class MetricsService
                 'value' => $calls,
             ],
         ];
+
 
         // Let get the data from the providers.
         $metrics = array_merge($metrics, $this->getErrors());

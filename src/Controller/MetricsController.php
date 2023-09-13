@@ -47,13 +47,10 @@ class MetricsController extends AbstractController
     public function metrics(): Response
     {
         $status  = 200;
-        $metrics = $this->metricsService->getAll();
 
-        // Todo: temp fix for now, we want the metricsService to return a string that looks like the one we are creating here:
-        // Todo: see https://prometheus.io/docs/instrumenting/exposition_formats/ for an example of the format
-        $response = "{$metrics[3]['name']}{help=\"{$metrics[3]['help']}\"} {$metrics[3]['value']}\n{$metrics[4]['name']}{help=\"{$metrics[4]['help']}\"} {$metrics[4]['value']}\n{$metrics[5]['name']}{help=\"{$metrics[5]['help']}\"} {$metrics[5]['value']}";
+        $metrics = $this->metricsService->getMetricsAsString();
 
-        return new Response($response, $status, ['Content-type' => 'text/plain']);
+        return new Response($metrics, $status, ['Content-type' => 'text/plain']);
 
     }//end metrics()
 }//end class
