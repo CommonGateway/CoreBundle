@@ -46,7 +46,7 @@ class MetricsController extends AbstractController
      */
     public function metrics(): Response
     {
-        $status  = 200;
+        $status = 200;
 
         $metrics = $this->metricsService->getMetricsAsString();
 

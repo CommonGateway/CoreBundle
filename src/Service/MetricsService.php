@@ -81,13 +81,12 @@ class MetricsService
 
         $metricsString = '';
         foreach ($metrics as $metric) {
-            $metricsString.= "{$metric['name']}{help=\"{$metric['help']}\"} {$metric['value']}\n";
+            $metricsString .= "{$metric['name']}{help=\"{$metric['help']}\"} {$metric['value']}\n";
         }
 
         return $metricsString;
-    }
 
-
+    }//end getMetricsAsString()
 
     /**
      * Search for a given term.
@@ -145,7 +144,6 @@ class MetricsService
                 'value' => $calls,
             ],
         ];
-
 
         // Let get the data from the providers.
         $metrics = array_merge($metrics, $this->getErrors());
