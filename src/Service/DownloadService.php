@@ -132,6 +132,7 @@ class DownloadService
 
         $docxWriter->save($filename);
         $rendered = \Safe\file_get_contents($filename);
+        \Safe\unlink($filename);
 
         return $rendered;
     }//end downloadHtml()
