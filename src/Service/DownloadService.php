@@ -114,27 +114,28 @@ class DownloadService
     {
         $raw = $this->render($data);
 
-        $docx = new PhpWord();
+        $docx    = new PhpWord();
         $section = $docx->addSection();
         Html::addHtml($section, $raw);
         $file = 'data.docx';
 
         header("Content-Description: File Transfer");
-        header('Content-Disposition: attachment; filename="' . $file . '"');
+        header('Content-Disposition: attachment; filename="'.$file.'"');
         header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
         header('Content-Transfer-Encoding: binary');
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
         header('Expires: 0');
 
         $docxWriter = IOFactory::createWriter($docx, 'Word2007');
-        $fileId = Uuid::uuid4();
-        $filename = '/var/tmp/'.$fileId->toString().'.docx';
+        $fileId     = Uuid::uuid4();
+        $filename   = '/var/tmp/'.$fileId->toString().'.docx';
 
         $docxWriter->save($filename);
         $rendered = \Safe\file_get_contents($filename);
 
         return $rendered;
-    }//end downloadHtml()
+
+    }//end downloadDocx()
 
     /**
      * Downloads a html.

@@ -246,7 +246,7 @@ class EndpointService
         case 'text/html':
             return 'html';
         case 'text/docx':
-            return 'docx';    
+            return 'docx';
             break;
         }//end switch
 
