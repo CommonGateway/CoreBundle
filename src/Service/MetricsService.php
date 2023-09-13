@@ -86,7 +86,7 @@ class MetricsService
                 continue;
             }
 
-            $metricsString.= "{$metric['name']}{help=\"{$metric['help']}\"} {$metric['value']}\n";
+            $metricsString .= "{$metric['name']}{help=\"{$metric['help']}\"} {$metric['value']}\n";
         }
 
         return $metricsString;
