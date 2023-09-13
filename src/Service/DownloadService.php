@@ -8,7 +8,12 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Dompdf;
+use PhpOffice\PhpWord\IOFactory;
+use PhpOffice\PhpWord\PhpWord;
+use PhpOffice\PhpWord\Shared\Html;
+use PhpOffice\PhpWord\Writer\Word2007;
 use Psr\Log\LoggerInterface;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Twig\Environment;
 use Symfony\Component\HttpFoundation\Response;
@@ -96,6 +101,40 @@ class DownloadService
         return $content;
 
     }//end render()
+
+    /**
+     * Downloads a docx.
+     * The html that is added has to be whitout a <head><style></style></head> section.
+     *
+     * @param array $data The data to render for this docx.
+     *
+     * @return string The docx as file output.
+     */
+    public function downloadDocx(array $data): string
+    {
+        $raw = $this->render($data);
+
+        $docx = new PhpWord();
+        $section = $docx->addSection();
+        Html::addHtml($section, $raw);
+        $file = 'data.docx';
+
+        header("Content-Description: File Transfer");
+        header('Content-Disposition: attachment; filename="' . $file . '"');
+        header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        header('Content-Transfer-Encoding: binary');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Expires: 0');
+
+        $docxWriter = IOFactory::createWriter($docx, 'Word2007');
+        $fileId = Uuid::uuid4();
+        $filename = '/var/tmp/'.$fileId->toString().'.docx';
+
+        $docxWriter->save($filename);
+        $rendered = \Safe\file_get_contents($filename);
+
+        return $rendered;
+    }//end downloadHtml()
 
     /**
      * Downloads a html.
