@@ -46,10 +46,11 @@ class MetricsController extends AbstractController
      */
     public function metrics(): Response
     {
-        $status  = 200;
-        $metrics = $this->metricsService->getAll();
+        $status = 200;
 
-        return new Response(json_encode(['metrics' => $metrics]), $status, ['Content-type' => 'application/json']);
+        $metrics = $this->metricsService->getMetricsAsString();
+
+        return new Response($metrics, $status, ['Content-type' => 'text/plain']);
 
     }//end metrics()
 }//end class

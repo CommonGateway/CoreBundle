@@ -75,6 +75,31 @@ class MetricsService
      *
      * @return array
      */
+    public function getMetricsAsString(): string
+    {
+        $metrics = $this->getAll();
+
+        $metricsString = '';
+        foreach ($metrics as $metric) {
+            // TODO: app_version doesn't work yet. It needs to be a string.
+            if ($metric['name'] === 'app_version') {
+                continue;
+            }
+
+            $metricsString .= "{$metric['name']}{help=\"{$metric['help']}\"} {$metric['value']}\n";
+        }
+
+        return $metricsString;
+
+    }//end getMetricsAsString()
+
+    /**
+     * Search for a given term.
+     *
+     * See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function
+     *
+     * @return array
+     */
     public function getAll(): array
     {
         $coreBundle = $this->composerService->getSingle('commongateway/corebundle');
@@ -89,18 +114,6 @@ class MetricsService
                 'type'  => 'gauge',
                 'help'  => 'The current version of the application.',
                 'value' => $coreBundle['version'],
-            ],
-            [
-                'name'  => 'app_name',
-                'type'  => 'gauge',
-                'help'  => 'The name of the current version of the application.',
-                'value' => $coreBundle['name'],
-            ],
-            [
-                'name'  => 'app_description',
-                'type'  => 'gauge',
-                'help'  => 'The description of the current version of the application.',
-                'value' => $coreBundle['description'],
             ],
             [
                 'name'  => 'app_users',
