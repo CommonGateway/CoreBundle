@@ -62,7 +62,7 @@ class ValueMessageHandler implements MessageHandlerInterface
         $value = $this->repository->find($message->getValueId());
 
         try {
-            if ($value instanceof Value) {
+            if ($value instanceof Value === true) {
                 $this->valueService->connectSubObjects($value);
             }
         } catch (Exception $exception) {

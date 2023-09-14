@@ -42,6 +42,9 @@ class ValueService
      */
     private ParameterBagInterface $parameterBag;
 
+    /**
+     * @var CacheService The cache service.
+     */
     private CacheService $cacheService;
 
     /**
@@ -49,6 +52,7 @@ class ValueService
      * @param LoggerInterface        $objectLogger  The logger.
      * @param SynchronizationService $syncService   The synchronization service.
      * @param ParameterBagInterface  $parameterBag  The parameter bag.
+     * @param CacheService           $cacheService  The Cache Service
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -182,6 +186,8 @@ class ValueService
 
     /**
      * Adds object resources from identifier.
+     *
+     * @param Value $value The value to find subobjects for.
      *
      * @return void
      */
