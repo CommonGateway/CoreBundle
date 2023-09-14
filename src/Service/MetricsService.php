@@ -81,11 +81,6 @@ class MetricsService
 
         $metricsString = '';
         foreach ($metrics as $metric) {
-            // TODO: app_version doesn't work yet. It needs to be a string.
-            if ($metric['name'] === 'app_version') {
-                continue;
-            }
-
             $metricsString .= "{$metric['name']}{help=\"{$metric['help']}\"} {$metric['value']}\n";
         }
 
@@ -112,8 +107,8 @@ class MetricsService
             [
                 'name'  => 'app_version',
                 'type'  => 'gauge',
-                'help'  => 'The current version of the application.',
-                'value' => $coreBundle['version'],
+                'help'  => $coreBundle['version'].' = The current version of the CoreBundle for this application.',
+                'value' => 1,
             ],
             [
                 'name'  => 'app_users',
@@ -136,7 +131,6 @@ class MetricsService
             [
                 // todo: count (request) monologs with unique request id
                 'name'  => 'app_requests',
-                // todo: should never get lower
                 'type'  => 'counter',
                 'help'  => 'The total amount of incoming requests handled by this gateway',
                 'value' => $requests,
@@ -175,8 +169,8 @@ class MetricsService
             'ERROR'     => $collection->count(['level_name' => 'ERROR']),
 
             // NOTE: The following log types are not counted towards the total number of errors:
-        // 'WARNING'   => $collection->count(['level_name' => 'WARNING']),
-        // 'NOTICE'    => $collection->count(['level_name' => 'NOTICE']),
+            //'WARNING'   => $collection->count(['level_name' => 'WARNING']),
+            //'NOTICE'    => $collection->count(['level_name' => 'NOTICE']),
         ];
 
         $metrics[] = [
@@ -189,9 +183,9 @@ class MetricsService
         // Create a list
         foreach ($errorTypes as $name => $count) {
             $metrics[] = [
-                'name'   => 'app_error_list',
+                'name'   => 'app_error_list_'.$name,
                 'type'   => 'counter',
-                'help'   => 'The list of errors and their error level/type.',
+                'help'   => "The amount of $name errors.",
                 'labels' => ['error_level' => $name],
                 'value'  => (int) $count,
             ];
@@ -221,9 +215,9 @@ class MetricsService
         // Create a list.
         foreach ($plugins as $plugin) {
             $metrics[] = [
-                'name'   => 'app_installed_plugins',
+                'name'   => 'app_installed_plugins_'.str_replace('/','_',$plugin['name']),
                 'type'   => 'gauge',
-                'help'   => 'The list of installed plugins.',
+                'help'   => "{$plugin['version']} = The current version of the {$plugin['name']} plugin.",
                 'labels' => [
                     'plugin_name'        => $plugin['name'],
                     'plugin_description' => $plugin['description'],
@@ -274,9 +268,9 @@ class MetricsService
             $filter = ['_self.schema.id' => $schema['id']->toString()];
 
             $metrics[] = [
-                'name'   => 'app_schemas',
+                'name'   => 'app_schemas_'.str_replace('-','_',$schema['name']),
                 'type'   => 'gauge',
-                'help'   => 'The list of defined schemas and the amount of objects.',
+                'help'   => "The amount of objects for the schema {$schema['name']}.",
                 'labels' => [
                     'schema_name'        => $schema['name'],
                     'schema_description' => $schema['description'],
