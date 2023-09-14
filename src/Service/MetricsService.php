@@ -215,7 +215,7 @@ class MetricsService
         // Create a list.
         foreach ($plugins as $plugin) {
             $metrics[] = [
-                'name'   => 'app_installed_plugins_'.str_replace('/', '_', $plugin['name']),
+                'name'   => 'app_installed_plugins_'.str_replace(['-','/'], '_', $plugin['name']),
                 'type'   => 'gauge',
                 'help'   => "{$plugin['version']} = The current version of the {$plugin['name']} plugin.",
                 'labels' => [
