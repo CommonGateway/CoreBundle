@@ -169,8 +169,8 @@ class MetricsService
             'ERROR'     => $collection->count(['level_name' => 'ERROR']),
 
             // NOTE: The following log types are not counted towards the total number of errors:
-            //'WARNING'   => $collection->count(['level_name' => 'WARNING']),
-            //'NOTICE'    => $collection->count(['level_name' => 'NOTICE']),
+            // 'WARNING'   => $collection->count(['level_name' => 'WARNING']),
+            // 'NOTICE'    => $collection->count(['level_name' => 'NOTICE']),
         ];
 
         $metrics[] = [
@@ -215,7 +215,7 @@ class MetricsService
         // Create a list.
         foreach ($plugins as $plugin) {
             $metrics[] = [
-                'name'   => 'app_installed_plugins_'.str_replace('/','_',$plugin['name']),
+                'name'   => 'app_installed_plugins_'.str_replace('/', '_', $plugin['name']),
                 'type'   => 'gauge',
                 'help'   => "{$plugin['version']} = The current version of the {$plugin['name']} plugin.",
                 'labels' => [
@@ -268,7 +268,7 @@ class MetricsService
             $filter = ['_self.schema.id' => $schema['id']->toString()];
 
             $metrics[] = [
-                'name'   => 'app_schemas_'.str_replace('-','_',$schema['name']),
+                'name'   => 'app_schemas_'.str_replace('-', '_', $schema['name']),
                 'type'   => 'gauge',
                 'help'   => "The amount of objects for the schema {$schema['name']}.",
                 'labels' => [
