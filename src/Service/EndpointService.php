@@ -245,7 +245,7 @@ class EndpointService
             return 'csv';
         case 'text/html':
             return 'html';
-        case 'text/docx':
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
             return 'docx';
             break;
         }//end switch
