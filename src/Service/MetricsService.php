@@ -215,7 +215,7 @@ class MetricsService
         // Create a list.
         foreach ($plugins as $plugin) {
             $metrics[] = [
-                'name'   => 'app_installed_plugins_'.str_replace(['-', '/'], '_', $plugin['name']),
+                'name'   => 'app_installed_plugins_'.preg_replace('/[^A-Za-z0-9]/', '_', $plugin['name']),
                 'type'   => 'gauge',
                 'help'   => "{$plugin['version']} = The current version of the {$plugin['name']} plugin.",
                 'labels' => [
@@ -268,7 +268,7 @@ class MetricsService
             $filter = ['_self.schema.id' => $schema['id']->toString()];
 
             $metrics[] = [
-                'name'   => 'app_schemas_'.str_replace('-', '_', $schema['name']),
+                'name'   => 'app_schemas_'.preg_replace('/[^A-Za-z0-9]/', '_', $schema['name']),
                 'type'   => 'gauge',
                 'help'   => "The amount of objects for the schema {$schema['name']}.",
                 'labels' => [

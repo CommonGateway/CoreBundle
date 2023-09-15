@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Dompdf;
+use Dompdf\Exception;
 use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\Shared\Html;
@@ -116,7 +117,17 @@ class DownloadService
 
         $docx    = new PhpWord();
         $section = $docx->addSection();
-        Html::addHtml($section, $raw);
+        try {
+            Html::addHtml($section, $raw);
+        } catch (\ErrorException $exception) {
+            return json_encode(
+                [
+                    'message'   => $exception->getMessage(),
+                    'exception' => 400,
+                ]
+            );
+        }
+
         $file = 'data.docx';
 
         header("Content-Description: File Transfer");
@@ -143,20 +154,16 @@ class DownloadService
      *
      * @param array $data The data to render for this html.
      *
-     * @return Response The html as file output.
+     * @return string The html as file output.
      */
-    public function downloadHtml(array $data): Response
+    public function downloadHtml(array $data): string
     {
         $raw = $this->render($data);
 
-        $response          = new Response($raw, 200, ['Content-Type' => 'text/html']);
-        $dispositionHeader = $response->headers->makeDisposition(
-            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-            'data.html'
-        );
-        $response->headers->set('Content-Disposition', $dispositionHeader);
+        $response = new Response($raw, 200, ['Content-Type' => 'text/html']);
+        $response->headers->set('Content-Disposition', 'attachment; filename="data.html"');
 
-        return $response;
+        return $response->getContent();
 
     }//end downloadHtml()
 
