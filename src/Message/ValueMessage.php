@@ -36,7 +36,7 @@ class ValueMessage
      */
     public function getValueId(): UuidInterface
     {
-        return $this->objectEntityId;
+        return $this->valueId;
 
     }//end getValueId()
 }//end class
