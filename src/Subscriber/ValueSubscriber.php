@@ -6,6 +6,7 @@ use App\Entity\ObjectEntity;
 use App\Entity\Synchronization;
 use App\Entity\Value;
 use App\Service\SynchronizationService;
+use CommonGateway\CoreBundle\Message\ValueMessage;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
@@ -14,42 +15,23 @@ use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 class ValueSubscriber implements EventSubscriberInterface
 {
 
     /**
-     * @var EntityManagerInterface
+     * @var MessageBusInterface The message bus
      */
-    private EntityManagerInterface $entityManager;
+    private MessageBusInterface $messageBus;
 
     /**
-     * @var LoggerInterface
+     * @param MessageBusInterface $messageBus
      */
-    private LoggerInterface $logger;
-
-    /**
-     * @var SynchronizationService
-     */
-    private SynchronizationService $synchronizationService;
-
-    /**
-     * @var ParameterBagInterface
-     */
-    private ParameterBagInterface $parameterBag;
-
-    /**
-     * @param EntityManagerInterface $entityManager
-     * @param LoggerInterface        $valueSubscriberLogger
-     * @param SynchronizationService $synchronizationService
-     * @param ParameterBagInterface  $parameterBag
-     */
-    public function __construct(EntityManagerInterface $entityManager, LoggerInterface $valueSubscriberLogger, SynchronizationService $synchronizationService, ParameterBagInterface $parameterBag)
-    {
-        $this->entityManager          = $entityManager;
-        $this->logger                 = $valueSubscriberLogger;
-        $this->synchronizationService = $synchronizationService;
-        $this->parameterBag           = $parameterBag;
+    public function __construct(
+        MessageBusInterface $messageBus
+    ) {
+        $this->messageBus = $messageBus;
 
     }//end __construct()
 
@@ -61,159 +43,43 @@ class ValueSubscriber implements EventSubscriberInterface
     public function getSubscribedEvents(): array
     {
         return [
-            Events::preUpdate,
-            Events::prePersist,
+            Events::postUpdate,
+            Events::postPersist,
             Events::preRemove,
         ];
 
     }//end getSubscribedEvents()
 
     /**
-     * Gets a subobject by uuid.
-     *
-     * @param string $uuid        The id of the subobject
-     * @param Value  $valueObject The valueObject to add the subobject to
-     *
-     * @return ObjectEntity|null The found subobject
-     */
-    public function getSubObjectById(string $uuid, Value $valueObject): ?ObjectEntity
-    {
-        $parentObject = $valueObject->getObjectEntity();
-        if (!$subObject = $this->entityManager->find(ObjectEntity::class, $uuid)) {
-            try {
-                $subObject = $this->entityManager->getRepository(ObjectEntity::class)->findByAnyId($uuid);
-            } catch (NonUniqueResultException $exception) {
-                $this->logger->error("Found more than one ObjectEntity with uuid = '$uuid' or with a synchronization with sourceId = '$uuid'");
-
-                return null;
-            }
-        }
-
-        if (!$subObject instanceof ObjectEntity) {
-            $this->logger->error(
-                "No subObjectEntity found with uuid ($uuid) or with a synchronization with sourceId = uuid for ParentObject",
-                [
-                    'uuid'         => $uuid,
-                    'ParentObject' => [
-                        'id'     => $parentObject->getId()->toString(),
-                        'entity' => $parentObject->getEntity() ? [
-                            'id'   => $parentObject->getEntity()->getId()->toString(),
-                            'name' => $parentObject->getEntity()->getName(),
-                        ] : null,
-                        '_self'  => $parentObject->getSelf(),
-                        'name'   => $parentObject->getName(),
-                    ],
-                ]
-            );
-
-            return null;
-        }//end if
-
-        return $subObject;
-
-    }//end getSubObjectById()
-
-    /**
-     * Gets a subobject by url.
-     *
-     * @param string $url         The url of the subobject
-     * @param Value  $valueObject The value object to add the subobject to
-     *
-     * @return ObjectEntity|null The resulting subobject
-     */
-    public function getSubObjectByUrl(string $url, Value $valueObject): ?ObjectEntity
-    {
-        // First check if the object is already being synced.
-        foreach ($this->entityManager->getUnitOfWork()->getScheduledEntityInsertions() as $insertion) {
-            if ($insertion instanceof Synchronization === true && $insertion->getSourceId() === $url) {
-                return $insertion->getObject();
-            }
-        }
-
-        // Then check if the url is internal.
-        $self         = str_replace(rtrim($this->parameterBag->get('app_url'), '/'), '', $url);
-        $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['self' => $self]);
-        if ($objectEntity !== null) {
-            return $objectEntity;
-        }
-
-        // Finally, if we really don't have the object, get it from the source.
-        $synchronization = $this->entityManager->getRepository('App:Synchronization')->findOneBy(['sourceId' => $url]);
-        if ($synchronization instanceof Synchronization === true) {
-            return $synchronization->getObject();
-        }
-
-        return $this->synchronizationService->aquireObject($url, $valueObject->getAttribute()->getObject());
-
-    }//end getSubObjectByUrl()
-
-    /**
-     * Finds subobjects by identifiers.
-     *
-     * @param string $identifier  The identifier to find the object for
-     * @param Value  $valueObject The value object to add objects to
-     *
-     * @return ObjectEntity|null The found object
-     */
-    public function findSubobject(string $identifier, Value $valueObject): ?ObjectEntity
-    {
-        if (Uuid::isValid($identifier)) {
-            return $this->getSubObjectById($identifier, $valueObject);
-        } else if (filter_var($identifier, FILTER_VALIDATE_URL)) {
-            return $this->getSubObjectByUrl($identifier, $valueObject);
-        }
-
-        return null;
-
-    }//end findSubobject()
-
-    /**
      * Adds object resources from identifier.
      *
      * @param LifecycleEventArgs $value The lifecycle event arguments for this event
      */
-    public function preUpdate(LifecycleEventArgs $value): void
+    public function postUpdate(LifecycleEventArgs $value): void
     {
         $valueObject = $value->getObject();
 
-        if ($valueObject instanceof Value && $valueObject->getAttribute()->getType() == 'object') {
-            if ($valueObject->getArrayValue()) {
-                foreach ($valueObject->getArrayValue() as $identifier) {
-                    $subobject = $this->findSubobject($identifier, $valueObject);
-                    if ($subobject !== null) {
-                        $valueObject->addObject($subobject);
-                    }
-                }
-
-                $valueObject->setArrayValue([]);
-            } else if ((Uuid::isValid($valueObject->getStringValue()) || filter_var($valueObject->getStringValue(), FILTER_VALIDATE_URL)) && $identifier = $valueObject->getStringValue()) {
-                foreach ($valueObject->getObjects() as $object) {
-                    $valueObject->removeObject($object);
-                }
-
-                $subobject = $this->findSubobject($identifier, $valueObject);
-                if ($subobject !== null) {
-                    $valueObject->addObject($subobject);
-                }
-            }
-
-            if ($valueObject->getObjectEntity() instanceof ObjectEntity) {
-                $valueObject->getObjectEntity()->setDateModified(new \DateTime());
-            }
+        if ($valueObject instanceof Value === true
+            && $valueObject->getAttribute()->getType() === 'object'
+            && ($valueObject->getArrayValue() !== []
+            || Uuid::isValid($valueObject->getStringValue())
+            || filter_var($valueObject->getStringValue(), FILTER_VALIDATE_URL))
+        ) {
+            $this->messageBus->dispatch(new ValueMessage($value->getObject()->getId()));
         }//end if
 
-    }//end preUpdate()
+    }//end postUpdate()
 
     /**
      * Passes the result of prePersist to preUpdate.
      *
      * @param LifecycleEventArgs $args The lifecycle event arguments for this prePersist
      */
-    public function prePersist(LifecycleEventArgs $args): void
+    public function postPersist(LifecycleEventArgs $args): void
     {
-        $this->preUpdate($args);
+        $this->postUpdate($args);
 
-    }//end prePersist()
+    }//end postPersist()
 
     public function preRemove(LifecycleEventArgs $args): void
     {
