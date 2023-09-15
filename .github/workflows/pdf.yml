@@ -4,6 +4,8 @@ name: PDF Manual
 
 on:
   push:
+    branches:
+      - master
 
 # todo turn the folder into a variable
 jobs:
