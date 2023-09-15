@@ -120,10 +120,12 @@ class DownloadService
         try {
             Html::addHtml($section, $raw);
         } catch (\ErrorException $exception) {
-            return json_encode([
-                'message' => $exception->getMessage(),
-                'exception' => 400
-            ]);
+            return json_encode(
+                [
+                    'message'   => $exception->getMessage(),
+                    'exception' => 400,
+                ]
+            );
         }
 
         $file = 'data.docx';
@@ -158,7 +160,7 @@ class DownloadService
     {
         $raw = $this->render($data);
 
-        $response          = new Response($raw, 200, ['Content-Type' => 'text/html']);
+        $response = new Response($raw, 200, ['Content-Type' => 'text/html']);
         $response->headers->set('Content-Disposition', 'attachment; filename="data.html"');
 
         return $response->getContent();
