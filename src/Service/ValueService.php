@@ -176,7 +176,7 @@ class ValueService
     {
         if (Uuid::isValid($identifier) === true) {
             return $this->getSubObjectById($identifier, $valueObject);
-        } else if (filter_var($identifier, FILTER_VALIDATE_URL) === true) {
+        } else if (filter_var($identifier, FILTER_VALIDATE_URL) !== false) {
             return $this->getSubObjectByUrl($identifier, $valueObject);
         }
 
