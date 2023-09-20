@@ -58,6 +58,34 @@ class AuditTrailService
     }//end __construct()
 
     /**
+     * Gets url or id of the parent object for the object else the objects its url or id.
+     *
+     * @param ObjectEntity $object An ObjectEntity.
+     *
+     * @return string The url or id of the parent object or object itself else null.
+     */
+    public function getMainObject(ObjectEntity $object)
+    {
+        $parentObjects = $object->getSubresourceOf();
+        if (isset($parentObjects[0]) === true) {
+            // First return the uri.
+            if ($parentObjects[0]->getUri() !== null) {
+                return $parentObjects[0]->getUri();
+            }
+
+            // Else return the id.
+            return $parentObjects[0]->getId()->toString();
+        }
+
+        if ($object->getUri() !== null) {
+            return $object->getUri();
+        }
+
+        return $object->getId()->toString();
+
+    }//end getMainObject()
+
+    /**
      * Creates an Audit Trail for the given Object and the current user.
      *
      * @param ObjectEntity $object An ObjectEntity to create an Audit Trail for.
@@ -86,6 +114,8 @@ class AuditTrailService
         $auditTrail->setResource($object->getId()->toString());
         $auditTrail->setResourceUrl($object->getUri());
         $auditTrail->setResourceView($object->getName());
+
+        $auditTrail->setMainObject($this->getMainObject($object));
 
         if (isset($config['new'], $config['old']) === true) {
             $auditTrail->setAmendments(['new' => $config['new'], 'old' => $config['old']]);
