@@ -12,6 +12,7 @@ This service manages the creation of Audit Trails.
 |------|-------------|
 |[__construct](#audittrailservice__construct)||
 |[createAuditTrail](#audittrailservicecreateaudittrail)|Creates an Audit Trail for the given Object and the current user.|
+|[getMainObject](#audittrailservicegetmainobject)|Gets url or id of the parent object for the object else the objects its url or id.|
 
 
 
@@ -64,6 +65,33 @@ Creates an Audit Trail for the given Object and the current user.
 `\AuditTrail|null`
 
 > The created Audit Trail
+
+
+<hr />
+
+
+### AuditTrailService::getMainObject  
+
+**Description**
+
+```php
+public getMainObject (\ObjectEntity $object)
+```
+
+Gets url or id of the parent object for the object else the objects its url or id. 
+
+ 
+
+**Parameters**
+
+* `(\ObjectEntity) $object`
+: An ObjectEntity.  
+
+**Return Values**
+
+`string`
+
+> The url or id of the parent object or object itself else null.
 
 
 <hr />

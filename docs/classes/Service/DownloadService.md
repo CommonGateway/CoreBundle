@@ -12,6 +12,8 @@ Handles incoming notification api-calls by finding or creating a synchronization
 |------|-------------|
 |[__construct](#downloadservice__construct)|The constructor sets al needed variables.|
 |[downloadCSV](#downloadservicedownloadcsv)|Generates a CSV response from a given CSV string.|
+|[downloadDocx](#downloadservicedownloaddocx)|Downloads a docx.|
+|[downloadHtml](#downloadservicedownloadhtml)|Downloads a html.|
 |[downloadPdf](#downloadservicedownloadpdf)|Downloads a pdf.|
 |[downloadXLSX](#downloadservicedownloadxlsx)|Generates an XLSX response from a given array of associative arrays.|
 |[render](#downloadservicerender)|Renders a pdf.|
@@ -71,6 +73,60 @@ The client will be prompted to download the resulting file with the name "data.c
 `\Response`
 
 > A Symfony response object that serves the provided CSV string as a downloadable CSV file.
+
+
+<hr />
+
+
+### DownloadService::downloadDocx  
+
+**Description**
+
+```php
+public downloadDocx (array $data)
+```
+
+Downloads a docx. 
+
+The html that is added has to be whitout a <head><style></style></head> section. 
+
+**Parameters**
+
+* `(array) $data`
+: The data to render for this docx.  
+
+**Return Values**
+
+`string`
+
+> The docx as file output.
+
+
+<hr />
+
+
+### DownloadService::downloadHtml  
+
+**Description**
+
+```php
+public downloadHtml (array $data)
+```
+
+Downloads a html. 
+
+ 
+
+**Parameters**
+
+* `(array) $data`
+: The data to render for this html.  
+
+**Return Values**
+
+`string`
+
+> The html as file output.
 
 
 <hr />
