@@ -22,7 +22,7 @@
 |[getApplicationId](#authenticationservicegetapplicationid)|Gets an application id for a source.|
 |[getAuthentication](#authenticationservicegetauthentication)|Gets the authentication values through various checks.|
 |[getCertificate](#authenticationservicegetcertificate)|Writes the certificate and ssl keys to disk, returns the filenames.|
-|[getHmacToken](#authenticationservicegethmactoken)|Gets a hmac token.|
+|[getHmacToken](#authenticationservicegethmactoken)|Generates a hmac token.|
 |[getJWK](#authenticationservicegetjwk)|Gets a JWK for a source based on the algorithm of the source.|
 |[getJwtPayload](#authenticationservicegetjwtpayload)|Creates the JWT payload to identify at an external source.|
 |[getJwtToken](#authenticationservicegetjwttoken)|Create a JWT token from Component settings.|
@@ -309,7 +309,7 @@ Gets an application id for a source.
 **Description**
 
 ```php
-public getAuthentication (void)
+public getAuthentication (\Source $source, array|null $config, array|null $requestInfo)
 ```
 
 Gets the authentication values through various checks. 
@@ -318,11 +318,18 @@ Gets the authentication values through various checks.
 
 **Parameters**
 
-`This function has no parameters.`
+* `(\Source) $source`
+: The Source.  
+* `(array|null) $config`
+: The optional, updated Source configuration array.  
+* `(array|null) $requestInfo`
+: The optional, given request info.  
 
 **Return Values**
 
-`void`
+`array`
+
+
 
 
 <hr />
@@ -363,7 +370,7 @@ Writes the certificate and ssl keys to disk, returns the filenames.
 public getHmacToken (array $requestOptions, \Source $source)
 ```
 
-Gets a hmac token. 
+Generates a hmac token. 
 
  
 
@@ -470,7 +477,7 @@ Create a JWT token from Component settings.
 **Description**
 
 ```php
-public getTokenFromUrl (\Source $source, string $authType)
+public getTokenFromUrl (\Source $source, string $authType, array|null $config)
 ```
 
 Checks from which type of auth we need to fetch a token from. 
@@ -481,6 +488,8 @@ Checks from which type of auth we need to fetch a token from.
 
 * `(\Source) $source`
 * `(string) $authType`
+* `(array|null) $config`
+: The optional, updated Source configuration array.  
 
 **Return Values**
 

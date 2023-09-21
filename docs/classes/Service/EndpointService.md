@@ -15,6 +15,7 @@ This service handles calls on the ZZ endpoint (or in other words abstract routin
 |[getAcceptType](#endpointservicegetaccepttype)|Gets the accept type based on the request.|
 |[getEndpoint](#endpointservicegetendpoint)|Gets the endpoint based on the request.|
 |[handleRequest](#endpointservicehandlerequest)|Handle the request afther it commes in through the ZZ controller.|
+|[logRequestHeaders](#endpointservicelogrequestheaders)|This function logs the headers of the request and uses the endpoint->getLoggingConfig()['headers'] to unset the headers that don't need to be logged.|
 
 
 
@@ -162,6 +163,32 @@ Handle the request afther it commes in through the ZZ controller.
 
 
 `\Exception`
+
+
+<hr />
+
+
+### EndpointService::logRequestHeaders  
+
+**Description**
+
+```php
+public logRequestHeaders (void)
+```
+
+This function logs the headers of the request and uses the endpoint->getLoggingConfig()['headers'] to unset the headers that don't need to be logged. 
+
+ 
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`void`
+
+
 
 
 <hr />

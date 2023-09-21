@@ -13,6 +13,7 @@ Creates arrays for prometheus.
 |[__construct](#metricsservice__construct)|The constructor sets al needed variables.|
 |[getAll](#metricsservicegetall)|Search for a given term.|
 |[getErrors](#metricsservicegeterrors)|Get metrics concerning errors.|
+|[getMetricsAsString](#metricsservicegetmetricsasstring)|Search for a given term.|
 |[getObjects](#metricsservicegetobjects)|Get metrics concerning objects.|
 |[getPlugins](#metricsservicegetplugins)|Get metrics concerning plugins.|
 
@@ -87,6 +88,32 @@ public getErrors (void)
 Get metrics concerning errors. 
 
  
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`array`
+
+
+
+
+<hr />
+
+
+### MetricsService::getMetricsAsString  
+
+**Description**
+
+```php
+public getMetricsAsString (void)
+```
+
+Search for a given term. 
+
+See https://getcomposer.org/doc/03-cli.md#show-info for a full list of al options and there function 
 
 **Parameters**
 
