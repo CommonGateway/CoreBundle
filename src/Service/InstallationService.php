@@ -1004,8 +1004,8 @@ class InstallationService
             unset($templateData['organization']);
             $templateData['organization'] = $organization;
         } else {
-            echo 'setting default organization';
-            $templateData['organization'] = $this->entityManager->getRepository('App:Organization')->find('a1c8e0b6-2f78-480d-a9fb-9792142f4761');
+            $templateData['organization'] = $this->entityManager->getRepository('App:Organization')
+                ->findOneBy(['reference' => 'https://docs.commongateway.nl/users/default.user.json']);
         }
 
         $template = $this->entityManager->getRepository('App:Template')->findOneBy(['reference' => $templateData['$id']]);
