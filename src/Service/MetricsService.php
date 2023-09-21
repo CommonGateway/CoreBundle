@@ -185,7 +185,7 @@ class MetricsService
             $metrics[] = [
                 'name'   => 'app_error_list_'.$name,
                 'type'   => 'counter',
-                'help'   => "The amount of $name errors.",
+                'help'   => "The amount of $name logs.",
                 'labels' => ['error_level' => $name],
                 'value'  => (int) $count,
             ];

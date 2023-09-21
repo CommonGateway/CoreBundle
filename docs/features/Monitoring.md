@@ -24,34 +24,35 @@ Prometheus is an open-source systems monitoring and alerting toolkit that is wid
 The common gateway supports several metrics
 
 ### General information
-| Name | Type | Help |
-|------|------|------|
-| app_version | gauge | The current version of the application. |
-| app_users | gauge | The current amount of users |
-| app_organisations | gauge | The current amount of organisations |
-| app_applications | gauge | The current amount of applications |
-| app_requests | counter | The total amount of incoming requests handled by this gateway |
-| app_calls | counter | The total amount of outgoing calls handled by this gateway |
+| Name | Help |
+|------|------|
+| app_version | The current version of the CoreBundle for this application. |
+| app_users | The current amount of users |
+| app_organisations | The current amount of organisations |
+| app_applications | The current amount of applications |
+| app_requests | The total amount of incoming requests handled by this gateway |
+| app_calls | The total amount of outgoing calls handled by this gateway |
 
 
 ### Errors
-| Name | Type | Help |
-|------|------|------|
-| app_error_count | counter | The amount of errors, this only counts logs with level_name 'EMERGENCY', 'ALERT', 'CRITICAL' or 'ERROR'. |
-| app_error_list | counter | The list of errors and their error level/type. |
+| Name | Help |
+|------|------|
+| app_error_count | The amount of errors, this only counts logs with level_name 'EMERGENCY', 'ALERT', 'CRITICAL' or 'ERROR'. |
+| app_error_list_EMERGENCY | The amount of EMERGENCY logs. |
+| app_error_list_ALERT | The amount of ALERT logs. |
+| app_error_list_CRITICAL | The amount of CRITICAL logs. |
+| app_error_list_ERROR | The amount of ERROR logs. |
 
 ### Objects
-| Name | Type | Help |
-|------|------|------|
-| app_objects_count | gauge | The amount objects in the data layer |
-| app_cached_objects_count | gauge | The amount objects in the data layer that are stored in the MongoDB cache |
-| app_schemas_count | gauge | The amount defined schemas |
-| app_schemas | gauge | The list of defined schemas and the amount of objects. |
+| Name | Help |
+|------|------|
+| app_objects_count | The amount objects in the data layer |
+| app_cached_objects_count | The amount objects in the data layer that are stored in the MongoDB cache |
+| app_schemas_count | The amount defined schemas |
+| app_schemas_x | The amount of objects for the schema x. |
 
 ### Plugins
-| Name | Type | Help |
-|------|------|------|
-| app_plugins_count | gauge | The amount of installed plugins |
-| app_installed_plugins | gauge | The list of installed plugins. |
-
-
+| Name | Help |
+|------|------|
+| app_plugins_count | The amount of installed plugins |
+| app_installed_plugins_x | The current version of the x plugin. |
