@@ -11,7 +11,7 @@ jobs:
       - uses: php-actions/composer@v6
         with:
           php_version: "7.4"
-          php_extensions: redis exif mongodb zip gd
+          php_extensions: redis exif mongodb intl pdo_pgsql zip mysqli pdo_mysql pcntl gd gmp
           version: 2.x
           command: require clean/phpdoc-md
       - name: Build the docs
