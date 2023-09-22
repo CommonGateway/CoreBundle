@@ -75,14 +75,14 @@ class ActionSubscriber implements EventSubscriberInterface
         $this->logger              = $actionLogger;
 
     }//end __construct()
-    
+
     /**
      * Runs a single action.
      *
      *  After running this function, even if it returns an exception, currentActionUserId should always be removed from cache.
      *
-     * @param Action $action The Action.
-     * @param array $data The data used to run the action.
+     * @param Action $action       The Action.
+     * @param array  $data         The data used to run the action.
      * @param string $currentThrow If we got here through CronjobCommand or not true/false.
      *
      * @return array The updated data array after running the action.
@@ -98,7 +98,7 @@ class ActionSubscriber implements EventSubscriberInterface
                 $this->io->text("Locked Action {$action->getName()} at {$action->getLocked()->format('Y-m-d H:i:s')}");
             }
         }
-        
+
         // Keep track of the user used for running this Action.
         // After runFunction() is done, even if it returns an exception, currentActionUserId should be removed from cache (outside this function)
         $this->session->remove('currentActionUserId');
@@ -185,6 +185,7 @@ class ActionSubscriber implements EventSubscriberInterface
                     $event->setData($this->runFunction($action, $event->getData(), $currentCronJobThrow));
                 } catch (AsynchronousException $exception) {
                 }
+
                 $this->session->remove('currentActionUserId');
             } else {
                 $data = $event->getData();
