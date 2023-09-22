@@ -3,6 +3,7 @@
 namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Entity\Action;
+use App\Entity\User;
 use App\Event\ActionEvent;
 use App\Exception\AsynchronousException;
 use App\Message\ActionMessage;
@@ -10,8 +11,10 @@ use App\Service\ObjectEntityService;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use JWadhams\JsonLogic;
 use Psr\Log\LoggerInterface;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -72,7 +75,18 @@ class ActionSubscriber implements EventSubscriberInterface
         $this->logger              = $actionLogger;
 
     }//end __construct()
-
+    
+    /**
+     * Runs a single action.
+     *
+     *  After running this function, even if it returns an exception, currentActionUserId should always be removed from cache.
+     *
+     * @param Action $action The Action.
+     * @param array $data The data used to run the action.
+     * @param string $currentThrow If we got here through CronjobCommand or not true/false.
+     *
+     * @return array The updated data array after running the action.
+     */
     public function runFunction(Action $action, array $data, string $currentThrow): array
     {
         // Is the action is lockable we need to lock it
@@ -82,6 +96,16 @@ class ActionSubscriber implements EventSubscriberInterface
             $this->entityManager->flush();
             if (isset($this->io)) {
                 $this->io->text("Locked Action {$action->getName()} at {$action->getLocked()->format('Y-m-d H:i:s')}");
+            }
+        }
+        
+        // Keep track of the user used for running this Action.
+        // After runFunction() is done, even if it returns an exception, currentActionUserId should be removed from cache (outside this function)
+        $this->session->remove('currentActionUserId');
+        if ($action->getUserId() !== null && Uuid::isValid($action->getUserId()) === true) {
+            $user = $this->entityManager->getRepository('App:User')->find($action->getUserId());
+            if ($user instanceof User === true) {
+                $this->session->set('currentActionUserId', $action->getUserId());
             }
         }
 
@@ -139,7 +163,7 @@ class ActionSubscriber implements EventSubscriberInterface
 
     public function handleAction(Action $action, ActionEvent $event): ActionEvent
     {
-        // Lets see if the action prefents concurency
+        // Let's see if the action prefents concurency
         if ($action->getIsLockable()) {
             // bijwerken uit de entity manger
             $this->entityManager->refresh($action);
@@ -161,6 +185,7 @@ class ActionSubscriber implements EventSubscriberInterface
                     $event->setData($this->runFunction($action, $event->getData(), $currentCronJobThrow));
                 } catch (AsynchronousException $exception) {
                 }
+                $this->session->remove('currentActionUserId');
             } else {
                 $data = $event->getData();
                 unset($data['httpRequest']);
