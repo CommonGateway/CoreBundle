@@ -20,6 +20,7 @@ use Symfony\Component\Security\Core\Security;
  * This subscriber listens for events related to ObjectEntities.
  * The following old subscribers have been combined in this subscriber:
  * AuditTrailSubscriber, CacheDatabaseSubscriber, DoctrineToGatewayEventSubscriber, ObjectSyncSubscriber.
+ *
  * @todo: move old subscriber specific code to their own services, if this hasn't been done yet.
  *
  * @Author Wilco Louwerse <wilco@conduction.nl>, Sarai Misidjan <sarai@conduction.nl>, Barry Brands <barry@conduction.nl>
@@ -40,74 +41,74 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
      * @var LoggerInterface
      */
     private LoggerInterface $pluginLogger;
-    
+
     /**
      * The entity manager.
      *
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
-    
+
     /**
      * The logger interface.
      *
      * @var LoggerInterface
      */
     private LoggerInterface $logger;
-    
+
     /**
      * Security for getting the current user.
      *
      * @var Security
      */
     private Security $security;
-    
+
     /**
      * @var ParameterBagInterface
      */
     private ParameterBagInterface $parameterBag;
-    
+
     /**
      * The request stack.
      *
      * @var RequestStack
      */
     private RequestStack $requestStack;
-    
+
     /**
      * The cache service.
      *
      * @var CacheService
      */
     private CacheService $cacheService;
-    
+
     /**
      * The Audit Trail service.
      *
      * @var AuditTrailService
      */
     private AuditTrailService $auditTrailService;
-    
+
     /**
      * The current session.
      *
      * @var SessionInterface
      */
     private SessionInterface $session;
-    
+
     /**
      * The constructor sets al needed variables.
      *
-     * @param ObjectEntityService $objectEntityService The Object Entity Service.
-     * @param LoggerInterface $pluginLogger The logger interface for plugins.
-     * @param EntityManagerInterface $entityManager The entity manager.
-     * @param LoggerInterface $valueSubscriberLogger The logger interface.
-     * @param Security $security Security for getting the current user.
-     * @param ParameterBagInterface $parameterBag Parameter bag.
-     * @param RequestStack $requestStack The request stack.
-     * @param CacheService $cacheService The cache service.
-     * @param AuditTrailService $auditTrailService The Audit Trail service.
-     * @param SessionInterface $session The current session.
+     * @param ObjectEntityService    $objectEntityService   The Object Entity Service.
+     * @param LoggerInterface        $pluginLogger          The logger interface for plugins.
+     * @param EntityManagerInterface $entityManager         The entity manager.
+     * @param LoggerInterface        $valueSubscriberLogger The logger interface.
+     * @param Security               $security              Security for getting the current user.
+     * @param ParameterBagInterface  $parameterBag          Parameter bag.
+     * @param RequestStack           $requestStack          The request stack.
+     * @param CacheService           $cacheService          The cache service.
+     * @param AuditTrailService      $auditTrailService     The Audit Trail service.
+     * @param SessionInterface       $session               The current session.
      */
     public function __construct(
         ObjectEntityService $objectEntityService,
@@ -149,7 +150,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         ];
 
     }//end getSubscribedEvents()
-    
+
     /**
      * Handles preRemove Event.
      *
@@ -161,7 +162,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false) {
             return;
         }
-        
+
         // TODO: old AuditTrailSubscriber code:
         if ($object->getEntity() !== null
             && $object->getEntity()->getCreateAuditTrails() === true
@@ -174,12 +175,12 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
                 'new'    => null,
                 'old'    => $object->toArray(),
             ];
-            
+
             $this->auditTrailService->createAuditTrail($object, $config);
         }
-        
+
     }//end preRemove()
-    
+
     /**
      * Handles postLoad Event.
      *
@@ -191,7 +192,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false) {
             return;
         }
-        
+
         // TODO: old AuditTrailSubscriber code: 'Adds object resources from identifier.'
         if ($object->getEntity() !== null
             && $object->getEntity()->getCreateAuditTrails() === true
@@ -202,15 +203,15 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
             if ($this->session->get('object') !== null) {
                 $action = 'RETRIEVE';
             }
-            
+
             $config = [
                 'action' => $action,
                 'result' => 200,
             ];
-            
+
             $this->auditTrailService->createAuditTrail($object, $config);
         }
-        
+
     }//end postLoad()
 
     /**
@@ -226,7 +227,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false) {
             return;
         }
-        
+
         // TODO: old AuditTrailSubscriber code: 'Passes the result of prePersist to preUpdate.'
         if ($object->getEntity() !== null
             && $object->getEntity()->getCreateAuditTrails() === true
@@ -239,7 +240,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
                 'new'    => $object->toArray(),
                 'old'    => null,
             ];
-            
+
             $this->auditTrailService->createAuditTrail($object, $config);
         }
 
@@ -272,7 +273,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         $this->objectEntityService->dispatchEvent('commongateway.action.event', $data, 'commongateway.object.sync');
 
     }//end postPersist()
-    
+
     /**
      * Handles postUpdate Event.
      *
@@ -284,7 +285,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false) {
             return;
         }
-        
+
         // TODO: old AuditTrailSubscriber code: 'Adds object resources from identifier.'
         if ($object->getEntity() !== null
             && $object->getEntity()->getCreateAuditTrails() === true
@@ -293,25 +294,25 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         ) {
             $new = $object->toArray();
             $old = $this->cacheService->getObject($object->getId());
-            
+
             if ($new === $old) {
                 return;
             }
-            
+
             $action = 'UPDATE';
             if ($this->requestStack->getMainRequest()->getMethod() === 'PATCH') {
                 $action = 'PARTIAL_UPDATE';
             }
-            
+
             $config = [
                 'action' => $action,
                 'result' => 200,
                 'new'    => $new,
                 'old'    => $old,
             ];
-            
+
             $this->auditTrailService->createAuditTrail($object, $config);
-        }
-        
+        }//end if
+
     }//end postUpdate()
 }//end class
