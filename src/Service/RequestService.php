@@ -627,7 +627,7 @@ class RequestService
 
             $headers = $result->getHeaders();
 
-            if(isset($headers['content-length']) === true) {
+            if (isset($headers['content-length']) === true) {
                 unset($headers['content-length']);
             }
 
