@@ -197,6 +197,54 @@ class EndpointService
     }//end logRequestHeaders()
 
     /**
+     * This function return the correct file extension for decode/encode purposes from the accept header.
+     * 
+     * @param string $acceptHeader.
+     *
+     * @return string|null Accept type.
+     */
+    private function determineAcceptType(string $acceptHeader): ?string
+    {
+        // Determine the accept type.
+        $this->logger->debug('Determine accept type from accept header');
+        switch ($acceptHeader) {
+            case 'application/pdf':
+                return 'pdf';
+            case 'application/json':
+                return 'json';
+            case 'application/json+hal':
+            case 'application/hal+json':
+                return 'jsonhal';
+            case 'application/json+ld':
+            case 'application/ld+json':
+                return 'jsonld';
+            case 'application/json+fromio':
+            case 'application/formio+json':
+                return 'formio';
+            case 'application/json+schema':
+            case 'application/schema+json':
+                return 'schema';
+            case 'application/json+graphql':
+            case 'application/graphql+json':
+                return 'graphql';
+            case 'text/xml':
+            case 'application/xml':
+                return 'xml';
+            case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                return 'xlsx';
+            case 'text/csv':
+                return 'csv';
+            case 'text/html':
+                return 'html';
+            case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+                return 'docx';
+                break;
+        }//end switch
+
+        return null;
+    }
+
+    /**
      * Gets the accept type based on the request.
      *
      * This method breaks complexity rules but since a switch is the most efficent and performent way to do this we made a design decicion to allow it
@@ -214,41 +262,21 @@ class EndpointService
             $acceptHeader = $this->endpoint->getDefaultContentType();
         }//end if
 
-        // Determine the accept type.
-        $this->logger->debug('Determine accept type from accept header');
-        switch ($acceptHeader) {
-        case 'application/pdf':
-            return 'pdf';
-        case 'application/json':
-            return 'json';
-        case 'application/json+hal':
-        case 'application/hal+json':
-            return 'jsonhal';
-        case 'application/json+ld':
-        case 'application/ld+json':
-            return 'jsonld';
-        case 'application/json+fromio':
-        case 'application/formio+json':
-            return 'formio';
-        case 'application/json+schema':
-        case 'application/schema+json':
-            return 'schema';
-        case 'application/json+graphql':
-        case 'application/graphql+json':
-            return 'graphql';
-        case 'text/xml':
-        case 'application/xml':
-            return 'xml';
-        case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-            return 'xlsx';
-        case 'text/csv':
-            return 'csv';
-        case 'text/html':
-            return 'html';
-        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-            return 'docx';
-            break;
-        }//end switch
+        if (strpos($acceptHeader, ',') !== false) {
+            $acceptHeaders = explode(',', $acceptHeader);
+            foreach ($acceptHeaders as $acceptHeader) {
+                $determinedAcceptType = $this->determineAcceptType($acceptHeader);
+                if ($determinedAcceptType !== null) {
+                    return $determinedAcceptType;
+                }
+            }
+        } else {
+            $determinedAcceptType = $this->determineAcceptType($acceptHeader);
+            if ($determinedAcceptType !== null) {
+                return $determinedAcceptType;
+            }
+        }
+
 
         // As a backup we look at any file extenstion.
         $this->logger->debug('Determine accept type from path extension');
