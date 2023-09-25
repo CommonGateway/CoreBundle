@@ -41,7 +41,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
      * @var GatewayObjectEntityService
      */
     private GatewayObjectEntityService $gatewayOEService;
-    
+
     /**
      * Object Entity Service.
      *
@@ -108,39 +108,39 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
     /**
      * The constructor sets al needed variables.
      *
-     * @param GatewayObjectEntityService $gatewayOEService     The (old) Gateway Object Entity Service.
-     * @param ObjectEntityService        $objectEntityService  The Object Entity Service.
-     * @param EntityManagerInterface     $entityManager        The entity manager.
-     * @param LoggerInterface            $pluginLogger         The logger interface.
-     * @param RequestStack               $requestStack         The request stack.
-     * @param CacheService               $cacheService         The cache service.
-     * @param AuditTrailService          $auditTrailService    The Audit Trail service.
-     * @param SessionInterface           $session              The current session.
-     * @param MessageBusInterface        $messageBus           The messageBus for async messages.
-     * @param EventDispatcherInterface   $eventDispatcher      Event Dispatcher.
+     * @param GatewayObjectEntityService $gatewayOEService    The (old) Gateway Object Entity Service.
+     * @param ObjectEntityService        $objectEntityService The Object Entity Service.
+     * @param EntityManagerInterface     $entityManager       The entity manager.
+     * @param LoggerInterface            $pluginLogger        The logger interface.
+     * @param RequestStack               $requestStack        The request stack.
+     * @param CacheService               $cacheService        The cache service.
+     * @param AuditTrailService          $auditTrailService   The Audit Trail service.
+     * @param SessionInterface           $session             The current session.
+     * @param MessageBusInterface        $messageBus          The messageBus for async messages.
+     * @param EventDispatcherInterface   $eventDispatcher     Event Dispatcher.
      */
     public function __construct(
         GatewayObjectEntityService $gatewayOEService,
-        ObjectEntityService        $objectEntityService,
-        EntityManagerInterface     $entityManager,
-        LoggerInterface            $pluginLogger,
-        RequestStack               $requestStack,
-        CacheService               $cacheService,
-        AuditTrailService          $auditTrailService,
-        SessionInterface           $session,
-        MessageBusInterface        $messageBus,
-        EventDispatcherInterface   $eventDispatcher
+        ObjectEntityService $objectEntityService,
+        EntityManagerInterface $entityManager,
+        LoggerInterface $pluginLogger,
+        RequestStack $requestStack,
+        CacheService $cacheService,
+        AuditTrailService $auditTrailService,
+        SessionInterface $session,
+        MessageBusInterface $messageBus,
+        EventDispatcherInterface $eventDispatcher
     ) {
-        $this->gatewayOEService     = $gatewayOEService;
-        $this->objectEntityService  = $objectEntityService;
-        $this->entityManager        = $entityManager;
-        $this->logger               = $pluginLogger;
-        $this->requestStack         = $requestStack;
-        $this->cacheService         = $cacheService;
-        $this->auditTrailService    = $auditTrailService;
-        $this->session              = $session;
-        $this->messageBus           = $messageBus;
-        $this->eventDispatcher      = $eventDispatcher;
+        $this->gatewayOEService    = $gatewayOEService;
+        $this->objectEntityService = $objectEntityService;
+        $this->entityManager       = $entityManager;
+        $this->logger              = $pluginLogger;
+        $this->requestStack        = $requestStack;
+        $this->cacheService        = $cacheService;
+        $this->auditTrailService   = $auditTrailService;
+        $this->session             = $session;
+        $this->messageBus          = $messageBus;
+        $this->eventDispatcher     = $eventDispatcher;
 
     }//end __construct()
 
@@ -176,7 +176,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false) {
             return;
         }
-        
+
         // Set the Organization for this ObjectEntity.
         $object = $this->objectEntityService->setOwnerAndOrg($object);
 
