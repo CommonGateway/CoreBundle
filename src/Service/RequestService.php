@@ -625,11 +625,17 @@ class RequestService
 
             $this->handleMetadataSelf($resultContent, $proxy);
 
+            $headers = $result->getHeaders();
+
+            if (isset($headers['content-length']) === true) {
+                unset($headers['content-length']);
+            }
+
             // Let create a response from the guzzle call.
             $response = new Response(
                 $this->serializeData($resultContent, $contentType),
                 $result->getStatusCode(),
-                $result->getHeaders()
+                $headers
             );
         } catch (Exception $exception) {
             $statusCode = 500;
