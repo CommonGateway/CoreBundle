@@ -74,16 +74,16 @@ class ObjectEntityService
 
         // First check if there is a logged-in user we can get the Owner & Organization from.
         if ($this->security->getUser() !== null) {
-            $user   = $this->entityManager->getRepository('App:User')->find($this->security->getUser()->getUserIdentifier());
+            $user = $this->entityManager->getRepository('App:User')->find($this->security->getUser()->getUserIdentifier());
         }
 
         // Check if there is a Cronjob or Action user in the session we can get the Owner & Organization from.
         if (($user === null || $user->getOrganization() === null) && $this->session->get('currentCronjobUserId', false) !== false) {
-            $user   = $this->entityManager->getRepository('App:User')->find($this->session->get('currentCronjobUserId'));
+            $user = $this->entityManager->getRepository('App:User')->find($this->session->get('currentCronjobUserId'));
         }
 
         if (($user === null || $user->getOrganization() === null) && $this->session->get('currentActionUserId', false) !== false) {
-            $user   = $this->entityManager->getRepository('App:User')->find($this->session->get('currentActionUserId'));
+            $user = $this->entityManager->getRepository('App:User')->find($this->session->get('currentActionUserId'));
         }
 
         // Find the correct owner to set.
