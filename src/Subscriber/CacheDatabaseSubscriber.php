@@ -5,8 +5,6 @@ namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Entity\Endpoint;
 use App\Entity\Entity;
-use App\Entity\ObjectEntity;
-use CommonGateway\CoreBundle\Message\CacheMessage;
 use CommonGateway\CoreBundle\Service\CacheService;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -86,7 +84,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
     }//end postUpdate()
 
     /**
-     * Updates the chache whenever an object is put into the database.
+     * Updates the cache whenever an object is put into the database.
      *
      * @param LifecycleEventArgs $args
      *
@@ -96,12 +94,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
     {
         $object = $args->getObject();
         // if this subscriber only applies to certain entity types,
-        if ($object instanceof ObjectEntity === true) {
-            // $this->messageBus->dispatch(new CacheMessage($object->getId()));
-            $this->cacheService->cacheObject($object);
-            return;
-        }
-
+        
         if ($object instanceof Entity === true) {
             $this->cacheService->cacheShema($object);
 
@@ -128,12 +121,6 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         $object = $args->getObject();
 
         // if this subscriber only applies to certain entity types,
-        if ($object instanceof ObjectEntity) {
-            $this->cacheService->removeObject($object);
-
-            return;
-        }
-
         if ($object instanceof Entity) {
             // @todo finish this function.
             // $this->cacheService->removeSchema($object);

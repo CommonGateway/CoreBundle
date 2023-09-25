@@ -4,6 +4,7 @@ namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Entity\ObjectEntity;
 use App\Service\ObjectEntityService;
+use CommonGateway\CoreBundle\Message\CacheMessage;
 use CommonGateway\CoreBundle\Service\AuditTrailService;
 use CommonGateway\CoreBundle\Service\CacheService;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
@@ -21,9 +22,9 @@ use Symfony\Component\Security\Core\Security;
  * The following old subscribers have been combined in this subscriber:
  * AuditTrailSubscriber, CacheDatabaseSubscriber, DoctrineToGatewayEventSubscriber, ObjectSyncSubscriber.
  *
- * @todo: move old subscriber specific code to their own services, if this hasn't been done yet.
+ * @todo: move old subscriber specific code to their own services, if this hasn't been done yet, for each todo. https://conduction.atlassian.net/browse/GW-1470
  *
- * @Author Wilco Louwerse <wilco@conduction.nl>, Sarai Misidjan <sarai@conduction.nl>, Barry Brands <barry@conduction.nl>
+ * @Author Wilco Louwerse <wilco@conduction.nl>, Sarai Misidjan <sarai@conduction.nl>, Barry Brands <barry@conduction.nl>, Robert Zondervan <robert@conduction.nl>, Ruben van der Linde <ruben@conduction.nl>
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
@@ -33,14 +34,11 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
 {
 
     /**
+     * Object Entity Service.
+     *
      * @var ObjectEntityService
      */
     private ObjectEntityService $objectEntityService;
-
-    /**
-     * @var LoggerInterface
-     */
-    private LoggerInterface $pluginLogger;
 
     /**
      * The entity manager.
@@ -55,18 +53,6 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
      * @var LoggerInterface
      */
     private LoggerInterface $logger;
-
-    /**
-     * Security for getting the current user.
-     *
-     * @var Security
-     */
-    private Security $security;
-
-    /**
-     * @var ParameterBagInterface
-     */
-    private ParameterBagInterface $parameterBag;
 
     /**
      * The request stack.
@@ -100,11 +86,8 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
      * The constructor sets al needed variables.
      *
      * @param ObjectEntityService    $objectEntityService   The Object Entity Service.
-     * @param LoggerInterface        $pluginLogger          The logger interface for plugins.
      * @param EntityManagerInterface $entityManager         The entity manager.
-     * @param LoggerInterface        $valueSubscriberLogger The logger interface.
-     * @param Security               $security              Security for getting the current user.
-     * @param ParameterBagInterface  $parameterBag          Parameter bag.
+     * @param LoggerInterface        $pluginLogger          The logger interface.
      * @param RequestStack           $requestStack          The request stack.
      * @param CacheService           $cacheService          The cache service.
      * @param AuditTrailService      $auditTrailService     The Audit Trail service.
@@ -112,22 +95,16 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
      */
     public function __construct(
         ObjectEntityService $objectEntityService,
-        LoggerInterface $pluginLogger,
         EntityManagerInterface $entityManager,
-        LoggerInterface $valueSubscriberLogger,
-        Security $security,
-        ParameterBagInterface $parameterBag,
+        LoggerInterface $pluginLogger,
         RequestStack $requestStack,
         CacheService $cacheService,
         AuditTrailService $auditTrailService,
-        SessionInterface $session
+        SessionInterface $session,
     ) {
         $this->objectEntityService = $objectEntityService;
-        $this->pluginLogger        = $pluginLogger;
         $this->entityManager       = $entityManager;
-        $this->logger              = $valueSubscriberLogger;
-        $this->security            = $security;
-        $this->parameterBag        = $parameterBag;
+        $this->logger              = $pluginLogger;
         $this->requestStack        = $requestStack;
         $this->cacheService        = $cacheService;
         $this->auditTrailService   = $auditTrailService;
@@ -178,7 +155,9 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
 
             $this->auditTrailService->createAuditTrail($object, $config);
         }
-
+        
+        // TODO: old CacheDatabaseSubscriber code: 'Remove objects from the cache after they are removed from the database.'
+        $this->cacheService->removeObject($object);
     }//end preRemove()
 
     /**
@@ -227,6 +206,10 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false) {
             return;
         }
+        
+        // TODO: old CacheDatabaseSubscriber code: 'Updates the cache whenever an object is put into the database.'
+        // $this->messageBus->dispatch(new CacheMessage($object->getId()));
+        $this->cacheService->cacheObject($object);
 
         // TODO: old AuditTrailSubscriber code: 'Passes the result of prePersist to preUpdate.'
         if ($object->getEntity() !== null
@@ -246,31 +229,22 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
 
         // TODO: old ObjectSyncSubscriber code: 'Passes the result of prePersist to preUpdate.'
         // Check if there is a synchronisation for this object.
-        if ($object->getSynchronizations() !== null
-            && $object->getSynchronizations()->first() !== false
-        ) {
-            $this->pluginLogger->info('There is already a synchronisation for this object.');
-
-            return;
-        }//end if
-
-        // Check if the default source of the entity of the object is null.
-        if (($defaultSource = $object->getEntity()->getDefaultSource()) === null) {
-            $this->pluginLogger->info('There is no default source set to the entity of this object.');
-
-            return;
+        if ($object->getSynchronizations() !== null && $object->getSynchronizations()->first() !== false) {
+            $this->logger->info("There is already a synchronisation for this object {$object->getId()->toString()}.");
+        } elseif (($defaultSource = $object->getEntity()->getDefaultSource()) === null) {
+            $this->logger->info("There is no default source set to the entity of this object {$object->getId()->toString()}.");
+        } else {
+            $data = [
+                'object' => $object,
+                'schema' => $object->getEntity(),
+                'source' => $defaultSource,
+            ];
+            
+            $this->logger->info('Dispatch event with subtype: \'commongateway.object.sync\'');
+            
+            // Dispatch event.
+            $this->objectEntityService->dispatchEvent('commongateway.action.event', $data, 'commongateway.object.sync');
         }
-
-        $data = [
-            'object' => $object,
-            'schema' => $object->getEntity(),
-            'source' => $defaultSource,
-        ];
-
-        $this->pluginLogger->info('Dispatch event with subtype: \'commongateway.object.sync\'');
-
-        // Dispatch event.
-        $this->objectEntityService->dispatchEvent('commongateway.action.event', $data, 'commongateway.object.sync');
 
     }//end postPersist()
 
@@ -285,6 +259,10 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false) {
             return;
         }
+        
+        // TODO: old CacheDatabaseSubscriber code: 'Updates the cache whenever an object is put into the database.'
+        // $this->messageBus->dispatch(new CacheMessage($object->getId()));
+        $this->cacheService->cacheObject($object);
 
         // TODO: old AuditTrailSubscriber code: 'Adds object resources from identifier.'
         if ($object->getEntity() !== null
@@ -295,23 +273,21 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
             $new = $object->toArray();
             $old = $this->cacheService->getObject($object->getId());
 
-            if ($new === $old) {
-                return;
+            if ($new !== $old) {
+                $action = 'UPDATE';
+                if ($this->requestStack->getMainRequest()->getMethod() === 'PATCH') {
+                    $action = 'PARTIAL_UPDATE';
+                }
+                
+                $config = [
+                    'action' => $action,
+                    'result' => 200,
+                    'new'    => $new,
+                    'old'    => $old,
+                ];
+                
+                $this->auditTrailService->createAuditTrail($object, $config);
             }
-
-            $action = 'UPDATE';
-            if ($this->requestStack->getMainRequest()->getMethod() === 'PATCH') {
-                $action = 'PARTIAL_UPDATE';
-            }
-
-            $config = [
-                'action' => $action,
-                'result' => 200,
-                'new'    => $new,
-                'old'    => $old,
-            ];
-
-            $this->auditTrailService->createAuditTrail($object, $config);
         }//end if
 
     }//end postUpdate()
