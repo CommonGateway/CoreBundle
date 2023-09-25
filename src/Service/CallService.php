@@ -284,6 +284,7 @@ class CallService
         // Because we don't want to flush/update the Source each time this ->call function gets executed for performance reasons.
         $source->setLastCall(new \DateTime());
         $this->entityManager->persist($source);
+        // $config['debug'] = true;
         try {
             if ($asynchronous === false) {
                 $response = $this->client->request($method, $url, $config);
@@ -614,7 +615,7 @@ class CallService
         }
 
         // This if is statement prevents binary code from being used a string.
-        if ($contentType !== 'application/pdf') {
+        if (in_array($contentType, ['application/pdf', 'application/pdf; charset=utf-8', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8']) === false) {
             $this->callLogger->debug('Response content: '.$responseBody);
         }
 
@@ -635,7 +636,9 @@ class CallService
         case 'text/xml; charset=utf-8':
         case 'application/pdf':
         case 'application/pdf; charset=utf-8':
-            $this->callLogger->debug('Response content: pdf binary code..');
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8':
+            $this->callLogger->debug('Response content: binary code..');
             return ['base64' => base64_encode($responseBody)];
         case 'application/xml':
         case 'application/xml; charset=utf-8':
