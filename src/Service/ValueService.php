@@ -70,21 +70,6 @@ class ValueService
     }//end __construct()
 
     /**
-     * Defines the events that the subscriber should subscribe to.
-     *
-     * @return array The subscribed events
-     */
-    public function getSubscribedEvents(): array
-    {
-        return [
-            Events::preUpdate,
-            Events::prePersist,
-            Events::preRemove,
-        ];
-
-    }//end getSubscribedEvents()
-
-    /**
      * Gets a subobject by uuid.
      *
      * @param string $uuid        The id of the subobject

@@ -7,7 +7,7 @@ use App\Entity\User;
 use App\Event\ActionEvent;
 use App\Exception\AsynchronousException;
 use App\Message\ActionMessage;
-use App\Service\ObjectEntityService;
+use App\Service\ObjectEntityService as GatewayObjectEntityService;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,7 +29,7 @@ class ActionSubscriber implements EventSubscriberInterface
 
     private ContainerInterface $container;
 
-    private ObjectEntityService $objectEntityService;
+    private GatewayObjectEntityService $gatewayOEService;
 
     private SessionInterface $session;
 
@@ -60,19 +60,19 @@ class ActionSubscriber implements EventSubscriberInterface
     }//end getSubscribedEvents()
 
     public function __construct(
-        EntityManagerInterface $entityManager,
-        ContainerInterface $container,
-        ObjectEntityService $objectEntityService,
-        SessionInterface $session,
-        LoggerInterface $actionLogger,
-        MessageBusInterface $messageBus
+        EntityManagerInterface     $entityManager,
+        ContainerInterface         $container,
+        GatewayObjectEntityService $gatewayOEService,
+        SessionInterface           $session,
+        LoggerInterface            $actionLogger,
+        MessageBusInterface        $messageBus
     ) {
-        $this->entityManager       = $entityManager;
-        $this->container           = $container;
-        $this->objectEntityService = $objectEntityService;
-        $this->session             = $session;
-        $this->messageBus          = $messageBus;
-        $this->logger              = $actionLogger;
+        $this->entityManager    = $entityManager;
+        $this->container        = $container;
+        $this->gatewayOEService = $gatewayOEService;
+        $this->session          = $session;
+        $this->messageBus       = $messageBus;
+        $this->logger           = $actionLogger;
 
     }//end __construct()
 
@@ -228,7 +228,7 @@ class ActionSubscriber implements EventSubscriberInterface
 
         foreach ($action->getThrows() as $key => $throw) {
             // Throw event
-            $this->objectEntityService->dispatchEvent('commongateway.action.event', $data, $throw);
+            $this->gatewayOEService->dispatchEvent('commongateway.action.event', $data, $throw);
 
             if (isset($this->io) && isset($totalThrows) && isset($extraDashesStr)) {
                 if ($key !== array_key_last($action->getThrows())) {
@@ -263,7 +263,7 @@ class ActionSubscriber implements EventSubscriberInterface
             && $this->session->get('currentCronJobSubThrow') == $event->getSubType()
         ) {
             $currentCronJobThrow = true;
-            $this->io->block("Found an Action with matching conditions: [{$this->objectEntityService->implodeMultiArray($action->getConditions())}]");
+            $this->io->block("Found an Action with matching conditions: [{$this->gatewayOEService->implodeMultiArray($action->getConditions())}]");
             $this->io->definitionList(
                 'The conditions of the following Action match with the ActionEvent data',
                 new TableSeparator(),
@@ -280,7 +280,7 @@ class ActionSubscriber implements EventSubscriberInterface
                 ['LastRunTime' => $action->getLastRunTime()],
                 ['Status' => is_null($action->getStatus()) ? null : ($action->getStatus() ? 'True' : 'False')],
             );
-            $this->io->block("The configuration of this Action: [{$this->objectEntityService->implodeMultiArray($action->getConfiguration())}]");
+            $this->io->block("The configuration of this Action: [{$this->gatewayOEService->implodeMultiArray($action->getConfiguration())}]");
         }//end if
 
         // Commented out this log, to avoid log creation overload. Only add back for debug reasons.

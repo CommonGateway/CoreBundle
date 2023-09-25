@@ -4,10 +4,11 @@ namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Entity\ObjectEntity;
 use App\Event\ActionEvent;
-use App\Service\ObjectEntityService;
+use App\Service\ObjectEntityService as GatewayObjectEntityService;
 use CommonGateway\CoreBundle\Message\CacheMessage;
 use CommonGateway\CoreBundle\Service\AuditTrailService;
 use CommonGateway\CoreBundle\Service\CacheService;
+use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
@@ -34,6 +35,13 @@ use Symfony\Component\Messenger\MessageBusInterface;
 class ObjectEntitySubscriber implements EventSubscriberInterface
 {
 
+    /**
+     * (old) Gateway Object Entity Service.
+     *
+     * @var GatewayObjectEntityService
+     */
+    private GatewayObjectEntityService $gatewayOEService;
+    
     /**
      * Object Entity Service.
      *
@@ -100,36 +108,39 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
     /**
      * The constructor sets al needed variables.
      *
-     * @param ObjectEntityService      $objectEntityService The Object Entity Service.
-     * @param EntityManagerInterface   $entityManager       The entity manager.
-     * @param LoggerInterface          $pluginLogger        The logger interface.
-     * @param RequestStack             $requestStack        The request stack.
-     * @param CacheService             $cacheService        The cache service.
-     * @param AuditTrailService        $auditTrailService   The Audit Trail service.
-     * @param SessionInterface         $session             The current session.
-     * @param MessageBusInterface      $messageBus          The messageBus for async messages.
-     * @param EventDispatcherInterface $eventDispatcher     Event Dispatcher.
+     * @param GatewayObjectEntityService $gatewayOEService     The (old) Gateway Object Entity Service.
+     * @param ObjectEntityService        $objectEntityService  The Object Entity Service.
+     * @param EntityManagerInterface     $entityManager        The entity manager.
+     * @param LoggerInterface            $pluginLogger         The logger interface.
+     * @param RequestStack               $requestStack         The request stack.
+     * @param CacheService               $cacheService         The cache service.
+     * @param AuditTrailService          $auditTrailService    The Audit Trail service.
+     * @param SessionInterface           $session              The current session.
+     * @param MessageBusInterface        $messageBus           The messageBus for async messages.
+     * @param EventDispatcherInterface   $eventDispatcher      Event Dispatcher.
      */
     public function __construct(
-        ObjectEntityService $objectEntityService,
-        EntityManagerInterface $entityManager,
-        LoggerInterface $pluginLogger,
-        RequestStack $requestStack,
-        CacheService $cacheService,
-        AuditTrailService $auditTrailService,
-        SessionInterface $session,
-        MessageBusInterface $messageBus,
-        EventDispatcherInterface $eventDispatcher
+        GatewayObjectEntityService $gatewayOEService,
+        ObjectEntityService        $objectEntityService,
+        EntityManagerInterface     $entityManager,
+        LoggerInterface            $pluginLogger,
+        RequestStack               $requestStack,
+        CacheService               $cacheService,
+        AuditTrailService          $auditTrailService,
+        SessionInterface           $session,
+        MessageBusInterface        $messageBus,
+        EventDispatcherInterface   $eventDispatcher
     ) {
-        $this->objectEntityService = $objectEntityService;
-        $this->entityManager       = $entityManager;
-        $this->logger              = $pluginLogger;
-        $this->requestStack        = $requestStack;
-        $this->cacheService        = $cacheService;
-        $this->auditTrailService   = $auditTrailService;
-        $this->session             = $session;
-        $this->messageBus          = $messageBus;
-        $this->eventDispatcher     = $eventDispatcher;
+        $this->gatewayOEService     = $gatewayOEService;
+        $this->objectEntityService  = $objectEntityService;
+        $this->entityManager        = $entityManager;
+        $this->logger               = $pluginLogger;
+        $this->requestStack         = $requestStack;
+        $this->cacheService         = $cacheService;
+        $this->auditTrailService    = $auditTrailService;
+        $this->session              = $session;
+        $this->messageBus           = $messageBus;
+        $this->eventDispatcher      = $eventDispatcher;
 
     }//end __construct()
 
@@ -165,6 +176,9 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false) {
             return;
         }
+        
+        // Set the Organization for this ObjectEntity.
+        $object = $this->objectEntityService->setOwnerAndOrg($object);
 
         // TODO: old DoctrineToGatewayEventSubscriber code: 'Creating object in database.'
         // Write the log.
@@ -387,7 +401,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
             $this->logger->info('Dispatch event with subtype: \'commongateway.object.sync\'');
 
             // Dispatch event.
-            $this->objectEntityService->dispatchEvent('commongateway.action.event', $data, 'commongateway.object.sync');
+            $this->gatewayOEService->dispatchEvent('commongateway.action.event', $data, 'commongateway.object.sync');
         }
 
         // TODO: old DoctrineToGatewayEventSubscriber code: 'Created object in database.'
