@@ -284,7 +284,6 @@ class CallService
         // Because we don't want to flush/update the Source each time this ->call function gets executed for performance reasons.
         $source->setLastCall(new \DateTime());
         $this->entityManager->persist($source);
-        // $config['debug'] = true;
         try {
             if ($asynchronous === false) {
                 $response = $this->client->request($method, $url, $config);
