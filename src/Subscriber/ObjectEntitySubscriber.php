@@ -89,25 +89,25 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
      * @var MessageBusInterface $messageBus
      */
     private MessageBusInterface $messageBus;
-    
+
     /**
      * Event Dispatcher.
      *
      * @var EventDispatcherInterface $eventDispatcher
      */
     private EventDispatcherInterface $eventDispatcher;
-    
+
     /**
      * The constructor sets al needed variables.
      *
-     * @param ObjectEntityService    $objectEntityService   The Object Entity Service.
-     * @param EntityManagerInterface $entityManager         The entity manager.
-     * @param LoggerInterface        $pluginLogger          The logger interface.
-     * @param RequestStack           $requestStack          The request stack.
-     * @param CacheService           $cacheService          The cache service.
-     * @param AuditTrailService      $auditTrailService     The Audit Trail service.
-     * @param SessionInterface       $session               The current session.
-     * @param MessageBusInterface    $messageBus            The messageBus for async messages.
+     * @param ObjectEntityService      $objectEntityService The Object Entity Service.
+     * @param EntityManagerInterface   $entityManager       The entity manager.
+     * @param LoggerInterface          $pluginLogger        The logger interface.
+     * @param RequestStack             $requestStack        The request stack.
+     * @param CacheService             $cacheService        The cache service.
+     * @param AuditTrailService        $auditTrailService   The Audit Trail service.
+     * @param SessionInterface         $session             The current session.
+     * @param MessageBusInterface      $messageBus          The messageBus for async messages.
      * @param EventDispatcherInterface $eventDispatcher     Event Dispatcher.
      */
     public function __construct(
@@ -153,7 +153,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         ];
 
     }//end getSubscribedEvents()
-    
+
     /**
      * Handles prePersist Event.
      *
@@ -165,7 +165,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false) {
             return;
         }
-        
+
         // TODO: old DoctrineToGatewayEventSubscriber code: 'Creating object in database.'
         // Write the log.
         $this->logger->info(
@@ -175,20 +175,23 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
                 'entity' => $object->getEntity()->getId(),
             ]
         );
-        
+
         // Throw the event.
         $event = new ActionEvent(
             'commongateway.action.event',
             [
                 'object' => $object,
-                'entity' => ['id' => $object->getEntity()->getId(),'reference' => $object->getEntity()->getReference()]
+                'entity' => [
+                    'id'        => $object->getEntity()->getId(),
+                    'reference' => $object->getEntity()->getReference(),
+                ],
             ],
             'commongateway.object.pre.create'
         );
         $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
-        
+
     }//end prePersist()
-    
+
     /**
      * Handles preUpdate Event.
      *
@@ -200,7 +203,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false) {
             return;
         }
-        
+
         // TODO: old DoctrineToGatewayEventSubscriber code: 'Updating object to database.'
         // Write the log.
         $this->logger->info(
@@ -210,20 +213,23 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
                 'entity' => $object->getEntity()->getId(),
             ]
         );
-        
+
         // Throw the event.
         $event = new ActionEvent(
             'commongateway.action.event',
             [
                 'object' => $object,
-                'entity' => ['id' => $object->getEntity()->getId(),'reference' => $object->getEntity()->getReference()]
+                'entity' => [
+                    'id'        => $object->getEntity()->getId(),
+                    'reference' => $object->getEntity()->getReference(),
+                ],
             ],
             'commongateway.object.pre.update'
         );
         $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
-        
+
     }//end preUpdate()
-    
+
     /**
      * Handles preRemove Event.
      *
@@ -251,10 +257,10 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
 
             $this->auditTrailService->createAuditTrail($object, $config);
         }
-        
+
         // TODO: old CacheDatabaseSubscriber code: 'Remove objects from the cache after they are removed from the database.'
         $this->cacheService->removeObject($object);
-        
+
         // TODO: old DoctrineToGatewayEventSubscriber code: 'Deleting object from database.'
         // Write the log.
         $this->logger->info(
@@ -264,13 +270,16 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
                 'entity' => $object->getEntity()->getId(),
             ]
         );
-        
+
         // Throw the event.
         $event = new ActionEvent(
             'commongateway.action.event',
             [
                 'object' => $object,
-                'entity' => ['id' => $object->getEntity()->getId(),'reference' => $object->getEntity()->getReference()]
+                'entity' => [
+                    'id'        => $object->getEntity()->getId(),
+                    'reference' => $object->getEntity()->getReference(),
+                ],
             ],
             'commongateway.object.pre.delete'
         );
@@ -308,7 +317,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
 
             $this->auditTrailService->createAuditTrail($object, $config);
         }
-        
+
         // TODO: old DoctrineToGatewayEventSubscriber code: 'Read object from database.'
         // Write the log
         $this->logger->info(
@@ -317,7 +326,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
                 'object' => $object->getId(),
             ]
         );
-        
+
         // Throw the event
         $event = new ActionEvent(
             'commongateway.action.event',
@@ -341,7 +350,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false) {
             return;
         }
-        
+
         // TODO: old CacheDatabaseSubscriber code: 'Updates the cache whenever an object is put into the database.'
         // $this->messageBus->dispatch(new CacheMessage($object->getId()));
         $this->cacheService->cacheObject($object);
@@ -366,7 +375,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         // Check if there is a synchronisation for this object.
         if ($object->getSynchronizations() !== null && $object->getSynchronizations()->first() !== false) {
             $this->logger->info("There is already a synchronisation for this object {$object->getId()->toString()}.");
-        } elseif (($defaultSource = $object->getEntity()->getDefaultSource()) === null) {
+        } else if (($defaultSource = $object->getEntity()->getDefaultSource()) === null) {
             $this->logger->info("There is no default source set to the entity of this object {$object->getId()->toString()}.");
         } else {
             $data = [
@@ -374,13 +383,13 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
                 'schema' => $object->getEntity(),
                 'source' => $defaultSource,
             ];
-            
+
             $this->logger->info('Dispatch event with subtype: \'commongateway.object.sync\'');
-            
+
             // Dispatch event.
             $this->objectEntityService->dispatchEvent('commongateway.action.event', $data, 'commongateway.object.sync');
         }
-        
+
         // TODO: old DoctrineToGatewayEventSubscriber code: 'Created object in database.'
         // Write the log.
         $this->logger->info(
@@ -390,13 +399,16 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
                 'entity' => $object->getEntity()->getId(),
             ]
         );
-        
+
         // Throw the event.
         $event = new ActionEvent(
             'commongateway.action.event',
             [
                 'object' => $object,
-                'entity' => ['id' => $object->getEntity()->getId(), 'reference' => $object->getEntity()->getReference()]
+                'entity' => [
+                    'id'        => $object->getEntity()->getId(),
+                    'reference' => $object->getEntity()->getReference(),
+                ],
             ],
             'commongateway.object.post.create'
         );
@@ -415,7 +427,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false) {
             return;
         }
-        
+
         // TODO: old CacheDatabaseSubscriber code: 'Updates the cache whenever an object is put into the database.'
         // $this->messageBus->dispatch(new CacheMessage($object->getId()));
         $this->cacheService->cacheObject($object);
@@ -434,18 +446,18 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
                 if ($this->requestStack->getMainRequest()->getMethod() === 'PATCH') {
                     $action = 'PARTIAL_UPDATE';
                 }
-                
+
                 $config = [
                     'action' => $action,
                     'result' => 200,
                     'new'    => $new,
                     'old'    => $old,
                 ];
-                
+
                 $this->auditTrailService->createAuditTrail($object, $config);
             }
         }//end if
-        
+
         // TODO: old DoctrineToGatewayEventSubscriber code: 'Updated object in database.'
         // Write the log.
         $this->logger->info(
@@ -455,20 +467,23 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
                 'entity' => $object->getEntity()->getId(),
             ]
         );
-        
+
         // Throw the event.
         $event = new ActionEvent(
             'commongateway.action.event',
             [
                 'object' => $object,
-                'entity' => ['id' => $object->getEntity()->getId(), 'reference' => $object->getEntity()->getReference()]
+                'entity' => [
+                    'id'        => $object->getEntity()->getId(),
+                    'reference' => $object->getEntity()->getReference(),
+                ],
             ],
             'commongateway.object.post.update'
         );
         $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 
     }//end postUpdate()
-    
+
     /**
      * Handles postRemove Event.
      *
@@ -480,14 +495,14 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false) {
             return;
         }
-        
+
         // TODO: old DoctrineToGatewayEventSubscriber code: 'Deleted object from database.'
         // Write the log.
         $this->logger->info(
             'Deleted object from database',
             []
         );
-        
+
         // Throw the event.
         $event = new ActionEvent(
             'commongateway.action.event',
@@ -495,6 +510,6 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
             'commongateway.object.post.delete'
         );
         $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
-        
+
     }//end postRemove()
 }//end class

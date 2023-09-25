@@ -94,7 +94,6 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
     {
         $object = $args->getObject();
         // if this subscriber only applies to certain entity types,
-        
         if ($object instanceof Entity === true) {
             $this->cacheService->cacheShema($object);
 
