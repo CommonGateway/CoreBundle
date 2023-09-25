@@ -42,8 +42,7 @@ class ObjectEntityService
     private SessionInterface $session;
     
     /**
-     * Some values used for creating test data.
-     * Note that owner => reference is replaces with an uuid of that User object.
+     * The default references of some Core Gateway objects.
      *
      * @var array|string[]
      */
