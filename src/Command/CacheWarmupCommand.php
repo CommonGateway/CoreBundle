@@ -5,6 +5,7 @@ namespace CommonGateway\CoreBundle\Command;
 use CommonGateway\CoreBundle\Service\CacheService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -50,7 +51,7 @@ class CacheWarmupCommand extends Command
         $this
             ->addOption('objects', 'o', InputOption::VALUE_OPTIONAL, 'Skip caching objects during cache warmup', false)
             ->addOption('schemas', 's', InputOption::VALUE_OPTIONAL, 'Skip caching schemas during cache warmup', false)
-            ->addOption('endpoints', 'e', InputOption::VALUE_OPTIONAL, 'Skip caching endpoints during cache warmup', false)
+            ->addOption('endpoints', 'en', InputOption::VALUE_OPTIONAL, 'Skip caching endpoints during cache warmup', false)
             ->setDescription('This command puts all objects into the cache')
             ->setHelp('This command allows you to run further installation an configuration actions afther installing a plugin');
 
