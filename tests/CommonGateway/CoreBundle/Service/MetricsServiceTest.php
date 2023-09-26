@@ -191,9 +191,9 @@ class MetricsServiceTest extends TestCase
                 'value' => 10,
             ],
             [
-                'name' => 'app_organisations',
+                'name' => 'app_organizations',
                 'type' => 'gauge',
-                'help' => 'The current amount of organisations',
+                'help' => 'The current amount of organizations',
                 'value' => 5,
             ],
             [

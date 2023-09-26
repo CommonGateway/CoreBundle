@@ -24,14 +24,14 @@ Prometheus is an open-source systems monitoring and alerting toolkit that is wid
 The common gateway supports several metrics
 
 ### General information
-| Name | Help |
-|------|------|
-| app_version | The current version of the CoreBundle for this application. |
-| app_users | The current amount of users |
-| app_organisations | The current amount of organisations |
-| app_applications | The current amount of applications |
-| app_requests | The total amount of incoming requests handled by this gateway |
-| app_calls | The total amount of outgoing calls handled by this gateway |
+| Name              | Help                                                          |
+|-------------------|---------------------------------------------------------------|
+| app_version       | The current version of the CoreBundle for this application.   |
+| app_users         | The current amount of users                                   |
+| app_organizations | The current amount of organizations                           |
+| app_applications  | The current amount of applications                            |
+| app_requests      | The total amount of incoming requests handled by this gateway |
+| app_calls         | The total amount of outgoing calls handled by this gateway    |
 
 
 ### Errors
