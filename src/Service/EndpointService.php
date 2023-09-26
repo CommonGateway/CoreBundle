@@ -197,23 +197,14 @@ class EndpointService
     }//end logRequestHeaders()
 
     /**
-     * Gets the accept type based on the request.
+     * This function return the correct file extension for decode/encode purposes from the accept header.
      *
-     * This method breaks complexity rules but since a switch is the most efficent and performent way to do this we made a design decicion to allow it
+     * @param string $acceptHeader.
      *
-     * @return string The accept type
+     * @return string|null Accept type.
      */
-    public function getAcceptType(): string
+    private function determineAcceptType(string $acceptHeader): ?string
     {
-        // Let's first look at the accept header.
-        $acceptHeader = $this->request->headers->get('accept');
-
-        // If the accept header does not provide useful info, check if the endpoint contains a pointer.
-        $this->logger->debug('Get Accept header');
-        if (($acceptHeader === null || $acceptHeader === '*/*') && $this->endpoint !== null && $this->endpoint->getDefaultContentType() !== null) {
-            $acceptHeader = $this->endpoint->getDefaultContentType();
-        }//end if
-
         // Determine the accept type.
         $this->logger->debug('Determine accept type from accept header');
         switch ($acceptHeader) {
@@ -247,8 +238,47 @@ class EndpointService
             return 'html';
         case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
             return 'docx';
-            break;
+                break;
         }//end switch
+
+        return null;
+
+    }//end determineAcceptType()
+
+    /**
+     * Gets the accept type based on the request.
+     *
+     * This method breaks complexity rules but since a switch is the most efficent and performent way to do this we made a design decicion to allow it
+     *
+     * @return string The accept type
+     */
+    public function getAcceptType(): string
+    {
+        // Let's first look at the accept header.
+        $acceptHeader = $this->request->headers->get('accept');
+
+        // If the accept header does not provide useful info, check if the endpoint contains a pointer.
+        $this->logger->debug('Get Accept header');
+        if (($acceptHeader === null || $acceptHeader === '*/*') && $this->endpoint !== null && $this->endpoint->getDefaultContentType() !== null) {
+            $acceptHeader = $this->endpoint->getDefaultContentType();
+        }//end if
+
+        // Get an accept type when multiple accept values are given.
+        if (strpos($acceptHeader, ',') !== false) {
+            $acceptHeaders = explode(',', $acceptHeader);
+            foreach ($acceptHeaders as $acceptHeader) {
+                $determinedAcceptType = $this->determineAcceptType($acceptHeader);
+                if ($determinedAcceptType !== null) {
+                    return $determinedAcceptType;
+                }
+            }
+        }
+
+        // Get the accept type when a single accept type is given.
+        $determinedAcceptType = $this->determineAcceptType($acceptHeader);
+        if ($determinedAcceptType !== null) {
+            return $determinedAcceptType;
+        }
 
         // As a backup we look at any file extenstion.
         $this->logger->debug('Determine accept type from path extension');
