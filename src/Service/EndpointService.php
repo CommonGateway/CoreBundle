@@ -263,6 +263,7 @@ class EndpointService
             $acceptHeader = $this->endpoint->getDefaultContentType();
         }//end if
 
+        // Get an accept type when multiple accept values are given.
         if (strpos($acceptHeader, ',') !== false) {
             $acceptHeaders = explode(',', $acceptHeader);
             foreach ($acceptHeaders as $acceptHeader) {
@@ -271,11 +272,13 @@ class EndpointService
                     return $determinedAcceptType;
                 }
             }
-        } else {
-            $determinedAcceptType = $this->determineAcceptType($acceptHeader);
-            if ($determinedAcceptType !== null) {
-                return $determinedAcceptType;
-            }
+        } 
+
+
+        // Get the accept type when a single accept type is given.
+        $determinedAcceptType = $this->determineAcceptType($acceptHeader);
+        if ($determinedAcceptType !== null) {
+            return $determinedAcceptType;
         }
 
         // As a backup we look at any file extenstion.
