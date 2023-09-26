@@ -88,7 +88,7 @@ class ObjectEntityService
 
         // Find the correct owner to set.
         if ($user !== null) {
-            $owner = $user->getUserIdentifier();
+            $owner = $user->getId()->toString();
         } else {
             // Default to the Default Owner.
             $defaultUser = $this->entityManager->getRepository('App:User')->findOneBy(['reference' => $this::DEFAULTS['owner']]);
