@@ -270,6 +270,7 @@ class ActionSubscriber implements EventSubscriberInterface
                 ['Id' => $action->getId()->toString()],
                 ['Name' => $action->getName()],
                 ['Description' => $action->getDescription()],
+                ['UserId' => $action->getUserId()],
                 ['Listens' => implode(', ', $action->getListens())],
                 ['Throws' => implode(', ', $action->getThrows())],
                 ['Class' => $action->getClass()],
