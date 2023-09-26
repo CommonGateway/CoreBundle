@@ -165,7 +165,7 @@ class ValueService
             return $this->getSubObjectByUrl($identifier, $valueObject);
         }
 
-        return $identifier;
+        return null;
 
     }//end findSubobject()
 
