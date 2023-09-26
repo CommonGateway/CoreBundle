@@ -96,7 +96,7 @@ class ObjectEntityService
         }
 
         // Find the correct Organization to set.
-        if ($user->getOrganization() !== null) {
+        if ($user !== null && $user->getOrganization() !== null) {
             $organization = $user->getOrganization();
         } else {
             // Default to the Default Organization.
@@ -105,7 +105,6 @@ class ObjectEntityService
 
         $object->setOwner($owner);
         $object->setOrganization($organization);
-        $this->entityManager->persist($object);
 
         return $object;
 
