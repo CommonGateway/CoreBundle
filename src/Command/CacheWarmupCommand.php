@@ -67,14 +67,16 @@ class CacheWarmupCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->cacheService->setStyle(new SymfonyStyle($input, $output));
-        
+
         $skipCaching = [];
         if ($input->getOption('objects') !== false) {
             $skipCaching['objects'] = true;
         }
+
         if ($input->getOption('schemas') !== false) {
             $skipCaching['schemas'] = true;
         }
+
         if ($input->getOption('endpoints') !== false) {
             $skipCaching['endpoints'] = true;
         }

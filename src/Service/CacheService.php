@@ -133,7 +133,7 @@ class CacheService
         isset($this->style) === true && $this->style->writeln('Found '.count($objects).'');
 
     }//end cleanup()
-    
+
     /**
      * Throws all available objects into the cache.
      *
@@ -165,7 +165,7 @@ class CacheService
             isset($this->style) === true && $this->style->section('Caching Objects\'s');
             $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
             isset($this->style) === true && $this->style->writeln('Found '.count($objectEntities).' objects\'s');
-            
+
             foreach ($objectEntities as $objectEntity) {
                 try {
                     $this->cacheObject($objectEntity);
@@ -181,7 +181,7 @@ class CacheService
             isset($this->style) === true && $this->style->section('Caching Schema\'s');
             $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
             isset($this->style) === true && $this->style->writeln('Found '.count($schemas).' Schema\'s');
-            
+
             foreach ($schemas as $schema) {
                 try {
                     $this->cacheShema($schema);
@@ -197,7 +197,7 @@ class CacheService
             isset($this->style) === true && $this->style->section('Caching Endpoint\'s');
             $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
             isset($this->style) === true && $this->style->writeln('Found '.count($endpoints).' Endpoint\'s');
-            
+
             foreach ($endpoints as $endpoint) {
                 try {
                     $this->cacheEndpoint($endpoint);
@@ -212,10 +212,11 @@ class CacheService
         $this->client->objects->json->createIndex(['$**' => 'text']);
         $this->client->schemas->json->createIndex(['$**' => 'text']);
         $this->client->endpoints->json->createIndex(['$**' => 'text']);
-        
+
         if (isset($skipCaching['endpoints']) === false || $skipCaching['endpoints'] !== true) {
             $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
         }
+
         if (isset($skipCaching['objects']) === false || $skipCaching['objects'] !== true) {
             $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
         }
