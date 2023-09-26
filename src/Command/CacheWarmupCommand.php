@@ -48,6 +48,9 @@ class CacheWarmupCommand extends Command
     protected function configure(): void
     {
         $this
+            ->addOption('objects', 'o', InputOption::VALUE_OPTIONAL, 'Skip caching objects during cache warmup', false)
+            ->addOption('schemas', 's', InputOption::VALUE_OPTIONAL, 'Skip caching schemas during cache warmup', false)
+            ->addOption('endpoints', 'e', InputOption::VALUE_OPTIONAL, 'Skip caching endpoints during cache warmup', false)
             ->setDescription('This command puts all objects into the cache')
             ->setHelp('This command allows you to run further installation an configuration actions afther installing a plugin');
 
@@ -64,8 +67,19 @@ class CacheWarmupCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->cacheService->setStyle(new SymfonyStyle($input, $output));
+        
+        $skipCaching = [];
+        if ($input->getOption('objects') !== false) {
+            $skipCaching['objects'] = true;
+        }
+        if ($input->getOption('schemas') !== false) {
+            $skipCaching['schemas'] = true;
+        }
+        if ($input->getOption('endpoints') !== false) {
+            $skipCaching['endpoints'] = true;
+        }
 
-        return $this->cacheService->warmup();
+        return $this->cacheService->warmup($skipCaching);
 
     }//end execute()
 }//end class

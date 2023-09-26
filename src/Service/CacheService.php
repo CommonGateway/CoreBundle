@@ -133,13 +133,15 @@ class CacheService
         isset($this->style) === true && $this->style->writeln('Found '.count($objects).'');
 
     }//end cleanup()
-
+    
     /**
      * Throws all available objects into the cache.
      *
+     * @param array $skipCaching An array which can contain the keys 'objects', 'schemas' and/or 'endpoints' to skip caching these specific objects.
+     *
      * @return int
      */
-    public function warmup()
+    public function warmup(array $skipCaching = []): int
     {
         isset($this->style) === true && $this->style->writeln(
             [
@@ -159,44 +161,50 @@ class CacheService
         }
 
         // Objects.
-        isset($this->style) === true && $this->style->section('Caching Objects\'s');
-        $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
-        isset($this->style) === true && $this->style->writeln('Found '.count($objectEntities).' objects\'s');
-
-        foreach ($objectEntities as $objectEntity) {
-            try {
-                $this->cacheObject($objectEntity);
-            } catch (Exception $exception) {
-                $this->styleCatchException($exception);
-                continue;
+        if (isset($skipCaching['objects']) === false || $skipCaching['objects'] !== true) {
+            isset($this->style) === true && $this->style->section('Caching Objects\'s');
+            $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
+            isset($this->style) === true && $this->style->writeln('Found '.count($objectEntities).' objects\'s');
+            
+            foreach ($objectEntities as $objectEntity) {
+                try {
+                    $this->cacheObject($objectEntity);
+                } catch (Exception $exception) {
+                    $this->styleCatchException($exception);
+                    continue;
+                }
             }
         }
 
         // Schemas.
-        isset($this->style) === true && $this->style->section('Caching Schema\'s');
-        $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
-        isset($this->style) === true && $this->style->writeln('Found '.count($schemas).' Schema\'s');
-
-        foreach ($schemas as $schema) {
-            try {
-                $this->cacheShema($schema);
-            } catch (Exception $exception) {
-                $this->styleCatchException($exception);
-                continue;
+        if (isset($skipCaching['schemas']) === false || $skipCaching['schemas'] !== true) {
+            isset($this->style) === true && $this->style->section('Caching Schema\'s');
+            $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
+            isset($this->style) === true && $this->style->writeln('Found '.count($schemas).' Schema\'s');
+            
+            foreach ($schemas as $schema) {
+                try {
+                    $this->cacheShema($schema);
+                } catch (Exception $exception) {
+                    $this->styleCatchException($exception);
+                    continue;
+                }
             }
         }
 
         // Endpoints.
-        isset($this->style) === true && $this->style->section('Caching Endpoint\'s');
-        $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
-        isset($this->style) === true && $this->style->writeln('Found '.count($endpoints).' Endpoint\'s');
-
-        foreach ($endpoints as $endpoint) {
-            try {
-                $this->cacheEndpoint($endpoint);
-            } catch (Exception $exception) {
-                $this->styleCatchException($exception);
-                continue;
+        if (isset($skipCaching['endpoints']) === false || $skipCaching['endpoints'] !== true) {
+            isset($this->style) === true && $this->style->section('Caching Endpoint\'s');
+            $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
+            isset($this->style) === true && $this->style->writeln('Found '.count($endpoints).' Endpoint\'s');
+            
+            foreach ($endpoints as $endpoint) {
+                try {
+                    $this->cacheEndpoint($endpoint);
+                } catch (Exception $exception) {
+                    $this->styleCatchException($exception);
+                    continue;
+                }
             }
         }
 
@@ -204,9 +212,13 @@ class CacheService
         $this->client->objects->json->createIndex(['$**' => 'text']);
         $this->client->schemas->json->createIndex(['$**' => 'text']);
         $this->client->endpoints->json->createIndex(['$**' => 'text']);
-
-        $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
-        $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
+        
+        if (isset($skipCaching['endpoints']) === false || $skipCaching['endpoints'] !== true) {
+            $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
+        }
+        if (isset($skipCaching['objects']) === false || $skipCaching['objects'] !== true) {
+            $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
+        }
 
         return Command::SUCCESS;
 
