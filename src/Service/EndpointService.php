@@ -272,8 +272,7 @@ class EndpointService
                     return $determinedAcceptType;
                 }
             }
-        } 
-
+        }
 
         // Get the accept type when a single accept type is given.
         $determinedAcceptType = $this->determineAcceptType($acceptHeader);
