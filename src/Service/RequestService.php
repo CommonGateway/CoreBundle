@@ -529,7 +529,7 @@ class RequestService
 
     private function proxyConfigBuilder(): array
     {
-        if(strpos($this->data['headers']['content-type'][0],  'multipart/form-data') !== false) {
+        if (strpos($this->data['headers']['content-type'][0],  'multipart/form-data') !== false) {
             $post = $this->data['post'];
             array_walk(
                 $post,
@@ -551,13 +551,15 @@ class RequestService
                 'headers'   => $this->data['headers'],
                 'form_data' => $this->data['post'],
             ];
-        }
+        }//end if
+
         return [
             'query'   => $this->data['query'],
             'headers' => $this->data['headers'],
             'body'    => $this->data['crude_body'],
         ];
-    }
+
+    }//end proxyConfigBuilder()
 
     /**
      * Handles a proxy Endpoint.
