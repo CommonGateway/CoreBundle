@@ -614,13 +614,18 @@ class CallService
         }
 
         // This if is statement prevents binary code from being used a string.
-        if (in_array($contentType, [
-            'application/pdf', 'application/pdf; charset=utf-8',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8',
-            'application/msword',
-            'image/jpeg']
-            ) === false) {
+        if (in_array(
+            $contentType,
+            [
+                'application/pdf',
+                'application/pdf; charset=utf-8',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8',
+                'application/msword',
+                'image/jpeg',
+            ]
+        ) === false
+        ) {
             $this->callLogger->debug('Response content: '.$responseBody);
         }
 
