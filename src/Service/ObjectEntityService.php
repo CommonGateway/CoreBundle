@@ -69,11 +69,13 @@ class ObjectEntityService
     }//end __construct()
 
     /**
-     * @todo !
+     * Sets the owner and Organization for an ObjectEntity.
+     * Will use info of the logged-in user, or a user from session for this.
+     * If no user (or Organization) can be found it defaults to the default User and default Organization.
      *
-     * @param ObjectEntity $object
+     * @param ObjectEntity $object The ObjectEntity to update.
      *
-     * @return ObjectEntity
+     * @return ObjectEntity The updated ObjectEntity.
      */
     public function setOwnerAndOrg(ObjectEntity $object): ObjectEntity
     {
@@ -95,6 +97,23 @@ class ObjectEntityService
             $user = $this->entityManager->getRepository('App:User')->find($this->session->get('currentActionUserId'));
         }
 
+        $object = $this->setOwner($object, $user);
+        return $this->setOrganization($object, $user);
+        // Do not persist, because this triggers the subscriber that calls this setOwnerAndOrg() function.
+
+    }//end setOwnerAndOrg()
+    
+    /**
+     * Sets the owner for an ObjectEntity. Will use given user for this.
+     * If no user has been given it defaults to the default User.
+     *
+     * @param ObjectEntity $object The ObjectEntity to update.
+     * @param User|null $user The user to set as owner for the given ObjectEntity (or null).
+     *
+     * @return ObjectEntity The updated ObjectEntity.
+     */
+    private function setOwner(ObjectEntity $object, ?User $user): ObjectEntity
+    {
         // Find the correct owner to set.
         if ($user !== null) {
             $owner = $user->getId()->toString();
@@ -103,7 +122,22 @@ class ObjectEntityService
             $defaultUser = $this->entityManager->getRepository('App:User')->findOneBy(['reference' => $this::DEFAULTS['owner']]);
             $owner       = $defaultUser ? $defaultUser->getId()->toString() : $defaultUser;
         }
-
+        $object->setOwner($owner);
+        
+        return $object;
+    }//end setOwner()
+    
+    /**
+     * Sets the Organization for an ObjectEntity. Will use given user->organization for this if possible.
+     * If no user has been given or if it has no Organization it defaults to the default Organization.
+     *
+     * @param ObjectEntity $object The ObjectEntity to update.
+     * @param User|null $user The user to get the Organization from (or null).
+     *
+     * @return ObjectEntity The updated ObjectEntity.
+     */
+    private function setOrganization(ObjectEntity $object, ?User $user): ObjectEntity
+    {
         // Find the correct Organization to set.
         if ($user !== null && $user->getOrganization() !== null) {
             $organization = $user->getOrganization();
@@ -111,11 +145,9 @@ class ObjectEntityService
             // Default to the Default Organization.
             $organization = $this->entityManager->getRepository('App:Organization')->findOneBy(['reference' => $this::DEFAULTS['organization']]);
         }
-
-        $object->setOwner($owner);
+        
         $object->setOrganization($organization);
-
+        
         return $object;
-
-    }//end setOwnerAndOrg()
+    }//end setOrganization()
 }//end class
