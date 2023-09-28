@@ -614,7 +614,18 @@ class CallService
         }
 
         // This if is statement prevents binary code from being used a string.
-        if (in_array($contentType, ['application/pdf', 'application/pdf; charset=utf-8', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8']) === false) {
+        if (in_array(
+            $contentType,
+            [
+                'application/pdf',
+                'application/pdf; charset=utf-8',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8',
+                'application/msword',
+                'image/jpeg',
+            ]
+        ) === false
+        ) {
             $this->callLogger->debug('Response content: '.$responseBody);
         }
 
@@ -635,8 +646,10 @@ class CallService
         case 'text/xml; charset=utf-8':
         case 'application/pdf':
         case 'application/pdf; charset=utf-8':
+        case 'application/msword':
         case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
         case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8':
+        case 'image/jpeg':
             $this->callLogger->debug('Response content: binary code..');
             return ['base64' => base64_encode($responseBody)];
         case 'application/xml':
