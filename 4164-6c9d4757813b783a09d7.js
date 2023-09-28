@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkproduct_website_template=self.webpackChunkproduct_website_template||[]).push([[4164],{34164:function(e,t,r){r.r(t),r.d(t,{utrecht_table_body:function(){return s}});var l=r(43616);const s=class{constructor(e){(0,l.r)(this,e)}render(){return(0,l.h)(l.H,{role:"rowgroup"},(0,l.h)("slot",null))}};s.style=":host{--_utrecht-table-header-cell-z-index:2;display:table-row-group}"}}]);
-//# sourceMappingURL=4164-6c9d4757813b783a09d7.js.map
