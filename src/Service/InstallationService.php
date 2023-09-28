@@ -288,6 +288,7 @@ class InstallationService
                 if (in_array($ref, $this::ALLOWED_CORE_SCHEMAS)) {
                     $message = ' core objects for core schema ';
                 }
+
                 if (isset($this->style) === true) {
                     $this->style->newline();
                     $this->style->writeln('Found '.count($schemas).$message.$ref);
@@ -841,7 +842,7 @@ class InstallationService
             }
 
             $install = $installationService->install();
-            
+
             if (isset($this->style) === true) {
                 $this->style->newLine();
             }
