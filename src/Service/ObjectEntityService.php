@@ -67,7 +67,7 @@ class ObjectEntityService
         $this->session       = $session;
 
     }//end __construct()
-    
+
     /**
      * @todo !
      *
