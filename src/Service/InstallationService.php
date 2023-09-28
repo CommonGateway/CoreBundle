@@ -270,8 +270,8 @@ class InstallationService
         // There is a certain order to this, meaning that we want to handle certain schema types before other schema types.
         if (isset($this->objects['https://docs.commongateway.nl/schemas/Entity.schema.json']) === true && is_array($this->objects['https://docs.commongateway.nl/schemas/Entity.schema.json']) === true) {
             $schemas = $this->objects['https://docs.commongateway.nl/schemas/Entity.schema.json'];
-            isset($this->style) === true && $this->style->writeln('Found '.count($schemas).' objects for schema https://docs.commongateway.nl/schemas/Entity.schema.json');
-            $this->logger->debug('Found '.count($schemas).' objects for schema https://docs.commongateway.nl/schemas/Entity.schema.json', ['bundle' => $bundle, 'reference' => 'https://docs.commongateway.nl/schemas/Entity.schema.json']);
+            isset($this->style) === true && $this->style->writeln('Found '.count($schemas).' core objects for core schema https://docs.commongateway.nl/schemas/Entity.schema.json');
+            $this->logger->debug('Found '.count($schemas).' core objects for core schema https://docs.commongateway.nl/schemas/Entity.schema.json', ['bundle' => $bundle, 'reference' => 'https://docs.commongateway.nl/schemas/Entity.schema.json']);
             $this->handleObjectType('https://docs.commongateway.nl/schemas/Entity.schema.json', $schemas);
             unset($this->objects['https://docs.commongateway.nl/schemas/Entity.schema.json']);
         }
@@ -284,12 +284,16 @@ class InstallationService
             // Only do handleObjectType if we want to load in ALL testdata, when user has used the argument data.
             // Or if it is a core schema, of course.
             if ((isset($config['data']) === true && $config['data'] !== false) || in_array($ref, $this::ALLOWED_CORE_SCHEMAS)) {
+                $message = ' objects for schema ';
+                if (in_array($ref, $this::ALLOWED_CORE_SCHEMAS)) {
+                    $message = ' core objects for core schema ';
+                }
                 if (isset($this->style) === true) {
                     $this->style->newline();
-                    $this->style->writeln('Found '.count($schemas).' objects for schema '.$ref);
+                    $this->style->writeln('Found '.count($schemas).$message.$ref);
                 }
 
-                $this->logger->debug('Found '.count($schemas).' objects for schema '.$ref, ['bundle' => $bundle, 'reference' => $ref]);
+                $this->logger->debug('Found '.count($schemas).$message.$ref, ['bundle' => $bundle, 'reference' => $ref]);
                 $this->handleObjectType($ref, $schemas);
             }
 
@@ -832,10 +836,15 @@ class InstallationService
 
         try {
             if (isset($this->style) === true && method_exists(get_class($installationService), 'setStyle') === true) {
+                $this->style->newLine();
                 $installationService->setStyle($this->style);
             }
 
             $install = $installationService->install();
+            
+            if (isset($this->style) === true) {
+                $this->style->newLine();
+            }
 
             return is_bool($install) === true ? $install : empty($install) === false;
         } catch (\Throwable $throwable) {
