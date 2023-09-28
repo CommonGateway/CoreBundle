@@ -376,7 +376,7 @@ class RequestService
         return $allowedSchemas;
 
     }//end getAllowedSchemas()
-    
+
     /**
      * This function checks if the requesting user is the owner or is part of the correct Organization to edit the requested object.
      *
@@ -387,14 +387,14 @@ class RequestService
         if (isset($this->object) !== true || $this->security->getUser() === null) {
             return null;
         }
-        
+
         $user = $this->security->getUser();
-        
+
         // Check if object owner matches the current user.
         if ($this->object->getOwner() !== null && $this->object->getOwner() === $user->getUserIdentifier()) {
             return null;
         }
-        
+
         // Check if the object or user has no Organization. And if they both have an Organization, check if these Organizations match.
         if ($this->object->getOrganization() === null
             || $user->getOrganization() === null
@@ -402,15 +402,15 @@ class RequestService
         ) {
             return null;
         }
-        
+
         return new Response(
             $this->serializeData(
                 [
-                    'message' => "Authentication failed. You are not allowed to view or edit this object.",
-                    'currentUser'  => [
-                        'id' => $user->getUserIdentifier(),
-                        'name' => $user->getName(),
-                        'organization' => $user->getOrganization()
+                    'message'     => "Authentication failed. You are not allowed to view or edit this object.",
+                    'currentUser' => [
+                        'id'           => $user->getUserIdentifier(),
+                        'name'         => $user->getName(),
+                        'organization' => $user->getOrganization(),
                     ],
                 ],
                 $contentType
@@ -418,6 +418,7 @@ class RequestService
             Response::HTTP_FORBIDDEN,
             ['Content-type' => $contentType]
         );
+
     }//end checkOwnerAndOrg()
 
     /**
@@ -460,7 +461,7 @@ class RequestService
         return null;
 
     }//end checkUserScopes()
-    
+
     /**
      * Get a scopes array for the current user (or of the anonymus if no user s logged in).
      *
@@ -475,10 +476,10 @@ class RequestService
             foreach ($user->getRoles() as $role) {
                 $scopes[] = str_replace('ROLE_', '', $role);
             }
-            
+
             return $scopes;
         }//end if
-        
+
         // If we don't have a user, return the anonymous security group its scopes.
         $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous' => true]);
         if ($anonymousSecurityGroup !== null) {
@@ -486,13 +487,13 @@ class RequestService
             foreach ($anonymousSecurityGroup->getScopes() as $scope) {
                 $scopes[] = $scope;
             }
-            
+
             return $scopes;
         }
-        
+
         // If we don't have a user or anonymous security group, return an empty array (this will result in a 403 response in the checkUserScopes function).
         return [];
-        
+
     }//end getScopes()
 
     /**
@@ -782,16 +783,16 @@ class RequestService
         if (isset($this->identification) === true && empty($this->identification) === false && $this->data['method'] != 'GET') {
             $this->object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->identification]);
         }
-        
+
         // Check if user is allowed to change this object (owner & organization). Checking if an object may be viewed (GET) is done in the CacheService
         $securityResponse = $this->checkOwnerAndOrg();
         if ($securityResponse instanceof Response === true) {
             return $securityResponse;
         }
-        
+
         // Make a list of schema's that are allowed for this endpoint.
         $allowedSchemas = $this->getAllowedSchemas();
-        
+
         // Check if the user has the needed scopes.
         $securityResponse = $this->checkUserScopes($allowedSchemas['reference']);
         if ($securityResponse instanceof Response === true) {
