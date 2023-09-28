@@ -72,6 +72,7 @@ class ObjectEntityService
      * Sets the owner and Organization for an ObjectEntity.
      * Will use info of the logged-in user, or a user from session for this.
      * If no user (or Organization) can be found it defaults to the default User and default Organization.
+     * todo: maybe add application to this as well, remove setting application form Gateway->SynchronizationService!
      *
      * @param ObjectEntity $object The ObjectEntity to update.
      *
@@ -99,7 +100,7 @@ class ObjectEntityService
 
         $object = $this->setOwner($object, $user);
         return $this->setOrganization($object, $user);
-        // Do not persist, because this triggers the subscriber that calls this setOwnerAndOrg() function.
+        // Do not persist here, because this triggers the subscriber that calls this setOwnerAndOrg() function.
 
     }//end setOwnerAndOrg()
     

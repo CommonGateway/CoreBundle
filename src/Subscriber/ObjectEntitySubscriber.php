@@ -177,7 +177,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
             return;
         }
 
-        // Set the Organization for this ObjectEntity.
+        // Set the Owner and Organization for this ObjectEntity.
         $object = $this->objectEntityService->setOwnerAndOrg($object);
 
         // TODO: old DoctrineToGatewayEventSubscriber code: 'Creating object in database.'
