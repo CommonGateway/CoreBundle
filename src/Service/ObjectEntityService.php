@@ -67,7 +67,14 @@ class ObjectEntityService
         $this->session       = $session;
 
     }//end __construct()
-
+    
+    /**
+     * @todo !
+     *
+     * @param ObjectEntity $object
+     *
+     * @return ObjectEntity
+     */
     public function setOwnerAndOrg(ObjectEntity $object): ObjectEntity
     {
         $user = null;
