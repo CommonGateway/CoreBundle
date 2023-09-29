@@ -398,20 +398,23 @@ class RequestService
         // Check if the object or user has no Organization. And if they both have an Organization, check if these Organizations match.
         if ($this->object->getOrganization() === null
             || $user->getOrganization() === null
-            || $this->object->getOrganization() === $user->getOrganization()
+            || $this->object->getOrganization()->getId()->toString() === $user->getOrganization()
         ) {
             return null;
         }
-
+        
+        $currentUser = [
+            'id'           => $user->getUserIdentifier(),
+            'name'         => $user->getName(),
+            'organization' => $user->getOrganization(),
+        ];
+        
+        $this->logger->error("Authentication failed. You are not allowed to view or edit this object $this->identification.", ['currentUser' => $currentUser]);
         return new Response(
             $this->serializeData(
                 [
-                    'message'     => "Authentication failed. You are not allowed to view or edit this object.",
-                    'currentUser' => [
-                        'id'           => $user->getUserIdentifier(),
-                        'name'         => $user->getName(),
-                        'organization' => $user->getOrganization(),
-                    ],
+                    'message'     => "Authentication failed. You are not allowed to view or edit this object $this->identification.",
+                    'currentUser' => $currentUser,
                 ],
                 $contentType
             ),
@@ -768,28 +771,6 @@ class RequestService
             $appEndpointConfig = $this->getAppEndpointConfig();
         }
 
-        // Work around the _ with a custom function for getting clean query parameters from a request
-        $filters = $this->realRequestQueryAll();
-
-        // Handle mapping for query parameters
-        if (isset($appEndpointConfig['in']['query']) === true) {
-            $filters = $this->queryAppEndpointConfig($filters, $appEndpointConfig['in']['query']);
-        }
-
-        // Get the ID.
-        $this->identification = $this->getId();
-
-        // If we have an ID we can get an Object to work with (except on gets we handle those from cache).
-        if (isset($this->identification) === true && empty($this->identification) === false && $this->data['method'] != 'GET') {
-            $this->object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->identification]);
-        }
-
-        // Check if user is allowed to change this object (owner & organization). Checking if an object may be viewed (GET) is done in the CacheService
-        $securityResponse = $this->checkOwnerAndOrg();
-        if ($securityResponse instanceof Response === true) {
-            return $securityResponse;
-        }
-
         // Make a list of schema's that are allowed for this endpoint.
         $allowedSchemas = $this->getAllowedSchemas();
 
@@ -797,6 +778,44 @@ class RequestService
         $securityResponse = $this->checkUserScopes($allowedSchemas['reference']);
         if ($securityResponse instanceof Response === true) {
             return $securityResponse;
+        }
+        
+        // Get the ID.
+        $this->identification = $this->getId();
+        
+        // If we have an ID we can get an Object to work with (except on gets we handle those from cache).
+        if (isset($this->identification) === true && empty($this->identification) === false && $this->data['method'] != 'GET') {
+            $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->identification]);
+            if ($object === null) {
+                return new Response(
+                    $this->serializeData(
+                        [
+                            'message' => 'Could not find an object with id '.$this->identification,
+                            'type'    => 'Bad Request',
+                            'path'    => implode(', ', $allowedSchemas['name']),
+                            'data'    => ['id' => $this->identification],
+                        ],
+                        $contentType
+                    ),
+                    Response::HTTP_NOT_FOUND,
+                    ['Content-type' => $contentType]
+                );
+            }
+            $this->object = $object;
+        }
+        
+        // Check if user is allowed to change this object (owner & organization). Checking if an object may be viewed (GET) is done in the CacheService
+        $securityResponse = $this->checkOwnerAndOrg();
+        if ($securityResponse instanceof Response === true) {
+            return $securityResponse;
+        }
+        
+        // Work around the _ with a custom function for getting clean query parameters from a request
+        $filters = $this->realRequestQueryAll();
+        
+        // Handle mapping for query parameters
+        if (isset($appEndpointConfig['in']['query']) === true) {
+            $filters = $this->queryAppEndpointConfig($filters, $appEndpointConfig['in']['query']);
         }
 
         // Let's pas the part variables to filters.
@@ -877,16 +896,17 @@ class RequestService
                 // If we do not have an object we throw an 404.
                 if ($result === null) {
                     return new Response(
-                        $this->serializer->serialize(
+                        $this->serializeData(
                             [
                                 'message' => 'Could not find an object with id '.$this->identification,
                                 'type'    => 'Bad Request',
                                 'path'    => implode(', ', $allowedSchemas['name']),
                                 'data'    => ['id' => $this->identification],
                             ],
-                            'json'
+                            $contentType
                         ),
-                        Response::HTTP_NOT_FOUND
+                        Response::HTTP_NOT_FOUND,
+                        ['Content-type' => $contentType]
                     );
                 }
 

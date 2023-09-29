@@ -69,6 +69,34 @@ class ObjectEntityService
         $this->session       = $session;
 
     }//end __construct()
+    
+    /**
+     * Finds the current / active User. First checks for a logged-in user, else checks if we have a user in the session.
+     *
+     * @return User|null The User found or null if not.
+     */
+    public function findCurrentUser(): ?User
+    {
+        $user = null;
+        
+        // First check if there is a logged-in user we can get the Owner & Organization from.
+        if ($this->security->getUser() !== null) {
+            $user = $this->entityManager->getRepository('App:User')->find($this->security->getUser()->getUserIdentifier());
+        }
+        
+        // Check if there is a Cronjob user in the session we can get the Owner & Organization from.
+        if (($user === null || $user->getOrganization() === null) && $this->session->get('currentCronjobUserId', false) !== false) {
+            $user = $this->entityManager->getRepository('App:User')->find($this->session->get('currentCronjobUserId'));
+        }
+        
+        // Check if there is an Action user in the session we can get the Owner & Organization from.
+        // todo: Maybe add config options to Entity of ObjectEntity, in order to always use Action User if possible, even if there is a logged in user?
+        if (($user === null || $user->getOrganization() === null) && $this->session->get('currentActionUserId', false) !== false) {
+            $user = $this->entityManager->getRepository('App:User')->find($this->session->get('currentActionUserId'));
+        }
+        
+        return $user;
+    }
 
     /**
      * Sets the owner and Organization for an ObjectEntity.
@@ -82,23 +110,7 @@ class ObjectEntityService
      */
     public function setOwnerAndOrg(ObjectEntity $object): ObjectEntity
     {
-        $user = null;
-
-        // First check if there is a logged-in user we can get the Owner & Organization from.
-        if ($this->security->getUser() !== null) {
-            $user = $this->entityManager->getRepository('App:User')->find($this->security->getUser()->getUserIdentifier());
-        }
-
-        // Check if there is a Cronjob user in the session we can get the Owner & Organization from.
-        if (($user === null || $user->getOrganization() === null) && $this->session->get('currentCronjobUserId', false) !== false) {
-            $user = $this->entityManager->getRepository('App:User')->find($this->session->get('currentCronjobUserId'));
-        }
-
-        // Check if there is an Action user in the session we can get the Owner & Organization from.
-        // todo: Maybe add config options to Entity of ObjectEntity, in order to always use Action User if possible, even if there is a logged in user?
-        if (($user === null || $user->getOrganization() === null) && $this->session->get('currentActionUserId', false) !== false) {
-            $user = $this->entityManager->getRepository('App:User')->find($this->session->get('currentActionUserId'));
-        }
+        $user = $this->findCurrentUser();
 
         $object = $this->setOwner($object, $user);
         return $this->setOrganization($object, $user);
@@ -117,6 +129,10 @@ class ObjectEntityService
      */
     private function setOwner(ObjectEntity $object, ?User $user): ObjectEntity
     {
+        if ($object->getOwner() === null) {
+            return $object;
+        }
+        
         // Find the correct owner to set.
         if ($user !== null) {
             $owner = $user->getId()->toString();
@@ -141,6 +157,10 @@ class ObjectEntityService
      */
     private function setOrganization(ObjectEntity $object, ?User $user): ObjectEntity
     {
+        if ($object->getOrganization() === null) {
+            return $object;
+        }
+        
         // Find the correct Organization to set.
         if ($user !== null && $user->getOrganization() !== null) {
             $organization = $user->getOrganization();
