@@ -1087,7 +1087,7 @@ class RequestService
             $this->entityManager->flush();
             $this->logger->info('Succesfully deleted object');
 
-            return new Response('', '204', ['Content-type' => ($this->data['endpoint']->getDefaultContentType() ?? 'application/json')]);
+            return new Response('', '204', ['Content-type' => (isset($this->data['endpoint']) === true && $this->data['endpoint']->getDefaultContentType() ?? 'application/json')]);
         default:
             $this->logger->error('Unkown method'.$this->data['method']);
 
