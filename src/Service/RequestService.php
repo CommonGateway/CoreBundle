@@ -402,13 +402,13 @@ class RequestService
         ) {
             return null;
         }
-        
+
         $currentUser = [
             'id'           => $user->getUserIdentifier(),
             'name'         => $user->getName(),
             'organization' => $user->getOrganization(),
         ];
-        
+
         $this->logger->error("Authentication failed. You are not allowed to view or edit this object $this->identification.", ['currentUser' => $currentUser]);
         return new Response(
             $this->serializeData(
@@ -779,10 +779,10 @@ class RequestService
         if ($securityResponse instanceof Response === true) {
             return $securityResponse;
         }
-        
+
         // Get the ID.
         $this->identification = $this->getId();
-        
+
         // If we have an ID we can get an Object to work with (except on gets we handle those from cache).
         if (isset($this->identification) === true && empty($this->identification) === false && $this->data['method'] != 'GET') {
             $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->identification]);
@@ -801,18 +801,19 @@ class RequestService
                     ['Content-type' => $contentType]
                 );
             }
+
             $this->object = $object;
         }
-        
+
         // Check if user is allowed to change this object (owner & organization). Checking if an object may be viewed (GET) is done in the CacheService
         $securityResponse = $this->checkOwnerAndOrg();
         if ($securityResponse instanceof Response === true) {
             return $securityResponse;
         }
-        
+
         // Work around the _ with a custom function for getting clean query parameters from a request
         $filters = $this->realRequestQueryAll();
-        
+
         // Handle mapping for query parameters
         if (isset($appEndpointConfig['in']['query']) === true) {
             $filters = $this->queryAppEndpointConfig($filters, $appEndpointConfig['in']['query']);
