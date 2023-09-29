@@ -422,17 +422,19 @@ class CacheService
         if ($object = $collection->findOne($filter)) {
             return json_decode(json_encode($object), true);
         }
-        
+
         // Fall back tot the entity manager.
         if ($object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $identification])) {
             if ($user !== null && $object->getOwner() !== $user->getId()->toString()) {
                 return null;
             }
+
             if ($user !== null && $user->getOrganization() !== null
                 && $user->getOrganization()->getId()->toString() !== $object->getOrganization()->getId()->toString()
             ) {
                 return null;
             }
+
             return $this->cacheObject($object)->toArray(['embedded' => true]);
         }
 
@@ -515,20 +517,21 @@ class CacheService
     public function retrieveObjectsFromCache(array $filter, array $options, array $completeFilter = []): array
     {
         $user = $this->objectEntityService->findCurrentUser();
-        
+
         if ($user !== null && $user->getOrganization() !== null) {
             if (isset($filter['$or']) === true) {
                 $filter['$and'][] = ['$or' => $filter['$or']];
                 unset($filter['$or']);
             }
-            $orFilter = [];
+
+            $orFilter          = [];
             $orFilter['$or'][] = ['_self.owner.id' => $user->getId()->toString()];
             $orFilter['$or'][] = ['_self.organization.id' => $user->getOrganization()->getId()->toString()];
-            $filter['$and'][] = ['$or' => $orFilter['$or']];
-        } elseif ($user !== null) {
+            $filter['$and'][]  = ['$or' => $orFilter['$or']];
+        } else if ($user !== null) {
             $filter['_self.owner.id'] = $user->getId()->toString();
         }
-        
+
         $collection = $this->client->objects->json;
         $results    = $collection->find($filter, $options)->toArray();
         $total      = $collection->count($filter);
