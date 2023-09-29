@@ -6,6 +6,7 @@ use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\ObjectEntity;
 use App\Entity\User;
+use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
@@ -70,26 +71,36 @@ class CacheService
      * @var SerializerInterface
      */
     private SerializerInterface $serializer;
+    
+    /**
+     * Object Entity Service.
+     *
+     * @var ObjectEntityService
+     */
+    private ObjectEntityService $objectEntityService;
 
     /**
-     * @param EntityManagerInterface $entityManager The entity manager
-     * @param CacheInterface         $cache         The cache interface
-     * @param LoggerInterface        $cacheLogger   The logger for the cache channel.
-     * @param ParameterBagInterface  $parameters    The Parameter bag
-     * @param SerializerInterface    $serializer    The serializer
+     * @param EntityManagerInterface $entityManager       The entity manager
+     * @param CacheInterface         $cache               The cache interface
+     * @param LoggerInterface        $cacheLogger         The logger for the cache channel.
+     * @param ParameterBagInterface  $parameters          The Parameter bag
+     * @param SerializerInterface    $serializer          The serializer
+     * @param ObjectEntityService    $objectEntityService The Object Entity Service.
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         CacheInterface $cache,
         LoggerInterface $cacheLogger,
         ParameterBagInterface $parameters,
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        ObjectEntityService $objectEntityService
     ) {
         $this->entityManager = $entityManager;
         $this->cache         = $cache;
         $this->logger        = $cacheLogger;
         $this->parameters    = $parameters;
         $this->serializer    = $serializer;
+        $this->objectEntityService = $objectEntityService;
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }
@@ -394,15 +405,32 @@ class CacheService
         }
 
         $collection = $this->client->objects->json;
+        
+        $user = $this->objectEntityService->findCurrentUser();
 
+        $filter = ['_id' => $identification];
+        if ($user !== null) {
+            if ($user->getOrganization() !== null) {
+                $filter['$or'][] = ['_self.owner.id' => $user->getId()->toString()];
+                $filter['$or'][] = ['_self.organization.id' => $user->getOrganization()->getId()->toString()];
+            } else {
+                $filter['_self.owner.id'] = $user->getId()->toString();
+            }
+        }
+        
         // Check if object is in the cache?
-        if ($object = $collection->findOne(['_id' => $identification])) {
+        if ($object = $collection->findOne($filter)) {
             return json_decode(json_encode($object), true);
         }
 
         // Fall back tot the entity manager.
         if ($object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $identification])) {
-            return $this->cacheObject($object)->toArray(['embedded' => true]);
+            if ($user === null
+                || $object->getOwner() === $user->getId()->toString()
+                || ($user->getOrganization() !== null && $user->getOrganization() === $user->getOrganization()->getId()->toString())
+            ) {
+                return $this->cacheObject($object)->toArray(['embedded' => true]);
+            }
         }
 
         return null;
