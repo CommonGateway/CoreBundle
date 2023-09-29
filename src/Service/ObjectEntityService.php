@@ -3,6 +3,8 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\ObjectEntity;
+use App\Entity\Organization;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Security;
