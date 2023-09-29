@@ -603,7 +603,7 @@ class CallService
         Source $source,
         Response $response,
         ?string $contentType = 'application/json'
-    )        {
+    ) {
         $this->callLogger->info('Decoding response content');
         // resultaat omzetten.
         // als geen content-type header dan content-type header is accept header.
