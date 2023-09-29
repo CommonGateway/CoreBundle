@@ -129,7 +129,7 @@ class ObjectEntityService
      */
     private function setOwner(ObjectEntity $object, ?User $user): ObjectEntity
     {
-        if ($object->getOwner() === null) {
+        if ($object->getOwner() !== null) {
             return $object;
         }
         
@@ -157,7 +157,7 @@ class ObjectEntityService
      */
     private function setOrganization(ObjectEntity $object, ?User $user): ObjectEntity
     {
-        if ($object->getOrganization() === null) {
+        if ($object->getOrganization() !== null) {
             return $object;
         }
         
