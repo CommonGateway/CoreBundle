@@ -71,7 +71,7 @@ class CacheService
      * @var SerializerInterface
      */
     private SerializerInterface $serializer;
-    
+
     /**
      * Object Entity Service.
      *
@@ -95,11 +95,11 @@ class CacheService
         SerializerInterface $serializer,
         ObjectEntityService $objectEntityService
     ) {
-        $this->entityManager = $entityManager;
-        $this->cache         = $cache;
-        $this->logger        = $cacheLogger;
-        $this->parameters    = $parameters;
-        $this->serializer    = $serializer;
+        $this->entityManager       = $entityManager;
+        $this->cache               = $cache;
+        $this->logger              = $cacheLogger;
+        $this->parameters          = $parameters;
+        $this->serializer          = $serializer;
         $this->objectEntityService = $objectEntityService;
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
@@ -405,7 +405,7 @@ class CacheService
         }
 
         $collection = $this->client->objects->json;
-        
+
         $user = $this->objectEntityService->findCurrentUser();
 
         $filter = ['_id' => $identification];
@@ -417,7 +417,7 @@ class CacheService
                 $filter['_self.owner.id'] = $user->getId()->toString();
             }
         }
-        
+
         // Check if object is in the cache?
         if ($object = $collection->findOne($filter)) {
             return json_decode(json_encode($object), true);
