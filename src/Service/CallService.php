@@ -626,6 +626,8 @@ class CallService
                 'application/pdf; charset=utf-8',
                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8',
+                'application/msword',
+                'image/jpeg',
             ]
         ) === false
         ) {
