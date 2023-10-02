@@ -608,6 +608,40 @@ class RequestService
 
     }//end getSchema()
 
+    private function proxyConfigBuilder(): array
+    {
+        if (strpos($this->data['headers']['content-type'][0],  'multipart/form-data') !== false) {
+            $post = $this->data['post'];
+            array_walk(
+                $post,
+                function (&$value, $key) {
+                    $value = [
+                        'name'     => $key,
+                        'contents' => $value,
+                    ];
+                }
+            );
+            return [
+                'query'     => $this->data['query'],
+                'headers'   => $this->data['headers'],
+                'multipart' => array_values($post),
+            ];
+        } else if (strpos($this->data['headers']['content-type'][0], 'application/x-www-form-urlencoded') !== false) {
+            return [
+                'query'     => $this->data['query'],
+                'headers'   => $this->data['headers'],
+                'form_data' => $this->data['post'],
+            ];
+        }//end if
+
+        return [
+            'query'   => $this->data['query'],
+            'headers' => $this->data['headers'],
+            'body'    => $this->data['crude_body'],
+        ];
+
+    }//end proxyConfigBuilder()
+
     /**
      * Handles a proxy Endpoint.
      * todo: we want to merge proxyHandler() and requestHandler() code at some point.
@@ -676,21 +710,17 @@ class RequestService
         // Make a guzzle call to the source based on the incoming call.
         try {
             // Check if we are dealing with http, https or something else like a ftp (fileSystem).
-            if ($url['scheme'] === 'http' || $url['scheme'] === 'https') {
+            if (($url['scheme'] === 'http' || $url['scheme'] === 'https')) {
                 $result = $this->callService->call(
                     $proxy,
                     $this->data['path'],
                     $this->data['method'],
-                    [
-                        'query'   => $this->data['query'],
-                        'headers' => $this->data['headers'],
-                        'body'    => $this->data['crude_body'],
-                    ]
+                    $this->proxyConfigBuilder()
                 );
             } else {
                 $result = $this->fileSystemService->call($proxy, $this->data['path']);
                 $result = new \GuzzleHttp\Psr7\Response(200, [], $this->serializer->serialize($result, 'json'));
-            }
+            }//end if
 
             $contentType = 'application/json';
             if (isset($result->getHeaders()['content-type'][0]) === true) {
@@ -710,6 +740,10 @@ class RequestService
 
             if (isset($headers['content-length']) === true) {
                 unset($headers['content-length']);
+            }
+
+            if (isset($headers['Content-Length']) === true) {
+                unset($headers['Content-Length']);
             }
 
             // Let create a response from the guzzle call.

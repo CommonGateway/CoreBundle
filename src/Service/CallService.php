@@ -276,6 +276,11 @@ class CallService
             unset($config['headers']['Content-Type']);
         }
 
+        // Guzzle sets the Content-Type self when using multipart.
+        if (isset($config['multipart']) === true && isset($config['headers']['content-type']) === true) {
+            unset($config['headers']['content-type']);
+        }
+
         $this->callLogger->info('Calling url '.$url);
         $this->callLogger->debug('Call configuration: ', $config);
 
