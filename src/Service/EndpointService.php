@@ -340,7 +340,8 @@ class EndpointService
     public function getEndpoint(): Endpoint
     {
         $path     = $this->request->getPathInfo();
-        $path     = substr($path, 5);
+        $path = explode('/api/', $path);
+        $path = $path[1];
         $endpoint = $this->entityManager->getRepository('App:Endpoint')->findByMethodRegex($this->request->getMethod(), $path);
 
         if ($endpoint !== null) {
@@ -503,15 +504,19 @@ class EndpointService
     private function getNormalPath(array $parameters): array
     {
         $path = $this->endpoint->getPath();
+        $pathRaw     = $this->request->getPathInfo();
+
+        $pathRaw = explode('/api/', $pathRaw);
+        $pathRaw = $pathRaw[1];
 
         try {
-            $combinedArray = array_combine($path, explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
+            $combinedArray = array_combine($path, explode('/', $pathRaw));
         } catch (Exception $exception) {
             $this->logger->error('EndpointService->getNormalPath(): $exception');
 
-            // Todo: not sure why this is here, if someone does now, please add inline comments!
+            // Todo: When an id is not given the last element of the path array should be removed to ensure the arrays are of the same lenght.
             array_pop($path);
-            $combinedArray = array_combine($path, explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
+            $combinedArray = array_combine($path, explode('/', $pathRaw));
         }
 
         if ($combinedArray === false) {
