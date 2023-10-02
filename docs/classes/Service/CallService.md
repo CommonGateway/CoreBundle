@@ -121,7 +121,7 @@ Decodes a response based on the source it belongs to.
 
 **Return Values**
 
-`array`
+`array|string`
 
 > The decoded response
 

@@ -485,7 +485,7 @@ class EndpointService
         // Let's get all the post variables.
         $parameters['post'] = $this->request->request->all();
 
-        if ($parameters['method'] === 'PUT' && $parameters['post'] === []) {
+        if ($parameters['method'] === 'PUT' && $parameters['post'] === [] && $parameters['body'] === []) {
             $parameters['post'] = $this->getPutData();
         }
 

@@ -117,9 +117,9 @@ class MetricsService
                 'value' => $this->entityManager->getRepository('App:User')->count([]),
             ],
             [
-                'name'  => 'app_organisations',
+                'name'  => 'app_organizations',
                 'type'  => 'gauge',
-                'help'  => 'The current amount of organisations',
+                'help'  => 'The current amount of organizations',
                 'value' => $this->entityManager->getRepository('App:Organization')->count([]),
             ],
             [

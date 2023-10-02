@@ -602,13 +602,13 @@ class CallService
      *
      * @throws Exception Thrown if the response does not fit any supported content type
      *
-     * @return array The decoded response
+     * @return array|string The decoded response
      */
     public function decodeResponse(
         Source $source,
         Response $response,
         ?string $contentType = 'application/json'
-    ): array {
+    ) {
         $this->callLogger->info('Decoding response content');
         // resultaat omzetten.
         // als geen content-type header dan content-type header is accept header.
@@ -643,6 +643,8 @@ class CallService
         }
 
         switch ($contentType) {
+        case 'text/plain':
+            return $responseBody;
         case 'text/yaml':
         case 'text/x-yaml':
         case 'text/yaml; charset=utf-8':
@@ -651,10 +653,12 @@ class CallService
         case 'text/xml; charset=utf-8':
         case 'application/pdf':
         case 'application/pdf; charset=utf-8':
+        case 'application/msword':
         case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
         case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8':
+        case 'image/jpeg':
             $this->callLogger->debug('Response content: binary code..');
-            return ['base64' => base64_encode($responseBody)];
+            return base64_encode($responseBody);
         case 'application/xml':
         case 'application/xml; charset=utf-8':
             return $xmlEncoder->decode($responseBody, 'xml');

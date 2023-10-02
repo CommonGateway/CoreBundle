@@ -672,7 +672,7 @@ class AuthenticationService
         $payload = [
             'userId'       => $user->getId(),
             'username'     => $user->getEmail(),
-            'organization' => $user->getOrganisation()->getId()->toString(),
+            'organization' => $user->getOrganization()->getId()->toString(),
             'locale'       => $user->getLocale(),
             'roles'        => $scopes,
             'session'      => $session->getId(),
