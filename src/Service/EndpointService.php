@@ -340,8 +340,8 @@ class EndpointService
     public function getEndpoint(): Endpoint
     {
         $path     = $this->request->getPathInfo();
-        $path = explode('/api/', $path);
-        $path = $path[1];
+        $path     = explode('/api/', $path);
+        $path     = $path[1];
         $endpoint = $this->entityManager->getRepository('App:Endpoint')->findByMethodRegex($this->request->getMethod(), $path);
 
         if ($endpoint !== null) {
@@ -503,8 +503,8 @@ class EndpointService
      */
     private function getNormalPath(array $parameters): array
     {
-        $path = $this->endpoint->getPath();
-        $pathRaw     = $this->request->getPathInfo();
+        $path    = $this->endpoint->getPath();
+        $pathRaw = $this->request->getPathInfo();
 
         $pathRaw = explode('/api/', $pathRaw);
         $pathRaw = $pathRaw[1];
