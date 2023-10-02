@@ -92,7 +92,7 @@ First, we should make a template that contains a html/twig template to render th
     "name": "A simple test template",
     "description": "Show the resource as a table",
     "content": "<html><body><h1>{{ object._self.name }}</h1><hr><table>{% for key,value in object %}<tr><th>{{ key }}</th><td>{% if value is iterable %}{% for subkey,subvalue in value %}{{ subkey }}: {%if subvalue is iterable %}array{%else%}{{subvalue}}{%endif%}<br>{% endfor %}{% else %}{{ value }}{% endif %}</td></tr>{% endfor %}</table></body></html>",
-    "organization": "/admin/organisations/a1c8e0b6-2f78-480d-a9fb-9792142f4761",
+    "organization": "/admin/organizations/a1c8e0b6-2f78-480d-a9fb-9792142f4761",
     "supportedSchemas": ["b6bd2cfc-c83d-486a-869f-16d6986240cf", "dd5e3008-74aa-451f-82a6-c6edcbbbe69e"]
 }
 ```

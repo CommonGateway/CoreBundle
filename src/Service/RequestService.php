@@ -378,11 +378,58 @@ class RequestService
     }//end getAllowedSchemas()
 
     /**
+     * This function checks if the requesting user is the owner or is part of the correct Organization to edit the requested object.
+     *
+     * @return Response|null A 403 response if the requested user does not have the rights to edit current object.
+     */
+    private function checkOwnerAndOrg(): ?Response
+    {
+        if (isset($this->object) !== true || $this->security->getUser() === null) {
+            return null;
+        }
+
+        $user = $this->security->getUser();
+
+        // Check if object owner matches the current user.
+        if ($this->object->getOwner() !== null && $this->object->getOwner() === $user->getUserIdentifier()) {
+            return null;
+        }
+
+        // Check if the object or user has no Organization. And if they both have an Organization, check if these Organizations match.
+        if ($this->object->getOrganization() === null
+            || $user->getOrganization() === null
+            || $this->object->getOrganization()->getId()->toString() === $user->getOrganization()
+        ) {
+            return null;
+        }
+
+        $currentUser = [
+            'id'           => $user->getUserIdentifier(),
+            'name'         => $user->getName(),
+            'organization' => $user->getOrganization(),
+        ];
+
+        $this->logger->error("Authentication failed. You are not allowed to view or edit this object $this->identification.", ['currentUser' => $currentUser]);
+        return new Response(
+            $this->serializeData(
+                [
+                    'message'     => "Authentication failed. You are not allowed to view or edit this object $this->identification.",
+                    'currentUser' => $currentUser,
+                ],
+                $contentType
+            ),
+            Response::HTTP_FORBIDDEN,
+            ['Content-type' => $contentType]
+        );
+
+    }//end checkOwnerAndOrg()
+
+    /**
      * This function checks if the requesting user has the needed scopes to access the requested endpoint.
      *
      * @param array $references Schema references which we checks scopes for.
      *
-     * @return null|Response A 403 response if the requested user does not have the needed scopes.
+     * @return Response|null A 403 response if the requested user does not have the needed scopes.
      */
     private function checkUserScopes(array $references, string $type = 'schemas'): ?Response
     {
@@ -417,6 +464,40 @@ class RequestService
         return null;
 
     }//end checkUserScopes()
+
+    /**
+     * Get a scopes array for the current user (or of the anonymus if no user s logged in).
+     *
+     * @return array
+     */
+    public function getScopes(): ?array
+    {
+        // If we have a user, return the user his scopes.
+        $user = $this->security->getUser();
+        if (isset($user) === true && $user->getRoles() !== null) {
+            $scopes = [];
+            foreach ($user->getRoles() as $role) {
+                $scopes[] = str_replace('ROLE_', '', $role);
+            }
+
+            return $scopes;
+        }//end if
+
+        // If we don't have a user, return the anonymous security group its scopes.
+        $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous' => true]);
+        if ($anonymousSecurityGroup !== null) {
+            $scopes = [];
+            foreach ($anonymousSecurityGroup->getScopes() as $scope) {
+                $scopes[] = $scope;
+            }
+
+            return $scopes;
+        }
+
+        // If we don't have a user or anonymous security group, return an empty array (this will result in a 403 response in the checkUserScopes function).
+        return [];
+
+    }//end getScopes()
 
     /**
      * Get the ID from given parameters.
@@ -670,40 +751,6 @@ class RequestService
     }//end proxyHandler()
 
     /**
-     * Get a scopes array for the current user (or of the anonymus if no user s logged in).
-     *
-     * @return array
-     */
-    public function getScopes(): ?array
-    {
-        // If we have a user, return the user his scopes.
-        $user = $this->security->getUser();
-        if (isset($user) === true && $user->getRoles() !== null) {
-            $scopes = [];
-            foreach ($user->getRoles() as $role) {
-                $scopes[] = str_replace('ROLE_', '', $role);
-            }
-
-            return $scopes;
-        }//end if
-
-        // If we don't have a user, return the anonymous security group its scopes.
-        $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous' => true]);
-        if ($anonymousSecurityGroup !== null) {
-            $scopes = [];
-            foreach ($anonymousSecurityGroup->getScopes() as $scope) {
-                $scopes[] = $scope;
-            }
-
-            return $scopes;
-        }
-
-        // If we don't have a user or anonymous security group, return an empty array (this will result in a 403 response in the checkUserScopes function).
-        return [];
-
-    }//end getScopes()
-
-    /**
      * Handles incoming requests and is responsible for generating a response.
      * todo: we want to merge requestHandler() and proxyHandler() code at some point.
      *
@@ -724,12 +771,13 @@ class RequestService
             $appEndpointConfig = $this->getAppEndpointConfig();
         }
 
-        // Work around the _ with a custom function for getting clean query parameters from a request
-        $filters = $this->realRequestQueryAll();
+        // Make a list of schema's that are allowed for this endpoint.
+        $allowedSchemas = $this->getAllowedSchemas();
 
-        // Handle mapping for query parameters
-        if (isset($appEndpointConfig['in']['query']) === true) {
-            $filters = $this->queryAppEndpointConfig($filters, $appEndpointConfig['in']['query']);
+        // Check if the user has the needed scopes.
+        $securityResponse = $this->checkUserScopes($allowedSchemas['reference']);
+        if ($securityResponse instanceof Response === true) {
+            return $securityResponse;
         }
 
         // Get the ID.
@@ -737,7 +785,38 @@ class RequestService
 
         // If we have an ID we can get an Object to work with (except on gets we handle those from cache).
         if (isset($this->identification) === true && empty($this->identification) === false && $this->data['method'] != 'GET') {
-            $this->object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->identification]);
+            $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->identification]);
+            if ($object === null) {
+                return new Response(
+                    $this->serializeData(
+                        [
+                            'message' => 'Could not find an object with id '.$this->identification,
+                            'type'    => 'Bad Request',
+                            'path'    => implode(', ', $allowedSchemas['name']),
+                            'data'    => ['id' => $this->identification],
+                        ],
+                        $contentType
+                    ),
+                    Response::HTTP_NOT_FOUND,
+                    ['Content-type' => $contentType]
+                );
+            }
+
+            $this->object = $object;
+        }
+
+        // Check if user is allowed to change this object (owner & organization). Checking if an object may be viewed (GET) is done in the CacheService
+        $securityResponse = $this->checkOwnerAndOrg();
+        if ($securityResponse instanceof Response === true) {
+            return $securityResponse;
+        }
+
+        // Work around the _ with a custom function for getting clean query parameters from a request
+        $filters = $this->realRequestQueryAll();
+
+        // Handle mapping for query parameters
+        if (isset($appEndpointConfig['in']['query']) === true) {
+            $filters = $this->queryAppEndpointConfig($filters, $appEndpointConfig['in']['query']);
         }
 
         // Let's pas the part variables to filters.
@@ -765,10 +844,8 @@ class RequestService
             $this->session->set('schema', $this->schema->getId()->toString());
         }
 
-        // Bit os safety cleanup <- dit zou eigenlijk in de hydrator moeten gebeuren.
-        // unset($this->content['id']);
+        // Bit of safety cleanup <- dit zou eigenlijk in de hydrator moeten gebeuren.
         unset($this->content['_id']);
-        // todo: i don't think this does anything useful?
         unset($this->content['_self']);
         unset($this->content['_schema']);
 
@@ -782,22 +859,13 @@ class RequestService
             }
 
             $dot = new Dot();
-            // Let's turn the from dor attat into an propper array.
-            foreach ($extend as $key => $value) {
+            // Let's turn the dot array into a proper array.
+            foreach ($extend as $value) {
                 $dot->add($value, true);
             }
 
             $extend = $dot->all();
         }//end if
-
-        // Make a list of schema's that are allowed for this endpoint.
-        $allowedSchemas = $this->getAllowedSchemas();
-
-        // Check if the user has the needed scopes.
-        $securityResponse = $this->checkUserScopes($allowedSchemas['reference']);
-        if ($securityResponse instanceof Response === true) {
-            return $securityResponse;
-        }
 
         // Make sure we set object to null in the session, for detecting the correct AuditTrails to create. Also used for DateRead to work correctly!
         $this->session->set('object', null);
@@ -829,16 +897,17 @@ class RequestService
                 // If we do not have an object we throw an 404.
                 if ($result === null) {
                     return new Response(
-                        $this->serializer->serialize(
+                        $this->serializeData(
                             [
                                 'message' => 'Could not find an object with id '.$this->identification,
                                 'type'    => 'Bad Request',
                                 'path'    => implode(', ', $allowedSchemas['name']),
                                 'data'    => ['id' => $this->identification],
                             ],
-                            'json'
+                            $contentType
                         ),
-                        Response::HTTP_NOT_FOUND
+                        Response::HTTP_NOT_FOUND,
+                        ['Content-type' => $contentType]
                     );
                 }
 
@@ -890,10 +959,6 @@ class RequestService
             }
 
             $this->object = new ObjectEntity($this->schema);
-
-            if ($this->security->getUser() !== null) {
-                $this->object->setOwner($this->security->getUser()->getUserIdentifier());
-            }
 
             $this->logger->debug('Hydrating object');
             // if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {

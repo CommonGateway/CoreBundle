@@ -3,15 +3,18 @@
 namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Entity\Action;
+use App\Entity\User;
 use App\Event\ActionEvent;
 use App\Exception\AsynchronousException;
 use App\Message\ActionMessage;
-use App\Service\ObjectEntityService;
+use App\Service\ObjectEntityService as GatewayObjectEntityService;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use JWadhams\JsonLogic;
 use Psr\Log\LoggerInterface;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -26,7 +29,7 @@ class ActionSubscriber implements EventSubscriberInterface
 
     private ContainerInterface $container;
 
-    private ObjectEntityService $objectEntityService;
+    private GatewayObjectEntityService $gatewayOEService;
 
     private SessionInterface $session;
 
@@ -57,22 +60,33 @@ class ActionSubscriber implements EventSubscriberInterface
     }//end getSubscribedEvents()
 
     public function __construct(
-        EntityManagerInterface $entityManager,
-        ContainerInterface $container,
-        ObjectEntityService $objectEntityService,
-        SessionInterface $session,
-        LoggerInterface $actionLogger,
-        MessageBusInterface $messageBus
+        EntityManagerInterface     $entityManager,
+        ContainerInterface         $container,
+        GatewayObjectEntityService $gatewayOEService,
+        SessionInterface           $session,
+        LoggerInterface            $actionLogger,
+        MessageBusInterface        $messageBus
     ) {
-        $this->entityManager       = $entityManager;
-        $this->container           = $container;
-        $this->objectEntityService = $objectEntityService;
-        $this->session             = $session;
-        $this->messageBus          = $messageBus;
-        $this->logger              = $actionLogger;
+        $this->entityManager    = $entityManager;
+        $this->container        = $container;
+        $this->gatewayOEService = $gatewayOEService;
+        $this->session          = $session;
+        $this->messageBus       = $messageBus;
+        $this->logger           = $actionLogger;
 
     }//end __construct()
 
+    /**
+     * Runs a single action.
+     *
+     *  After running this function, even if it returns an exception, currentActionUserId should always be removed from cache.
+     *
+     * @param Action $action       The Action.
+     * @param array  $data         The data used to run the action.
+     * @param string $currentThrow If we got here through CronjobCommand or not true/false.
+     *
+     * @return array The updated data array after running the action.
+     */
     public function runFunction(Action $action, array $data, string $currentThrow): array
     {
         // Is the action is lockable we need to lock it
@@ -82,6 +96,16 @@ class ActionSubscriber implements EventSubscriberInterface
             $this->entityManager->flush();
             if (isset($this->io)) {
                 $this->io->text("Locked Action {$action->getName()} at {$action->getLocked()->format('Y-m-d H:i:s')}");
+            }
+        }
+
+        // Keep track of the user used for running this Action.
+        // After runFunction() is done, even if it returns an exception, currentActionUserId should be removed from cache (outside this function)
+        $this->session->remove('currentActionUserId');
+        if ($action->getUserId() !== null && Uuid::isValid($action->getUserId()) === true) {
+            $user = $this->entityManager->getRepository('App:User')->find($action->getUserId());
+            if ($user instanceof User === true) {
+                $this->session->set('currentActionUserId', $action->getUserId());
             }
         }
 
@@ -139,7 +163,7 @@ class ActionSubscriber implements EventSubscriberInterface
 
     public function handleAction(Action $action, ActionEvent $event): ActionEvent
     {
-        // Lets see if the action prefents concurency
+        // Let's see if the action prefents concurency
         if ($action->getIsLockable()) {
             // bijwerken uit de entity manger
             $this->entityManager->refresh($action);
@@ -161,6 +185,8 @@ class ActionSubscriber implements EventSubscriberInterface
                     $event->setData($this->runFunction($action, $event->getData(), $currentCronJobThrow));
                 } catch (AsynchronousException $exception) {
                 }
+
+                $this->session->remove('currentActionUserId');
             } else {
                 $data = $event->getData();
                 unset($data['httpRequest']);
@@ -202,7 +228,7 @@ class ActionSubscriber implements EventSubscriberInterface
 
         foreach ($action->getThrows() as $key => $throw) {
             // Throw event
-            $this->objectEntityService->dispatchEvent('commongateway.action.event', $data, $throw);
+            $this->gatewayOEService->dispatchEvent('commongateway.action.event', $data, $throw);
 
             if (isset($this->io) && isset($totalThrows) && isset($extraDashesStr)) {
                 if ($key !== array_key_last($action->getThrows())) {
@@ -237,13 +263,14 @@ class ActionSubscriber implements EventSubscriberInterface
             && $this->session->get('currentCronJobSubThrow') == $event->getSubType()
         ) {
             $currentCronJobThrow = true;
-            $this->io->block("Found an Action with matching conditions: [{$this->objectEntityService->implodeMultiArray($action->getConditions())}]");
+            $this->io->block("Found an Action with matching conditions: [{$this->gatewayOEService->implodeMultiArray($action->getConditions())}]");
             $this->io->definitionList(
                 'The conditions of the following Action match with the ActionEvent data',
                 new TableSeparator(),
                 ['Id' => $action->getId()->toString()],
                 ['Name' => $action->getName()],
                 ['Description' => $action->getDescription()],
+                ['UserId' => $action->getUserId()],
                 ['Listens' => implode(', ', $action->getListens())],
                 ['Throws' => implode(', ', $action->getThrows())],
                 ['Class' => $action->getClass()],
@@ -254,7 +281,7 @@ class ActionSubscriber implements EventSubscriberInterface
                 ['LastRunTime' => $action->getLastRunTime()],
                 ['Status' => is_null($action->getStatus()) ? null : ($action->getStatus() ? 'True' : 'False')],
             );
-            $this->io->block("The configuration of this Action: [{$this->objectEntityService->implodeMultiArray($action->getConfiguration())}]");
+            $this->io->block("The configuration of this Action: [{$this->gatewayOEService->implodeMultiArray($action->getConfiguration())}]");
         }//end if
 
         // Commented out this log, to avoid log creation overload. Only add back for debug reasons.

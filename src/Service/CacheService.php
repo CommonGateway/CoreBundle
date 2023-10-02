@@ -6,6 +6,7 @@ use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\ObjectEntity;
 use App\Entity\User;
+use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
@@ -72,24 +73,34 @@ class CacheService
     private SerializerInterface $serializer;
 
     /**
-     * @param EntityManagerInterface $entityManager The entity manager
-     * @param CacheInterface         $cache         The cache interface
-     * @param LoggerInterface        $cacheLogger   The logger for the cache channel.
-     * @param ParameterBagInterface  $parameters    The Parameter bag
-     * @param SerializerInterface    $serializer    The serializer
+     * Object Entity Service.
+     *
+     * @var ObjectEntityService
+     */
+    private ObjectEntityService $objectEntityService;
+
+    /**
+     * @param EntityManagerInterface $entityManager       The entity manager
+     * @param CacheInterface         $cache               The cache interface
+     * @param LoggerInterface        $cacheLogger         The logger for the cache channel.
+     * @param ParameterBagInterface  $parameters          The Parameter bag
+     * @param SerializerInterface    $serializer          The serializer
+     * @param ObjectEntityService    $objectEntityService The Object Entity Service.
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         CacheInterface $cache,
         LoggerInterface $cacheLogger,
         ParameterBagInterface $parameters,
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        ObjectEntityService $objectEntityService
     ) {
-        $this->entityManager = $entityManager;
-        $this->cache         = $cache;
-        $this->logger        = $cacheLogger;
-        $this->parameters    = $parameters;
-        $this->serializer    = $serializer;
+        $this->entityManager       = $entityManager;
+        $this->cache               = $cache;
+        $this->logger              = $cacheLogger;
+        $this->parameters          = $parameters;
+        $this->serializer          = $serializer;
+        $this->objectEntityService = $objectEntityService;
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }
@@ -137,9 +148,11 @@ class CacheService
     /**
      * Throws all available objects into the cache.
      *
+     * @param array $skipCaching An array which can contain the keys 'objects', 'schemas' and/or 'endpoints' to skip caching these specific objects.
+     *
      * @return int
      */
-    public function warmup()
+    public function warmup(array $skipCaching = []): int
     {
         isset($this->style) === true && $this->style->writeln(
             [
@@ -159,44 +172,50 @@ class CacheService
         }
 
         // Objects.
-        isset($this->style) === true && $this->style->section('Caching Objects\'s');
-        $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
-        isset($this->style) === true && $this->style->writeln('Found '.count($objectEntities).' objects\'s');
+        if (isset($skipCaching['objects']) === false || $skipCaching['objects'] !== true) {
+            isset($this->style) === true && $this->style->section('Caching Objects\'s');
+            $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
+            isset($this->style) === true && $this->style->writeln('Found '.count($objectEntities).' objects\'s');
 
-        foreach ($objectEntities as $objectEntity) {
-            try {
-                $this->cacheObject($objectEntity);
-            } catch (Exception $exception) {
-                $this->styleCatchException($exception);
-                continue;
+            foreach ($objectEntities as $objectEntity) {
+                try {
+                    $this->cacheObject($objectEntity);
+                } catch (Exception $exception) {
+                    $this->styleCatchException($exception);
+                    continue;
+                }
             }
         }
 
         // Schemas.
-        isset($this->style) === true && $this->style->section('Caching Schema\'s');
-        $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
-        isset($this->style) === true && $this->style->writeln('Found '.count($schemas).' Schema\'s');
+        if (isset($skipCaching['schemas']) === false || $skipCaching['schemas'] !== true) {
+            isset($this->style) === true && $this->style->section('Caching Schema\'s');
+            $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
+            isset($this->style) === true && $this->style->writeln('Found '.count($schemas).' Schema\'s');
 
-        foreach ($schemas as $schema) {
-            try {
-                $this->cacheShema($schema);
-            } catch (Exception $exception) {
-                $this->styleCatchException($exception);
-                continue;
+            foreach ($schemas as $schema) {
+                try {
+                    $this->cacheShema($schema);
+                } catch (Exception $exception) {
+                    $this->styleCatchException($exception);
+                    continue;
+                }
             }
         }
 
         // Endpoints.
-        isset($this->style) === true && $this->style->section('Caching Endpoint\'s');
-        $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
-        isset($this->style) === true && $this->style->writeln('Found '.count($endpoints).' Endpoint\'s');
+        if (isset($skipCaching['endpoints']) === false || $skipCaching['endpoints'] !== true) {
+            isset($this->style) === true && $this->style->section('Caching Endpoint\'s');
+            $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
+            isset($this->style) === true && $this->style->writeln('Found '.count($endpoints).' Endpoint\'s');
 
-        foreach ($endpoints as $endpoint) {
-            try {
-                $this->cacheEndpoint($endpoint);
-            } catch (Exception $exception) {
-                $this->styleCatchException($exception);
-                continue;
+            foreach ($endpoints as $endpoint) {
+                try {
+                    $this->cacheEndpoint($endpoint);
+                } catch (Exception $exception) {
+                    $this->styleCatchException($exception);
+                    continue;
+                }
             }
         }
 
@@ -205,8 +224,13 @@ class CacheService
         $this->client->schemas->json->createIndex(['$**' => 'text']);
         $this->client->endpoints->json->createIndex(['$**' => 'text']);
 
-        $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
-        $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
+        if (isset($skipCaching['endpoints']) === false || $skipCaching['endpoints'] !== true) {
+            $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
+        }
+
+        if (isset($skipCaching['objects']) === false || $skipCaching['objects'] !== true) {
+            $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
+        }
 
         return Command::SUCCESS;
 
@@ -382,13 +406,35 @@ class CacheService
 
         $collection = $this->client->objects->json;
 
+        $user = $this->objectEntityService->findCurrentUser();
+
+        $filter = ['_id' => $identification];
+        if ($user !== null) {
+            if ($user->getOrganization() !== null) {
+                $filter['$or'][] = ['_self.owner.id' => $user->getId()->toString()];
+                $filter['$or'][] = ['_self.organization.id' => $user->getOrganization()->getId()->toString()];
+            } else {
+                $filter['_self.owner.id'] = $user->getId()->toString();
+            }
+        }
+
         // Check if object is in the cache?
-        if ($object = $collection->findOne(['_id' => $identification])) {
+        if ($object = $collection->findOne($filter)) {
             return json_decode(json_encode($object), true);
         }
 
         // Fall back tot the entity manager.
         if ($object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $identification])) {
+            if ($user !== null && $object->getOwner() !== $user->getId()->toString()) {
+                return null;
+            }
+
+            if ($user !== null && $user->getOrganization() !== null
+                && $user->getOrganization()->getId()->toString() !== $object->getOrganization()->getId()->toString()
+            ) {
+                return null;
+            }
+
             return $this->cacheObject($object)->toArray(['embedded' => true]);
         }
 
@@ -470,6 +516,22 @@ class CacheService
      */
     public function retrieveObjectsFromCache(array $filter, array $options, array $completeFilter = []): array
     {
+        $user = $this->objectEntityService->findCurrentUser();
+
+        if ($user !== null && $user->getOrganization() !== null) {
+            if (isset($filter['$or']) === true) {
+                $filter['$and'][] = ['$or' => $filter['$or']];
+                unset($filter['$or']);
+            }
+
+            $orFilter          = [];
+            $orFilter['$or'][] = ['_self.owner.id' => $user->getId()->toString()];
+            $orFilter['$or'][] = ['_self.organization.id' => $user->getOrganization()->getId()->toString()];
+            $filter['$and'][]  = ['$or' => $orFilter['$or']];
+        } else if ($user !== null) {
+            $filter['_self.owner.id'] = $user->getId()->toString();
+        }
+
         $collection = $this->client->objects->json;
         $results    = $collection->find($filter, $options)->toArray();
         $total      = $collection->count($filter);
