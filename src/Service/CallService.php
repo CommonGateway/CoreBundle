@@ -628,6 +628,7 @@ class CallService
                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8',
                 'application/msword',
                 'image/jpeg',
+                'image/png',
             ]
         ) === false
         ) {
@@ -657,6 +658,7 @@ class CallService
         case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
         case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8':
         case 'image/jpeg':
+        case 'image/png':
             $this->callLogger->debug('Response content: binary code..');
             return base64_encode($responseBody);
         case 'application/xml':
