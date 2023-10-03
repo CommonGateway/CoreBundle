@@ -7,6 +7,7 @@ use App\Entity\Entity;
 use App\Entity\ObjectEntity;
 use App\Entity\User;
 use CommonGateway\CoreBundle\Service\ObjectEntityService;
+use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
@@ -775,6 +776,10 @@ class CacheService
             } else if (array_key_exists('case_sensitive', $value)) {
                 $value = ['$regex' => $value['case_sensitive']];
 
+                return true;
+            }
+
+            if (array_key_first($value) === '$elemMatch') {
                 return true;
             }
 
