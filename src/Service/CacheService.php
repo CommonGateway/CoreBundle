@@ -7,7 +7,6 @@ use App\Entity\Entity;
 use App\Entity\ObjectEntity;
 use App\Entity\User;
 use CommonGateway\CoreBundle\Service\ObjectEntityService;
-use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
