@@ -778,6 +778,10 @@ class CacheService
                 return true;
             }
 
+            if (array_key_first($value) === '$elemMatch') {
+                return true;
+            }
+
             // Handle filter value = array (example: ?property=a,b,c) also works if the property we are filtering on is an array.
             $value = ['$in' => $value];
 
