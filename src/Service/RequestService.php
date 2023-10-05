@@ -850,7 +850,7 @@ class RequestService
 
         // Handle mapping for query parameters
         if (isset($appEndpointConfig['in']['query']) === true) {
-            $filters = $this->queryAppEndpointConfig($filters, $appEndpointConfig['in']['query']);
+            $filters = $this->handleAppEndpointConfig($filters, $appEndpointConfig['in']['query']);
         }
 
         // Let's pas the part variables to filters.
@@ -868,6 +868,11 @@ class RequestService
 
         // We might have some content.
         if (isset($this->data['body']) === true) {
+            // Handle mapping for the body
+            if (isset($appEndpointConfig['in']['body']) === true) {
+                $this->data['body'] = $this->handleAppEndpointConfig($this->data['body'], $appEndpointConfig['in']['body']);
+            }
+
             $this->content = $this->data['body'];
         }
 
@@ -1201,8 +1206,9 @@ class RequestService
             $result = $this->shouldWeUnsetEmbedded($result, $appEndpointConfig['out']['embedded']);
         }
 
-        if (isset($appEndpointConfig) === true) {
-            $result = $this->handleAppConfigOut($appEndpointConfig, $result);
+        // Handle mapping for the result
+        if (isset($appEndpointConfig['out']['body']) === true) {
+            $result = $this->handleAppEndpointConfig($result, $appEndpointConfig['out']['body']);
         }
 
         if (isset($eventType) === true && isset($result) === true) {
@@ -1302,23 +1308,83 @@ class RequestService
     }//end mapResults()
 
     /**
-     * Handle output config of the endpoint.
+     * Handle the Application Endpoint configuration in(/out) for query params or body.
      *
-     * @param array $appEndpointConfig The application endpoint config.
-     * @param array $result            The result so far.
+     * @param array $array       The filters/query array used for the current api-call. Or the body / results array of the current api-call.
+     * @param array $queryConfig Application configuration ['in']['query'] or ['in']['body'] or ['out']['body'].
      *
-     * @return array The updated result.
+     * @return array The updated filters/query used for the current api-call. Or the updated body / results of the current api-call.
      */
-    public function handleAppConfigOut(array $appEndpointConfig, array $result): array
+    private function handleAppEndpointConfig(array $array, array $queryConfig): array
     {
-        // We want to do more abstract functionality for output settings, keep in mind for the future.
-        if (isset($appEndpointConfig['out']['body']['mapping']) === true) {
-            $result = $this->mappingService->mapping($this->resourceService->getMapping($appEndpointConfig['out']['body']['mapping'], 'commongateway/corebundle'), $result);
+        // Check if there is a mapping key.
+        if (key_exists('mapping', $queryConfig) === true) {
+            // Find the mapping.
+            $mapping = $this->resourceService->getMapping($queryConfig['mapping'], 'commongateway/corebundle');
+
+            // Map the filters with the given mapping object.
+            $array = $this->mappingService->mapping($mapping, $array);
+        }
+
+        return $array;
+
+    }//end handleAppEndpointConfig()
+
+    /**
+     * Handle the Application Endpoint Configuration for embedded. If embedded should be shown or not.
+     * Configuration Example: ['global']['out']['embedded']['unset'] = true
+     * Configuration Example 2: ['global']['out']['embedded']['unset']['except'] = ['application/json+ld', 'application/ld+json'].
+     *
+     * @param object|array $result         fetched result
+     * @param array        $embeddedConfig Application configuration ['out']['embedded']
+     *
+     * @return array|null The updated result.
+     */
+    public function shouldWeUnsetEmbedded($result, array $embeddedConfig)
+    {
+        if (isset($embeddedConfig['unset']) === false) {
+            return $result;
+        }
+
+        if (isset($result) === true
+            && (isset($embeddedConfig['unset']['except']) === true && isset($this->data['headers']['accept']) === true
+            && empty(array_intersect($embeddedConfig['unset']['except'], $this->data['headers']['accept'])) === true)
+            || isset($this->data['headers']['accept']) === false
+            || isset($embeddedConfig['unset']['except']) === false
+        ) {
+            if (isset($result['results']) === true) {
+                foreach ($result['results'] as $key => $item) {
+                    $result['results'][$key] = $this->checkEmbedded($item);
+                }
+            } else {
+                $result = $this->checkEmbedded($result);
+            }
+        }//end if
+
+        return $result;
+
+    }//end shouldWeUnsetEmbedded()
+
+    /**
+     * If embedded should be shown or not.
+     *
+     * @param object|array $result fetched result
+     *
+     * @return array|null
+     */
+    public function checkEmbedded($result)
+    {
+        if (isset($result->embedded) === true) {
+            unset($result->embedded);
+        }
+
+        if (isset($result['embedded']) === true) {
+            unset($result['embedded']);
         }
 
         return $result;
 
-    }//end handleAppConfigOut()
+    }//end checkEmbedded()
 
     /**
      * Gets the application configuration 'in' and/or 'out' for the current endpoint.
@@ -1407,86 +1473,6 @@ class RequestService
         return '/'.implode('/', $pathArray);
 
     }//end getCurrentEndpoint()
-
-    /**
-     * If embedded should be shown or not.
-     * Handle the Application Endpoint configuration for query params. If filters/query should be changed in any way.
-     *
-     * @param array $filters     The filters/query used for the current api-call.
-     * @param array $queryConfig Application configuration ['in']['query']
-     *
-     * @return array The updated filters/query used for the current api-call.
-     */
-    private function queryAppEndpointConfig(array $filters, array $queryConfig): array
-    {
-        // Check if there is a mapping key.
-        if (key_exists('mapping', $queryConfig) === true) {
-            // Find the mapping.
-            $mapping = $this->resourceService->getMapping($queryConfig['mapping'], 'commongateway/corebundle');
-
-            // Map the filters with the given mapping object.
-            $filters = $this->mappingService->mapping($mapping, $filters);
-        }
-
-        return $filters;
-
-    }//end queryAppEndpointConfig()
-
-    /**
-     * Handle the Application Endpoint Configuration for embedded. If embedded should be shown or not.
-     * Configuration Example: ['global']['out']['embedded']['unset'] = true
-     * Configuration Example 2: ['global']['out']['embedded']['unset']['except'] = ['application/json+ld', 'application/ld+json'].
-     *
-     * @param object|array $result         fetched result
-     * @param array        $embeddedConfig Application configuration ['out']['embedded']
-     *
-     * @return array|null The updated result.
-     */
-    public function shouldWeUnsetEmbedded($result, array $embeddedConfig)
-    {
-        if (isset($embeddedConfig['unset']) === false) {
-            return $result;
-        }
-
-        if (isset($result) === true
-            && (isset($embeddedConfig['unset']['except']) === true && isset($this->data['headers']['accept']) === true
-            && empty(array_intersect($embeddedConfig['unset']['except'], $this->data['headers']['accept'])) === true)
-            || isset($this->data['headers']['accept']) === false
-            || isset($embeddedConfig['unset']['except']) === false
-        ) {
-            if (isset($result['results']) === true) {
-                foreach ($result['results'] as $key => $item) {
-                    $result['results'][$key] = $this->checkEmbedded($item);
-                }
-            } else {
-                $result = $this->checkEmbedded($result);
-            }
-        }//end if
-
-        return $result;
-
-    }//end shouldWeUnsetEmbedded()
-
-    /**
-     * If embedded should be shown or not.
-     *
-     * @param object|array $result fetched result
-     *
-     * @return array|null
-     */
-    public function checkEmbedded($result)
-    {
-        if (isset($result->embedded) === true) {
-            unset($result->embedded);
-        }
-
-        if (isset($result['embedded']) === true) {
-            unset($result['embedded']);
-        }
-
-        return $result;
-
-    }//end checkEmbedded()
 
     /**
      * Add extra parameters to the _self metadata of an Object result. Such as dateRead.
