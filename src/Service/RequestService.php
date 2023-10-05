@@ -872,7 +872,7 @@ class RequestService
             if (isset($appEndpointConfig['in']['body']) === true) {
                 $this->data['body'] = $this->handleAppEndpointConfig($this->data['body'], $appEndpointConfig['in']['body']);
             }
-            
+
             $this->content = $this->data['body'];
         }
 
@@ -1205,7 +1205,7 @@ class RequestService
         if (isset($appEndpointConfig['out']['embedded']) === true) {
             $result = $this->shouldWeUnsetEmbedded($result, $appEndpointConfig['out']['embedded']);
         }
-        
+
         // Handle mapping for the result
         if (isset($appEndpointConfig['out']['body']) === true) {
             $result = $this->handleAppEndpointConfig($result, $appEndpointConfig['out']['body']);
@@ -1306,7 +1306,7 @@ class RequestService
         return $result;
 
     }//end mapResults()
-    
+
     /**
      * Handle the Application Endpoint configuration in(/out) for query params or body.
      *
@@ -1321,15 +1321,15 @@ class RequestService
         if (key_exists('mapping', $queryConfig) === true) {
             // Find the mapping.
             $mapping = $this->resourceService->getMapping($queryConfig['mapping'], 'commongateway/corebundle');
-            
+
             // Map the filters with the given mapping object.
             $array = $this->mappingService->mapping($mapping, $array);
         }
-        
+
         return $array;
-        
-    }//end queryAppEndpointConfig()
-    
+
+    }//end handleAppEndpointConfig()
+
     /**
      * Handle the Application Endpoint Configuration for embedded. If embedded should be shown or not.
      * Configuration Example: ['global']['out']['embedded']['unset'] = true
@@ -1345,10 +1345,10 @@ class RequestService
         if (isset($embeddedConfig['unset']) === false) {
             return $result;
         }
-        
+
         if (isset($result) === true
             && (isset($embeddedConfig['unset']['except']) === true && isset($this->data['headers']['accept']) === true
-                && empty(array_intersect($embeddedConfig['unset']['except'], $this->data['headers']['accept'])) === true)
+            && empty(array_intersect($embeddedConfig['unset']['except'], $this->data['headers']['accept'])) === true)
             || isset($this->data['headers']['accept']) === false
             || isset($embeddedConfig['unset']['except']) === false
         ) {
@@ -1360,11 +1360,11 @@ class RequestService
                 $result = $this->checkEmbedded($result);
             }
         }//end if
-        
+
         return $result;
-        
+
     }//end shouldWeUnsetEmbedded()
-    
+
     /**
      * If embedded should be shown or not.
      *
@@ -1377,13 +1377,13 @@ class RequestService
         if (isset($result->embedded) === true) {
             unset($result->embedded);
         }
-        
+
         if (isset($result['embedded']) === true) {
             unset($result['embedded']);
         }
-        
+
         return $result;
-        
+
     }//end checkEmbedded()
 
     /**
