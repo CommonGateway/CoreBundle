@@ -443,7 +443,7 @@ Set symfony style in order to output to the console.
 **Description**
 
 ```php
-public warmup (array $skipCaching)
+public warmup (array $config)
 ```
 
 Throws all available objects into the cache. 
@@ -452,8 +452,8 @@ Throws all available objects into the cache.
 
 **Parameters**
 
-* `(array) $skipCaching`
-: An array which can contain the keys 'objects', 'schemas' and/or 'endpoints' to skip caching these specific objects.  
+* `(array) $config`
+: An array which can contain the keys 'objects', 'schemas' and/or 'endpoints' to skip caching these specific objects. Can also contain the key removeOnly in order to only remove from cache.  
 
 **Return Values**
 
