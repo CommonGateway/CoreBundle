@@ -148,11 +148,11 @@ class CacheService
     /**
      * Throws all available objects into the cache.
      *
-     * @param array $skipCaching An array which can contain the keys 'objects', 'schemas' and/or 'endpoints' to skip caching these specific objects.
+     * @param array $config An array which can contain the keys 'objects', 'schemas' and/or 'endpoints' to skip caching these specific objects. Can also contain the key removeOnly in order to only remove from cache.
      *
      * @return int
      */
-    public function warmup(array $skipCaching = []): int
+    public function warmup(array $config = []): int
     {
         isset($this->style) === true && $this->style->writeln(
             [
@@ -172,7 +172,9 @@ class CacheService
         }
 
         // Objects.
-        if (isset($skipCaching['objects']) === false || $skipCaching['objects'] !== true) {
+        if ((isset($config['objects']) === false || $config['objects'] !== true)
+            && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
+        ) {
             isset($this->style) === true && $this->style->section('Caching Objects\'s');
             $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
             isset($this->style) === true && $this->style->writeln('Found '.count($objectEntities).' objects\'s');
@@ -188,7 +190,9 @@ class CacheService
         }
 
         // Schemas.
-        if (isset($skipCaching['schemas']) === false || $skipCaching['schemas'] !== true) {
+        if ((isset($config['schemas']) === false || $config['schemas'] !== true)
+            && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
+        ) {
             isset($this->style) === true && $this->style->section('Caching Schema\'s');
             $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
             isset($this->style) === true && $this->style->writeln('Found '.count($schemas).' Schema\'s');
@@ -204,7 +208,9 @@ class CacheService
         }
 
         // Endpoints.
-        if (isset($skipCaching['endpoints']) === false || $skipCaching['endpoints'] !== true) {
+        if ((isset($config['endpoints']) === false || $config['endpoints'] !== true)
+            && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
+        ) {
             isset($this->style) === true && $this->style->section('Caching Endpoint\'s');
             $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
             isset($this->style) === true && $this->style->writeln('Found '.count($endpoints).' Endpoint\'s');
@@ -223,12 +229,12 @@ class CacheService
         $this->client->objects->json->createIndex(['$**' => 'text']);
         $this->client->schemas->json->createIndex(['$**' => 'text']);
         $this->client->endpoints->json->createIndex(['$**' => 'text']);
-
-        if (isset($skipCaching['endpoints']) === false || $skipCaching['endpoints'] !== true) {
+        
+        if (isset($config['endpoints']) === false || $config['endpoints'] !== true) {
             $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
         }
 
-        if (isset($skipCaching['objects']) === false || $skipCaching['objects'] !== true) {
+        if (isset($config['objects']) === false || $config['objects'] !== true) {
             $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
         }
 
