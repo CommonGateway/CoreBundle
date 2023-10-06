@@ -51,8 +51,8 @@ class CacheWarmupCommand extends Command
         $this
             ->addOption('objects', 'o', InputOption::VALUE_OPTIONAL, 'Skip caching objects during cache warmup', false)
             ->addOption('schemas', 's', InputOption::VALUE_OPTIONAL, 'Skip caching schemas during cache warmup', false)
-            ->addOption('endpoints', 'en', InputOption::VALUE_OPTIONAL, 'Skip caching endpoints during cache warmup', false)
-            ->addOption('removeOnly', 'ro', InputOption::VALUE_OPTIONAL, 'Only do the remove data from cache during this command', false)
+            ->addOption('endpoints', 'p', InputOption::VALUE_OPTIONAL, 'Skip caching endpoints during cache warmup', false)
+            ->addOption('removeOnly', 'r', InputOption::VALUE_OPTIONAL, 'Only do the remove data from cache during this command', false)
             ->setDescription('This command puts all objects into the cache')
             ->setHelp('This command allows you to run further installation an configuration actions after installing a plugin');
 
