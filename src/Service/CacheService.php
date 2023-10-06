@@ -229,7 +229,7 @@ class CacheService
         $this->client->objects->json->createIndex(['$**' => 'text']);
         $this->client->schemas->json->createIndex(['$**' => 'text']);
         $this->client->endpoints->json->createIndex(['$**' => 'text']);
-        
+
         if (isset($config['endpoints']) === false || $config['endpoints'] !== true) {
             $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
         }

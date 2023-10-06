@@ -82,7 +82,7 @@ class CacheWarmupCommand extends Command
         if ($input->getOption('endpoints') !== false) {
             $config['endpoints'] = true;
         }
-        
+
         if ($input->getOption('removeOnly') !== false) {
             $config['removeOnly'] = true;
         }
