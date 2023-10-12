@@ -130,7 +130,6 @@ class EndpointService
         // If we have an proxy we will handle just that.
         if (empty($endpoint->getProxy()) === false) {
             $this->logger->info('Handling proxied endpoint');
-
             $parameters['response'] = $this->requestService->proxyHandler($parameters, []);
         }
 
@@ -208,36 +207,36 @@ class EndpointService
         // Determine the accept type.
         $this->logger->debug('Determine accept type from accept header');
         switch ($acceptHeader) {
-        case 'application/pdf':
-            return 'pdf';
-        case 'application/json':
-            return 'json';
-        case 'application/json+hal':
-        case 'application/hal+json':
-            return 'jsonhal';
-        case 'application/json+ld':
-        case 'application/ld+json':
-            return 'jsonld';
-        case 'application/json+fromio':
-        case 'application/formio+json':
-            return 'formio';
-        case 'application/json+schema':
-        case 'application/schema+json':
-            return 'schema';
-        case 'application/json+graphql':
-        case 'application/graphql+json':
-            return 'graphql';
-        case 'text/xml':
-        case 'application/xml':
-            return 'xml';
-        case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-            return 'xlsx';
-        case 'text/csv':
-            return 'csv';
-        case 'text/html':
-            return 'html';
-        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-            return 'docx';
+            case 'application/pdf':
+                return 'pdf';
+            case 'application/json':
+                return 'json';
+            case 'application/json+hal':
+            case 'application/hal+json':
+                return 'jsonhal';
+            case 'application/json+ld':
+            case 'application/ld+json':
+                return 'jsonld';
+            case 'application/json+fromio':
+            case 'application/formio+json':
+                return 'formio';
+            case 'application/json+schema':
+            case 'application/schema+json':
+                return 'schema';
+            case 'application/json+graphql':
+            case 'application/graphql+json':
+                return 'graphql';
+            case 'text/xml':
+            case 'application/xml':
+                return 'xml';
+            case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                return 'xlsx';
+            case 'text/csv':
+                return 'csv';
+            case 'text/html':
+                return 'html';
+            case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+                return 'docx';
                 break;
         }//end switch
 
@@ -287,8 +286,8 @@ class EndpointService
         if (count($pathparts) >= 2) {
             $extension = end($pathparts);
             switch ($extension) {
-            case 'pdf':
-                return 'pdf';
+                case 'pdf':
+                    return 'pdf';
             }//end switch
         }
 
@@ -319,14 +318,14 @@ class EndpointService
 
         // Decode the body.
         switch ($contentType) {
-        case 'text/xml':
-        case 'application/xml':
-        case 'xml':
-            $xmlEncoder = new XmlEncoder();
+            case 'text/xml':
+            case 'application/xml':
+            case 'xml':
+                $xmlEncoder = new XmlEncoder();
 
-            return $xmlEncoder->decode($this->request->getContent(), 'xml');
-        default:
-            return json_decode($this->request->getContent(), true);
+                return $xmlEncoder->decode($this->request->getContent(), 'xml');
+            default:
+                return json_decode($this->request->getContent(), true);
         }//end switch
 
     }//end decodeBody()
@@ -340,8 +339,10 @@ class EndpointService
     public function getEndpoint(): Endpoint
     {
         $path     = $this->request->getPathInfo();
-        $path     = explode('/api/', $path);
-        $path     = $path[1];
+
+        // The third parameters ensures that /prefix/api/a/api/b will become ['/prefix', 'a/api/b'].
+        // See https://www.php.net/manual/en/function.explode.php for more information.
+        $path     = explode('/api/', $path, 2)[1];
         $endpoint = $this->entityManager->getRepository('App:Endpoint')->findByMethodRegex($this->request->getMethod(), $path);
 
         if ($endpoint !== null) {
@@ -409,10 +410,10 @@ class EndpointService
 
             $filename = null;
             if (preg_match(
-                '/^(.+); *name="([^"]+)"(; *filename="([^"]+)")?/',
-                $headers['content-disposition'],
-                $matches
-            ) === false
+                    '/^(.+); *name="([^"]+)"(; *filename="([^"]+)")?/',
+                    $headers['content-disposition'],
+                    $matches
+                ) === false
             ) {
                 preg_match(
                     '/^(.+); *name=([-+.\w]+)(; *filename=([-+.\w]+))?/',
@@ -427,14 +428,14 @@ class EndpointService
             // Handle your fields here.
             switch ($name) {
                 // This is a file upload.
-            case 'userfile':
-                file_put_contents($filename, $body);
-                break;
+                case 'userfile':
+                    file_put_contents($filename, $body);
+                    break;
 
                 // Default for all other files is to populate $data.
-            default:
-                $data[$name] = substr($body, 0, (strlen($body) - 2));
-                break;
+                default:
+                    $data[$name] = substr($body, 0, (strlen($body) - 2));
+                    break;
             }
         }//end foreach
 
@@ -506,8 +507,9 @@ class EndpointService
         $path    = $this->endpoint->getPath();
         $pathRaw = $this->request->getPathInfo();
 
-        $pathRaw = explode('/api/', $pathRaw);
-        $pathRaw = $pathRaw[1];
+        // The third parameters ensures that /prefix/api/a/api/b will become ['/prefix', 'a/api/b'].
+        // See https://www.php.net/manual/en/function.explode.php for more information.
+        $pathRaw = explode('/api/', $pathRaw, 2)[1];
 
         try {
             $combinedArray = array_combine($path, explode('/', $pathRaw));
@@ -553,8 +555,9 @@ class EndpointService
 
         $endpoint = $matches[1];
 
-        // Ltrim the default /api/ & Str_replace endpoint for proxy from the pathRaw & explode what is left for $parametersPath.
-        $pathRaw         = ltrim($pathRaw, '/api');
+        // The third parameters ensures that /prefix/api/a/api/b will become ['/prefix', 'a/api/b'].
+        // See https://www.php.net/manual/en/function.explode.php for more information.
+        $pathRaw         = $pathRaw = explode('/api/', $pathRaw, 2)[1];
         $pathRaw         = str_replace("/$endpoint", '', $pathRaw);
         $explodedPathRaw = explode('/', $pathRaw);
 
