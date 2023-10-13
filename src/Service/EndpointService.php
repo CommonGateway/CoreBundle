@@ -15,6 +15,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\SerializerInterface;
+use ValueError;
 
 /**
  * This service handles calls on the ZZ endpoint (or in other words abstract routing).
@@ -511,7 +512,7 @@ class EndpointService
 
         try {
             $combinedArray = array_combine($path, explode('/', $pathRaw));
-        } catch (Exception $exception) {
+        } catch (ValueError $exception) {
             $this->logger->error('EndpointService->getNormalPath(): $exception');
 
             // Todo: When an id is not given the last element of the path array should be removed to ensure the arrays are of the same lenght.
