@@ -449,8 +449,6 @@ class CacheService
 
     }//end getObject()
 
-
-
     /**
      * Make sure we still support the old query params. By translating them to the new ones with _.
      *
@@ -481,7 +479,6 @@ class CacheService
         );
 
     }//end queryBackwardsCompatibility()
-
 
     /**
      * Handles a single filter used on a get collection api call. Specifically an filter where the value is an array.
@@ -809,6 +806,7 @@ class CacheService
         }
 
         return null;
+
     }//end parseFilter()
 
     /**
@@ -864,9 +862,9 @@ class CacheService
             return [];
         }
 
-        $completeFilter  = [];
-        $filterParse = $this->parseFilter($filter, $completeFilter);
-        if($filterParse !== null) {
+        $completeFilter = [];
+        $filterParse    = $this->parseFilter($filter, $completeFilter);
+        if ($filterParse !== null) {
             return $filterParse;
         }
 
@@ -895,27 +893,29 @@ class CacheService
      *
      * @throws Exception
      */
-    public function aggregateQueries(array $filter, array $entities) {
+    public function aggregateQueries(array $filter, array $entities)
+    {
         $queries = $filter['_queries'];
 
-        if(is_array($queries) === false) {
+        if (is_array($queries) === false) {
             $queries = explode(',', $queries);
         }
 
-        $completeFilter  = [];
-        $filterParse = $this->parseFilter($filter, $completeFilter);
-        if($filterParse !== null) {
+        $completeFilter = [];
+        $filterParse    = $this->parseFilter($filter, $completeFilter);
+        if ($filterParse !== null) {
             return $filterParse;
         }
 
         $collection = $this->client->objects->json;
-        $result = [];
-        foreach($queries as $query) {
+        $result     = [];
+        foreach ($queries as $query) {
             $result[$query] = $collection->aggregate([['$match' => $filter], ['$unwind' => "\${$query}"], ['$group' => ['_id' => "\${$query}", 'count' => ['$sum' => 1]]]])->toArray();
         }
 
         return $result;
-    }
+
+    }//end aggregateQueries()
 
     // /**
     // * Will check if we are allowed to order with the given $order query param.
