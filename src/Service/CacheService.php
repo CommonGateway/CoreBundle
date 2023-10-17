@@ -862,8 +862,8 @@ class CacheService
             return [];
         }
 
-        $completeFilter  = [];
-        $filterParse = $this->parseFilter($filter, $completeFilter, $entities);
+        $completeFilter = [];
+        $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
         if ($filterParse !== null) {
             return $filterParse;
         }
@@ -901,8 +901,8 @@ class CacheService
             $queries = explode(',', $queries);
         }
 
-        $completeFilter  = [];
-        $filterParse = $this->parseFilter($filter, $completeFilter, $entities);
+        $completeFilter = [];
+        $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
         if ($filterParse !== null) {
             return $filterParse;
         }
