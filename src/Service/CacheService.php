@@ -772,7 +772,7 @@ class CacheService
      *
      * @throws Exception
      */
-    private function parseFilter(array &$filter, array &$completeFilter): ?array
+    private function parseFilter(array &$filter, array &$completeFilter, $entities): ?array
     {
         // Backwards compatibility.
         $this->queryBackwardsCompatibility($filter);
@@ -862,8 +862,8 @@ class CacheService
             return [];
         }
 
-        $completeFilter = [];
-        $filterParse    = $this->parseFilter($filter, $completeFilter);
+        $completeFilter  = [];
+        $filterParse = $this->parseFilter($filter, $completeFilter, $entities);
         if ($filterParse !== null) {
             return $filterParse;
         }
@@ -901,8 +901,8 @@ class CacheService
             $queries = explode(',', $queries);
         }
 
-        $completeFilter = [];
-        $filterParse    = $this->parseFilter($filter, $completeFilter);
+        $completeFilter  = [];
+        $filterParse = $this->parseFilter($filter, $completeFilter, $entities);
         if ($filterParse !== null) {
             return $filterParse;
         }
