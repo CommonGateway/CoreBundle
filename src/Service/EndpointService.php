@@ -238,6 +238,8 @@ class EndpointService
         case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
             return 'docx';
                 break;
+        case 'application/json+aggregations':
+            return 'aggregations';
         }//end switch
 
         return null;
@@ -275,6 +277,7 @@ class EndpointService
 
         // Get the accept type when a single accept type is given.
         $determinedAcceptType = $this->determineAcceptType($acceptHeader);
+
         if ($determinedAcceptType !== null) {
             return $determinedAcceptType;
         }

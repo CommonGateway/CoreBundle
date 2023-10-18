@@ -450,104 +450,6 @@ class CacheService
     }//end getObject()
 
     /**
-     * Searches the object store for objects containing the search string.
-     *
-     * @param string|null $search   a string to search for within the given context
-     * @param array       $filter   an array of dot.notation filters for wich to search with
-     * @param array       $entities schemas to limit te search to
-     *
-     * @throws Exception
-     *
-     * @return array
-     */
-    public function searchObjects(string $search = null, array $filter = [], array $entities = []): array
-    {
-        // Backwards compatablity.
-        if (isset($this->client) === false) {
-            return [];
-        }
-
-        // Backwards compatibility.
-        $this->queryBackwardsCompatibility($filter);
-
-        // Make sure we also have all filters stored in $completeFilter before unsetting.
-        $completeFilter = $filter;
-
-        unset(
-            $filter['_start'],
-            $filter['_offset'],
-            $filter['_limit'],
-            $filter['_page'],
-            $filter['_extend'],
-            $filter['_search'],
-            $filter['_order'],
-            $filter['_fields']
-        );
-
-        // 'normal' Filters (not starting with _ ).
-        foreach ($filter as $key => &$value) {
-            $this->handleFilter($key, $value);
-        }
-
-        // Search for the correct entity / entities.
-        if (empty($entities) === false) {
-            $queryError = $this->handleEntities($filter, $completeFilter, $entities);
-            if ($queryError !== null) {
-                return $queryError;
-            }
-        }
-
-        // Let's see if we need a search
-        $this->handleSearch($filter, $completeFilter, $search);
-
-        // Limit & Start for pagination.
-        $this->setPagination($limit, $start, $completeFilter);
-
-        // Order.
-        $order                                                   = isset($completeFilter['_order']) === true ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
-        empty($order) === false && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
-
-        // Find / Search.
-        return $this->retrieveObjectsFromCache($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order], $completeFilter);
-
-    }//end searchObjects()
-
-    /**
-     * Retrieves objects from a cache collection.
-     *
-     * @param array $filter
-     * @param array $options
-     * @param array $completeFilter
-     *
-     * @return array $this->handleResultPagination()
-     */
-    public function retrieveObjectsFromCache(array $filter, array $options, array $completeFilter = []): array
-    {
-        $user = $this->objectEntityService->findCurrentUser();
-
-        if ($user !== null && $user->getOrganization() !== null) {
-            if (isset($filter['$or']) === true) {
-                $filter['$and'][] = ['$or' => $filter['$or']];
-                unset($filter['$or']);
-            }
-
-            $orFilter          = [];
-            $orFilter['$or'][] = ['_self.owner.id' => $user->getId()->toString()];
-            $orFilter['$or'][] = ['_self.organization.id' => $user->getOrganization()->getId()->toString()];
-            $filter['$and'][]  = ['$or' => $orFilter['$or']];
-        } else if ($user !== null) {
-            $filter['_self.owner.id'] = $user->getId()->toString();
-        }
-
-        $collection = $this->client->objects->json;
-        $results    = $collection->find($filter, $options)->toArray();
-        $total      = $collection->count($filter);
-
-        return $this->handleResultPagination($completeFilter, $results, $total);
-
-    }//end retrieveObjectsFromCache()
-
-    /**
      * Make sure we still support the old query params. By translating them to the new ones with _.
      *
      * @param array $filter
@@ -577,65 +479,6 @@ class CacheService
         );
 
     }//end queryBackwardsCompatibility()
-
-    /**
-     * Handles a single filter used on a get collection api call. This function makes sure special filters work correctly.
-     *
-     * @param $key
-     * @param $value
-     *
-     * @throws Exception
-     *
-     * @return void
-     */
-    private function handleFilter($key, &$value)
-    {
-        if (substr($key, 0, 1) == '_') {
-            // @Todo: deal with filters starting with _ like: _dateCreated.
-        }
-
-        // Handle filters that expect $value to be an array.
-        if ($this->handleFilterArray($value) === true) {
-            return;
-        }
-
-        // If the value is a boolean we need a other format.
-        if (is_bool($value) === true || is_int($value) === true) {
-            // Set as key '$eq' with the value.
-            $value = ['$eq' => $value];
-
-            return;
-        }
-
-        // Todo: This works, we should go to php 8.0 later.
-        if (str_contains($value, '%') === true) {
-            $regex = str_replace('%', '', $value);
-            $regex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $regex);
-            $value = ['$regex' => $regex];
-
-            return;
-        }
-
-        if ($value === 'IS NOT NULL') {
-            $value = ['$ne' => null];
-
-            return;
-        }
-
-        if ($value === 'IS NULL' || $value === 'null') {
-            $value = null;
-
-            return;
-        }
-
-        // @Todo: exact match is default, make case insensitive optional:
-        $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value);
-        $value = [
-            '$regex'   => "^$value$",
-            '$options' => 'im',
-        ];
-
-    }//end handleFilter()
 
     /**
      * Handles a single filter used on a get collection api call. Specifically an filter where the value is an array.
@@ -800,6 +643,65 @@ class CacheService
     }//end handleFilterArray()
 
     /**
+     * Handles a single filter used on a get collection api call. This function makes sure special filters work correctly.
+     *
+     * @param $key
+     * @param $value
+     *
+     * @throws Exception
+     *
+     * @return void
+     */
+    private function handleFilter($key, &$value)
+    {
+        if (substr($key, 0, 1) == '_') {
+            // @Todo: deal with filters starting with _ like: _dateCreated.
+        }
+
+        // Handle filters that expect $value to be an array.
+        if ($this->handleFilterArray($value) === true) {
+            return;
+        }
+
+        // If the value is a boolean we need a other format.
+        if (is_bool($value) === true || is_int($value) === true) {
+            // Set as key '$eq' with the value.
+            $value = ['$eq' => $value];
+
+            return;
+        }
+
+        // Todo: This works, we should go to php 8.0 later.
+        if (str_contains($value, '%') === true) {
+            $regex = str_replace('%', '', $value);
+            $regex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $regex);
+            $value = ['$regex' => $regex];
+
+            return;
+        }
+
+        if ($value === 'IS NOT NULL') {
+            $value = ['$ne' => null];
+
+            return;
+        }
+
+        if ($value === 'IS NULL' || $value === 'null') {
+            $value = null;
+
+            return;
+        }
+
+        // @Todo: exact match is default, make case insensitive optional:
+        $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value);
+        $value = [
+            '$regex'   => "^$value$",
+            '$options' => 'im',
+        ];
+
+    }//end handleFilter()
+
+    /**
      * Will add entity filters to the filters array.
      * Will also check if we are allowed to filter & order with the given filters and order query params.
      *
@@ -851,7 +753,7 @@ class CacheService
                 'message' => 'There are some errors in your query parameters',
                 'type'    => 'error',
                 'path'    => 'searchObjects',
-            // todo: get path from session?
+                // todo: get path from session?
                 'data'    => $errorData,
             ];
         }
@@ -859,6 +761,161 @@ class CacheService
         return null;
 
     }//end handleEntities()
+
+    /**
+     * Parses the filter array and creates the filter and completeFilter arrays
+     *
+     * @param array $filter         The filters to parse
+     * @param array $completeFilter The complete filter (can be empty, will be updated)
+     *
+     * @return array|null The result of the parse, contains an error on failure, contains null on success.
+     *
+     * @throws Exception
+     */
+    private function parseFilter(array &$filter, array &$completeFilter, $entities): ?array
+    {
+        // Backwards compatibility.
+        $this->queryBackwardsCompatibility($filter);
+
+        // Make sure we also have all filters stored in $completeFilter before unsetting.
+        $completeFilter = $filter;
+
+        unset(
+            $filter['_start'],
+            $filter['_offset'],
+            $filter['_limit'],
+            $filter['_page'],
+            $filter['_extend'],
+            $filter['_search'],
+            $filter['_order'],
+            $filter['_fields'],
+            $filter['_queries']
+        );
+
+        // 'normal' Filters (not starting with _ ).
+        foreach ($filter as $key => &$value) {
+            $this->handleFilter($key, $value);
+        }
+
+        // Search for the correct entity / entities.
+        if (empty($entities) === false) {
+            $queryError = $this->handleEntities($filter, $completeFilter, $entities);
+            if ($queryError !== null) {
+                return $queryError;
+            }
+        }
+
+        return null;
+
+    }//end parseFilter()
+
+    /**
+     * Retrieves objects from a cache collection.
+     *
+     * @param array $filter
+     * @param array $options
+     * @param array $completeFilter
+     *
+     * @return array $this->handleResultPagination()
+     */
+    public function retrieveObjectsFromCache(array $filter, array $options, array $completeFilter = []): array
+    {
+        $user = $this->objectEntityService->findCurrentUser();
+
+        if ($user !== null && $user->getOrganization() !== null) {
+            if (isset($filter['$or']) === true) {
+                $filter['$and'][] = ['$or' => $filter['$or']];
+                unset($filter['$or']);
+            }
+
+            $orFilter          = [];
+            $orFilter['$or'][] = ['_self.owner.id' => $user->getId()->toString()];
+            $orFilter['$or'][] = ['_self.organization.id' => $user->getOrganization()->getId()->toString()];
+            $filter['$and'][]  = ['$or' => $orFilter['$or']];
+        } else if ($user !== null) {
+            $filter['_self.owner.id'] = $user->getId()->toString();
+        }
+
+        $collection = $this->client->objects->json;
+        $results    = $collection->find($filter, $options)->toArray();
+        $total      = $collection->count($filter);
+
+        return $this->handleResultPagination($completeFilter, $results, $total);
+
+    }//end retrieveObjectsFromCache()
+
+    /**
+     * Searches the object store for objects containing the search string.
+     *
+     * @param string|null $search   a string to search for within the given context
+     * @param array       $filter   an array of dot.notation filters for wich to search with
+     * @param array       $entities schemas to limit te search to
+     *
+     * @throws Exception
+     *
+     * @return array
+     */
+    public function searchObjects(string $search = null, array $filter = [], array $entities = []): array
+    {
+        // Backwards compatablity.
+        if (isset($this->client) === false) {
+            return [];
+        }
+
+        $completeFilter = [];
+        $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
+        if ($filterParse !== null) {
+            return $filterParse;
+        }
+
+        // Let's see if we need a search
+        $this->handleSearch($filter, $completeFilter, $search);
+
+        // Limit & Start for pagination.
+        $this->setPagination($limit, $start, $completeFilter);
+
+        // Order.
+        $order                                                   = isset($completeFilter['_order']) === true ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
+        empty($order) === false && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
+
+        // Find / Search.
+        return $this->retrieveObjectsFromCache($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order], $completeFilter);
+
+    }//end searchObjects()
+
+    /**
+     * Creates an aggregation of results for possible query parameters
+     *
+     * @param array $filter   The filter to handle.
+     * @param array $entities The entities to search in.
+     *
+     * @return array The resulting aggregation
+     *
+     * @throws Exception
+     */
+    public function aggregateQueries(array $filter, array $entities)
+    {
+        $queries = $filter['_queries'];
+
+        if (is_array($queries) === false) {
+            $queries = explode(',', $queries);
+        }
+
+        $completeFilter = [];
+        $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
+        if ($filterParse !== null) {
+            return $filterParse;
+        }
+
+        $collection = $this->client->objects->json;
+        $result     = [];
+        foreach ($queries as $query) {
+            $result[$query] = $collection->aggregate([['$match' => $filter], ['$unwind' => "\${$query}"], ['$group' => ['_id' => "\${$query}", 'count' => ['$sum' => 1]]]])->toArray();
+        }
+
+        return $result;
+
+    }//end aggregateQueries()
 
     // /**
     // * Will check if we are allowed to order with the given $order query param.
