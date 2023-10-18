@@ -130,7 +130,6 @@ class EndpointService
         // If we have an proxy we will handle just that.
         if (empty($endpoint->getProxy()) === false) {
             $this->logger->info('Handling proxied endpoint');
-
             $parameters['response'] = $this->requestService->proxyHandler($parameters, []);
         }
 
@@ -339,9 +338,11 @@ class EndpointService
      */
     public function getEndpoint(): Endpoint
     {
-        $path     = $this->request->getPathInfo();
-        $path     = explode('/api/', $path);
-        $path     = $path[1];
+        $path = $this->request->getPathInfo();
+
+        // The third parameters ensures that /prefix/api/a/api/b will become ['/prefix', 'a/api/b'].
+        // See https://www.php.net/manual/en/function.explode.php for more information.
+        $path     = explode('/api/', $path, 2)[1];
         $endpoint = $this->entityManager->getRepository('App:Endpoint')->findByMethodRegex($this->request->getMethod(), $path);
 
         if ($endpoint !== null) {
@@ -506,8 +507,9 @@ class EndpointService
         $path    = $this->endpoint->getPath();
         $pathRaw = $this->request->getPathInfo();
 
-        $pathRaw = explode('/api/', $pathRaw);
-        $pathRaw = $pathRaw[1];
+        // The third parameters ensures that /prefix/api/a/api/b will become ['/prefix', 'a/api/b'].
+        // See https://www.php.net/manual/en/function.explode.php for more information.
+        $pathRaw = explode('/api/', $pathRaw, 2)[1];
 
         try {
             $combinedArray = array_combine($path, explode('/', $pathRaw));
@@ -553,8 +555,9 @@ class EndpointService
 
         $endpoint = $matches[1];
 
-        // Ltrim the default /api/ & Str_replace endpoint for proxy from the pathRaw & explode what is left for $parametersPath.
-        $pathRaw         = ltrim($pathRaw, '/api');
+        // The third parameters ensures that /prefix/api/a/api/b will become ['/prefix', 'a/api/b'].
+        // See https://www.php.net/manual/en/function.explode.php for more information.
+        $pathRaw         = $pathRaw = explode('/api/', $pathRaw, 2)[1];
         $pathRaw         = str_replace("/$endpoint", '', $pathRaw);
         $explodedPathRaw = explode('/', $pathRaw);
 
