@@ -907,6 +907,9 @@ class CacheService
             return $filterParse;
         }
 
+        // Let's see if we need a search
+        $this->handleSearch($filter, $completeFilter, null);
+
         $collection = $this->client->objects->json;
         $result     = [];
         foreach ($queries as $query) {
