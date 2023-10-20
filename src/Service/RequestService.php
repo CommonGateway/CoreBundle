@@ -962,6 +962,10 @@ class RequestService
                 $session->set('object', $this->identification);
             } else {
                 // $this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
+                if ($data['headers']['accept'][0] === 'application/json+aggregations') {
+                    return $this->createResponse($this->cacheService->aggregateQueries($filters, $allowedSchemas['id']));
+                }
+
                 $result = $this->cacheService->searchObjects(null, $filters, $allowedSchemas['id']);
             }//end if
             break;

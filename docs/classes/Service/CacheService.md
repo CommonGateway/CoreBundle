@@ -13,6 +13,7 @@ This service provides a guzzle wrapper to work with sources in the common gatewa
 | Name | Description |
 |------|-------------|
 |[__construct](#cacheservice__construct)||
+|[aggregateQueries](#cacheserviceaggregatequeries)|Creates an aggregation of results for possible query parameters|
 |[cacheEndpoint](#cacheservicecacheendpoint)|Put a single endpoint into the cache.|
 |[cacheObject](#cacheservicecacheobject)|Put a single object into the cache.|
 |[cacheShema](#cacheservicecacheshema)|Put a single schema into the cache.|
@@ -51,6 +52,41 @@ This service provides a guzzle wrapper to work with sources in the common gatewa
 **Return Values**
 
 `void`
+
+
+<hr />
+
+
+### CacheService::aggregateQueries  
+
+**Description**
+
+```php
+public aggregateQueries (array $filter, array $entities)
+```
+
+Creates an aggregation of results for possible query parameters 
+
+ 
+
+**Parameters**
+
+* `(array) $filter`
+: The filter to handle.  
+* `(array) $entities`
+: The entities to search in.  
+
+**Return Values**
+
+`array`
+
+> The resulting aggregation
+
+
+**Throws Exceptions**
+
+
+`\Exception`
 
 
 <hr />
