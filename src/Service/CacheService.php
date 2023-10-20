@@ -895,7 +895,7 @@ class CacheService
      */
     public function aggregateQueries(array $filter, array $entities)
     {
-        if(isset($filter['_queries']) === false) {
+        if (isset($filter['_queries']) === false) {
             return [];
         }
 
