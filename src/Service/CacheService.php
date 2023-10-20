@@ -628,6 +628,13 @@ class CacheService
                 return true;
             }
 
+            // not equals
+            if (array_key_exists('ne', $value) === true) {
+                $value = ['$ne' => $value['ne']];
+
+                return true;
+            }
+
             if (array_key_first($value) === '$elemMatch') {
                 return true;
             }
