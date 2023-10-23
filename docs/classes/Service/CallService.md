@@ -27,7 +27,7 @@ This service provides a guzzle wrapper to work with sources in the common gatewa
 **Description**
 
 ```php
-public __construct (\AuthenticationService $authenticationService, \EntityManagerInterface $entityManager, \FileService $fileService, \MappingService $mappingService, \SessionInterface $session, \LoggerInterface $callLogger)
+public __construct (\AuthenticationService $authenticationService, \EntityManagerInterface $entityManager, \FileService $fileService, \MappingService $mappingService, \SessionInterface $session, \LoggerInterface $callLogger, \EventDispatcherInterface $eventDispatcher)
 ```
 
 The constructor sets al needed variables. 
@@ -48,6 +48,8 @@ The constructor sets al needed variables.
 : The current session.  
 * `(\LoggerInterface) $callLogger`
 : The logger for the call channel.  
+* `(\EventDispatcherInterface) $eventDispatcher`
+: Event Dispatcher.  
 
 **Return Values**
 
