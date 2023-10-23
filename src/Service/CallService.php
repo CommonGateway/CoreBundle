@@ -3,6 +3,7 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
+use App\Event\ActionEvent;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use GuzzleHttp\Client;
@@ -12,6 +13,7 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Response;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
@@ -65,16 +67,24 @@ class CallService
      * @var LoggerInterface $callLogger
      */
     private LoggerInterface $callLogger;
+    
+    /**
+     * Event Dispatcher.
+     *
+     * @var EventDispatcherInterface $eventDispatcher
+     */
+    private EventDispatcherInterface $eventDispatcher;
 
     /**
      * The constructor sets al needed variables.
      *
-     * @param AuthenticationService  $authenticationService The authentication service
-     * @param EntityManagerInterface $entityManager         The entity manager
-     * @param FileService            $fileService           The file service
-     * @param MappingService         $mappingService        The mapping service
-     * @param SessionInterface       $session               The current session.
-     * @param LoggerInterface        $callLogger            The logger for the call channel.
+     * @param AuthenticationService    $authenticationService The authentication service
+     * @param EntityManagerInterface   $entityManager         The entity manager
+     * @param FileService              $fileService           The file service
+     * @param MappingService           $mappingService        The mapping service
+     * @param SessionInterface         $session               The current session.
+     * @param LoggerInterface          $callLogger            The logger for the call channel.
+     * @param EventDispatcherInterface $eventDispatcher       Event Dispatcher.
      */
     public function __construct(
         AuthenticationService $authenticationService,
@@ -82,7 +92,8 @@ class CallService
         FileService $fileService,
         MappingService $mappingService,
         SessionInterface $session,
-        LoggerInterface $callLogger
+        LoggerInterface $callLogger,
+        EventDispatcherInterface $eventDispatcher
     ) {
         $this->authenticationService = $authenticationService;
         $this->client                = new Client([]);
@@ -91,6 +102,7 @@ class CallService
         $this->mappingService        = $mappingService;
         $this->session               = $session;
         $this->callLogger            = $callLogger;
+        $this->eventDispatcher       = $eventDispatcher;
 
     }//end __construct()
 
@@ -299,11 +311,45 @@ class CallService
             $this->callLogger->info("Request to $url succesful");
 
             $this->callLogger->notice("$method Request to $url returned {$response->getStatusCode()}");
+            
+            // Throw log creation event.
+            $event = new ActionEvent(
+                'commongateway.action.event',
+                [
+                    'log_level' => 'notice',
+                    'source' => [
+                        'id'        => $source->getId(),
+                        'reference' => $source->getReference(),
+                    ],
+                    'response' => [
+                        'name' => 'test'
+                    ]
+                ],
+                'commongateway.monolog.create'
+            );
+            $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 
             $source->setStatus($response->getStatusCode());
             $this->entityManager->persist($source);
         } catch (ServerException | ClientException | RequestException | Exception $exception) {
             $this->callLogger->error('Request failed with error '.$exception);
+            
+            // Throw log creation event.
+            $event = new ActionEvent(
+                'commongateway.action.event',
+                [
+                    'log_level' => 'error',
+                    'source' => [
+                        'id'        => $source->getId(),
+                        'reference' => $source->getReference(),
+                    ],
+                    'response' => [
+                        'name' => 'test'
+                    ]
+                ],
+                'commongateway.monolog.create'
+            );
+            $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 
             $response = $this->handleCallException($exception, $source, $endpoint);
 
@@ -313,6 +359,23 @@ class CallService
             return $response;
         } catch (GuzzleException $exception) {
             $this->callLogger->error('Request failed with error '.$exception);
+            
+            // Throw log creation event.
+            $event = new ActionEvent(
+                'commongateway.action.event',
+                [
+                    'log_level' => 'error',
+                    'source' => [
+                        'id'        => $source->getId(),
+                        'reference' => $source->getReference(),
+                    ],
+                    'response' => [
+                        'name' => 'test'
+                    ]
+                ],
+                'commongateway.monolog.create'
+            );
+            $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 
             $response = $this->handleEndpointsConfigIn($source, $endpoint, null, $exception, null);
 
