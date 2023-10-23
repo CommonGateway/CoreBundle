@@ -678,7 +678,6 @@ class CacheService
             return;
         }
 
-        // Todo: This works, we should go to php 8.0 later.
         if (str_contains($value, '%') === true) {
             $regex = str_replace('%', '', $value);
             $regex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $regex);

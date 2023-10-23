@@ -221,7 +221,6 @@ class MappingService
     {
         $value = $dotArray->get($key);
 
-        // Todo: This works, we should go to php 8.0 later.
         if (str_starts_with($cast, 'unsetIfValue==') === true) {
             $unsetIfValue = substr($cast, 14);
             $cast         = 'unsetIfValue';
