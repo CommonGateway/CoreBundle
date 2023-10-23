@@ -67,7 +67,7 @@ class CallService
      * @var LoggerInterface $callLogger
      */
     private LoggerInterface $callLogger;
-    
+
     /**
      * Event Dispatcher.
      *
@@ -311,19 +311,17 @@ class CallService
             $this->callLogger->info("Request to $url succesful");
 
             $this->callLogger->notice("$method Request to $url returned {$response->getStatusCode()}");
-            
+
             // Throw log creation event.
             $event = new ActionEvent(
                 'commongateway.action.event',
                 [
                     'log_level' => 'notice',
-                    'source' => [
+                    'source'    => [
                         'id'        => $source->getId(),
                         'reference' => $source->getReference(),
                     ],
-                    'response' => [
-                        'name' => 'test'
-                    ]
+                    'response'  => ['name' => 'test'],
                 ],
                 'commongateway.monolog.create'
             );
@@ -333,19 +331,17 @@ class CallService
             $this->entityManager->persist($source);
         } catch (ServerException | ClientException | RequestException | Exception $exception) {
             $this->callLogger->error('Request failed with error '.$exception);
-            
+
             // Throw log creation event.
             $event = new ActionEvent(
                 'commongateway.action.event',
                 [
                     'log_level' => 'error',
-                    'source' => [
+                    'source'    => [
                         'id'        => $source->getId(),
                         'reference' => $source->getReference(),
                     ],
-                    'response' => [
-                        'name' => 'test'
-                    ]
+                    'response'  => ['name' => 'test'],
                 ],
                 'commongateway.monolog.create'
             );
@@ -359,19 +355,17 @@ class CallService
             return $response;
         } catch (GuzzleException $exception) {
             $this->callLogger->error('Request failed with error '.$exception);
-            
+
             // Throw log creation event.
             $event = new ActionEvent(
                 'commongateway.action.event',
                 [
                     'log_level' => 'error',
-                    'source' => [
+                    'source'    => [
                         'id'        => $source->getId(),
                         'reference' => $source->getReference(),
                     ],
-                    'response' => [
-                        'name' => 'test'
-                    ]
+                    'response'  => ['name' => 'test'],
                 ],
                 'commongateway.monolog.create'
             );
