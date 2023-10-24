@@ -838,6 +838,7 @@ class CacheService
             $orFilter          = [];
             $orFilter['$or'][] = ['_self.owner.id' => $user->getId()->toString()];
             $orFilter['$or'][] = ['_self.organization.id' => $user->getOrganization()->getId()->toString()];
+            $orFilter['$or'][] = ['_self.organization.id' => null];
             $filter['$and'][]  = ['$or' => $orFilter['$or']];
         } else if ($user !== null) {
             $filter['_self.owner.id'] = $user->getId()->toString();
