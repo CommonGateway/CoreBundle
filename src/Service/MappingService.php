@@ -30,14 +30,14 @@ class MappingService
      * @var SymfonyStyle
      */
     private SymfonyStyle $style;
-    
+
     /**
      * Create a private variable to store the twig environment.
      *
      * @var Environment
      */
     private Environment $twig;
-    
+
     /**
      * The current session.
      *
@@ -55,8 +55,8 @@ class MappingService
         Environment $twig,
         SessionInterface $session
     ) {
-        $this->twig     = $twig;
-        $this->session  = $session;
+        $this->twig    = $twig;
+        $this->session = $session;
 
     }//end __construct()
 
@@ -116,7 +116,7 @@ class MappingService
     public function mapping(Mapping $mappingObject, array $input, bool $list = false): array
     {
         $this->session->set('mapping', $mappingObject->getId()->toString());
-        
+
         // Check for list
         if ($list === true) {
             $list        = [];
