@@ -3,7 +3,6 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
-use App\Event\ActionEvent;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use GuzzleHttp\Client;
@@ -13,7 +12,6 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Response;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
@@ -69,13 +67,6 @@ class CallService
     private LoggerInterface $callLogger;
 
     /**
-     * Event Dispatcher.
-     *
-     * @var EventDispatcherInterface $eventDispatcher
-     */
-    private EventDispatcherInterface $eventDispatcher;
-
-    /**
      * The constructor sets al needed variables.
      *
      * @param AuthenticationService    $authenticationService The authentication service
@@ -84,7 +75,6 @@ class CallService
      * @param MappingService           $mappingService        The mapping service
      * @param SessionInterface         $session               The current session.
      * @param LoggerInterface          $callLogger            The logger for the call channel.
-     * @param EventDispatcherInterface $eventDispatcher       Event Dispatcher.
      */
     public function __construct(
         AuthenticationService $authenticationService,
@@ -92,8 +82,7 @@ class CallService
         FileService $fileService,
         MappingService $mappingService,
         SessionInterface $session,
-        LoggerInterface $callLogger,
-        EventDispatcherInterface $eventDispatcher
+        LoggerInterface $callLogger
     ) {
         $this->authenticationService = $authenticationService;
         $this->client                = new Client([]);
@@ -102,7 +91,6 @@ class CallService
         $this->mappingService        = $mappingService;
         $this->session               = $session;
         $this->callLogger            = $callLogger;
-        $this->eventDispatcher       = $eventDispatcher;
 
     }//end __construct()
 
