@@ -72,6 +72,8 @@ class EndpointService
      * @param SerializerInterface      $serializer      The serializer
      * @param RequestService           $requestService  The request service
      * @param EventDispatcherInterface $eventDispatcher The event dispatcher
+     * @param SessionInterface         $session         The current session
+     * @param LoggerInterface          $endpointLogger  The endpoint logger.
      */
     public function __construct(
         EntityManagerInterface $entityManager,
