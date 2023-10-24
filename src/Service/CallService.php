@@ -69,12 +69,12 @@ class CallService
     /**
      * The constructor sets al needed variables.
      *
-     * @param AuthenticationService    $authenticationService The authentication service
-     * @param EntityManagerInterface   $entityManager         The entity manager
-     * @param FileService              $fileService           The file service
-     * @param MappingService           $mappingService        The mapping service
-     * @param SessionInterface         $session               The current session.
-     * @param LoggerInterface          $callLogger            The logger for the call channel.
+     * @param AuthenticationService  $authenticationService The authentication service
+     * @param EntityManagerInterface $entityManager         The entity manager
+     * @param FileService            $fileService           The file service
+     * @param MappingService         $mappingService        The mapping service
+     * @param SessionInterface       $session               The current session.
+     * @param LoggerInterface        $callLogger            The logger for the call channel.
      */
     public function __construct(
         AuthenticationService $authenticationService,
