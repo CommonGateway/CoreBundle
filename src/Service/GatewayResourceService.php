@@ -156,7 +156,6 @@ class GatewayResourceService
         $allSources = $this->entityManager->getRepository('App:Gateway')->findAll();
 
         foreach ($allSources as $source) {
-            // Todo: This works, we should go to php 8.0 later.
             if (empty($source->getLocation()) === false && str_contains($url, $source->getLocation()) === true) {
                 $sources[] = $source;
             }
