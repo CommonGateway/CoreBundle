@@ -317,15 +317,15 @@ class CallService
                 'commongateway.action.event',
                 [
                     'log_level' => 'notice',
-                    'source' => [
+                    'source'    => [
                         'id'        => $source->getId(),
                         'reference' => $source->getReference(),
                     ],
-                    'response' => [
-                        'name' => 'test',
-                        'code' => 200,
-                        'message' => "$method Request to $url returned {$response->getStatusCode()}"
-                    ]
+                    'response'  => [
+                        'name'    => 'test',
+                        'code'    => 200,
+                        'message' => "$method Request to $url returned {$response->getStatusCode()}",
+                    ],
                 ],
                 'commongateway.monolog.create'
             );
@@ -341,15 +341,15 @@ class CallService
                 'commongateway.action.event',
                 [
                     'log_level' => 'error',
-                    'source' => [
+                    'source'    => [
                         'id'        => $source->getId(),
                         'reference' => $source->getReference(),
                     ],
-                    'response' => [
-                        'name' => 'test',
-                        'code' => $exception->getCode(),
-                        'message' => 'Request failed with error '.$exception
-                    ]
+                    'response'  => [
+                        'name'    => 'test',
+                        'code'    => $exception->getCode(),
+                        'message' => 'Request failed with error '.$exception,
+                    ],
                 ],
                 'commongateway.monolog.create'
             );
@@ -369,15 +369,15 @@ class CallService
                 'commongateway.action.event',
                 [
                     'log_level' => 'error',
-                    'source' => [
+                    'source'    => [
                         'id'        => $source->getId(),
                         'reference' => $source->getReference(),
                     ],
-                    'response' => [
-                        'name' => 'test',
-                        'code' => $exception->getCode(),
-                        'message' => 'Request failed with error '.$exception
-                    ]
+                    'response'  => [
+                        'name'    => 'test',
+                        'code'    => $exception->getCode(),
+                        'message' => 'Request failed with error '.$exception,
+                    ],
                 ],
                 'commongateway.monolog.create'
             );
