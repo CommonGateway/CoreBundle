@@ -25,7 +25,7 @@ This service handles calls on the ZZ endpoint (or in other words abstract routin
 **Description**
 
 ```php
-public __construct (\EntityManagerInterface $entityManager, \SerializerInterface $serializer, \RequestService $requestService, \EventDispatcherInterface $eventDispatcher)
+public __construct (\EntityManagerInterface $entityManager, \SerializerInterface $serializer, \RequestService $requestService, \EventDispatcherInterface $eventDispatcher, \SessionInterface $session, \LoggerInterface $endpointLogger)
 ```
 
 The constructor sets al needed variables. 
@@ -42,6 +42,10 @@ The constructor sets al needed variables.
 : The request service  
 * `(\EventDispatcherInterface) $eventDispatcher`
 : The event dispatcher  
+* `(\SessionInterface) $session`
+: The current session  
+* `(\LoggerInterface) $endpointLogger`
+: The endpoint logger.  
 
 **Return Values**
 
