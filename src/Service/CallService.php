@@ -312,48 +312,10 @@ class CallService
 
             $this->callLogger->notice("$method Request to $url returned {$response->getStatusCode()}");
 
-            // Throw log creation event.
-            $event = new ActionEvent(
-                'commongateway.action.event',
-                [
-                    'log_level' => 'notice',
-                    'source'    => [
-                        'id'        => $source->getId(),
-                        'reference' => $source->getReference(),
-                    ],
-                    'response'  => [
-                        'name'    => 'test',
-                        'code'    => 200,
-                        'message' => "$method Request to $url returned {$response->getStatusCode()}",
-                    ],
-                ],
-                'commongateway.monolog.create'
-            );
-            $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
-
             $source->setStatus($response->getStatusCode());
             $this->entityManager->persist($source);
         } catch (ServerException | ClientException | RequestException | Exception $exception) {
             $this->callLogger->error('Request failed with error '.$exception);
-
-            // Throw log creation event.
-            $event = new ActionEvent(
-                'commongateway.action.event',
-                [
-                    'log_level' => 'error',
-                    'source'    => [
-                        'id'        => $source->getId(),
-                        'reference' => $source->getReference(),
-                    ],
-                    'response'  => [
-                        'name'    => 'test',
-                        'code'    => $exception->getCode(),
-                        'message' => 'Request failed with error '.$exception,
-                    ],
-                ],
-                'commongateway.monolog.create'
-            );
-            $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 
             $response = $this->handleCallException($exception, $source, $endpoint);
 
@@ -363,25 +325,6 @@ class CallService
             return $response;
         } catch (GuzzleException $exception) {
             $this->callLogger->error('Request failed with error '.$exception);
-
-            // Throw log creation event.
-            $event = new ActionEvent(
-                'commongateway.action.event',
-                [
-                    'log_level' => 'error',
-                    'source'    => [
-                        'id'        => $source->getId(),
-                        'reference' => $source->getReference(),
-                    ],
-                    'response'  => [
-                        'name'    => 'test',
-                        'code'    => $exception->getCode(),
-                        'message' => 'Request failed with error '.$exception,
-                    ],
-                ],
-                'commongateway.monolog.create'
-            );
-            $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
 
             $response = $this->handleEndpointsConfigIn($source, $endpoint, null, $exception, null);
 
