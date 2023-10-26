@@ -761,6 +761,7 @@ class InstallationService
         if (array_key_exists('_id', $schema) === true && isset($schema['id']) === false) {
             $schema['id'] = $schema['_id'];
         }
+
         if (array_key_exists('id', $schema) === true) {
             $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $schema['id']]);
         }
