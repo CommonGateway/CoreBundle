@@ -544,8 +544,24 @@ class InstallationService
         $objects = [];
 
         foreach ($schemas as $schema) {
-            $object = $this->handleObject($type, $schema);
-            if ($object === null) {
+            try {
+                $object = $this->handleObject($type, $schema);
+                if ($object === null) {
+                    continue;
+                }
+            } catch (Exception $exception) {
+                $id = '';
+                if (isset($schema['_id']) === true) {
+                    $id = $schema['_id'];
+                }
+                if (isset($schema['id']) === true) {
+                    $id = $schema['id'];
+                }
+                if (isset($this->style) === true) {
+                    $this->style->error("Failed to handle object $id (Schema: $type). Exception: ".$exception->getFile()." -> ".$exception->getLine()." -> ".$exception->getMessage());
+                }
+                $this->logger->error("Failed to handle object $id (Schema: $type). Exception: ".$exception->getFile()." -> ".$exception->getLine()." -> ".$exception->getMessage());
+                
                 continue;
             }
 
