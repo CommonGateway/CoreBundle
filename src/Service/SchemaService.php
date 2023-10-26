@@ -221,10 +221,11 @@ class SchemaService
 
             return $objectEntity;
         }
-        
+
         if (array_key_exists('_id', $hydrate) === true && isset($hydrate['id']) === false) {
             $hydrate['id'] = $hydrate['_id'];
         }
+
         // We have already done this so let's skip it.
         unset($hydrate['_id']);
 
