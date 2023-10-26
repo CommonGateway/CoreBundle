@@ -742,6 +742,9 @@ class InstallationService
         }
 
         // If we have an id let try to grab an object.
+        if (array_key_exists('_id', $schema) === true && isset($schema['id']) === false) {
+            $schema['id'] = $schema['_id'];
+        }
         if (array_key_exists('id', $schema) === true) {
             $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $schema['id']]);
         }
@@ -753,7 +756,7 @@ class InstallationService
 
         // TODO: testdata objects seem to have twice as much subobjects as they should have. Duplicates... (example: kiss->klanten->telefoonnummers).
         // Now it gets a bit specif but for EAV data we allow nested fixed id's so let dive deep.
-        if ($this->entityManager->contains($object) === false && (array_key_exists('id', $schema) === true || array_key_exists('_id', $schema) === true)) {
+        if ($this->entityManager->contains($object) === false && array_key_exists('id', $schema) === true) {
             $object = $this->schemaService->hydrate($object, $schema);
         }
 

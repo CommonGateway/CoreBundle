@@ -221,6 +221,12 @@ class SchemaService
 
             return $objectEntity;
         }
+        
+        if (array_key_exists('_id', $hydrate) === true && isset($hydrate['id']) === false) {
+            $hydrate['id'] = $hydrate['_id'];
+        }
+        // We have already done this so let's skip it.
+        unset($hydrate['_id']);
 
         // We have an object entity with a fixed id that isn't in the database, so we need to act.
         if (isset($hydrate['id']) === true && $this->entityManager->contains($objectEntity) === false) {
@@ -242,9 +248,6 @@ class SchemaService
         } else {
             $this->logger->debug('Creating new object ('.$objectEntity->getEntity()->getName().') on a generated id');
         }
-
-        // We already dit this so let's skip it.
-        unset($hydrate['_id']);
 
         foreach ($hydrate as $key => $value) {
             // Try to get a value object.
