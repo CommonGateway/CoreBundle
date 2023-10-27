@@ -18,10 +18,10 @@ Embrace the future of data exchange with Common Gateway. It's time to revolution
 
 Since documentation for a technical application like the common gateway can be a bit overwhelming, we decided to spread it out in different levels of technical difficulty
 
-1.  (Non-technical) Aimed at product owners and interested parties with no to little technical background: [The product page](https://commongateway.github.io/CoreBundle).
-2.  (A bit technical) Aimed at architects and engineers: [The read the docs page](https://commongateway.readthedocs.io/en/latest/).
-3.  (Technical) Aimed at developers want to build plugins or use the gateway as backend: [Readme files in the codebase](/docs).
-4.  (Very technical) Aimed people who want to improve and extend the code base: [In code documentations](/src).
+1. (Non-technical) Aimed at product owners and interested parties with no to little technical background: [The product page](https://commongateway.github.io/CoreBundle).
+2. (A bit technical) Aimed at architects and engineers: [The read the docs page](https://commongateway.readthedocs.io/en/latest/).
+3. (Technical) Aimed at developers want to build plugins or use the gateway as backend: [Readme files in the codebase](/docs).
+4. (Very technical) Aimed people who want to improve and extend the code base: [In code documentations](/src).
 
 If you don't like to read documentation online there is also a complete [manual](https://raw.githubusercontent.com/CommonGateway/CoreBundle/feature/documentation/docs/manual.pdf) available in pdf.
 

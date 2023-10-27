@@ -26,7 +26,7 @@ More information on how to write your own mappings can be found at [Mappings](/d
 **Description**
 
 ```php
-public __construct (\Environment $twig)
+public __construct (\Environment $twig, \SessionInterface $session)
 ```
 
 Setting up the base class with required services. 
@@ -36,6 +36,9 @@ Setting up the base class with required services.
 **Parameters**
 
 * `(\Environment) $twig`
+: The twig environment  
+* `(\SessionInterface) $session`
+: The current session  
 
 **Return Values**
 

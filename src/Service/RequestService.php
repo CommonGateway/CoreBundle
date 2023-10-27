@@ -378,11 +378,58 @@ class RequestService
     }//end getAllowedSchemas()
 
     /**
+     * This function checks if the requesting user is the owner or is part of the correct Organization to edit the requested object.
+     *
+     * @return Response|null A 403 response if the requested user does not have the rights to edit current object.
+     */
+    private function checkOwnerAndOrg(): ?Response
+    {
+        if (isset($this->object) !== true || $this->security->getUser() === null) {
+            return null;
+        }
+
+        $user = $this->security->getUser();
+
+        // Check if object owner matches the current user.
+        if ($this->object->getOwner() !== null && $this->object->getOwner() === $user->getUserIdentifier()) {
+            return null;
+        }
+
+        // Check if the object or user has no Organization. And if they both have an Organization, check if these Organizations match.
+        if ($this->object->getOrganization() === null
+            || $user->getOrganization() === null
+            || $this->object->getOrganization()->getId()->toString() === $user->getOrganization()
+        ) {
+            return null;
+        }
+
+        $currentUser = [
+            'id'           => $user->getUserIdentifier(),
+            'name'         => $user->getName(),
+            'organization' => $user->getOrganization(),
+        ];
+
+        $this->logger->error("Authentication failed. You are not allowed to view or edit this object $this->identification.", ['currentUser' => $currentUser]);
+        return new Response(
+            $this->serializeData(
+                [
+                    'message'     => "Authentication failed. You are not allowed to view or edit this object $this->identification.",
+                    'currentUser' => $currentUser,
+                ],
+                $contentType
+            ),
+            Response::HTTP_FORBIDDEN,
+            ['Content-type' => $contentType]
+        );
+
+    }//end checkOwnerAndOrg()
+
+    /**
      * This function checks if the requesting user has the needed scopes to access the requested endpoint.
      *
      * @param array $references Schema references which we checks scopes for.
      *
-     * @return null|Response A 403 response if the requested user does not have the needed scopes.
+     * @return Response|null A 403 response if the requested user does not have the needed scopes.
      */
     private function checkUserScopes(array $references, string $type = 'schemas'): ?Response
     {
@@ -417,6 +464,40 @@ class RequestService
         return null;
 
     }//end checkUserScopes()
+
+    /**
+     * Get a scopes array for the current user (or of the anonymus if no user s logged in).
+     *
+     * @return array
+     */
+    public function getScopes(): ?array
+    {
+        // If we have a user, return the user his scopes.
+        $user = $this->security->getUser();
+        if (isset($user) === true && $user->getRoles() !== null) {
+            $scopes = [];
+            foreach ($user->getRoles() as $role) {
+                $scopes[] = str_replace('ROLE_', '', $role);
+            }
+
+            return $scopes;
+        }//end if
+
+        // If we don't have a user, return the anonymous security group its scopes.
+        $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous' => true]);
+        if ($anonymousSecurityGroup !== null) {
+            $scopes = [];
+            foreach ($anonymousSecurityGroup->getScopes() as $scope) {
+                $scopes[] = $scope;
+            }
+
+            return $scopes;
+        }
+
+        // If we don't have a user or anonymous security group, return an empty array (this will result in a 403 response in the checkUserScopes function).
+        return [];
+
+    }//end getScopes()
 
     /**
      * Get the ID from given parameters.
@@ -527,6 +608,40 @@ class RequestService
 
     }//end getSchema()
 
+    private function proxyConfigBuilder(): array
+    {
+        if (strpos($this->data['headers']['content-type'][0],  'multipart/form-data') !== false) {
+            $post = $this->data['post'];
+            array_walk(
+                $post,
+                function (&$value, $key) {
+                    $value = [
+                        'name'     => $key,
+                        'contents' => $value,
+                    ];
+                }
+            );
+            return [
+                'query'     => $this->data['query'],
+                'headers'   => $this->data['headers'],
+                'multipart' => array_values($post),
+            ];
+        } else if (strpos($this->data['headers']['content-type'][0], 'application/x-www-form-urlencoded') !== false) {
+            return [
+                'query'     => $this->data['query'],
+                'headers'   => $this->data['headers'],
+                'form_data' => $this->data['post'],
+            ];
+        }//end if
+
+        return [
+            'query'   => $this->data['query'],
+            'headers' => $this->data['headers'],
+            'body'    => $this->data['crude_body'],
+        ];
+
+    }//end proxyConfigBuilder()
+
     /**
      * Handles a proxy Endpoint.
      * todo: we want to merge proxyHandler() and requestHandler() code at some point.
@@ -595,21 +710,17 @@ class RequestService
         // Make a guzzle call to the source based on the incoming call.
         try {
             // Check if we are dealing with http, https or something else like a ftp (fileSystem).
-            if ($url['scheme'] === 'http' || $url['scheme'] === 'https') {
+            if (($url['scheme'] === 'http' || $url['scheme'] === 'https')) {
                 $result = $this->callService->call(
                     $proxy,
                     $this->data['path'],
                     $this->data['method'],
-                    [
-                        'query'   => $this->data['query'],
-                        'headers' => $this->data['headers'],
-                        'body'    => $this->data['crude_body'],
-                    ]
+                    $this->proxyConfigBuilder()
                 );
             } else {
                 $result = $this->fileSystemService->call($proxy, $this->data['path']);
                 $result = new \GuzzleHttp\Psr7\Response(200, [], $this->serializer->serialize($result, 'json'));
-            }
+            }//end if
 
             $contentType = 'application/json';
             if (isset($result->getHeaders()['content-type'][0]) === true) {
@@ -625,11 +736,21 @@ class RequestService
 
             $this->handleMetadataSelf($resultContent, $proxy);
 
+            $headers = $result->getHeaders();
+
+            if (isset($headers['content-length']) === true) {
+                unset($headers['content-length']);
+            }
+
+            if (isset($headers['Content-Length']) === true) {
+                unset($headers['Content-Length']);
+            }
+
             // Let create a response from the guzzle call.
             $response = new Response(
                 $this->serializeData($resultContent, $contentType),
                 $result->getStatusCode(),
-                $result->getHeaders()
+                $headers
             );
         } catch (Exception $exception) {
             $statusCode = 500;
@@ -664,40 +785,6 @@ class RequestService
     }//end proxyHandler()
 
     /**
-     * Get a scopes array for the current user (or of the anonymus if no user s logged in).
-     *
-     * @return array
-     */
-    public function getScopes(): ?array
-    {
-        // If we have a user, return the user his scopes.
-        $user = $this->security->getUser();
-        if (isset($user) === true && $user->getRoles() !== null) {
-            $scopes = [];
-            foreach ($user->getRoles() as $role) {
-                $scopes[] = str_replace('ROLE_', '', $role);
-            }
-
-            return $scopes;
-        }//end if
-
-        // If we don't have a user, return the anonymous security group its scopes.
-        $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous' => true]);
-        if ($anonymousSecurityGroup !== null) {
-            $scopes = [];
-            foreach ($anonymousSecurityGroup->getScopes() as $scope) {
-                $scopes[] = $scope;
-            }
-
-            return $scopes;
-        }
-
-        // If we don't have a user or anonymous security group, return an empty array (this will result in a 403 response in the checkUserScopes function).
-        return [];
-
-    }//end getScopes()
-
-    /**
      * Handles incoming requests and is responsible for generating a response.
      * todo: we want to merge requestHandler() and proxyHandler() code at some point.
      *
@@ -718,12 +805,13 @@ class RequestService
             $appEndpointConfig = $this->getAppEndpointConfig();
         }
 
-        // Work around the _ with a custom function for getting clean query parameters from a request
-        $filters = $this->realRequestQueryAll();
+        // Make a list of schema's that are allowed for this endpoint.
+        $allowedSchemas = $this->getAllowedSchemas();
 
-        // Handle mapping for query parameters
-        if (isset($appEndpointConfig['in']['query']) === true) {
-            $filters = $this->queryAppEndpointConfig($filters, $appEndpointConfig['in']['query']);
+        // Check if the user has the needed scopes.
+        $securityResponse = $this->checkUserScopes($allowedSchemas['reference']);
+        if ($securityResponse instanceof Response === true) {
+            return $securityResponse;
         }
 
         // Get the ID.
@@ -731,7 +819,38 @@ class RequestService
 
         // If we have an ID we can get an Object to work with (except on gets we handle those from cache).
         if (isset($this->identification) === true && empty($this->identification) === false && $this->data['method'] != 'GET') {
-            $this->object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->identification]);
+            $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->identification]);
+            if ($object === null) {
+                return new Response(
+                    $this->serializeData(
+                        [
+                            'message' => 'Could not find an object with id '.$this->identification,
+                            'type'    => 'Bad Request',
+                            'path'    => implode(', ', $allowedSchemas['name']),
+                            'data'    => ['id' => $this->identification],
+                        ],
+                        $contentType
+                    ),
+                    Response::HTTP_NOT_FOUND,
+                    ['Content-type' => $contentType]
+                );
+            }
+
+            $this->object = $object;
+        }
+
+        // Check if user is allowed to change this object (owner & organization). Checking if an object may be viewed (GET) is done in the CacheService
+        $securityResponse = $this->checkOwnerAndOrg();
+        if ($securityResponse instanceof Response === true) {
+            return $securityResponse;
+        }
+
+        // Work around the _ with a custom function for getting clean query parameters from a request
+        $filters = $this->realRequestQueryAll();
+
+        // Handle mapping for query parameters
+        if (isset($appEndpointConfig['in']['query']) === true) {
+            $filters = $this->handleAppEndpointConfig($filters, $appEndpointConfig['in']['query']);
         }
 
         // Let's pas the part variables to filters.
@@ -749,6 +868,11 @@ class RequestService
 
         // We might have some content.
         if (isset($this->data['body']) === true) {
+            // Handle mapping for the body
+            if (isset($appEndpointConfig['in']['body']) === true) {
+                $this->data['body'] = $this->handleAppEndpointConfig($this->data['body'], $appEndpointConfig['in']['body']);
+            }
+
             $this->content = $this->data['body'];
         }
 
@@ -759,10 +883,8 @@ class RequestService
             $this->session->set('schema', $this->schema->getId()->toString());
         }
 
-        // Bit os safety cleanup <- dit zou eigenlijk in de hydrator moeten gebeuren.
-        // unset($this->content['id']);
+        // Bit of safety cleanup <- dit zou eigenlijk in de hydrator moeten gebeuren.
         unset($this->content['_id']);
-        // todo: i don't think this does anything useful?
         unset($this->content['_self']);
         unset($this->content['_schema']);
 
@@ -776,22 +898,13 @@ class RequestService
             }
 
             $dot = new Dot();
-            // Let's turn the from dor attat into an propper array.
-            foreach ($extend as $key => $value) {
+            // Let's turn the dot array into a proper array.
+            foreach ($extend as $value) {
                 $dot->add($value, true);
             }
 
             $extend = $dot->all();
         }//end if
-
-        // Make a list of schema's that are allowed for this endpoint.
-        $allowedSchemas = $this->getAllowedSchemas();
-
-        // Check if the user has the needed scopes.
-        $securityResponse = $this->checkUserScopes($allowedSchemas['reference']);
-        if ($securityResponse instanceof Response === true) {
-            return $securityResponse;
-        }
 
         // Make sure we set object to null in the session, for detecting the correct AuditTrails to create. Also used for DateRead to work correctly!
         $this->session->set('object', null);
@@ -823,16 +936,17 @@ class RequestService
                 // If we do not have an object we throw an 404.
                 if ($result === null) {
                     return new Response(
-                        $this->serializer->serialize(
+                        $this->serializeData(
                             [
                                 'message' => 'Could not find an object with id '.$this->identification,
                                 'type'    => 'Bad Request',
                                 'path'    => implode(', ', $allowedSchemas['name']),
                                 'data'    => ['id' => $this->identification],
                             ],
-                            'json'
+                            $contentType
                         ),
-                        Response::HTTP_NOT_FOUND
+                        Response::HTTP_NOT_FOUND,
+                        ['Content-type' => $contentType]
                     );
                 }
 
@@ -848,6 +962,10 @@ class RequestService
                 $session->set('object', $this->identification);
             } else {
                 // $this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
+                if ($data['headers']['accept'][0] === 'application/json+aggregations') {
+                    return $this->createResponse($this->cacheService->aggregateQueries($filters, $allowedSchemas['id']));
+                }
+
                 $result = $this->cacheService->searchObjects(null, $filters, $allowedSchemas['id']);
             }//end if
             break;
@@ -884,10 +1002,6 @@ class RequestService
             }
 
             $this->object = new ObjectEntity($this->schema);
-
-            if ($this->security->getUser() !== null) {
-                $this->object->setOwner($this->security->getUser()->getUserIdentifier());
-            }
 
             $this->logger->debug('Hydrating object');
             // if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
@@ -1081,7 +1195,7 @@ class RequestService
             $this->entityManager->flush();
             $this->logger->info('Succesfully deleted object');
 
-            return new Response('', '204', ['Content-type' => ($this->data['endpoint']->getDefaultContentType() ?? 'application/json')]);
+            return new Response('', '204', ['Content-type' => (isset($this->data['endpoint']) === true && $this->data['endpoint']->getDefaultContentType() ?? 'application/json')]);
         default:
             $this->logger->error('Unkown method'.$this->data['method']);
 
@@ -1096,8 +1210,9 @@ class RequestService
             $result = $this->shouldWeUnsetEmbedded($result, $appEndpointConfig['out']['embedded']);
         }
 
-        if (isset($appEndpointConfig) === true) {
-            $result = $this->handleAppConfigOut($appEndpointConfig, $result);
+        // Handle mapping for the result
+        if (isset($appEndpointConfig['out']['body']) === true) {
+            $result = $this->handleAppEndpointConfig($result, $appEndpointConfig['out']['body']);
         }
 
         if (isset($eventType) === true && isset($result) === true) {
@@ -1197,23 +1312,83 @@ class RequestService
     }//end mapResults()
 
     /**
-     * Handle output config of the endpoint.
+     * Handle the Application Endpoint configuration in(/out) for query params or body.
      *
-     * @param array $appEndpointConfig The application endpoint config.
-     * @param array $result            The result so far.
+     * @param array $array       The filters/query array used for the current api-call. Or the body / results array of the current api-call.
+     * @param array $queryConfig Application configuration ['in']['query'] or ['in']['body'] or ['out']['body'].
      *
-     * @return array The updated result.
+     * @return array The updated filters/query used for the current api-call. Or the updated body / results of the current api-call.
      */
-    public function handleAppConfigOut(array $appEndpointConfig, array $result): array
+    private function handleAppEndpointConfig(array $array, array $queryConfig): array
     {
-        // We want to do more abstract functionality for output settings, keep in mind for the future.
-        if (isset($appEndpointConfig['out']['body']['mapping']) === true) {
-            $result = $this->mappingService->mapping($this->resourceService->getMapping($appEndpointConfig['out']['body']['mapping'], 'commongateway/corebundle'), $result);
+        // Check if there is a mapping key.
+        if (key_exists('mapping', $queryConfig) === true) {
+            // Find the mapping.
+            $mapping = $this->resourceService->getMapping($queryConfig['mapping'], 'commongateway/corebundle');
+
+            // Map the filters with the given mapping object.
+            $array = $this->mappingService->mapping($mapping, $array);
+        }
+
+        return $array;
+
+    }//end handleAppEndpointConfig()
+
+    /**
+     * Handle the Application Endpoint Configuration for embedded. If embedded should be shown or not.
+     * Configuration Example: ['global']['out']['embedded']['unset'] = true
+     * Configuration Example 2: ['global']['out']['embedded']['unset']['except'] = ['application/json+ld', 'application/ld+json'].
+     *
+     * @param object|array $result         fetched result
+     * @param array        $embeddedConfig Application configuration ['out']['embedded']
+     *
+     * @return array|null The updated result.
+     */
+    public function shouldWeUnsetEmbedded($result, array $embeddedConfig)
+    {
+        if (isset($embeddedConfig['unset']) === false) {
+            return $result;
+        }
+
+        if (isset($result) === true
+            && (isset($embeddedConfig['unset']['except']) === true && isset($this->data['headers']['accept']) === true
+            && empty(array_intersect($embeddedConfig['unset']['except'], $this->data['headers']['accept'])) === true)
+            || isset($this->data['headers']['accept']) === false
+            || isset($embeddedConfig['unset']['except']) === false
+        ) {
+            if (isset($result['results']) === true) {
+                foreach ($result['results'] as $key => $item) {
+                    $result['results'][$key] = $this->checkEmbedded($item);
+                }
+            } else {
+                $result = $this->checkEmbedded($result);
+            }
+        }//end if
+
+        return $result;
+
+    }//end shouldWeUnsetEmbedded()
+
+    /**
+     * If embedded should be shown or not.
+     *
+     * @param object|array $result fetched result
+     *
+     * @return array|null
+     */
+    public function checkEmbedded($result)
+    {
+        if (isset($result->embedded) === true) {
+            unset($result->embedded);
+        }
+
+        if (isset($result['embedded']) === true) {
+            unset($result['embedded']);
         }
 
         return $result;
 
-    }//end handleAppConfigOut()
+    }//end checkEmbedded()
 
     /**
      * Gets the application configuration 'in' and/or 'out' for the current endpoint.
@@ -1302,86 +1477,6 @@ class RequestService
         return '/'.implode('/', $pathArray);
 
     }//end getCurrentEndpoint()
-
-    /**
-     * If embedded should be shown or not.
-     * Handle the Application Endpoint configuration for query params. If filters/query should be changed in any way.
-     *
-     * @param array $filters     The filters/query used for the current api-call.
-     * @param array $queryConfig Application configuration ['in']['query']
-     *
-     * @return array The updated filters/query used for the current api-call.
-     */
-    private function queryAppEndpointConfig(array $filters, array $queryConfig): array
-    {
-        // Check if there is a mapping key.
-        if (key_exists('mapping', $queryConfig) === true) {
-            // Find the mapping.
-            $mapping = $this->resourceService->getMapping($queryConfig['mapping'], 'commongateway/corebundle');
-
-            // Map the filters with the given mapping object.
-            $filters = $this->mappingService->mapping($mapping, $filters);
-        }
-
-        return $filters;
-
-    }//end queryAppEndpointConfig()
-
-    /**
-     * Handle the Application Endpoint Configuration for embedded. If embedded should be shown or not.
-     * Configuration Example: ['global']['out']['embedded']['unset'] = true
-     * Configuration Example 2: ['global']['out']['embedded']['unset']['except'] = ['application/json+ld', 'application/ld+json'].
-     *
-     * @param object|array $result         fetched result
-     * @param array        $embeddedConfig Application configuration ['out']['embedded']
-     *
-     * @return array|null The updated result.
-     */
-    public function shouldWeUnsetEmbedded($result, array $embeddedConfig)
-    {
-        if (isset($embeddedConfig['unset']) === false) {
-            return $result;
-        }
-
-        if (isset($result) === true
-            && (isset($embeddedConfig['unset']['except']) === true && isset($this->data['headers']['accept']) === true
-            && empty(array_intersect($embeddedConfig['unset']['except'], $this->data['headers']['accept'])) === true)
-            || isset($this->data['headers']['accept']) === false
-            || isset($embeddedConfig['unset']['except']) === false
-        ) {
-            if (isset($result['results']) === true) {
-                foreach ($result['results'] as $key => $item) {
-                    $result['results'][$key] = $this->checkEmbedded($item);
-                }
-            } else {
-                $result = $this->checkEmbedded($result);
-            }
-        }//end if
-
-        return $result;
-
-    }//end shouldWeUnsetEmbedded()
-
-    /**
-     * If embedded should be shown or not.
-     *
-     * @param object|array $result fetched result
-     *
-     * @return array|null
-     */
-    public function checkEmbedded($result)
-    {
-        if (isset($result->embedded) === true) {
-            unset($result->embedded);
-        }
-
-        if (isset($result['embedded']) === true) {
-            unset($result['embedded']);
-        }
-
-        return $result;
-
-    }//end checkEmbedded()
 
     /**
      * Add extra parameters to the _self metadata of an Object result. Such as dateRead.

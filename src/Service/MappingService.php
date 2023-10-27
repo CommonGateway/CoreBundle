@@ -5,6 +5,7 @@ namespace CommonGateway\CoreBundle\Service;
 use Adbar\Dot;
 use App\Entity\Mapping;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\SyntaxError;
@@ -23,21 +24,39 @@ use Twig\Error\SyntaxError;
 class MappingService
 {
 
-    // Add symfony style bundle in order to output to the console.
+    /**
+     * Add symfony style bundle in order to output to the console.
+     *
+     * @var SymfonyStyle
+     */
     private SymfonyStyle $style;
 
-    // Create a private variable to store the twig environment.
+    /**
+     * Create a private variable to store the twig environment.
+     *
+     * @var Environment
+     */
     private Environment $twig;
+
+    /**
+     * The current session.
+     *
+     * @var SessionInterface $session
+     */
+    private SessionInterface $session;
 
     /**
      * Setting up the base class with required services.
      *
-     * @param Environment $twig
+     * @param Environment      $twig    The twig environment
+     * @param SessionInterface $session The current session
      */
     public function __construct(
-        Environment $twig
+        Environment $twig,
+        SessionInterface $session
     ) {
-        $this->twig = $twig;
+        $this->twig    = $twig;
+        $this->session = $session;
 
     }//end __construct()
 
@@ -96,6 +115,8 @@ class MappingService
      */
     public function mapping(Mapping $mappingObject, array $input, bool $list = false): array
     {
+        $this->session->set('mapping', $mappingObject->getId()->toString());
+
         // Check for list
         if ($list === true) {
             $list        = [];
@@ -221,7 +242,6 @@ class MappingService
     {
         $value = $dotArray->get($key);
 
-        // Todo: This works, we should go to php 8.0 later.
         if (str_starts_with($cast, 'unsetIfValue==') === true) {
             $unsetIfValue = substr($cast, 14);
             $cast         = 'unsetIfValue';

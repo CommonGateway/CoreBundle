@@ -22,7 +22,7 @@ Handles incoming notification api-calls by finding or creating a synchronization
 **Description**
 
 ```php
-public __construct (\EntityManagerInterface $entityManager, \LoggerInterface $notificationLogger, \SynchronizationService $syncService, \GatewayResourceService $resourceService)
+public __construct (\EntityManagerInterface $entityManager, \LoggerInterface $notificationLogger, \SynchronizationService $syncService, \CallService $callService, \GatewayResourceService $resourceService)
 ```
 
 The constructor sets al needed variables. 
@@ -37,6 +37,8 @@ The constructor sets al needed variables.
 : The notification logger.  
 * `(\SynchronizationService) $syncService`
 : The SynchronizationService.  
+* `(\CallService) $callService`
+: The Call Service.  
 * `(\GatewayResourceService) $resourceService`
 : The GatewayResourceService.  
 

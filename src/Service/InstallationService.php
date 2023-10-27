@@ -97,14 +97,6 @@ class InstallationService
      */
     private array $objects = [];
 
-    /**
-     * Some values used for creating test data.
-     * Note that owner => reference is replaces with an uuid of that User object.
-     *
-     * @var array|string[]
-     */
-    private array $testDataDefault = ['owner' => 'https://docs.commongateway.nl/user/default.user.json'];
-
     private const ALLOWED_CORE_SCHEMAS = [
         'https://docs.commongateway.nl/schemas/Action.schema.json',
         'https://docs.commongateway.nl/schemas/Application.schema.json',
@@ -278,8 +270,8 @@ class InstallationService
         // There is a certain order to this, meaning that we want to handle certain schema types before other schema types.
         if (isset($this->objects['https://docs.commongateway.nl/schemas/Entity.schema.json']) === true && is_array($this->objects['https://docs.commongateway.nl/schemas/Entity.schema.json']) === true) {
             $schemas = $this->objects['https://docs.commongateway.nl/schemas/Entity.schema.json'];
-            isset($this->style) === true && $this->style->writeln('Found '.count($schemas).' objects for schema https://docs.commongateway.nl/schemas/Entity.schema.json');
-            $this->logger->debug('Found '.count($schemas).' objects for schema https://docs.commongateway.nl/schemas/Entity.schema.json', ['bundle' => $bundle, 'reference' => 'https://docs.commongateway.nl/schemas/Entity.schema.json']);
+            isset($this->style) === true && $this->style->writeln('Found '.count($schemas).' core objects for core schema https://docs.commongateway.nl/schemas/Entity.schema.json');
+            $this->logger->debug('Found '.count($schemas).' core objects for core schema https://docs.commongateway.nl/schemas/Entity.schema.json', ['bundle' => $bundle, 'reference' => 'https://docs.commongateway.nl/schemas/Entity.schema.json']);
             $this->handleObjectType('https://docs.commongateway.nl/schemas/Entity.schema.json', $schemas);
             unset($this->objects['https://docs.commongateway.nl/schemas/Entity.schema.json']);
         }
@@ -287,23 +279,22 @@ class InstallationService
         // Save the entities to the database.
         $this->entityManager->flush();
 
-        // Make sure we set default data for creating testdata before we start creating ObjectEntities.
-        if (Uuid::isValid($this->testDataDefault['owner']) === false) {
-            $testDataUser                   = $this->entityManager->getRepository('App:User')->findOneBy(['reference' => $this->testDataDefault['owner']]);
-            $this->testDataDefault['owner'] = $testDataUser ? $testDataUser->getId()->toString() : $testDataUser;
-        }
-
         // Handle all the other objects.
         foreach ($this->objects as $ref => $schemas) {
             // Only do handleObjectType if we want to load in ALL testdata, when user has used the argument data.
             // Or if it is a core schema, of course.
             if ((isset($config['data']) === true && $config['data'] !== false) || in_array($ref, $this::ALLOWED_CORE_SCHEMAS)) {
-                if (isset($this->style) === true) {
-                    $this->style->newline();
-                    $this->style->writeln('Found '.count($schemas).' objects for schema '.$ref);
+                $message = ' objects for schema ';
+                if (in_array($ref, $this::ALLOWED_CORE_SCHEMAS)) {
+                    $message = ' core objects for core schema ';
                 }
 
-                $this->logger->debug('Found '.count($schemas).' objects for schema '.$ref, ['bundle' => $bundle, 'reference' => $ref]);
+                if (isset($this->style) === true) {
+                    $this->style->newline();
+                    $this->style->writeln('Found '.count($schemas).$message.$ref);
+                }
+
+                $this->logger->debug('Found '.count($schemas).$message.$ref, ['bundle' => $bundle, 'reference' => $ref]);
                 $this->handleObjectType($ref, $schemas);
             }
 
@@ -758,7 +749,6 @@ class InstallationService
         // Create it if we don't.
         if (isset($object) === false || $object === null) {
             $object = new ObjectEntity($entity);
-            $object->setOwner($this->testDataDefault['owner']);
         }
 
         // TODO: testdata objects seem to have twice as much subobjects as they should have. Duplicates... (example: kiss->klanten->telefoonnummers).
@@ -767,7 +757,7 @@ class InstallationService
             $object = $this->schemaService->hydrate($object, $schema);
         }
 
-        // EAV objects arn't cast from schema but hydrated from array's.
+        // EAV objects aren't cast from schema but hydrated from array's.
         $object->hydrate($schema);
 
         return $object;
@@ -847,10 +837,15 @@ class InstallationService
 
         try {
             if (isset($this->style) === true && method_exists(get_class($installationService), 'setStyle') === true) {
+                $this->style->newLine();
                 $installationService->setStyle($this->style);
             }
 
             $install = $installationService->install();
+
+            if (isset($this->style) === true) {
+                $this->style->newLine();
+            }
 
             return is_bool($install) === true ? $install : empty($install) === false;
         } catch (\Throwable $throwable) {
@@ -1102,7 +1097,6 @@ class InstallationService
             $object = $this->checkIfObjectExists($repository, $endpointData['reference'], $type);
         }
 
-        // Todo: this works, we should go to php 8.0 later.
         if (isset($endpointData['$id']) === false || str_contains($endpointData['$id'], '.endpoint.json') === false) {
             $endpointData['$id'] = $this->createEndpointReference($object ?? null, $type);
             if ($endpointData['$id'] === null) {
@@ -1714,7 +1708,6 @@ class InstallationService
             }
 
             foreach ($securityGroup->getScopes() as $scope) {
-                // Todo: This works, we should go to php 8.0 later.
                 if (str_contains(strtolower($scope), 'admin')) {
                     $this->logger->error('It is forbidden to change or add users with admin scopes!', ['securityGroup' => $reference, 'userData' => $userData]);
                     continue 2;

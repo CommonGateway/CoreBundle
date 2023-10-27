@@ -487,24 +487,9 @@ class ValidationService
         case 'number':
             return new Rules\Number();
         case 'date':
-            return new Rules\OneOf(
-                new Rules\Date('d-m-Y'),
-                new Rules\Date('Y-m-d'),
-            );
+            return new Rules\Date();
         case 'datetime':
-            // Todo: make a custom rule that checks if we can do new DateTime() with the input value to allow multiple formats?
-            // default format for Rules\DateTime = 'c' = ISO standard -> Y-m-dTH:i:s+timezone(00:00).
-            return new Rules\OneOf(
-                new Rules\DateTime('d-m-Y'),
-                new Rules\DateTime('d-m-Y H:i:s'),
-                new Rules\DateTime('d-m-YTH:i:s'),
-                new Rules\DateTime('Y-m-d'),
-                new Rules\DateTime('Y-m-d H:i:s'),
-                new Rules\DateTime('Y-m-dTH:i:s'),
-                new Rules\DateTime('Y-m-d\TH:i:s'),
-                new Rules\DateTime('Y-m-d\U\T\CH:i:s'),
-                new Rules\DateTime('c'),
-            );
+            return new Rules\DateTime();
         case 'array':
             return new Rules\ArrayType();
         case 'boolean':

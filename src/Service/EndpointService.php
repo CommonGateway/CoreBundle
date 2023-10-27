@@ -72,6 +72,8 @@ class EndpointService
      * @param SerializerInterface      $serializer      The serializer
      * @param RequestService           $requestService  The request service
      * @param EventDispatcherInterface $eventDispatcher The event dispatcher
+     * @param SessionInterface         $session         The current session
+     * @param LoggerInterface          $endpointLogger  The endpoint logger.
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -130,7 +132,6 @@ class EndpointService
         // If we have an proxy we will handle just that.
         if (empty($endpoint->getProxy()) === false) {
             $this->logger->info('Handling proxied endpoint');
-
             $parameters['response'] = $this->requestService->proxyHandler($parameters, []);
         }
 
@@ -197,23 +198,14 @@ class EndpointService
     }//end logRequestHeaders()
 
     /**
-     * Gets the accept type based on the request.
+     * This function return the correct file extension for decode/encode purposes from the accept header.
      *
-     * This method breaks complexity rules but since a switch is the most efficent and performent way to do this we made a design decicion to allow it
+     * @param string $acceptHeader.
      *
-     * @return string The accept type
+     * @return string|null Accept type.
      */
-    public function getAcceptType(): string
+    private function determineAcceptType(string $acceptHeader): ?string
     {
-        // Let's first look at the accept header.
-        $acceptHeader = $this->request->headers->get('accept');
-
-        // If the accept header does not provide useful info, check if the endpoint contains a pointer.
-        $this->logger->debug('Get Accept header');
-        if (($acceptHeader === null || $acceptHeader === '*/*') && $this->endpoint !== null && $this->endpoint->getDefaultContentType() !== null) {
-            $acceptHeader = $this->endpoint->getDefaultContentType();
-        }//end if
-
         // Determine the accept type.
         $this->logger->debug('Determine accept type from accept header');
         switch ($acceptHeader) {
@@ -247,8 +239,50 @@ class EndpointService
             return 'html';
         case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
             return 'docx';
-            break;
+                break;
+        case 'application/json+aggregations':
+            return 'aggregations';
         }//end switch
+
+        return null;
+
+    }//end determineAcceptType()
+
+    /**
+     * Gets the accept type based on the request.
+     *
+     * This method breaks complexity rules but since a switch is the most efficent and performent way to do this we made a design decicion to allow it
+     *
+     * @return string The accept type
+     */
+    public function getAcceptType(): string
+    {
+        // Let's first look at the accept header.
+        $acceptHeader = $this->request->headers->get('accept');
+
+        // If the accept header does not provide useful info, check if the endpoint contains a pointer.
+        $this->logger->debug('Get Accept header');
+        if (($acceptHeader === null || $acceptHeader === '*/*') && $this->endpoint !== null && $this->endpoint->getDefaultContentType() !== null) {
+            $acceptHeader = $this->endpoint->getDefaultContentType();
+        }//end if
+
+        // Get an accept type when multiple accept values are given.
+        if (strpos($acceptHeader, ',') !== false) {
+            $acceptHeaders = explode(',', $acceptHeader);
+            foreach ($acceptHeaders as $acceptHeader) {
+                $determinedAcceptType = $this->determineAcceptType($acceptHeader);
+                if ($determinedAcceptType !== null) {
+                    return $determinedAcceptType;
+                }
+            }
+        }
+
+        // Get the accept type when a single accept type is given.
+        $determinedAcceptType = $this->determineAcceptType($acceptHeader);
+
+        if ($determinedAcceptType !== null) {
+            return $determinedAcceptType;
+        }
 
         // As a backup we look at any file extenstion.
         $this->logger->debug('Determine accept type from path extension');
@@ -309,8 +343,11 @@ class EndpointService
      */
     public function getEndpoint(): Endpoint
     {
-        $path     = $this->request->getPathInfo();
-        $path     = substr($path, 5);
+        $path = $this->request->getPathInfo();
+
+        // The third parameters ensures that /prefix/api/a/api/b will become ['/prefix', 'a/api/b'].
+        // See https://www.php.net/manual/en/function.explode.php for more information.
+        $path     = explode('/api/', $path, 2)[1];
         $endpoint = $this->entityManager->getRepository('App:Endpoint')->findByMethodRegex($this->request->getMethod(), $path);
 
         if ($endpoint !== null) {
@@ -455,7 +492,7 @@ class EndpointService
         // Let's get all the post variables.
         $parameters['post'] = $this->request->request->all();
 
-        if ($parameters['method'] === 'PUT' && $parameters['post'] === []) {
+        if ($parameters['method'] === 'PUT' && $parameters['post'] === [] && $parameters['body'] === []) {
             $parameters['post'] = $this->getPutData();
         }
 
@@ -472,16 +509,21 @@ class EndpointService
      */
     private function getNormalPath(array $parameters): array
     {
-        $path = $this->endpoint->getPath();
+        $path    = $this->endpoint->getPath();
+        $pathRaw = $this->request->getPathInfo();
+
+        // The third parameters ensures that /prefix/api/a/api/b will become ['/prefix', 'a/api/b'].
+        // See https://www.php.net/manual/en/function.explode.php for more information.
+        $pathRaw = explode('/api/', $pathRaw, 2)[1];
 
         try {
-            $combinedArray = array_combine($path, explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
+            $combinedArray = array_combine($path, explode('/', $pathRaw));
         } catch (Exception $exception) {
             $this->logger->error('EndpointService->getNormalPath(): $exception');
 
-            // Todo: not sure why this is here, if someone does now, please add inline comments!
+            // Todo: When an id is not given the last element of the path array should be removed to ensure the arrays are of the same lenght.
             array_pop($path);
-            $combinedArray = array_combine($path, explode('/', str_replace('/api/', '', $parameters['pathRaw'])));
+            $combinedArray = array_combine($path, explode('/', $pathRaw));
         }
 
         if ($combinedArray === false) {
@@ -518,8 +560,9 @@ class EndpointService
 
         $endpoint = $matches[1];
 
-        // Ltrim the default /api/ & Str_replace endpoint for proxy from the pathRaw & explode what is left for $parametersPath.
-        $pathRaw         = ltrim($pathRaw, '/api');
+        // The third parameters ensures that /prefix/api/a/api/b will become ['/prefix', 'a/api/b'].
+        // See https://www.php.net/manual/en/function.explode.php for more information.
+        $pathRaw         = $pathRaw = explode('/api/', $pathRaw, 2)[1];
         $pathRaw         = str_replace("/$endpoint", '', $pathRaw);
         $explodedPathRaw = explode('/', $pathRaw);
 

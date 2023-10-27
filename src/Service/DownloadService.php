@@ -79,6 +79,10 @@ class DownloadService
      */
     public function render(array $data): string
     {
+        if (isset($data['_self']['schema']['id']) === false && isset($data['message']) !== false) {
+            return "<html><body><h1>{$data['message']}</h1></body></html>";
+        }
+
         $criteria = Criteria::create()->where(Criteria::expr()->memberOf("supportedSchemas", $data['_self']['schema']['id']));
 
         $templates = new ArrayCollection($this->entityManager->getRepository('App:Template')->findAll());

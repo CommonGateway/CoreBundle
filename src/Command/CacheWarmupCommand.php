@@ -5,6 +5,7 @@ namespace CommonGateway\CoreBundle\Command;
 use CommonGateway\CoreBundle\Service\CacheService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -48,8 +49,12 @@ class CacheWarmupCommand extends Command
     protected function configure(): void
     {
         $this
+            ->addOption('objects', 'o', InputOption::VALUE_OPTIONAL, 'Skip caching objects during cache warmup', false)
+            ->addOption('schemas', 's', InputOption::VALUE_OPTIONAL, 'Skip caching schemas during cache warmup', false)
+            ->addOption('endpoints', 'p', InputOption::VALUE_OPTIONAL, 'Skip caching endpoints during cache warmup', false)
+            ->addOption('removeOnly', 'r', InputOption::VALUE_OPTIONAL, 'Only do the remove data from cache during this command', false)
             ->setDescription('This command puts all objects into the cache')
-            ->setHelp('This command allows you to run further installation an configuration actions afther installing a plugin');
+            ->setHelp('This command allows you to run further installation an configuration actions after installing a plugin');
 
     }//end configure()
 
@@ -65,7 +70,24 @@ class CacheWarmupCommand extends Command
     {
         $this->cacheService->setStyle(new SymfonyStyle($input, $output));
 
-        return $this->cacheService->warmup();
+        $config = [];
+        if ($input->getOption('objects') !== false) {
+            $config['objects'] = true;
+        }
+
+        if ($input->getOption('schemas') !== false) {
+            $config['schemas'] = true;
+        }
+
+        if ($input->getOption('endpoints') !== false) {
+            $config['endpoints'] = true;
+        }
+
+        if ($input->getOption('removeOnly') !== false) {
+            $config['removeOnly'] = true;
+        }
+
+        return $this->cacheService->warmup($config);
 
     }//end execute()
 }//end class

@@ -70,21 +70,6 @@ class ValueService
     }//end __construct()
 
     /**
-     * Defines the events that the subscriber should subscribe to.
-     *
-     * @return array The subscribed events
-     */
-    public function getSubscribedEvents(): array
-    {
-        return [
-            Events::preUpdate,
-            Events::prePersist,
-            Events::preRemove,
-        ];
-
-    }//end getSubscribedEvents()
-
-    /**
      * Gets a subobject by uuid.
      *
      * @param string $uuid        The id of the subobject
@@ -176,11 +161,11 @@ class ValueService
     {
         if (Uuid::isValid($identifier) === true) {
             return $this->getSubObjectById($identifier, $valueObject);
-        } else if (filter_var($identifier, FILTER_VALIDATE_URL) === true) {
+        } else if (filter_var($identifier, FILTER_VALIDATE_URL) !== false) {
             return $this->getSubObjectByUrl($identifier, $valueObject);
         }
 
-        return $identifier;
+        return null;
 
     }//end findSubobject()
 

@@ -19,8 +19,8 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 /**
  * Provides commongateway events and logs based on doctrine events.
  *
- * This subscriber turns doctrine events into common gateway action events an provides those to listeners.
- * As a second function it also creates appropriate logging for doctrine events
+ * This subscriber turns doctrine events into common gateway action events and provides those to listeners.
+ * As a second function it also creates appropriate logging for doctrine events.
  *
  * @Author Ruben van der Linde <ruben@conduction.nl>, Robert Zondervan <robert@conduction.nl>
  *
@@ -59,7 +59,7 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     private Logger $logger;
 
     /**
-     * Load requiered services, schould not be aprouched directly.
+     * Load required services, should not be approached directly.
      *
      * @param CacheService             $cacheService
      * @param EntityManagerInterface   $entityManager
@@ -89,231 +89,11 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
     public function getSubscribedEvents(): array
     {
         return [
-            Events::preRemove,
-            Events::prePersist,
-            Events::preUpdate,
-            Events::postPersist,
-            Events::postUpdate,
-            Events::postRemove,
-            Events::postLoad,
             Events::preFlush,
             Events::postFlush,
         ];
 
     }//end getSubscribedEvents()
-
-    /**
-     * Deleting object from database.
-     *
-     * @param LifecycleEventArgs $args
-     *
-     * @return void Nothing.
-     */
-    public function preRemove(LifecycleEventArgs $args): void
-    {
-        $object = $args->getObject();
-
-        // if this subscriber only applies to certain entity types,
-        if ($object instanceof ObjectEntity === false) {
-            return;
-        }
-
-        // Write the log.
-        $this->logger->info(
-            'Deleting object from database',
-            [
-                'object' => $object->getId(),
-                'entity' => $object->getEntity()->getId(),
-            ]
-        );
-
-        // Throw the event.
-        $event = new ActionEvent('commongateway.action.event', ['object' => $object, 'entity' => ['id' => $object->getEntity()->getId(), 'reference' => $object->getEntity()->getReference()]], 'commongateway.object.pre.delete');
-        $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
-
-    }//end preRemove()
-
-    /**
-     * Creating object in database.
-     *
-     * @param LifecycleEventArgs $args
-     *
-     * @return void Nothing.
-     */
-    public function prePersist(LifecycleEventArgs $args): void
-    {
-        $object = $args->getObject();
-
-        // If this subscriber only applies to certain entity types,
-        if ($object instanceof ObjectEntity === false) {
-            return;
-        }
-
-        // Write the log.
-        $this->logger->info(
-            'Creating object in database',
-            [
-                'object' => $object->getId(),
-                'entity' => $object->getEntity()->getId(),
-            ]
-        );
-
-        // Throw the event.
-        $event = new ActionEvent('commongateway.action.event', ['object' => $object, 'entity' => ['id' => $object->getEntity()->getId(), 'reference' => $object->getEntity()->getReference()]], 'commongateway.object.pre.create');
-        $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
-
-    }//end prePersist()
-
-    /**
-     * Updating object to database.
-     *
-     * @param LifecycleEventArgs $args
-     *
-     * @return void Nothing.
-     */
-    public function preUpdate(LifecycleEventArgs $args): void
-    {
-        $object = $args->getObject();
-
-        // If this subscriber only applies to certain entity types,
-        if ($object instanceof ObjectEntity === false) {
-            return;
-        }
-
-        // Write the log.
-        $this->logger->info(
-            'Updating object to database',
-            [
-                'object' => $object->getId(),
-                'entity' => $object->getEntity()->getId(),
-            ]
-        );
-
-        // Throw the event.
-        $event = new ActionEvent('commongateway.action.event', ['object' => $object, 'entity' => ['id' => $object->getEntity()->getId(), 'reference' => $object->getEntity()->getReference()]], 'commongateway.object.pre.update');
-        $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
-
-    }//end preUpdate()
-
-    /**
-     * Deleted object from database.
-     *
-     * @param LifecycleEventArgs $args
-     *
-     * @return void Nothing.
-     */
-    public function postRemove(LifecycleEventArgs $args): void
-    {
-        $object = $args->getObject();
-
-        // If this subscriber only applies to certain entity types,
-        if ($object instanceof ObjectEntity === false) {
-            return;
-        }
-
-        // Write the log.
-        $this->logger->info(
-            'Deleted object from database',
-            []
-        );
-
-        // Throw the event.
-        $event = new ActionEvent('commongateway.action.event', [], 'commongateway.object.post.delete');
-        $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
-
-    }//end postRemove()
-
-    /**
-     * Created object in database.
-     *
-     * @param LifecycleEventArgs $args
-     *
-     * @return void Nothing.
-     */
-    public function postPersist(LifecycleEventArgs $args): void
-    {
-        $object = $args->getObject();
-
-        // If this subscriber only applies to certain entity types,
-        if ($object instanceof ObjectEntity === false) {
-            return;
-        }
-
-        // Write the log.
-        $this->logger->info(
-            'Created object in database',
-            [
-                'object' => $object->getId(),
-                'entity' => $object->getEntity()->getId(),
-            ]
-        );
-
-        // Throw the event.
-        $event = new ActionEvent('commongateway.action.event', ['object' => $object, 'entity' => ['id' => $object->getEntity()->getId(), 'reference' => $object->getEntity()->getReference()]], 'commongateway.object.post.create');
-        $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
-
-    }//end postPersist()
-
-    /**
-     * Updated object in database.
-     *
-     * @param LifecycleEventArgs $args
-     *
-     * @return void Nothing.
-     */
-    public function postUpdate(LifecycleEventArgs $args): void
-    {
-        $object = $args->getObject();
-
-        // If this subscriber only applies to certain entity types,
-        if ($object instanceof ObjectEntity === false) {
-            return;
-        }
-
-        // Write the log.
-        $this->logger->info(
-            'Updated object in database',
-            [
-                'object' => $object->getId(),
-                'entity' => $object->getEntity()->getId(),
-            ]
-        );
-
-        // Throw the event.
-        $event = new ActionEvent('commongateway.action.event', ['object' => $object, 'entity' => ['id' => $object->getEntity()->getId(), 'reference' => $object->getEntity()->getReference()]], 'commongateway.object.post.update');
-        $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
-
-    }//end postUpdate()
-
-    /**
-     * Read object from database.
-     *
-     * @param LifecycleEventArgs $args
-     *
-     * @return void Nothing.
-     */
-    public function postLoad(LifecycleEventArgs $args): void
-    {
-        $object = $args->getObject();
-
-        // if this subscriber only applies to certain entity types,
-        if ($object instanceof ObjectEntity === false) {
-            return;
-        }
-
-        // Write the log
-        $this->logger->info(
-            'Read object from database',
-            [
-                'object' => $object->getId(),
-            ]
-        );
-
-        // Throw the event
-        $event = new ActionEvent('commongateway.action.event', ['object' => $object], 'commongateway.object.post.read');
-        $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
-
-    }//end postLoad()
 
     /**
      * Flushing entity manager.

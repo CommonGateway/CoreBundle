@@ -120,7 +120,7 @@ class NotificationService
                 'GET'
             );
         } catch (\Exception $exception) {
-            // Todo set error log
+            $this->logger->error("Notification call before sync returned an Exception: {$exception->getMessage()}");
             throw new Exception($exception->getMessage());
         }//end try
 
