@@ -45,7 +45,7 @@ class ValueDatabaseSubscriber implements EventSubscriberInterface
     public function postUpdate(LifecycleEventArgs $args)
     {
         $value = $args->getObject();
-        if ($value instanceof Value && $value->getStringValue()) {
+        if ($value instanceof Value && $value->getObjectEntity() !== null && $value->getStringValue()) {
             if ($value->getObjectEntity()->getUri() === null) {
                 $value->getObjectEntity()->setUri(rtrim($this->param->get('app_url'), '/').$value->getObjectEntity()->getSelf());
             }

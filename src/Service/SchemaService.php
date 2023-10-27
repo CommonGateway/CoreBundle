@@ -145,10 +145,10 @@ class SchemaService
             $status = false;
         }
 
-        // Check atributes.
+        // Check attributes.
         foreach ($schema->getAttributes() as $attribute) {
-            $valid = $this->validateAtribute($attribute);
-            // If the atribute isn't valid then the schema isn't valid.
+            $valid = $this->validateAttribute($attribute);
+            // If the attribu isn't valid then the schema isn't valid.
             if ($valid === false && $status === true) {
                 $status = false;
             }
@@ -165,13 +165,13 @@ class SchemaService
     }//end validateSchema()
 
     /**
-     * Validates a single atribute.
+     * Validates a single attribu.
      *
-     * @param Attribute $attribute The atribute to validate
+     * @param Attribute $attribute The attribu to validate
      *
      * @return bool
      */
-    public function validateAtribute(Attribute $attribute): bool
+    public function validateAttribute(Attribute $attribute): bool
     {
         $status = true;
 
@@ -203,7 +203,7 @@ class SchemaService
 
         return $status;
 
-    }//end validateAtribute()
+    }//end validateAttribute()
 
     /**
      * Handles forced id's on object entities.
@@ -215,7 +215,7 @@ class SchemaService
      */
     public function hydrate(ObjectEntity $objectEntity, array $hydrate = []): ObjectEntity
     {
-        // This savety dosn't make sense but we need it.
+        // This safety doesn't make sense but we need it.
         if ($objectEntity->getEntity() === null) {
             $this->logger->error('Object can\'t be persisted due to missing schema');
 
@@ -263,26 +263,43 @@ class SchemaService
                         $this->logger->debug('an array for objects');
                         if (is_array($value) === true) {
                             foreach ($value as $subvalue) {
-                                // Savety.
-                                if ($valueObject->getAttribute()->getObject() === null) {
-                                    continue;
-                                }
-
                                 // Is array.
                                 if (is_array($subvalue) === true) {
-                                    $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
-                                    $newObject = $this->hydrate($newObject, $subvalue);
-                                    $valueObject->addObject($newObject);
+                                    // If we have an id let try to grab an object.
+                                    if (array_key_exists('_id', $subvalue) === true && isset($subvalue['id']) === false) {
+                                        $subvalue['id'] = $subvalue['_id'];
+                                    }
+                                    
+                                    if (array_key_exists('id', $subvalue) === true) {
+                                        $subObject = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $subvalue['id']]);
+                                    }
+                                    
+                                    // Create it if we don't.
+                                    if (isset($subObject) === false || $subObject === null) {
+                                        // Safety.
+                                        if ($valueObject->getAttribute()->getObject() === null) {
+                                            $this->logger->error('Could not find an object for attribute  '.$valueObject->getAttribute()->getname().' ('.$valueObject->getAttribute()->getId().')');
+                                            continue;
+                                        }
+                                        
+                                        $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
+                                        $subObject = $this->hydrate($newObject, $subvalue);
+                                    } else {
+                                        $subObject = $this->hydrate($subObject, $subvalue);
+                                    }
                                 } else {
                                     // Is not an array.
                                     $idValue  = $subvalue;
-                                    $subvalue = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
-                                    // Savety.
-                                    if ($subvalue === null) {
+                                    $subObject = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
+                                    // Safety.
+                                    if ($subObject === null) {
                                         $this->logger->error('Could not find an object for id '.$idValue.' (SchemaService->hydrate)');
-                                    } else {
-                                        $valueObject->addObject($subvalue);
                                     }
+                                }
+                                
+                                if ($subObject instanceof ObjectEntity === true && $valueObject->getObjects()->contains($subObject) === false)
+                                {
+                                    $valueObject->addObject($subObject);
                                 }
                             }//end foreach
                         } else {
@@ -295,26 +312,42 @@ class SchemaService
 
                     // Is array.
                     if (is_array($value) === true) {
-                        // Savety.
-                        if ($valueObject->getAttribute()->getObject() === null) {
-                            $this->logger->error('Could not find an object for atribute  '.$valueObject->getAttribute()->getname().' ('.$valueObject->getAttribute()->getId().')');
-                            continue;
+                        // If we have an id let try to grab an object.
+                        if (array_key_exists('_id', $value) === true && isset($value['id']) === false) {
+                            $value['id'] = $value['_id'];
                         }
-
-                        $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
-                        $value     = $this->hydrate($newObject, $value);
-                        $valueObject->setValue($value);
+                        
+                        if (array_key_exists('id', $value) === true) {
+                            $subObject = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $value['id']]);
+                        }
+                        
+                        // Create it if we don't.
+                        if (isset($subObject) === false || $subObject === null) {
+                            // Safety.
+                            if ($valueObject->getAttribute()->getObject() === null) {
+                                $this->logger->error('Could not find an object for attribute  '.$valueObject->getAttribute()->getname().' ('.$valueObject->getAttribute()->getId().')');
+                                continue;
+                            }
+                            
+                            $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
+                            $subObject = $this->hydrate($newObject, $value);
+                        } else {
+                            $subObject = $this->hydrate($subObject, $value);
+                        }
                     } else {
                         // Is not an array.
                         $idValue = $value;
-                        $value   = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
-                        // Savety.
-                        if ($value === null) {
+                        $subObject   = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
+                        // Safety.
+                        if ($subObject === null) {
                             $this->logger->error('Could not find an object for id '.$idValue.' (SchemaService->hydrate)');
-                        } else {
-                            $valueObject->setValue($value);
                         }
                     }//end if
+                    
+                    if ($subObject instanceof ObjectEntity === true && $valueObject->getObjects()->contains($subObject) === false)
+                    {
+                        $valueObject->setValue($subObject);
+                    }
                 } else {
                     $valueObject->setValue($value);
                 }//end if
