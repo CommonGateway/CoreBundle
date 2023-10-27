@@ -12,7 +12,7 @@ The schema service is used to validate schema's.
 |------|-------------|
 |[__construct](#schemaservice__construct)||
 |[hydrate](#schemaservicehydrate)|Handles forced id's on object entities.|
-|[validateAtribute](#schemaservicevalidateatribute)|Validates a single atribute.|
+|[validateAttribute](#schemaservicevalidateattribute)|Validates a single attribu.|
 |[validateObjects](#schemaservicevalidateobjects)|Validates the objects in the EAV setup.|
 |[validateSchema](#schemaservicevalidateschema)|Validates a single schema.|
 |[validateSchemas](#schemaservicevalidateschemas)|Validates the schemas in the EAV setup.|
@@ -74,22 +74,22 @@ Handles forced id's on object entities.
 <hr />
 
 
-### SchemaService::validateAtribute  
+### SchemaService::validateAttribute  
 
 **Description**
 
 ```php
-public validateAtribute (\Attribute $attribute)
+public validateAttribute (\Attribute $attribute)
 ```
 
-Validates a single atribute. 
+Validates a single attribu. 
 
  
 
 **Parameters**
 
 * `(\Attribute) $attribute`
-: The atribute to validate  
+: The attribu to validate  
 
 **Return Values**
 
