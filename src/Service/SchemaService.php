@@ -165,9 +165,9 @@ class SchemaService
     }//end validateSchema()
 
     /**
-     * Validates a single attribu.
+     * Validates a single attribute.
      *
-     * @param Attribute $attribute The attribu to validate
+     * @param Attribute $attribute The attribute to validate
      *
      * @return bool
      */
