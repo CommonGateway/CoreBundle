@@ -148,7 +148,7 @@ class SchemaService
         // Check attributes.
         foreach ($schema->getAttributes() as $attribute) {
             $valid = $this->validateAttribute($attribute);
-            // If the attribu isn't valid then the schema isn't valid.
+            // If the attribute isn't valid then the schema isn't valid.
             if ($valid === false && $status === true) {
                 $status = false;
             }
