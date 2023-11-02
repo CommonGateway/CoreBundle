@@ -382,7 +382,7 @@ class CacheService
      *
      * @return void
      */
-    public function removeObject(ObjectEntity $object): void
+    public function removeObject(ObjectEntity $object, bool $softDelete = false): void
     {
         // Backwards compatablity.
         if (isset($this->client) === false) {
@@ -391,6 +391,16 @@ class CacheService
 
         $identification = $object->getId()->toString();
         $collection     = $this->client->objects->json;
+
+        if($softDelete === true) {
+            $now = new DateTime();
+            $objectArray = $object->toArray();
+            $objectArray['_self']['dateDeleted'] = $now->format('c');
+
+            $collection->findOneAndReplace(['_id' => $identification], ['_self' => $objectArray['_self']], ['upsert' => true]);
+            
+            return;
+        }
 
         $collection->findOneAndDelete(['_id' => $identification]);
 
