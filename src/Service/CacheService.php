@@ -392,13 +392,13 @@ class CacheService
         $identification = $object->getId()->toString();
         $collection     = $this->client->objects->json;
 
-        if($softDelete === true) {
-            $now = new DateTime();
-            $objectArray = $object->toArray();
+        if ($softDelete === true) {
+            $now                                 = new DateTime();
+            $objectArray                         = $object->toArray();
             $objectArray['_self']['dateDeleted'] = $now->format('c');
 
             $collection->findOneAndReplace(['_id' => $identification], ['_self' => $objectArray['_self']], ['upsert' => true]);
-            
+
             return;
         }
 
