@@ -809,7 +809,7 @@ class CacheService
             $filter['_showDeleted']
         );
 
-        if(key_exists('_showDeleted', $completeFilter) === false || $completeFilter['_showDeleted'] === 'false') {
+        if (key_exists('_showDeleted', $completeFilter) === false || $completeFilter['_showDeleted'] === 'false') {
             $filter['_self.dateDeleted'] = 'IS NULL';
         }
 
