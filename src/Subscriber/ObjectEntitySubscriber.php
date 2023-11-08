@@ -273,7 +273,10 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         }
 
         // TODO: old CacheDatabaseSubscriber code: 'Remove objects from the cache after they are removed from the database.'
-        $this->cacheService->removeObject($object);
+        $this->cacheService->removeObject(
+            $object,
+            $object->getEntity() !== null && $object->getEntity()->getSoftDelete() === true
+        );
 
         // TODO: old DoctrineToGatewayEventSubscriber code: 'Deleting object from database.'
         // Write the log.

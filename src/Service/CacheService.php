@@ -805,8 +805,13 @@ class CacheService
             $filter['_search'],
             $filter['_order'],
             $filter['_fields'],
-            $filter['_queries']
+            $filter['_queries'],
+            $filter['_showDeleted']
         );
+
+        if(key_exists('_showDeleted', $completeFilter) === false || $completeFilter['_showDeleted'] === 'false') {
+            $filter['_self.dateDeleted'] = 'IS NULL';
+        }
 
         // 'normal' Filters (not starting with _ ).
         foreach ($filter as $key => &$value) {
