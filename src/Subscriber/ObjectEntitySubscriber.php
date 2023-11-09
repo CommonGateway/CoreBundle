@@ -217,6 +217,10 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false) {
             return;
         }
+        
+        // Set object id and schema id in session
+        $this->session->set('object', $object->getId()->toString());
+        $this->session->set('schema', $object->getEntity() !== null ? $object->getEntity()->getId()->toString() : null);
 
         // TODO: old DoctrineToGatewayEventSubscriber code: 'Updating object to database.'
         // Write the log.
@@ -255,6 +259,10 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false) {
             return;
         }
+        
+        // Set object id and schema id in session
+        $this->session->set('object', $object->getId()->toString());
+        $this->session->set('schema', $object->getEntity() !== null ? $object->getEntity()->getId()->toString() : null);
 
         // TODO: old AuditTrailSubscriber code:
         if ($object->getEntity() !== null
@@ -364,6 +372,10 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false) {
             return;
         }
+        
+        // Set object id and schema id in session
+        $this->session->set('object', $object->getId()->toString());
+        $this->session->set('schema', $object->getEntity() !== null ? $object->getEntity()->getId()->toString() : null);
 
         // TODO: old CacheDatabaseSubscriber code: 'Updates the cache whenever an object is put into the database.'
         // $this->messageBus->dispatch(new CacheMessage($object->getId()));

@@ -931,8 +931,6 @@ class RequestService
                     }
                 }
 
-                // check endpoint throws foreach and set the eventtype.
-                // use event dispatcher.
                 // If we do not have an object we throw an 404.
                 if ($result === null) {
                     return new Response(
