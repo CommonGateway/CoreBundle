@@ -217,7 +217,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false) {
             return;
         }
-        
+
         // Set object id and schema id in session
         $this->session->set('object', $object->getId()->toString());
         $this->session->set('schema', $object->getEntity() !== null ? $object->getEntity()->getId()->toString() : null);
@@ -259,7 +259,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false) {
             return;
         }
-        
+
         // Set object id and schema id in session
         $this->session->set('object', $object->getId()->toString());
         $this->session->set('schema', $object->getEntity() !== null ? $object->getEntity()->getId()->toString() : null);
@@ -372,7 +372,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         if ($object instanceof ObjectEntity === false) {
             return;
         }
-        
+
         // Set object id and schema id in session
         $this->session->set('object', $object->getId()->toString());
         $this->session->set('schema', $object->getEntity() !== null ? $object->getEntity()->getId()->toString() : null);
