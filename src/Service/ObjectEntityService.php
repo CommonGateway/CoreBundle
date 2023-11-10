@@ -95,6 +95,12 @@ class ObjectEntityService
             $user = $this->entityManager->getRepository('App:User')->find($this->session->get('currentActionUserId'));
         }
         
+        if ($user !== null) {
+            // Set organization id and user id in session
+            $this->session->set('user', $user->getId()->toString());
+            $this->session->set('organization', $user->getOrganization() !== null ? $user->getOrganization()->getId()->toString() : null);
+        }
+        
         return $user;
     }
 
