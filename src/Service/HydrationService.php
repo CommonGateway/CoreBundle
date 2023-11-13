@@ -78,9 +78,8 @@ class HydrationService
                     $this->entityManager->remove($synchronization);
                     return null;
                 }
-
-            }
-        }
+            }//end if
+        }//end foreach
 
         if (isset($synchronization) === true) {
             if ($synchronization->getObject() instanceof ObjectEntity === false) {
