@@ -71,6 +71,14 @@ class HydrationService
                 $object[$key] = $this->searchAndReplaceSynchronizations($value, $source, $subEntity, $flush);
             } else if ($key === '_sourceId') {
                 $synchronization = $this->syncService->findSyncBySource($source, $entity, $value);
+                if (key_exists('_onlySetIfPreExisting', $object) === true
+                    && $object['_onlySetIfPreExisting'] === 'true'
+                    && $this->entityManager->getUnitOfWork()->isEntityScheduled($synchronization) === true
+                ) {
+                    $this->entityManager->remove($synchronization);
+                    return null;
+                }
+
             }
         }
 
