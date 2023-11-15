@@ -65,7 +65,11 @@ class ValueSubscriber implements EventSubscriberInterface
             || Uuid::isValid($valueObject->getStringValue())
             || filter_var($valueObject->getStringValue(), FILTER_VALIDATE_URL))
         ) {
-            $this->messageBus->dispatch(new ValueMessage($value->getObject()->getId()));
+            try {
+                $this->messageBus->dispatch(new ValueMessage($value->getObject()->getId()));
+            } catch (\Exception $exception) {
+
+            }
         }//end if
 
     }//end postUpdate()
