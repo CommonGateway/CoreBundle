@@ -68,7 +68,6 @@ class ValueSubscriber implements EventSubscriberInterface
             try {
                 $this->messageBus->dispatch(new ValueMessage($value->getObject()->getId()));
             } catch (\Exception $exception) {
-
             }
         }//end if
 
