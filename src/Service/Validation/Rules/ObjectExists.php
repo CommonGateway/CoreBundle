@@ -26,7 +26,8 @@ final class ObjectExists extends AbstractRule
     private ?string $schemaId;
 
     /**
-     * Construct for this Rule.
+     * It is recommended to use the Uuid() validation rule before using this rule.
+     * (maybe in combination with the When(if->UUID(),true->ObjectExists(),else) rule)
      *
      * @param EntityManagerInterface $entityManager An EntityManager for finding existing ObjectEntities.
      * @param string|null            $schemaId      An Entity / Schema UUID that the ObjectEntity should be an Object of.
