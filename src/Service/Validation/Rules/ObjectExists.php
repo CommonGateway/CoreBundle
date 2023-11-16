@@ -10,33 +10,34 @@ use Respect\Validation\Rules\AbstractRule;
  */
 final class ObjectExists extends AbstractRule
 {
+
     /**
      * An EntityManager.
      *
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
-    
+
     /**
      * An Entity / Schema UUID.
      *
      * @var string|null
      */
     private ?string $schemaId;
-    
+
     /**
      * Construct for this Rule.
      *
      * @param EntityManagerInterface $entityManager An EntityManager for finding existing ObjectEntities.
-     * @param string|null $schemaId An Entity / Schema UUID that the ObjectEntity should be an Object of.
+     * @param string|null            $schemaId      An Entity / Schema UUID that the ObjectEntity should be an Object of.
      */
     public function __construct(EntityManagerInterface $entityManager, ?string $schemaId)
     {
         $this->entityManager = $entityManager;
-        $this->schemaId = $schemaId;
-        
+        $this->schemaId      = $schemaId;
+
     }//end __construct()
-    
+
     /**
      * @inheritDoc
      *
@@ -46,8 +47,7 @@ final class ObjectExists extends AbstractRule
      */
     public function validate($input): bool
     {
-        //todo
-
+        // todo
         return false;
 
     }//end validate()
