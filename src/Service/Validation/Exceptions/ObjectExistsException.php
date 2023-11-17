@@ -17,7 +17,7 @@ final class ObjectExistsException extends ValidationException
      * @var string[][]
      */
     protected $defaultTemplates = [
-        self::MODE_DEFAULT  => [self::STANDARD => '{{name}} must be a UUID of an existing ObjectEntity'],
-        self::MODE_NEGATIVE => [self::STANDARD => '{{name}} must not be a UUID of an existing ObjectEntity'],
+        self::MODE_DEFAULT  => [self::STANDARD => 'Could not find an object with id {{name}}'],
+        self::MODE_NEGATIVE => [self::STANDARD => 'Found an object with id {{name}}'],
     ];
 }//end class
