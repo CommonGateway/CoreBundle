@@ -5,6 +5,8 @@ namespace CommonGateway\CoreBundle\Service\Validation\Rules;
 use Doctrine\ORM\EntityManagerInterface;
 use Respect\Validation\Rules\AbstractRule;
 
+use function is_string;
+
 /**
  * @author Wilco Louwerse <wilco@conduction.nl>
  */
@@ -32,7 +34,7 @@ final class ObjectExists extends AbstractRule
      * @param EntityManagerInterface $entityManager An EntityManager for finding existing ObjectEntities.
      * @param string|null            $schemaId      An Entity / Schema UUID that the ObjectEntity should be an Object of.
      */
-    public function __construct(EntityManagerInterface $entityManager, ?string $schemaId)
+    public function __construct(EntityManagerInterface $entityManager, ?string $schemaId = null)
     {
         $this->entityManager = $entityManager;
         $this->schemaId      = $schemaId;
@@ -48,8 +50,22 @@ final class ObjectExists extends AbstractRule
      */
     public function validate($input): bool
     {
-        // todo
-        return false;
+        if (is_string($input) === false) {
+            return false;
+        }
+        
+        $criteria = ['id' => $input];
+        
+        if ($this->schemaId !== null) {
+            $criteria['entity'] = $this->schemaId;
+        }
+        
+        $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy($criteria);
+        if ($objectEntity === null) {
+            return false;
+        }
+        
+        return true;
 
     }//end validate()
 }//end class
