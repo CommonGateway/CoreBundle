@@ -72,7 +72,7 @@ class CacheService
      * @var SerializerInterface
      */
     private SerializerInterface $serializer;
-    
+
     /**
      * @var SessionInterface $session
      */
@@ -433,7 +433,7 @@ class CacheService
                 $filter['_self.owner.id'] = $user->getId()->toString();
             }
         }
-        
+
         $this->session->set('mongoDBFilter', $filter);
 
         // Check if object is in the cache?
@@ -853,7 +853,7 @@ class CacheService
         } else if ($user !== null) {
             $filter['_self.owner.id'] = $user->getId()->toString();
         }
-        
+
         $this->session->set('mongoDBFilter', $filter);
 
         $collection = $this->client->objects->json;
