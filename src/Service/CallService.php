@@ -296,7 +296,7 @@ class CallService
                 $response = $this->client->requestAsync($method, $url, $config);
             }
 
-            $this->callLogger->info("Request to $url succesful");
+            $this->callLogger->info("Request to $url successful");
 
             $this->callLogger->notice("$method Request to $url returned {$response->getStatusCode()}");
 

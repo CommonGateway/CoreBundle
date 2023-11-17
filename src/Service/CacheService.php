@@ -20,6 +20,7 @@ use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -71,6 +72,11 @@ class CacheService
      * @var SerializerInterface
      */
     private SerializerInterface $serializer;
+    
+    /**
+     * @var SessionInterface $session
+     */
+    private SessionInterface $session;
 
     /**
      * Object Entity Service.
@@ -86,6 +92,7 @@ class CacheService
      * @param ParameterBagInterface  $parameters          The Parameter bag
      * @param SerializerInterface    $serializer          The serializer
      * @param ObjectEntityService    $objectEntityService The Object Entity Service.
+     * @param SessionInterface       $session             The current session.
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -93,7 +100,8 @@ class CacheService
         LoggerInterface $cacheLogger,
         ParameterBagInterface $parameters,
         SerializerInterface $serializer,
-        ObjectEntityService $objectEntityService
+        ObjectEntityService $objectEntityService,
+        SessionInterface $session
     ) {
         $this->entityManager       = $entityManager;
         $this->cache               = $cache;
@@ -101,6 +109,7 @@ class CacheService
         $this->parameters          = $parameters;
         $this->serializer          = $serializer;
         $this->objectEntityService = $objectEntityService;
+        $this->session             = $session;
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }
@@ -424,6 +433,8 @@ class CacheService
                 $filter['_self.owner.id'] = $user->getId()->toString();
             }
         }
+        
+        $this->session->set('mongoDBFilter', $filter);
 
         // Check if object is in the cache?
         if ($object = $collection->findOne($filter)) {
@@ -842,6 +853,8 @@ class CacheService
         } else if ($user !== null) {
             $filter['_self.owner.id'] = $user->getId()->toString();
         }
+        
+        $this->session->set('mongoDBFilter', $filter);
 
         $collection = $this->client->objects->json;
         $results    = $collection->find($filter, $options)->toArray();
