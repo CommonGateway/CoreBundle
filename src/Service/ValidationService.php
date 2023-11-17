@@ -7,6 +7,7 @@ use App\Entity\Entity;
 use App\Exception\GatewayException;
 use CommonGateway\CoreBundle\Service\Validation\Rules as CustomRules;
 use DateTime;
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Cache\CacheException;
 use Psr\Cache\InvalidArgumentException;
@@ -27,6 +28,13 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ValidationService
 {
+
+    /**
+     * The Entity Manager.
+     *
+     * @var EntityManagerInterface $entityManager
+     */
+    private EntityManagerInterface $entityManager;
 
     /**
      * The cache interface.
@@ -52,12 +60,16 @@ class ValidationService
     /**
      * The constructor sets al needed variables.
      *
-     * @param CacheInterface $cache
+     * @param EntityManagerInterface $entityManager The Entity Manager.
+     * @param CacheInterface         $cache         The cache interface.
      */
     public function __construct(
+        EntityManagerInterface $entityManager,
         CacheInterface $cache
     ) {
-        $this->cache = $cache;
+        $this->entityManager = $entityManager;
+        $this->cache         = $cache;
+
         Factory::setDefaultInstance(
             (new Factory())
                 ->withRuleNamespace('CommonGateway\CoreBundle\Service\Validation\Rules')
@@ -530,6 +542,18 @@ class ValidationService
         // Make sure we do not allow empty string for an object.
         // (will also invalidate null, but if attribute is nullable and the value is null we never get here and never check this rule).
         $objectValidator->addRule(new Rules\NotEmpty());
+
+        // If the input is a UUID, validate if an ObjectEntity with that UUID and Schema = $attribute->getObject() exists.
+        $objectValidator->addRule(
+            new Rules\When(
+            // IF.
+                new Rules\Uuid(),
+                // TRUE.
+                new CustomRules\ObjectExists($this->entityManager, $attribute->getObject()->getId()->toString()),
+                // FALSE.
+                new Rules\AlwaysValid()
+            )
+        );
 
         // Todo: Make a custom rule for cascading so we can give custom exception messages back?
         // Todo: maybe check if an object with the given UUID actually exists?
