@@ -28,14 +28,14 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ValidationService
 {
-    
+
     /**
      * The EntityManager.
      *
      * @var EntityManagerInterface $entityManager
      */
     private EntityManagerInterface $entityManager;
-    
+
     /**
      * The cache interface.
      *
@@ -61,15 +61,15 @@ class ValidationService
      * The constructor sets al needed variables.
      *
      * @param EntityManagerInterface $entityManager
-     * @param CacheInterface $cache
+     * @param CacheInterface         $cache
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         CacheInterface $cache
     ) {
         $this->entityManager = $entityManager;
-        $this->cache = $cache;
-        
+        $this->cache         = $cache;
+
         Factory::setDefaultInstance(
             (new Factory())
                 ->withRuleNamespace('CommonGateway\CoreBundle\Service\Validation\Rules')
@@ -542,7 +542,7 @@ class ValidationService
         // Make sure we do not allow empty string for an object.
         // (will also invalidate null, but if attribute is nullable and the value is null we never get here and never check this rule).
         $objectValidator->addRule(new Rules\NotEmpty());
-        
+
         // If the input is a UUID, validate if an ObjectEntity with that UUID and Schema = $attribute->getObject() exists.
         $objectValidator->addRule(
             new Rules\When(

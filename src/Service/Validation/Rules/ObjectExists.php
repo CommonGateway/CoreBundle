@@ -53,18 +53,18 @@ final class ObjectExists extends AbstractRule
         if (is_string($input) === false) {
             return false;
         }
-        
+
         $criteria = ['id' => $input];
-        
+
         if ($this->schemaId !== null) {
             $criteria['entity'] = $this->schemaId;
         }
-        
+
         $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy($criteria);
         if ($objectEntity === null) {
             return false;
         }
-        
+
         return true;
 
     }//end validate()
