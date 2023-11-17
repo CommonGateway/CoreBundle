@@ -30,7 +30,7 @@ class ValidationService
 {
 
     /**
-     * The EntityManager.
+     * The Entity Manager.
      *
      * @var EntityManagerInterface $entityManager
      */
@@ -60,8 +60,8 @@ class ValidationService
     /**
      * The constructor sets al needed variables.
      *
-     * @param EntityManagerInterface $entityManager
-     * @param CacheInterface         $cache
+     * @param EntityManagerInterface $entityManager The Entity Manager.
+     * @param CacheInterface         $cache         The cache interface.
      */
     public function __construct(
         EntityManagerInterface $entityManager,
