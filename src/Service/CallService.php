@@ -295,32 +295,41 @@ class CallService
             } else {
                 $response = $this->client->requestAsync($method, $url, $config);
             }
-            
+
             $source->setStatus($response->getStatusCode());
             $this->entityManager->persist($source);
 
             $this->callLogger->info("Request to $url successful");
-            
-            $this->callLogger->notice("$method Request to $url returned {$response->getStatusCode()}", [
-                'sourceCall' => $this->sourceCallLogData($method, $url, $config, $response)
-            ]);
+
+            $this->callLogger->notice(
+                "$method Request to $url returned {$response->getStatusCode()}",
+                [
+                    'sourceCall' => $this->sourceCallLogData($method, $url, $config, $response),
+                ]
+            );
         } catch (ServerException | ClientException | RequestException | Exception $exception) {
-            $this->callLogger->error('Request failed with error '.$exception, [
-                'sourceCall' => $this->sourceCallLogData($method, $url, $config, $response ?? null)
-            ]);
-            
+            $this->callLogger->error(
+                'Request failed with error '.$exception,
+                [
+                    'sourceCall' => $this->sourceCallLogData($method, $url, $config, $response ?? null),
+                ]
+            );
+
             $source->setStatus($response->getStatusCode());
             $this->entityManager->persist($source);
-            
+
             return $this->handleCallException($exception, $source, $endpoint);
         } catch (GuzzleException $exception) {
-            $this->callLogger->error('Request failed with error '.$exception, [
-                'sourceCall' => $this->sourceCallLogData($method, $url, $config, $response ?? null)
-            ]);
-            
+            $this->callLogger->error(
+                'Request failed with error '.$exception,
+                [
+                    'sourceCall' => $this->sourceCallLogData($method, $url, $config, $response ?? null),
+                ]
+            );
+
             $source->setStatus($response->getStatusCode());
             $this->entityManager->persist($source);
-            
+
             return $this->handleEndpointsConfigIn($source, $endpoint, null, $exception, null);
         }//end try
 
@@ -329,13 +338,13 @@ class CallService
         return $this->handleEndpointsConfigIn($source, $endpoint, $response, null, null);
 
     }//end call()
-    
+
     /**
      * Uses input parameters to create array with data used for creating a log after any call to a Source.
      *
-     * @param string $method The method of the call.
-     * @param string $url The url of the call.
-     * @param array $config The additional configuration used to call the source.
+     * @param string        $method   The method of the call.
+     * @param string        $url      The url of the call.
+     * @param array         $config   The additional configuration used to call the source.
      * @param Response|null $response The Response the call returned.
      *
      * @return array The array with data to use for creating a log.
@@ -343,21 +352,22 @@ class CallService
     private function sourceCallLogData(string $method, string $url, array $config, ?Response $response): array
     {
         $sourceCallData = [
-            'callMethod' => $method,
-            'callUrl' => $url,
-            'callQuery' => $config['query'] ?? '',
-            'callContentType' => $config['headers']['Content-Type'] ?? $config['headers']['content-type'] ?? '',
-            'callBody' => $config['body'] ?? '',
-            'responseStatusCode' => isset($response) === true ? $response->getStatusCode() : '',
+            'callMethod'          => $method,
+            'callUrl'             => $url,
+            'callQuery'           => ($config['query'] ?? ''),
+            'callContentType'     => ($config['headers']['Content-Type'] ?? $config['headers']['content-type'] ?? ''),
+            'callBody'            => ($config['body'] ?? ''),
+            'responseStatusCode'  => isset($response) === true ? $response->getStatusCode() : '',
             'responseContentType' => isset($response) === true && method_exists($response, 'getContentType') ? $response->getContentType() : '',
-            'responseBody' => isset($response) === true ? $response->getBody()->getContents() : ''
+            'responseBody'        => isset($response) === true ? $response->getBody()->getContents() : '',
         ];
-        
+
         // Make sure we can use ->getBody()->getContent() again after this^.
         $response->getBody()->rewind();
-        
+
         return $sourceCallData;
-    }
+
+    }//end sourceCallLogData()
 
     /**
      * Handles the endpointsConfig of a Source before we do an api-call.
