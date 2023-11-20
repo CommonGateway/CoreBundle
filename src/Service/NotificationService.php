@@ -82,14 +82,15 @@ class NotificationService
         $this->resourceService = $resourceService;
 
     }//end __construct()
-
+    
     /**
      * Handles incoming notification api-call and is responsible for generating a response.
      *
-     * @param array $data          The data from the call
+     * @param array $data The data from the call
      * @param array $configuration The configuration from the call
      *
      * @return array A handler must ALWAYS return an array
+     * @throws Exception
      */
     public function notificationHandler(array $data, array $configuration): array
     {
