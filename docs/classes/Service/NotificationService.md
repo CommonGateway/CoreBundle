@@ -109,5 +109,11 @@ Handles incoming notification api-call and is responsible for generating a respo
 > A handler must ALWAYS return an array
 
 
+**Throws Exceptions**
+
+
+`\Exception`
+
+
 <hr />
 
