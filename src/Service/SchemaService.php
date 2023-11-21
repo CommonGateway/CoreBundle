@@ -228,6 +228,7 @@ class SchemaService
 
             // Save the id.
             $id = $hydrate['_id'];
+            
             // Create the entity.
             $this->entityManager->persist($objectEntity);
             $this->entityManager->flush();
@@ -242,6 +243,9 @@ class SchemaService
         } else {
             $this->logger->debug('Creating new object ('.$objectEntity->getEntity()->getName().') on a generated id');
         }
+        
+        // Already handled this, so skip it
+        unset($hydrate['_id']);
 
         foreach ($hydrate as $key => $value) {
             // Try to get a value object.
