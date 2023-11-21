@@ -343,7 +343,7 @@ class MappingService
             $value = (int) str_replace(',', '', $value);
             break;
         case 'intToMoneyString':
-            $value = $value / 100;
+            $value = ($value / 100);
             $value = number_format($value, 2, '.', ',');
             break;
         default:
