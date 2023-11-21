@@ -222,19 +222,12 @@ class SchemaService
             return $objectEntity;
         }
 
-        if (array_key_exists('_id', $hydrate) === true && isset($hydrate['id']) === false) {
-            $hydrate['id'] = $hydrate['_id'];
-        }
-
-        // We have already done this so let's skip it.
-        unset($hydrate['_id']);
-
         // We have an object entity with a fixed id that isn't in the database, so we need to act.
-        if (isset($hydrate['id']) === true && $this->entityManager->contains($objectEntity) === false) {
-            $this->logger->debug('Creating new object ('.$objectEntity->getEntity()->getName().') on a fixed id ('.$hydrate['id'].')');
+        if (isset($hydrate['_id']) === true && $this->entityManager->contains($objectEntity) === false) {
+            $this->logger->debug('Creating new object ('.$objectEntity->getEntity()->getName().') on a fixed id ('.$hydrate['_id'].')');
 
             // Save the id.
-            $id = $hydrate['id'];
+            $id = $hydrate['_id'];
             // Create the entity.
             $this->entityManager->persist($objectEntity);
             $this->entityManager->flush();
@@ -266,12 +259,8 @@ class SchemaService
                                 // Is array.
                                 if (is_array($subvalue) === true) {
                                     // If we have an id let try to grab an object.
-                                    if (array_key_exists('_id', $subvalue) === true && isset($subvalue['id']) === false) {
-                                        $subvalue['id'] = $subvalue['_id'];
-                                    }
-
-                                    if (array_key_exists('id', $subvalue) === true) {
-                                        $subObject = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $subvalue['id']]);
+                                    if (array_key_exists('_id', $subvalue) === true) {
+                                        $subObject = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $subvalue['_id']]);
                                     }
 
                                     // Create it if we don't.
@@ -312,12 +301,8 @@ class SchemaService
                     // Is array.
                     if (is_array($value) === true) {
                         // If we have an id let try to grab an object.
-                        if (array_key_exists('_id', $value) === true && isset($value['id']) === false) {
-                            $value['id'] = $value['_id'];
-                        }
-
-                        if (array_key_exists('id', $value) === true) {
-                            $subObject = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $value['id']]);
+                        if (array_key_exists('_id', $value) === true) {
+                            $subObject = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $value['_id']]);
                         }
 
                         // Create it if we don't.
