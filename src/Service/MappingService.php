@@ -338,6 +338,14 @@ class MappingService
                 $value = count($dotArray->get($countValue));
             }
             break;
+        case 'moneyStringToInt':
+            $value = str_replace('.', '', $value);
+            $value = (int) str_replace(',', '', $value);
+            break;
+        case 'intToMoneyString':
+            $value = $value / 100;
+            $value = number_format($value, 2, '.', ',');
+            break;
         default:
             isset($this->style) === true && $this->style->info('Trying to cast to an unsupported cast type: '.$cast);
             break;
