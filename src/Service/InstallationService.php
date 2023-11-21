@@ -768,7 +768,7 @@ class InstallationService
         if (isset($object) === false || $object === null) {
             $object = new ObjectEntity($entity);
         }
-        
+
         // Now it gets a bit specif but for EAV data we allow nested fixed id's so let dive deep.
         if ($this->entityManager->contains($object) === false && array_key_exists('_id', $schema) === true) {
             $object = $this->schemaService->hydrate($object, $schema);
