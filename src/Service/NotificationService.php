@@ -90,6 +90,7 @@ class NotificationService
      * @param array $configuration The configuration from the call
      *
      * @return array A handler must ALWAYS return an array
+     * @throws Exception
      */
     public function notificationHandler(array $data, array $configuration): array
     {
