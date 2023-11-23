@@ -259,7 +259,7 @@ class SchemaService
                     if ($valueObject->getAttribute()->getMultiple() === true) {
                         $this->logger->debug('an array for objects');
                         if (is_array($value) === true) {
-                            // todo: somehow this foreach creates 1 duplicate object when this $value array doesn't have _id's set in testdata.
+                            // Todo: somehow this foreach creates 1 duplicate object when this $value array doesn't have _id's set in testdata.
                             foreach ($value as $subvalue) {
                                 // Is array.
                                 if (is_array($subvalue) === true) {
