@@ -201,7 +201,7 @@ class CallService
 
         $this->callLogger->error('Request failed with error '.$exception->getMessage().' and body '.($responseContent ?? null));
 
-        return $this->handleEndpointsConfigIn($endpoint, null, $exception, $responseContent ?? null);
+        return $this->handleEndpointsConfigIn($endpoint, null, $exception, ($responseContent ?? null));
 
     }//end handleCallException()
 
@@ -318,7 +318,7 @@ class CallService
             $this->callLogger->error(
                 'Request failed with error '.$exception,
                 [
-                    'sourceCall' => $this->sourceCallLogData(['method' => $method, 'url' => $url, 'response' => $response ?? null], $config),
+                    'sourceCall' => $this->sourceCallLogData(['method' => $method, 'url' => $url, 'response' => ($response ?? null)], $config),
                 ]
             );
 
@@ -385,7 +385,7 @@ class CallService
         }
 
         if (empty($loggingConfig['responseContentType']) === false) {
-            $sourceCallData['responseContentType'] = $requestInfo['response'] !== null && method_exists($requestInfo['response'], 'getContentType') ? $requestInfo['response']->getContentType() : '';
+            $sourceCallData['responseContentType'] = $requestInfo['response'] !== null && method_exists($requestInfo['response'], 'getContentType') === true ? $requestInfo['response']->getContentType() : '';
         }
 
         if (empty($loggingConfig['responseBody']) === false) {
@@ -541,7 +541,7 @@ class CallService
             $headers = $this->handleEndpointConfigIn($response->getHeaders(), $endpointConfigIn, 'headers');
             $body    = $this->handleEndpointConfigIn($response->getBody(), $endpointConfigIn, 'body');
 
-            // todo: handle content-type
+            // Todo: handle content-type.
             is_array($body) === true && $body = json_encode($body);
 
             return new Response($response->getStatusCode(), $headers, $body, $response->getProtocolVersion());
