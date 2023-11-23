@@ -65,7 +65,7 @@ class CallService
      * @var LoggerInterface $callLogger
      */
     private LoggerInterface $callLogger;
-    
+
     /**
      * The source currently used for doing calls.
      *
@@ -350,47 +350,53 @@ class CallService
      * Uses input parameters to create array with data used for creating a log after any call to a Source.
      * If the source->loggingConfig allows logging.
      *
-     * @param array $requestInfo    The info of the current request call done on a source, can contain: 'method' of the call, 'url' of the call & 'response' that the call returned.
-     * @param array $config         The additional configuration used to call the source.
+     * @param array $requestInfo The info of the current request call done on a source, can contain: 'method' of the call, 'url' of the call & 'response' that the call returned.
+     * @param array $config      The additional configuration used to call the source.
      *
      * @return array The array with data to use for creating a log.
      */
     private function sourceCallLogData(array $requestInfo, array $config): array
     {
-        $loggingConfig = $this->source->getLoggingConfig();
+        $loggingConfig  = $this->source->getLoggingConfig();
         $sourceCallData = [];
-        
+
         if (empty($loggingConfig['callMethod']) === false) {
             $sourceCallData['callMethod'] = $requestInfo['method'];
         }
+
         if (empty($loggingConfig['callUrl']) === false) {
             $sourceCallData['callUrl'] = $requestInfo['url'];
         }
+
         if (empty($loggingConfig['callQuery']) === false) {
             $sourceCallData['callQuery'] = ($config['query'] ?? '');
         }
+
         if (empty($loggingConfig['callContentType']) === false) {
             $sourceCallData['callContentType'] = ($config['headers']['Content-Type'] ?? $config['headers']['content-type'] ?? '');
         }
+
         if (empty($loggingConfig['callBody']) === false) {
             $sourceCallData['callBody'] = ($config['body'] ?? '');
         }
+
         if (empty($loggingConfig['responseStatusCode']) === false) {
             $sourceCallData['responseStatusCode'] = $requestInfo['response'] !== null ? $requestInfo['response']->getStatusCode() : '';
         }
+
         if (empty($loggingConfig['responseContentType']) === false) {
-            $sourceCallData['responseContentType'] = $requestInfo['response'] !== null && method_exists($requestInfo['response'], 'getContentType')
-                ? $requestInfo['response']->getContentType() : '';
+            $sourceCallData['responseContentType'] = $requestInfo['response'] !== null && method_exists($requestInfo['response'], 'getContentType') ? $requestInfo['response']->getContentType() : '';
         }
+
         if (empty($loggingConfig['responseBody']) === false) {
             $sourceCallData['responseBody'] = $requestInfo['response'] !== null ? $requestInfo['response']->getBody()->getContents() : '';
-            
+
             // Make sure we can use ->getBody()->getContent() again after this^.
             $requestInfo['response']->getBody()->rewind();
         }
-        
-        $sourceCallData['maxCharCountBody'] = $loggingConfig['maxCharCountBody'] ?? 500;
-        $sourceCallData['maxCharCountErrorBody'] = $loggingConfig['maxCharCountErrorBody'] ?? 2000;
+
+        $sourceCallData['maxCharCountBody']      = ($loggingConfig['maxCharCountBody'] ?? 500);
+        $sourceCallData['maxCharCountErrorBody'] = ($loggingConfig['maxCharCountErrorBody'] ?? 2000);
 
         return $sourceCallData;
 
@@ -676,7 +682,7 @@ class CallService
         ?string $contentType = 'application/json'
     ) {
         $this->source = $source;
-        
+
         $this->callLogger->info('Decoding response content');
         // resultaat omzetten.
         // als geen content-type header dan content-type header is accept header.
@@ -783,7 +789,7 @@ class CallService
     public function getAllResults(Source $source, string $endpoint = '', array $config = []): array
     {
         $this->source = $source;
-        
+
         $this->callLogger->info('Fetch all data from source and combine the results into one array');
         $errorCount     = 0;
         $pageCount      = 1;
