@@ -259,9 +259,7 @@ class SchemaService
                     if ($valueObject->getAttribute()->getMultiple() === true) {
                         $this->logger->debug('an array for objects');
                         if (is_array($value) === true) {
-                            
                             // todo: somehow this foreach creates 1 duplicate object when this $value array doesn't have _id's set in testdata.
-                            
                             foreach ($value as $subvalue) {
                                 // Is array.
                                 if (is_array($subvalue) === true) {
@@ -320,14 +318,14 @@ class SchemaService
                                 continue;
                             }
 
-                            $newObject = new ObjectEntity($valueObject->getAttribute()->getObject());
+                            $newObject       = new ObjectEntity($valueObject->getAttribute()->getObject());
                             $singleSubObject = $this->hydrate($newObject, $value);
                         } else {
                             $singleSubObject = $this->hydrate($singleSubObject, $value);
                         }
                     } else {
                         // Is not an array.
-                        $idValue   = $value;
+                        $idValue         = $value;
                         $singleSubObject = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
                         // Safety.
                         if ($singleSubObject === null) {
