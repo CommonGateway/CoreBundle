@@ -480,7 +480,7 @@ class EndpointService
         try {
             $parameters['body'] = $this->request->toArray();
         } catch (Exception $exception) {
-            if (strtoupper($parameters['method']) !== "GET") {
+            if (in_array(strtoupper($parameters['method']), ['GET', 'DELETE']) === false) {
                 $this->logger->warning('The request does not have a body, this might result in undefined behaviour');
             }
 
