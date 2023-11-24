@@ -472,7 +472,7 @@ class EndpointService
 
         $this->logger->debug('Get the query string');
         $parameters['querystring'] = $this->request->getQueryString();
-        
+
         $this->logger->debug('Get general request information');
         $parameters['method'] = $this->request->getMethod();
         $parameters['query']  = $this->request->query->all();
@@ -483,6 +483,7 @@ class EndpointService
             if (strtoupper($parameters['method']) !== "GET") {
                 $this->logger->warning('The request does not have a body, this might result in undefined behaviour');
             }
+
             // In a lot of conditions (basically any illegal post) this will return an error. But we want an empty array instead.
         }
 
