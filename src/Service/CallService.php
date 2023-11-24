@@ -389,10 +389,13 @@ class CallService
         }
 
         if (empty($loggingConfig['responseBody']) === false) {
-            $sourceCallData['responseBody'] = $requestInfo['response'] !== null ? $requestInfo['response']->getBody()->getContents() : '';
+            $sourceCallData['responseBody'] = '';
+            if ($requestInfo['response'] !== null && $requestInfo['response']->getBody() !== null) {
+                $sourceCallData['responseBody'] = $requestInfo['response']->getBody()->getContents();
 
-            // Make sure we can use ->getBody()->getContent() again after this^.
-            $requestInfo['response']->getBody()->rewind();
+                // Make sure we can use ->getBody()->getContent() again after this^.
+                $requestInfo['response']->getBody()->rewind();
+            }
         }
 
         $sourceCallData['maxCharCountBody']      = ($loggingConfig['maxCharCountBody'] ?? 500);
