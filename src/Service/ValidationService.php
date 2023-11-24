@@ -137,24 +137,25 @@ class ValidationService
         }
 
         $this->level = $level;
-
+        
+        // Todo: put this back so that we use caching, after https://conduction.atlassian.net/browse/GW-183 is fixed.
         // Try and get a validator for this Entity(+method) from cache.
-        $item = $this->cache->getItem('entityValidators_'.$entity->getId()->toString().'_'.$this->method);
-        if ($item->isHit() === true) {
-            // Todo: put this back so that we use caching, after https://conduction.atlassian.net/browse/GW-183 is fixed.
+//        $item = $this->cache->getItem('entityValidators_'.$entity->getId()->toString().'_'.$this->method);
+//        if ($item->isHit() === true) {
             // return $item->get();
-        }
+//        }
 
         // No Validator found in cache for this Entity(+method), so create a new Validator and cache that.
         $validator = new Validator();
         $validator = $this->addAttributeValidators($entity, $validator);
-
-        $item->set($validator);
+        
+        // Todo: put this back so that we use caching, after https://conduction.atlassian.net/browse/GW-183 is fixed.
+//        $item->set($validator);
         // Tag for all Entity Validators.
         // $item->tag('entityValidator');
         // Tag for the Validators of this specific Entity.
         // $item->tag('entityValidator_'.$entity->getId()->toString());
-        $this->cache->save($item);
+//        $this->cache->save($item);
 
         return $validator;
 
