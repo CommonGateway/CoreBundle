@@ -1837,6 +1837,12 @@ class InstallationService
                     $this->logger->error('No object found for '.$reference.' while trying to create a DashboardCard.');
                     continue;
                 }
+                
+                $class = get_class($object);
+                if (str_starts_with('App\Entity', $class) === false) {
+                    $this->logger->error('Couldn\'t get the class of '.$object->getId().' while trying to create a DashboardCard');
+                    continue;
+                }
 
                 // Check if this dashboardCard already exists.
                 $dashboardCard = $this->entityManager->getRepository('App:DashboardCard')->findOneBy(['entity' => get_class($object), 'entityId' => $object->getId()]);
