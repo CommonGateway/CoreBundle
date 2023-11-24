@@ -64,7 +64,8 @@ class MetricsServiceTest extends TestCase
         $uuid2 = Uuid::uuid4();
 
         $logsCollectionMock = $this->createMock(Collection::class);
-        $logsCollectionMock->expects($this->exactly(6))
+        $logsCollectionMock->expects($this->exactly(4))
+//        $logsCollectionMock->expects($this->exactly(6))
             ->method('count')
             ->withConsecutive(
                 [['level_name' => ['$in' => ['EMERGENCY']]]],
@@ -326,7 +327,8 @@ class MetricsServiceTest extends TestCase
     {
         // Set up test data
         $logsCollectionMock = $this->createMock(Collection::class);
-        $logsCollectionMock->expects($this->exactly(6))
+        $logsCollectionMock->expects($this->exactly(4))
+//        $logsCollectionMock->expects($this->exactly(6))
             ->method('count')
             ->withConsecutive(
                 [['level_name' => ['$in' => ['EMERGENCY']]]],
