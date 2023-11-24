@@ -392,7 +392,7 @@ class CallService
             $sourceCallData['responseBody'] = '';
             if ($requestInfo['response'] !== null && $requestInfo['response']->getBody() !== null) {
                 $sourceCallData['responseBody'] = $requestInfo['response']->getBody()->getContents();
-                
+
                 // Make sure we can use ->getBody()->getContent() again after this^.
                 $requestInfo['response']->getBody()->rewind();
             }
