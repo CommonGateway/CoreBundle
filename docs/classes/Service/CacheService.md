@@ -251,7 +251,7 @@ Get a single endpoint from the cache.
 **Description**
 
 ```php
-public getObject (string $identification)
+public getObject (string $identification, string|null $schema)
 ```
 
 Get a single object from the cache. 
@@ -261,6 +261,9 @@ Get a single object from the cache.
 **Parameters**
 
 * `(string) $identification`
+: The ID of an Object.  
+* `(string|null) $schema`
+: Only look for an object with this schema.  
 
 **Return Values**
 
@@ -397,7 +400,7 @@ Searches the object store for objects containing the search string.
 * `(string|null) $search`
 : a string to search for within the given context  
 * `(array) $filter`
-: an array of dot.notation filters for wich to search with  
+: an array of dot.notation filters for which to search with  
 * `(array) $entities`
 : schemas to limit te search to  
 
