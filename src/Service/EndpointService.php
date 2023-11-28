@@ -524,7 +524,7 @@ class EndpointService
         } catch (Exception $exception) {
             $this->logger->error('EndpointService->getNormalPath(): $exception');
 
-            // Todo: When an id is not given the last element of the path array should be removed to ensure the arrays are of the same lenght.
+            // Todo: When an id is not given the last element of the path array should be removed to ensure the arrays are of the same length.
             array_pop($path);
             $combinedArray = array_combine($path, explode('/', $pathRaw));
         }

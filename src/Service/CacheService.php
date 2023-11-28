@@ -404,15 +404,16 @@ class CacheService
         $collection->findOneAndDelete(['_id' => $identification]);
 
     }//end removeObject()
-
+    
     /**
      * Get a single object from the cache.
      *
-     * @param string $identification
+     * @param string $identification The ID of an Object.
+     * @param string|null $schema    Only look for an object with this schema.
      *
      * @return array|null
      */
-    public function getObject(string $identification): ?array
+    public function getObject(string $identification, string $schema = null): ?array
     {
         // Backwards compatablity.
         if (isset($this->client) === false) {
@@ -420,6 +421,23 @@ class CacheService
         }
 
         $collection = $this->client->objects->json;
+        
+        if ($schema !== null) {
+            if (Uuid::isValid($schema) === true) {
+                // $filter['_self.schema.id'] = 'b92a3a39-3639-4bf5-b2af-c404bc2cb005';
+                $filter['_self.schema.id'] = $schema;
+                $entityObject = $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $schema]);
+            } else {
+                // $filter['_self.schema.ref'] = 'https://larping.nl/schema/example.schema.json';
+                $filter['_self.schema.ref'] = $schema;
+                $entityObject = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema]);
+            }
+            
+            if ($entityObject === null) {
+                $this->logger->warning("Could not find an Entity with id or reference = $schema during getObject($identification)");
+                return null;
+            }
+        }
 
         $user = $this->objectEntityService->findCurrentUser();
 
@@ -868,7 +886,7 @@ class CacheService
      * Searches the object store for objects containing the search string.
      *
      * @param string|null $search   a string to search for within the given context
-     * @param array       $filter   an array of dot.notation filters for wich to search with
+     * @param array       $filter   an array of dot.notation filters for which to search with
      * @param array       $entities schemas to limit te search to
      *
      * @throws Exception
