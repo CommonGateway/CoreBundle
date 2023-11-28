@@ -3,6 +3,7 @@
 namespace CommonGateway\CoreBundle\ActionHandler;
 
 use CommonGateway\CoreBundle\Service\NotificationService;
+use Exception;
 
 class NotificationHandler implements ActionHandlerInterface
 {
@@ -53,14 +54,15 @@ class NotificationHandler implements ActionHandlerInterface
         ];
 
     }//end getConfiguration()
-
+    
     /**
      * This function runs the notification service.
      *
-     * @param array $data          The data from the call
+     * @param array $data The data from the call
      * @param array $configuration The configuration of the action
      *
      * @return array
+     * @throws Exception
      */
     public function run(array $data, array $configuration): array
     {
