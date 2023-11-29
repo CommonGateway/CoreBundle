@@ -548,7 +548,7 @@ class ValidationService
             // IF.
                 new Rules\Uuid(),
                 // TRUE.
-                new CustomRules\ObjectExists($this->entityManager, $attribute->getObject()->getId()->toString()),
+                new CustomRules\ObjectExists($this->entityManager, $attribute->getObject() !== null ? $attribute->getObject()->getId()->toString() : null),
                 // FALSE.
                 new Rules\AlwaysValid()
             )

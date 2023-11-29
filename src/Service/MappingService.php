@@ -328,6 +328,10 @@ class MappingService
             ) {
                 $dotArray->delete($key);
             }
+
+            if ($unsetIfValue === '' && is_array($value) === true && $this->areAllArrayKeysNull($value) === true) {
+                $dotArray->delete($key);
+            }
             break;
         case 'countValue':
             if (isset($countValue) === true
@@ -349,6 +353,33 @@ class MappingService
         }
 
     }//end handleCast()
+
+    /**
+     * Checks if all keys in multi-dimensional array are null.
+     *
+     * @param array $array Array to check.
+     *
+     * @return bool True if array keys are null else false.
+     */
+    private function areAllArrayKeysNull(array $array): bool
+    {
+        if (empty($array) === true) {
+            return true;
+        }
+
+        foreach ($array as $value) {
+            if (is_array($value) === true) {
+                if ($this->areAllArrayKeysNull($value) === false) {
+                    return false;
+                }
+            } else if (empty($value) === false) {
+                return false;
+            }
+        }
+
+        return true;
+
+    }//end areAllArrayKeysNull()
 
     /**
      * Converts a coordinate string to an array of coordinates.
