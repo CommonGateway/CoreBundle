@@ -20,6 +20,7 @@ use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -73,6 +74,11 @@ class CacheService
     private SerializerInterface $serializer;
 
     /**
+     * @var SessionInterface $session
+     */
+    private SessionInterface $session;
+
+    /**
      * Object Entity Service.
      *
      * @var ObjectEntityService
@@ -86,6 +92,7 @@ class CacheService
      * @param ParameterBagInterface  $parameters          The Parameter bag
      * @param SerializerInterface    $serializer          The serializer
      * @param ObjectEntityService    $objectEntityService The Object Entity Service.
+     * @param SessionInterface       $session             The current session.
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -93,7 +100,8 @@ class CacheService
         LoggerInterface $cacheLogger,
         ParameterBagInterface $parameters,
         SerializerInterface $serializer,
-        ObjectEntityService $objectEntityService
+        ObjectEntityService $objectEntityService,
+        SessionInterface $session
     ) {
         $this->entityManager       = $entityManager;
         $this->cache               = $cache;
@@ -101,6 +109,7 @@ class CacheService
         $this->parameters          = $parameters;
         $this->serializer          = $serializer;
         $this->objectEntityService = $objectEntityService;
+        $this->session             = $session;
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }
@@ -395,15 +404,16 @@ class CacheService
         $collection->findOneAndDelete(['_id' => $identification]);
 
     }//end removeObject()
-
+    
     /**
      * Get a single object from the cache.
      *
-     * @param string $identification
+     * @param string $identification The ID of an Object.
+     * @param string|null $schema    Only look for an object with this schema.
      *
      * @return array|null
      */
-    public function getObject(string $identification): ?array
+    public function getObject(string $identification, string $schema = null): ?array
     {
         // Backwards compatablity.
         if (isset($this->client) === false) {
@@ -411,6 +421,23 @@ class CacheService
         }
 
         $collection = $this->client->objects->json;
+        
+        if ($schema !== null) {
+            if (Uuid::isValid($schema) === true) {
+                // $filter['_self.schema.id'] = 'b92a3a39-3639-4bf5-b2af-c404bc2cb005';
+                $filter['_self.schema.id'] = $schema;
+                $entityObject = $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $schema]);
+            } else {
+                // $filter['_self.schema.ref'] = 'https://larping.nl/schema/example.schema.json';
+                $filter['_self.schema.ref'] = $schema;
+                $entityObject = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema]);
+            }
+            
+            if ($entityObject === null) {
+                $this->logger->warning("Could not find an Entity with id or reference = $schema during getObject($identification)");
+                return null;
+            }
+        }
 
         $user = $this->objectEntityService->findCurrentUser();
 
@@ -424,6 +451,8 @@ class CacheService
                 $filter['_self.owner.id'] = $user->getId()->toString();
             }
         }
+
+        $this->session->set('mongoDBFilter', $filter);
 
         // Check if object is in the cache?
         if ($object = $collection->findOne($filter)) {
@@ -843,6 +872,8 @@ class CacheService
             $filter['_self.owner.id'] = $user->getId()->toString();
         }
 
+        $this->session->set('mongoDBFilter', $filter);
+
         $collection = $this->client->objects->json;
         $results    = $collection->find($filter, $options)->toArray();
         $total      = $collection->count($filter);
@@ -855,7 +886,7 @@ class CacheService
      * Searches the object store for objects containing the search string.
      *
      * @param string|null $search   a string to search for within the given context
-     * @param array       $filter   an array of dot.notation filters for wich to search with
+     * @param array       $filter   an array of dot.notation filters for which to search with
      * @param array       $entities schemas to limit te search to
      *
      * @throws Exception

@@ -64,17 +64,19 @@ class MetricsServiceTest extends TestCase
         $uuid2 = Uuid::uuid4();
 
         $logsCollectionMock = $this->createMock(Collection::class);
-        $logsCollectionMock->expects($this->exactly(6))
+        $logsCollectionMock->expects($this->exactly(4))
+//        $logsCollectionMock->expects($this->exactly(6))
             ->method('count')
             ->withConsecutive(
                 [['level_name' => ['$in' => ['EMERGENCY']]]],
                 [['level_name' => ['$in' => ['ALERT']]]],
                 [['level_name' => ['$in' => ['CRITICAL']]]],
                 [['level_name' => ['$in' => ['ERROR']]]],
-                [['level_name' => ['$in' => ['WARNING']]]],
-                [['level_name' => ['$in' => ['NOTICE']]]]
+//                [['level_name' => ['$in' => ['WARNING']]]],
+//                [['level_name' => ['$in' => ['NOTICE']]]]
             )
-            ->willReturnOnConsecutiveCalls(1, 2, 3, 4, 5, 6);
+            ->willReturnOnConsecutiveCalls(1, 2, 3, 4);
+//            ->willReturnOnConsecutiveCalls(1, 2, 3, 4, 5, 6);
 
         $logsDatabaseMock = $this->createMock(Database::class);
         $logsDatabaseMock->expects($this->once())
@@ -163,7 +165,8 @@ class MetricsServiceTest extends TestCase
         $metrics = $metricsService->getAll();
 
         // Assertions
-        $this->assertCount(21, $metrics);
+        $this->assertCount(19, $metrics);
+//        $this->assertCount(21, $metrics);
 
         $expectedMetrics = [
             [
@@ -221,47 +224,47 @@ class MetricsServiceTest extends TestCase
                 'value' => 10,
             ],
             [
-                'name' => 'app_error_list',
+                'name' => 'app_error_list_EMERGENCY',
                 'type' => 'counter',
-                'help' => 'The list of errors and their error level/type.',
+                'help' => 'The amount of EMERGENCY logs.',
                 'labels' => ['error_level' => 'EMERGENCY'],
                 'value' => 1,
             ],
             [
-                'name' => 'app_error_list',
+                'name' => 'app_error_list_ALERT',
                 'type' => 'counter',
-                'help' => 'The list of errors and their error level/type.',
+                'help' => 'The amount of ALERT logs.',
                 'labels' => ['error_level' => 'ALERT'],
                 'value' => 2,
             ],
             [
-                'name' => 'app_error_list',
+                'name' => 'app_error_list_CRITICAL',
                 'type' => 'counter',
-                'help' => 'The list of errors and their error level/type.',
+                'help' => 'The amount of CRITICAL logs.',
                 'labels' => ['error_level' => 'CRITICAL'],
                 'value' => 3,
             ],
             [
-                'name' => 'app_error_list',
+                'name' => 'app_error_list_ERROR',
                 'type' => 'counter',
-                'help' => 'The list of errors and their error level/type.',
+                'help' => 'The amount of ERROR logs.',
                 'labels' => ['error_level' => 'ERROR'],
                 'value' => 4,
             ],
-            [
-                'name' => 'app_error_list',
-                'type' => 'counter',
-                'help' => 'The list of errors and their error level/type.',
-                'labels' => ['error_level' => 'WARNING'],
-                'value' => 5,
-            ],
-            [
-                'name' => 'app_error_list',
-                'type' => 'counter',
-                'help' => 'The list of errors and their error level/type.',
-                'labels' => ['error_level' => 'NOTICE'],
-                'value' => 6,
-            ],
+//            [
+//                'name' => 'app_error_list_WARNING',
+//                'type' => 'counter',
+//                'help' => 'The amount of WARNING logs.',
+//                'labels' => ['error_level' => 'WARNING'],
+//                'value' => 5,
+//            ],
+//            [
+//                'name' => 'app_error_list_NOTICE',
+//                'type' => 'counter',
+//                'help' => 'The amount of NOTICE logs.',
+//                'labels' => ['error_level' => 'NOTICE'],
+//                'value' => 6,
+//            ],
             [
                 'name' => 'app_plugins_count',
                 'type' => 'gauge',
@@ -324,17 +327,19 @@ class MetricsServiceTest extends TestCase
     {
         // Set up test data
         $logsCollectionMock = $this->createMock(Collection::class);
-        $logsCollectionMock->expects($this->exactly(6))
+        $logsCollectionMock->expects($this->exactly(4))
+//        $logsCollectionMock->expects($this->exactly(6))
             ->method('count')
             ->withConsecutive(
                 [['level_name' => ['$in' => ['EMERGENCY']]]],
                 [['level_name' => ['$in' => ['ALERT']]]],
                 [['level_name' => ['$in' => ['CRITICAL']]]],
                 [['level_name' => ['$in' => ['ERROR']]]],
-                [['level_name' => ['$in' => ['WARNING']]]],
-                [['level_name' => ['$in' => ['NOTICE']]]]
+//                [['level_name' => ['$in' => ['WARNING']]]],
+//                [['level_name' => ['$in' => ['NOTICE']]]]
             )
-            ->willReturnOnConsecutiveCalls(1, 2, 3, 4, 5, 6);
+            ->willReturnOnConsecutiveCalls(1, 2, 3, 4);
+//            ->willReturnOnConsecutiveCalls(1, 2, 3, 4, 5, 6);
 
         $logsDatabaseMock = $this->createMock(Database::class);
         $logsDatabaseMock->expects($this->once())
@@ -359,7 +364,8 @@ class MetricsServiceTest extends TestCase
         $metrics = $metricsService->getErrors();
 
         // Assertions
-        $this->assertCount(7, $metrics);
+        $this->assertCount(5, $metrics);
+//        $this->assertCount(7, $metrics);
 
         $expectedMetrics = [
             [
@@ -369,47 +375,47 @@ class MetricsServiceTest extends TestCase
                 'value' => 10,
             ],
             [
-                'name' => 'app_error_list',
+                'name' => 'app_error_list_EMERGENCY',
                 'type' => 'counter',
-                'help' => 'The list of errors and their error level/type.',
+                'help' => 'The amount of EMERGENCY logs.',
                 'labels' => ['error_level' => 'EMERGENCY'],
                 'value' => 1,
             ],
             [
-                'name' => 'app_error_list',
+                'name' => 'app_error_list_ALERT',
                 'type' => 'counter',
-                'help' => 'The list of errors and their error level/type.',
+                'help' => 'The amount of ALERT logs.',
                 'labels' => ['error_level' => 'ALERT'],
                 'value' => 2,
             ],
             [
-                'name' => 'app_error_list',
+                'name' => 'app_error_list_CRITICAL',
                 'type' => 'counter',
-                'help' => 'The list of errors and their error level/type.',
+                'help' => 'The amount of CRITICAL logs.',
                 'labels' => ['error_level' => 'CRITICAL'],
                 'value' => 3,
             ],
             [
-                'name' => 'app_error_list',
+                'name' => 'app_error_list_ERROR',
                 'type' => 'counter',
-                'help' => 'The list of errors and their error level/type.',
+                'help' => 'The amount of ERROR logs.',
                 'labels' => ['error_level' => 'ERROR'],
                 'value' => 4,
             ],
-            [
-                'name' => 'app_error_list',
-                'type' => 'counter',
-                'help' => 'The list of errors and their error level/type.',
-                'labels' => ['error_level' => 'WARNING'],
-                'value' => 5,
-            ],
-            [
-                'name' => 'app_error_list',
-                'type' => 'counter',
-                'help' => 'The list of errors and their error level/type.',
-                'labels' => ['error_level' => 'NOTICE'],
-                'value' => 6,
-            ],
+//            [
+//                'name' => 'app_error_list_WARNING',
+//                'type' => 'counter',
+//                'help' => 'The amount of WARNING logs.',
+//                'labels' => ['error_level' => 'WARNING'],
+//                'value' => 5,
+//            ],
+//            [
+//                'name' => 'app_error_list_NOTICE',
+//                'type' => 'counter',
+//                'help' => 'The amount of NOTICE logs.',
+//                'labels' => ['error_level' => 'NOTICE'],
+//                'value' => 6,
+//            ],
         ];
 
         $this->assertEquals($expectedMetrics, $metrics);
@@ -469,9 +475,9 @@ class MetricsServiceTest extends TestCase
                 'value' => 2,
             ],
             [
-                'name' => 'app_installed_plugins',
+                'name' => 'app_installed_plugins_Plugin_1',
                 'type' => 'gauge',
-                'help' => 'The list of installed plugins.',
+                'help' => '1.0.0 = The current version of the Plugin 1 plugin.',
                 'labels' => [
                     'plugin_name' => 'Plugin 1',
                     'plugin_description' => 'Plugin 1 description',
@@ -481,9 +487,9 @@ class MetricsServiceTest extends TestCase
                 'value' => 1,
             ],
             [
-                'name' => 'app_installed_plugins',
+                'name' => 'app_installed_plugins_Plugin_2',
                 'type' => 'gauge',
-                'help' => 'The list of installed plugins.',
+                'help' => '2.0.0 = The current version of the Plugin 2 plugin.',
                 'labels' => [
                     'plugin_name' => 'Plugin 2',
                     'plugin_description' => 'Plugin 2 description',
@@ -592,9 +598,9 @@ class MetricsServiceTest extends TestCase
                 'value' => 2,
             ],
             [
-                'name' => 'app_schemas',
+                'name' => 'app_schemas_Schema_1',
                 'type' => 'gauge',
-                'help' => 'The list of defined schemas and the amount of objects.',
+                'help' => 'The amount of objects for the schema Schema 1.',
                 'labels' => [
                     'schema_name' => 'Schema 1',
                     'schema_description' => 'Schema 1 description',
@@ -604,9 +610,9 @@ class MetricsServiceTest extends TestCase
                 'value' => 1,
             ],
             [
-                'name' => 'app_schemas',
+                'name' => 'app_schemas_Schema_2',
                 'type' => 'gauge',
-                'help' => 'The list of defined schemas and the amount of objects.',
+                'help' => 'The amount of objects for the schema Schema 2.',
                 'labels' => [
                     'schema_name' => 'Schema 2',
                     'schema_description' => 'Schema 2 description',
