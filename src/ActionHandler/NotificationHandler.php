@@ -54,11 +54,11 @@ class NotificationHandler implements ActionHandlerInterface
         ];
 
     }//end getConfiguration()
-    
+
     /**
      * This function runs the notification service.
      *
-     * @param array $data The data from the call
+     * @param array $data          The data from the call
      * @param array $configuration The configuration of the action
      *
      * @return array

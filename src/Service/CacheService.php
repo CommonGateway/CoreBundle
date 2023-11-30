@@ -404,12 +404,12 @@ class CacheService
         $collection->findOneAndDelete(['_id' => $identification]);
 
     }//end removeObject()
-    
+
     /**
      * Get a single object from the cache.
      *
-     * @param string $identification The ID of an Object.
-     * @param string|null $schema    Only look for an object with this schema.
+     * @param string      $identification The ID of an Object.
+     * @param string|null $schema         Only look for an object with this schema.
      *
      * @return array|null
      */
@@ -421,18 +421,18 @@ class CacheService
         }
 
         $collection = $this->client->objects->json;
-        
+
         if ($schema !== null) {
             if (Uuid::isValid($schema) === true) {
                 // $filter['_self.schema.id'] = 'b92a3a39-3639-4bf5-b2af-c404bc2cb005';
                 $filter['_self.schema.id'] = $schema;
-                $entityObject = $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $schema]);
+                $entityObject              = $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $schema]);
             } else {
                 // $filter['_self.schema.ref'] = 'https://larping.nl/schema/example.schema.json';
                 $filter['_self.schema.ref'] = $schema;
-                $entityObject = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema]);
+                $entityObject               = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema]);
             }
-            
+
             if ($entityObject === null) {
                 $this->logger->warning("Could not find an Entity with id or reference = $schema during getObject($identification)");
                 return null;
