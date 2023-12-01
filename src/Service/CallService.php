@@ -322,7 +322,14 @@ class CallService
                 ]
             );
 
-            $this->source->setStatus($response->getStatusCode());
+            if (empty($response) === false) {
+                $this->source->setStatus($response->getStatusCode());
+            }
+
+            if (empty($response) === true) {
+                $this->source->setStatus(500);
+            }
+
             $this->entityManager->persist($this->source);
 
             return $this->handleCallException($exception, $endpoint);
@@ -334,7 +341,14 @@ class CallService
                 ]
             );
 
-            $this->source->setStatus($response->getStatusCode());
+            if (empty($response) === false) {
+                $this->source->setStatus($response->getStatusCode());
+            }
+
+            if (empty($response) === true) {
+                $this->source->setStatus(500);
+            }
+
             $this->entityManager->persist($this->source);
 
             return $this->handleEndpointsConfigIn($endpoint, null, $exception, null);
