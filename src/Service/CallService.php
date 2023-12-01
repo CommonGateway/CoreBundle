@@ -321,9 +321,11 @@ class CallService
                     'sourceCall' => $this->sourceCallLogData(['method' => $method, 'url' => $url, 'response' => ($response ?? null)], $config),
                 ]
             );
-
-            $this->source->setStatus($response->getStatusCode());
-            $this->entityManager->persist($this->source);
+            
+            if (empty($response) === false) {
+                $this->source->setStatus($response->getStatusCode());
+                $this->entityManager->persist($this->source);
+            }
 
             return $this->handleCallException($exception, $endpoint);
         } catch (GuzzleException $exception) {
@@ -333,9 +335,11 @@ class CallService
                     'sourceCall' => $this->sourceCallLogData(['method' => $method, 'url' => $url, 'response' => $response ?? null], $config),
                 ]
             );
-
-            $this->source->setStatus($response->getStatusCode());
-            $this->entityManager->persist($this->source);
+            
+            if (empty($response) === false) {
+                $this->source->setStatus($response->getStatusCode());
+                $this->entityManager->persist($this->source);
+            }
 
             return $this->handleEndpointsConfigIn($endpoint, null, $exception, null);
         }//end try
