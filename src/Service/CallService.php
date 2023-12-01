@@ -321,7 +321,7 @@ class CallService
                     'sourceCall' => $this->sourceCallLogData(['method' => $method, 'url' => $url, 'response' => ($response ?? null)], $config),
                 ]
             );
-            
+
             if (empty($response) === false) {
                 $this->source->setStatus($response->getStatusCode());
                 $this->entityManager->persist($this->source);
@@ -335,7 +335,7 @@ class CallService
                     'sourceCall' => $this->sourceCallLogData(['method' => $method, 'url' => $url, 'response' => $response ?? null], $config),
                 ]
             );
-            
+
             if (empty($response) === false) {
                 $this->source->setStatus($response->getStatusCode());
                 $this->entityManager->persist($this->source);
