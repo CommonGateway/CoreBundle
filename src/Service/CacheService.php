@@ -843,13 +843,13 @@ class CacheService
         return null;
 
     }//end parseFilter()
-    
+
     /**
      * Retrieves objects from a cache collection.
      *
-     * @param array $filter The mongoDB query to filter with.
-     * @param array|null $options Options like 'limit', 'skip' & 'sort' for the mongoDB->find query. If this equals null, this function will only count the amount of objects found and return an integer.
-     * @param array $completeFilter The completeFilter query, unchanged, as used on the request.
+     * @param array      $filter         The mongoDB query to filter with.
+     * @param array|null $options        Options like 'limit', 'skip' & 'sort' for the mongoDB->find query. If this equals null, this function will only count the amount of objects found and return an integer.
+     * @param array      $completeFilter The completeFilter query, unchanged, as used on the request.
      *
      * @return array|int $this->handleResultPagination() array or an integer if $options = null, and we are only counting objects.
      */
@@ -876,12 +876,13 @@ class CacheService
 
         $collection = $this->client->objects->json;
         $total      = $collection->count($filter);
-        
+
         // If options is null, we only count the objects.
         if ($options === null) {
             return $total;
         }
-        $results    = $collection->find($filter, $options)->toArray();
+
+        $results = $collection->find($filter, $options)->toArray();
 
         return $this->handleResultPagination($completeFilter, $results, $total);
 
@@ -932,7 +933,7 @@ class CacheService
         return $this->retrieveObjectsFromCache($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order], $completeFilter);
 
     }//end searchObjects()
-    
+
     /**
      * Counts objects found with the given search/filter parameters.
      *
@@ -950,21 +951,21 @@ class CacheService
         if (isset($this->client) === false) {
             return 0;
         }
-        
+
         $completeFilter = [];
         $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
         if ($filterParse !== null) {
             $this->logger->error($filterParse);
             return 0;
         }
-        
+
         // Let's see if we need a search
         $this->handleSearch($filter, $completeFilter, $search);
-        
+
         // Find / Search.
         return $this->retrieveObjectsFromCache($filter);
-        
-    }//end searchObjects()
+
+    }//end countObjects()
 
     /**
      * Creates an aggregation of results for possible query parameters
