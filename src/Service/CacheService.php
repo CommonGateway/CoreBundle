@@ -999,7 +999,6 @@ class CacheService
         return $this->countObjectsInCache($filter);
 
     }//end countObjects()
-}//end class
 
     /**
      * Creates an aggregation of results for possible query parameters
