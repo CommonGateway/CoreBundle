@@ -37,54 +37,54 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class CacheService
 {
-    
+
     /**
      * @var Client
      */
     private Client $client;
-    
+
     /**
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
-    
+
     /**
      * @var CacheInterface
      */
     private CacheInterface $cache;
-    
+
     /**
      * @var LoggerInterface
      */
     private LoggerInterface $logger;
-    
+
     /**
      * @var SymfonyStyle
      */
     private SymfonyStyle $style;
-    
+
     /**
      * @var ParameterBagInterface
      */
     private ParameterBagInterface $parameters;
-    
+
     /**
      * @var SerializerInterface
      */
     private SerializerInterface $serializer;
-    
+
     /**
      * @var SessionInterface $session
      */
     private SessionInterface $session;
-    
+
     /**
      * Object Entity Service.
      *
      * @var ObjectEntityService
      */
     private ObjectEntityService $objectEntityService;
-    
+
     /**
      * @param EntityManagerInterface $entityManager       The entity manager
      * @param CacheInterface         $cache               The cache interface
@@ -113,9 +113,9 @@ class CacheService
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }
-        
+
     }//end __construct()
-    
+
     /**
      * Set symfony style in order to output to the console.
      *
@@ -126,11 +126,11 @@ class CacheService
     public function setStyle(SymfonyStyle $style): self
     {
         $this->style = $style;
-        
+
         return $this;
-        
+
     }//end setStyle()
-    
+
     /**
      * Remove non-existing items from the cache.
      *
@@ -145,15 +145,15 @@ class CacheService
                 '',
             ]
         );
-        
+
         isset($this->style) === true && $this->style->section('Cleaning Object\'s');
         $collection = $this->client->objects->json;
         $filter     = [];
         $objects    = $collection->find($filter)->toArray();
         isset($this->style) === true && $this->style->writeln('Found '.count($objects).'');
-        
+
     }//end cleanup()
-    
+
     /**
      * Throws all available objects into the cache.
      *
@@ -170,16 +170,16 @@ class CacheService
                 '',
             ]
         );
-        
+
         isset($this->style) === true && $this->style->writeln('Connecting to '.$this->parameters->get('cache_url'));
-        
+
         // Backwards compatablity.
         if (isset($this->client) === false) {
             isset($this->style) === true && $this->style->writeln('No cache client found, halting warmup');
-            
+
             return Command::SUCCESS;
         }
-        
+
         // Objects.
         if ((isset($config['objects']) === false || $config['objects'] !== true)
             && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
@@ -187,7 +187,7 @@ class CacheService
             isset($this->style) === true && $this->style->section('Caching Objects\'s');
             $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
             isset($this->style) === true && $this->style->writeln('Found '.count($objectEntities).' objects\'s');
-            
+
             foreach ($objectEntities as $objectEntity) {
                 try {
                     $this->cacheObject($objectEntity);
@@ -197,7 +197,7 @@ class CacheService
                 }
             }
         }
-        
+
         // Schemas.
         if ((isset($config['schemas']) === false || $config['schemas'] !== true)
             && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
@@ -205,7 +205,7 @@ class CacheService
             isset($this->style) === true && $this->style->section('Caching Schema\'s');
             $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
             isset($this->style) === true && $this->style->writeln('Found '.count($schemas).' Schema\'s');
-            
+
             foreach ($schemas as $schema) {
                 try {
                     $this->cacheShema($schema);
@@ -215,7 +215,7 @@ class CacheService
                 }
             }
         }
-        
+
         // Endpoints.
         if ((isset($config['endpoints']) === false || $config['endpoints'] !== true)
             && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
@@ -223,7 +223,7 @@ class CacheService
             isset($this->style) === true && $this->style->section('Caching Endpoint\'s');
             $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
             isset($this->style) === true && $this->style->writeln('Found '.count($endpoints).' Endpoint\'s');
-            
+
             foreach ($endpoints as $endpoint) {
                 try {
                     $this->cacheEndpoint($endpoint);
@@ -233,44 +233,44 @@ class CacheService
                 }
             }
         }
-        
+
         // Created indexes.
         $this->client->objects->json->createIndex(['$**' => 'text']);
         $this->client->schemas->json->createIndex(['$**' => 'text']);
         $this->client->endpoints->json->createIndex(['$**' => 'text']);
-        
+
         if (isset($config['endpoints']) === false || $config['endpoints'] !== true) {
             $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
         }
-        
+
         if (isset($config['objects']) === false || $config['objects'] !== true) {
             $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
         }
-        
+
         return Command::SUCCESS;
-        
+
     }//end warmup()
-    
+
     private function removeDataFromCache(Collection $collection, string $type): void
     {
         if (isset($this->style) === true) {
             $this->style->newline();
             $this->style->writeln(["Removing deleted $type", '============']);
         }
-        
+
         $objects = $collection->find()->toArray();
         foreach ($objects as $object) {
             if ($this->entityManager->find($type, $object['_id']) === null) {
                 if (isset($this->style) === true) {
                     $this->style->writeln("removing {$object['_id']} from cache");
                 }
-                
+
                 $collection->findOneAndDelete(['id' => $object['_id']]);
             }
         }
-        
+
     }//end removeDataFromCache()
-    
+
     /**
      * Writes exception data to symfony IO.
      *
@@ -286,9 +286,9 @@ class CacheService
             $this->style->block("File: {$exception->getFile()}, Line: {$exception->getLine()}");
             $this->style->block("Trace: {$exception->getTraceAsString()}");
         };
-        
+
     }//end styleCatchException()
-    
+
     /**
      * Put a single object into the cache.
      *
@@ -302,16 +302,16 @@ class CacheService
         if ($objectEntity->getEntity() === null) {
             return $objectEntity;
         }
-        
+
         // Backwards compatablity.
         if (isset($this->client) === false) {
             return $objectEntity;
         }
-        
+
         if (isset($this->style) === true) {
             $this->style->writeln('Start caching object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName());
         }
-        
+
         // todo: temp fix to make sure we have the latest version of this ObjectEntity before we cache it.
         $updatedObjectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $objectEntity->getId()->toString()]);
         if ($updatedObjectEntity !== null) {
@@ -319,20 +319,20 @@ class CacheService
         } else if (isset($this->style) === true) {
             $this->style->writeln('Could not find an ObjectEntity with id: '.$objectEntity->getId()->toString());
         }
-        
+
         $collection = $this->client->objects->json;
-        
+
         // Let's not cash the entire schema
         $array = $objectEntity->toArray(['embedded' => true, 'user' => $this->getObjectUser($objectEntity)]);
-        
+
         // (isset($array['_schema']['$id'])?$array['_schema'] = $array['_schema']['$id']:'');
         $identification = $objectEntity->getId()->toString();
-        
+
         // Add an id field to main object only if the object not already has an id field.
         if (key_exists('id', $array) === false || $array['id'] === null) {
             $array['id'] = $identification;
         }
-        
+
         // Add id field to level 1 subobjects for backwards compatibility reasons.
         if (key_exists('embedded', $array) === true) {
             foreach ($array['embedded'] as $key => $subObject) {
@@ -341,7 +341,7 @@ class CacheService
                 }
             }
         }
-        
+
         if ($collection->findOneAndReplace(
             ['_id' => $identification],
             $array,
@@ -349,16 +349,16 @@ class CacheService
         )
         ) {
             isset($this->style) === true && $this->style->writeln('Updated object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache');
-            
+
             return $objectEntity;
         }
-        
+
         isset($this->style) === true && $this->style->writeln('Wrote object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName().' to cache');
-        
+
         return $objectEntity;
-        
+
     }//end cacheObject()
-    
+
     /**
      * Gets the User object of an ObjectEntity.
      *
@@ -370,20 +370,20 @@ class CacheService
     {
         if (Uuid::isValid($objectEntity->getOwner()) === false) {
             $this->logger->info("Owner: '{$objectEntity->getOwner()}' for Object: '{$objectEntity->getId()->toString()}' is not a valid UUID.");
-            
+
             return null;
         }
-        
+
         $user = $this->entityManager->getRepository('App:User')->findOneBy(['id' => $objectEntity->getOwner()]);
-        
+
         if ($user === null) {
             $this->logger->warning("Could not find a User with id = {$objectEntity->getOwner()} for the owner of Object: {$objectEntity->getId()->toString()}");
         }
-        
+
         return $user;
-        
+
     }//end getObjectUser()
-    
+
     /**
      * Removes an object from the cache.
      *
@@ -397,14 +397,14 @@ class CacheService
         if (isset($this->client) === false) {
             return;
         }
-        
+
         $identification = $object->getId()->toString();
         $collection     = $this->client->objects->json;
-        
+
         $collection->findOneAndDelete(['_id' => $identification]);
-        
+
     }//end removeObject()
-    
+
     /**
      * Get a single object from the cache.
      *
@@ -419,9 +419,9 @@ class CacheService
         if (isset($this->client) === false) {
             return null;
         }
-        
+
         $collection = $this->client->objects->json;
-        
+
         if ($schema !== null) {
             if (Uuid::isValid($schema) === true) {
                 // $filter['_self.schema.id'] = 'b92a3a39-3639-4bf5-b2af-c404bc2cb005';
@@ -432,15 +432,15 @@ class CacheService
                 $filter['_self.schema.ref'] = $schema;
                 $entityObject               = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema]);
             }
-            
+
             if ($entityObject === null) {
                 $this->logger->warning("Could not find an Entity with id or reference = $schema during getObject($identification)");
                 return null;
             }
         }
-        
+
         $user = $this->objectEntityService->findCurrentUser();
-        
+
         $filter = ['_id' => $identification];
         if ($user !== null) {
             if ($user->getOrganization() !== null) {
@@ -451,33 +451,33 @@ class CacheService
                 $filter['_self.owner.id'] = $user->getId()->toString();
             }
         }
-        
+
         $this->session->set('mongoDBFilter', $filter);
-        
+
         // Check if object is in the cache?
         if ($object = $collection->findOne($filter)) {
             return json_decode(json_encode($object), true);
         }
-        
+
         // Fall back tot the entity manager.
         if ($object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $identification])) {
             if ($user !== null && $object->getOwner() !== $user->getId()->toString()) {
                 return null;
             }
-            
+
             if ($user !== null && $user->getOrganization() !== null
                 && $user->getOrganization()->getId()->toString() !== $object->getOrganization()->getId()->toString()
             ) {
                 return null;
             }
-            
+
             return $this->cacheObject($object)->toArray(['embedded' => true]);
         }
-        
+
         return null;
-        
+
     }//end getObject()
-    
+
     /**
      * Make sure we still support the old query params. By translating them to the new ones with _.
      *
@@ -495,7 +495,7 @@ class CacheService
         isset($filter['_search']) === false && isset($filter['search']) === true && $filter['_search'] = $filter['search'];
         isset($filter['_order']) === false && isset($filter['order']) === true && $filter['_order']    = $filter['order'];
         isset($filter['_fields']) === false && isset($filter['fields']) === true && $filter['_fields'] = $filter['fields'];
-        
+
         unset(
             $filter['start'],
             $filter['offset'],
@@ -506,9 +506,9 @@ class CacheService
             $filter['order'],
             $filter['fields']
         );
-        
+
     }//end queryBackwardsCompatibility()
-    
+
     /**
      * Handles a single filter used on a get collection api call. Specifically an filter where the value is an array.
      *
@@ -527,19 +527,19 @@ class CacheService
                 $value = array_map('intval', $value['int_compare']);
             } else if (array_key_exists('int_compare', $value) === true) {
                 $value = (int) $value['int_compare'];
-                
+
                 return true;
             }
-            
+
             // Type: bool_compare.
             if (array_key_exists('bool_compare', $value) === true && is_array($value['bool_compare']) === true) {
                 $value = array_map('boolval', $value['bool_compare']);
             } else if (array_key_exists('bool_compare', $value) === true) {
                 $value = (bool) $value['bool_compare'];
-                
+
                 return true;
             }
-            
+
             // After, before, strictly_after,strictly_before.
             if (empty(array_intersect_key($value, array_flip(['after', 'before', 'strictly_after', 'strictly_before']))) === false) {
                 $newValue = null;
@@ -548,27 +548,27 @@ class CacheService
                     $after       = array_key_exists('strictly_after', $value) ? 'strictly_after' : 'after';
                     $compareDate = new DateTime($value[$after]);
                     $compareKey  = $after === 'strictly_after' ? '$gt' : '$gte';
-                    
+
                     // Todo: add in someway an option for comparing string datetime or mongoDB datetime.
                     // $newValue["$compareKey"] = new UTCDateTime($compareDate);
                     $newValue["$compareKey"] = "{$compareDate->format('c')}";
                 }
-                
+
                 if (empty(array_intersect_key($value, array_flip(['before', 'strictly_before']))) === false) {
                     $before      = array_key_exists('strictly_before', $value) ? 'strictly_before' : 'before';
                     $compareDate = new DateTime($value[$before]);
                     $compareKey  = $before === 'strictly_before' ? '$lt' : '$lte';
-                    
+
                     // Todo: add in someway an option for comparing string datetime or mongoDB datetime.
                     // $newValue["$compareKey"] = new UTCDateTime($compareDate);
                     $newValue["$compareKey"] = "{$compareDate->format('c')}";
                 }
-                
+
                 $value = $newValue;
-                
+
                 return true;
             }//end if
-            
+
             // Type: like.
             if (array_key_exists('like', $value) === true && is_array($value['like']) === true) {
                 // $value = array_map('like', $value['like']);
@@ -578,64 +578,64 @@ class CacheService
                     '$regex'   => ".*$value.*",
                     '$options' => 'im',
                 ];
-                
+
                 return true;
             }
-            
+
             // Type: regex.
             if (array_key_exists('regex', $value) === true && is_array($value['regex']) === true) {
                 // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('regex', $value) === true) {
                 $value = ['$regex' => $value['regex']];
-                
+
                 return true;
             }
-            
+
             // Type: >= .
             if (array_key_exists('>=', $value) === true && is_array($value['>=']) === true) {
                 // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('>=', $value) === true) {
                 $value = ['$gte' => (int) $value['>=']];
-                
+
                 return true;
             }
-            
+
             // Type: > .
             if (array_key_exists('>', $value) === true && is_array($value['>']) === true) {
                 // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('>', $value) === true) {
                 $value = ['$gt' => (int) $value['>']];
-                
+
                 return true;
             }
-            
+
             // Type: <= .
             if (array_key_exists('<=', $value) === true && is_array($value['<=']) === true) {
                 // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('<=', $value) === true) {
                 $value = ['$lte' => (int) $value['<=']];
-                
+
                 return true;
             }
-            
+
             // Type: < .
             if (array_key_exists('<', $value) === true && is_array($value['<']) === true) {
                 // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('<', $value) === true) {
                 $value = ['$lt' => (int) $value['<']];
-                
+
                 return true;
             }
-            
+
             // Type: Exact .
             if (array_key_exists('exact', $value) === true && is_array($value['exact']) === true) {
                 // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('exact', $value) === true) {
                 $value = $value;
-                
+
                 return true;
             }
-            
+
             // Type: case_insensitive.
             if (array_key_exists('case_insensitive', $value) === true && is_array($value['case_insensitive']) === true) {
                 // $value = array_map('like', $value['like']); @todo.
@@ -644,40 +644,40 @@ class CacheService
                     '$regex'   => $value['case_insensitive'],
                     '$options' => 'i',
                 ];
-                
+
                 return true;
             }
-            
+
             // case_sensitive.
             if (array_key_exists('case_sensitive', $value) === true && is_array($value['case_sensitive']) === true) {
                 // $value = array_map('like', $value['like']); @todo.
             } else if (array_key_exists('case_sensitive', $value)) {
                 $value = ['$regex' => $value['case_sensitive']];
-                
+
                 return true;
             }
-            
+
             // not equals
             if (array_key_exists('ne', $value) === true) {
                 $value = ['$ne' => $value['ne']];
-                
+
                 return true;
             }
-            
+
             if (array_key_first($value) === '$elemMatch') {
                 return true;
             }
-            
+
             // Handle filter value = array (example: ?property=a,b,c) also works if the property we are filtering on is an array.
             $value = ['$in' => $value];
-            
+
             return true;
         }//end if
-        
+
         return false;
-        
+
     }//end handleFilterArray()
-    
+
     /**
      * Handles a single filter used on a get collection api call. This function makes sure special filters work correctly.
      *
@@ -693,49 +693,49 @@ class CacheService
         if (substr($key, 0, 1) == '_') {
             // @Todo: deal with filters starting with _ like: _dateCreated.
         }
-        
+
         // Handle filters that expect $value to be an array.
         if ($this->handleFilterArray($value) === true) {
             return;
         }
-        
+
         // If the value is a boolean we need a other format.
         if (is_bool($value) === true || is_int($value) === true) {
             // Set as key '$eq' with the value.
             $value = ['$eq' => $value];
-            
+
             return;
         }
-        
+
         if (str_contains($value, '%') === true) {
             $regex = str_replace('%', '', $value);
             $regex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $regex);
             $value = ['$regex' => $regex];
-            
+
             return;
         }
-        
+
         if ($value === 'IS NOT NULL') {
             $value = ['$ne' => null];
-            
+
             return;
         }
-        
+
         if ($value === 'IS NULL' || $value === 'null') {
             $value = null;
-            
+
             return;
         }
-        
+
         // @Todo: exact match is default, make case insensitive optional:
         $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value);
         $value = [
             '$regex'   => "^$value$",
             '$options' => 'im',
         ];
-        
+
     }//end handleFilter()
-    
+
     /**
      * Will add entity filters to the filters array.
      * Will also check if we are allowed to filter & order with the given filters and order query params.
@@ -761,12 +761,12 @@ class CacheService
                 $filter['_self.schema.ref']['$in'][] = $entity;
                 $entityObject                        = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $entity]);
             }
-            
+
             if ($entityObject === null) {
                 $this->logger->warning("Could not find an Entity with id or reference = $entity during searchObjects()");
                 continue;
             }
-            
+
             // @todo: for now we do not check for allowed filters and ordering, because this breaks things.
             // Only allow ordering & filtering on attributes with sortable = true & searchable = true (respectively).
             // $orderError = $this->handleOrderCheck($entityObject, $completeFilter['_order'] ?? null);
@@ -776,14 +776,14 @@ class CacheService
             if (empty($orderError) === true && empty($filterError) === true) {
                 continue;
             }
-            
+
             $errorData[$entityObject->getName()]['order']  = $orderError ?? null;
             $errorData[$entityObject->getName()]['filter'] = $filterError ?? null;
         }//end foreach
-        
+
         if (empty($errorData) === false) {
             $this->logger->warning('There are some errors in your query parameters', $errorData);
-            
+
             return [
                 'message' => 'There are some errors in your query parameters',
                 'type'    => 'error',
@@ -792,11 +792,11 @@ class CacheService
                 'data'    => $errorData,
             ];
         }
-        
+
         return null;
-        
+
     }//end handleEntities()
-    
+
     /**
      * Parses the filter array and creates the filter and completeFilter arrays
      *
@@ -811,10 +811,10 @@ class CacheService
     {
         // Backwards compatibility.
         $this->queryBackwardsCompatibility($filter);
-        
+
         // Make sure we also have all filters stored in $completeFilter before unsetting.
         $completeFilter = $filter;
-        
+
         unset(
             $filter['_start'],
             $filter['_offset'],
@@ -826,12 +826,12 @@ class CacheService
             $filter['_fields'],
             $filter['_queries']
         );
-        
+
         // 'normal' Filters (not starting with _ ).
         foreach ($filter as $key => &$value) {
             $this->handleFilter($key, $value);
         }
-        
+
         // Search for the correct entity / entities.
         if (empty($entities) === false) {
             $queryError = $this->handleEntities($filter, $completeFilter, $entities);
@@ -839,12 +839,11 @@ class CacheService
                 return $queryError;
             }
         }
-        
+
         return null;
-        
+
     }//end parseFilter()
-    
-    
+
     /**
      * Adds owner and organization filters (multi tenancy) for searchObjects() or countObjects(). Or other MongoDB collection queries.
      *
@@ -857,15 +856,15 @@ class CacheService
         if (isset($filter['_self.owner.id']) === true || isset($filter['$and']['$or']['_self.owner.id'])) {
             return $filter;
         }
-        
+
         $user = $this->objectEntityService->findCurrentUser();
-        
+
         if ($user !== null && $user->getOrganization() !== null) {
             if (isset($filter['$or']) === true) {
                 $filter['$and'][] = ['$or' => $filter['$or']];
                 unset($filter['$or']);
             }
-            
+
             $orFilter          = [];
             $orFilter['$or'][] = ['_self.owner.id' => $user->getId()->toString()];
             $orFilter['$or'][] = ['_self.organization.id' => $user->getOrganization()->getId()->toString()];
@@ -874,35 +873,36 @@ class CacheService
         } else if ($user !== null) {
             $filter['_self.owner.id'] = $user->getId()->toString();
         }
-        
+
         return $filter;
-    }
-    
+
+    }//end addOwnerOrgFilter()
+
     /**
      * Retrieves objects from a cache collection.
      *
-     * @param array $filter The mongoDB query to filter with.
-     * @param array|null $options Options like 'limit', 'skip' & 'sort' for the mongoDB->find query.
-     * @param array $completeFilter The completeFilter query, unchanged, as used on the request.
+     * @param array      $filter         The mongoDB query to filter with.
+     * @param array|null $options        Options like 'limit', 'skip' & 'sort' for the mongoDB->find query.
+     * @param array      $completeFilter The completeFilter query, unchanged, as used on the request.
      *
      * @return array|int $this->handleResultPagination() array with objects and pagination.
      */
     public function retrieveObjectsFromCache(array $filter, ?array $options = null, array $completeFilter = []): array
     {
         $filter = $this->addOwnerOrgFilter($filter);
-        
+
         $this->session->set('mongoDBFilter', $filter);
-        
+
         $collection = $this->client->objects->json;
         $results    = $collection->find($filter, $options)->toArray();
         $total      = $this->countObjectsInCache($filter);
-        
+
         $results = $collection->find($filter, $options)->toArray();
-        
+
         return $this->handleResultPagination($completeFilter, $results, $total);
-        
+
     }//end retrieveObjectsFromCache()
-    
+
     /**
      * Searches the object store for objects containing the search string.
      *
@@ -920,19 +920,19 @@ class CacheService
         if (isset($this->client) === false) {
             return [];
         }
-        
+
         $completeFilter = [];
         $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
         if ($filterParse !== null) {
             return $filterParse;
         }
-        
+
         // Let's see if we need a search
         $this->handleSearch($filter, $completeFilter, $search);
-        
+
         // Limit & Start for pagination.
         $this->setPagination($limit, $start, $completeFilter);
-        
+
         // Order.
         $order = isset($completeFilter['_order']) === true ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
         if (empty($order) === false) {
@@ -943,13 +943,12 @@ class CacheService
                 $order
             );
         }
-        
+
         // Find / Search.
         return $this->retrieveObjectsFromCache($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order], $completeFilter);
-        
+
     }//end searchObjects()
-    
-    
+
     /**
      * Counts objects in a cache collection.
      *
@@ -960,15 +959,14 @@ class CacheService
     public function countObjectsInCache(array $filter): int
     {
         $filter = $this->addOwnerOrgFilter($filter);
-        
+
         $this->session->set('mongoDBFilter', $filter);
-        
+
         $collection = $this->client->objects->json;
         return $collection->count($filter);
-        
+
     }//end countObjectsInCache()
-    
-    
+
     /**
      * Counts objects found with the given search/filter parameters.
      *
@@ -986,22 +984,22 @@ class CacheService
         if (isset($this->client) === false) {
             return 0;
         }
-        
+
         $completeFilter = [];
         $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
         if ($filterParse !== null) {
             $this->logger->error($filterParse);
             return 0;
         }
-        
+
         // Let's see if we need a search
         $this->handleSearch($filter, $completeFilter, $search);
-        
+
         // Find / Search.
         return $this->countObjectsInCache($filter);
-        
+
     }//end countObjects()
-    
+
     /**
      * Creates an aggregation of results for possible query parameters
      *
@@ -1017,32 +1015,32 @@ class CacheService
         if (isset($filter['_queries']) === false) {
             return [];
         }
-        
+
         $queries = $filter['_queries'];
-        
+
         if (is_array($queries) === false) {
             $queries = explode(',', $queries);
         }
-        
+
         $completeFilter = [];
         $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
         if ($filterParse !== null) {
             return $filterParse;
         }
-        
+
         // Let's see if we need a search
         $this->handleSearch($filter, $completeFilter, null);
-        
+
         $collection = $this->client->objects->json;
         $result     = [];
         foreach ($queries as $query) {
             $result[$query] = $collection->aggregate([['$match' => $filter], ['$unwind' => "\${$query}"], ['$group' => ['_id' => "\${$query}", 'count' => ['$sum' => 1]]]])->toArray();
         }
-        
+
         return $result;
-        
+
     }//end aggregateQueries()
-    
+
     // /**
     // * Will check if we are allowed to order with the given $order query param.
     // * Uses ObjectEntityRepository->getOrderParameters() to check if we are allowed to order, see eavService->handleSearch() $orderCheck.
@@ -1106,7 +1104,7 @@ class CacheService
     // }
     // return null;
     // }//end handleFilterCheck()
-    
+
     /**
      * Adds search filter to the query on MongoDB. Will use given $search string to search on entire object, unless
      * the _search query is present in $completeFilter query params, then we use that instead.
@@ -1123,11 +1121,11 @@ class CacheService
         if (isset($completeFilter['_search']) === true && empty($completeFilter['_search']) === false) {
             $search = $completeFilter['_search'];
         }
-        
+
         if (empty($search) === true) {
             return;
         }
-        
+
         // Normal search on every property with type text (includes strings).
         if (is_string($search) === true) {
             $filter['$text'] = ['$search' => $search];
@@ -1138,7 +1136,7 @@ class CacheService
             if (empty($searchRegex) === true) {
                 return;
             }
-            
+
             $searchRegex = [
                 '$regex'   => $searchRegex,
                 '$options' => 'i',
@@ -1149,9 +1147,9 @@ class CacheService
                 $filter['$or'][][$property] = $searchRegex;
             }
         }
-        
+
     }//end handleSearch()
-    
+
     /**
      * Decides the pagination values.
      *
@@ -1168,7 +1166,7 @@ class CacheService
         } else {
             $limit = 30;
         }
-        
+
         if (isset($filters['_start']) === true || isset($filters['_offset']) === true) {
             $start = isset($filters['_start']) === true ? (int) $filters['_start'] : (int) $filters['_offset'];
         } else if (isset($filters['_page']) === true) {
@@ -1176,11 +1174,11 @@ class CacheService
         } else {
             $start = 0;
         }
-        
+
         return $filters;
-        
+
     }//end setPagination()
-    
+
     /**
      * Adds pagination variables to an array with the results we found with searchObjects().
      *
@@ -1195,16 +1193,16 @@ class CacheService
         $start = isset($filter['_start']) === true && is_numeric($filter['_start']) === true ? (int) $filter['_start'] : 0;
         $limit = isset($filter['_limit']) === true && is_numeric($filter['_limit']) === true ? (int) $filter['_limit'] : 30;
         $page  = isset($filter['_page']) === true && is_numeric($filter['_page']) === true ? (int) $filter['_page'] : 1;
-        
+
         // Let's build the page & pagination
         if ($start > 1) {
             $offset = ($start - 1);
         } else {
             $offset = (($page - 1) * $limit);
         }
-        
+
         $pages = ceil($total / $limit);
-        
+
         return [
             'results' => $results,
             'count'   => count($results),
@@ -1214,9 +1212,9 @@ class CacheService
             'page'    => (floor($offset / $limit) + 1),
             'pages'   => $pages == 0 ? 1 : $pages,
         ];
-        
+
     }//end handleResultPagination()
-    
+
     /**
      * Put a single endpoint into the cache.
      *
@@ -1230,23 +1228,23 @@ class CacheService
         if (isset($this->client) === false) {
             return $endpoint;
         }
-        
+
         if (isset($this->style) === true) {
             $this->style->writeln('Start caching endpoint '.$endpoint->getId()->toString().' with name: '.$endpoint->getName());
         }
-        
+
         $updatedEndpoint = $this->entityManager->getRepository('App:Endpoint')->find($endpoint->getId());
         if ($updatedEndpoint !== null) {
             $endpoint = $updatedEndpoint;
         } else if (isset($this->style) === true) {
             $this->style->writeln('Could not find an Endpoint with id: '.$endpoint->getId()->toString());
         }
-        
+
         $collection = $this->client->endpoints->json;
-        
+
         $endpointArray        = $this->serializer->normalize($endpoint, null, [AbstractNormalizer::IGNORED_ATTRIBUTES => ['object', 'inversedBy']]);
         $endpointArray['_id'] = $endpointArray['id'];
-        
+
         if ($collection->findOneAndReplace(
             ['id' => $endpoint->getId()->toString()],
             $endpointArray,
@@ -1257,11 +1255,11 @@ class CacheService
         } else {
             isset($this->style) === true && $this->style->writeln('Wrote object '.$endpoint->getId()->toString().' to cache');
         }
-        
+
         return $endpoint;
-        
+
     }//end cacheEndpoint()
-    
+
     /**
      * Removes an endpoint from the cache.
      *
@@ -1275,13 +1273,13 @@ class CacheService
         if (isset($this->client) === false) {
             return;
         }
-        
+
         $collection = $this->client->endpoints->json;
-        
+
         $collection->findOneAndDelete(['id' => $endpoint->getId()->toString()]);
-        
+
     }//end removeEndpoint()
-    
+
     /**
      * Get a single endpoint from the cache.
      *
@@ -1295,36 +1293,36 @@ class CacheService
         if (isset($this->client) === false) {
             return [];
         }
-        
+
         $collection = $this->client->endpoints->json;
-        
+
         if ($object = $collection->findOne(['id' => $identification])) {
             return $object;
         }
-        
+
         if ($object = $this->entityManager->getRepository('App:Endpoint')->find($identification)) {
             return $this->serializer->normalize($object);
         }
-        
+
         return null;
-        
+
     }//end getEndpoint()
-    
+
     public function getEndpoints(array $filter): ?Endpoint
     {
         // Backwards compatablity.
         if (isset($this->client) === false) {
             return [];
         }
-        
+
         $collection = $this->client->endpoints->json;
-        
+
         if (isset($filter['path']) === true) {
             $path             = $filter['path'];
             $filter['$where'] = "\"$path\".match(this.pathRegex)";
             unset($filter['path']);
         }
-        
+
         if (isset($filter['method']) === true) {
             $method        = $filter['method'];
             $filter['$or'] = [
@@ -1333,9 +1331,9 @@ class CacheService
             ];
             unset($filter['method']);
         }
-        
+
         $endpoints = $collection->find($filter)->toArray();
-        
+
         if (count($endpoints) > 1) {
             throw new NonUniqueResultException();
         } else if (count($endpoints) == 1) {
@@ -1344,9 +1342,9 @@ class CacheService
         } else {
             return null;
         }
-        
+
     }//end getEndpoints()
-    
+
     /**
      * Put a single schema into the cache.
      *
@@ -1360,14 +1358,14 @@ class CacheService
         if (isset($this->client) === false) {
             return $entity;
         }
-        
+
         // Remap the array.
         $array              = $entity->toSchema(null);
         $array['reference'] = $array['$id'];
         $array['schema']    = $array['$schema'];
         unset($array['$id']);
         unset($array['$schema']);
-        
+
         // var_dump($array);
         // $collection = $this->client->schemas->json;
         // if ($collection->findOneAndReplace(
@@ -1380,9 +1378,9 @@ class CacheService
         // $this->style->writeln('Wrote object '.$entity->getId().' to cache');
         // }
         return $entity;
-        
+
     }//end cacheShema()
-    
+
     // /**
     // * Removes an Schema from the cache.
     // *
