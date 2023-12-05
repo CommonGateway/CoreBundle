@@ -843,17 +843,17 @@ class CacheService
         return null;
 
     }//end parseFilter()
-
+    
     /**
      * Retrieves objects from a cache collection.
      *
-     * @param array $filter
-     * @param array $options
-     * @param array $completeFilter
+     * @param array $filter The mongoDB query to filter with.
+     * @param array|null $options Options like 'limit', 'skip' & 'sort' for the mongoDB->find query. If this equals null, this function will only count the amount of objects found and return an integer.
+     * @param array $completeFilter The completeFilter query, unchanged, as used on the request.
      *
-     * @return array $this->handleResultPagination()
+     * @return array|int $this->handleResultPagination() array or an integer if $options = null, and we are only counting objects.
      */
-    public function retrieveObjectsFromCache(array $filter, array $options, array $completeFilter = []): array
+    public function retrieveObjectsFromCache(array $filter, ?array $options = null, array $completeFilter = [])
     {
         $user = $this->objectEntityService->findCurrentUser();
 
@@ -875,8 +875,13 @@ class CacheService
         $this->session->set('mongoDBFilter', $filter);
 
         $collection = $this->client->objects->json;
-        $results    = $collection->find($filter, $options)->toArray();
         $total      = $collection->count($filter);
+        
+        // If options is null, we only count the objects.
+        if ($options === null) {
+            return $total;
+        }
+        $results    = $collection->find($filter, $options)->toArray();
 
         return $this->handleResultPagination($completeFilter, $results, $total);
 
@@ -891,7 +896,7 @@ class CacheService
      *
      * @throws Exception
      *
-     * @return array
+     * @return array The objects found
      */
     public function searchObjects(string $search = null, array $filter = [], array $entities = []): array
     {
@@ -926,6 +931,39 @@ class CacheService
         // Find / Search.
         return $this->retrieveObjectsFromCache($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order], $completeFilter);
 
+    }//end searchObjects()
+    
+    /**
+     * Counts objects found with the given search/filter parameters.
+     *
+     * @param string|null $search   a string to search for within the given context
+     * @param array       $filter   an array of dot.notation filters for which to search with
+     * @param array       $entities schemas to limit te search to
+     *
+     * @throws Exception
+     *
+     * @return int
+     */
+    public function countObjects(string $search = null, array $filter = [], array $entities = []): int
+    {
+        // Backwards compatablity.
+        if (isset($this->client) === false) {
+            return 0;
+        }
+        
+        $completeFilter = [];
+        $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
+        if ($filterParse !== null) {
+            $this->logger->error($filterParse);
+            return 0;
+        }
+        
+        // Let's see if we need a search
+        $this->handleSearch($filter, $completeFilter, $search);
+        
+        // Find / Search.
+        return $this->retrieveObjectsFromCache($filter);
+        
     }//end searchObjects()
 
     /**
