@@ -19,6 +19,7 @@ This service provides a guzzle wrapper to work with sources in the common gatewa
 |[cacheShema](#cacheservicecacheshema)|Put a single schema into the cache.|
 |[cleanup](#cacheservicecleanup)|Remove non-existing items from the cache.|
 |[countObjects](#cacheservicecountobjects)|Counts objects found with the given search/filter parameters.|
+|[countObjectsInCache](#cacheservicecountobjectsincache)|Counts objects in a cache collection.|
 |[getEndpoint](#cacheservicegetendpoint)|Get a single endpoint from the cache.|
 |[getEndpoints](#cacheservicegetendpoints)||
 |[getObject](#cacheservicegetobject)|Get a single object from the cache.|
@@ -234,6 +235,33 @@ Counts objects found with the given search/filter parameters.
 <hr />
 
 
+### CacheService::countObjectsInCache  
+
+**Description**
+
+```php
+public countObjectsInCache (array $filter)
+```
+
+Counts objects in a cache collection. 
+
+ 
+
+**Parameters**
+
+* `(array) $filter`
+: The mongoDB query to filter with.  
+
+**Return Values**
+
+`int`
+
+> The amount of objects counted.
+
+
+<hr />
+
+
 ### CacheService::getEndpoint  
 
 **Description**
@@ -410,7 +438,7 @@ Retrieves objects from a cache collection.
 * `(array) $filter`
 : The mongoDB query to filter with.  
 * `(array|null) $options`
-: Options like 'limit', 'skip' & 'sort' for the mongoDB->find query. If this equals null, this function will only count the amount of objects found and return an integer.  
+: Options like 'limit', 'skip' & 'sort' for the mongoDB->find query.  
 * `(array) $completeFilter`
 : The completeFilter query, unchanged, as used on the request.  
 
@@ -418,7 +446,7 @@ Retrieves objects from a cache collection.
 
 `array|int`
 
-> $this->handleResultPagination() array or an integer if $options = null, and we are only counting objects.
+> $this->handleResultPagination() array with objects and pagination.
 
 
 <hr />
