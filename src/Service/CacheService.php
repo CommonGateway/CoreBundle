@@ -843,26 +843,29 @@ class CacheService
         return null;
 
     }//end parseFilter()
-
+    
+    
     /**
-     * Retrieves objects from a cache collection.
+     * Adds owner and organization filters (multi tenancy) for searchObjects() or countObjects(). Or other MongoDB collection queries.
      *
-     * @param array      $filter         The mongoDB query to filter with.
-     * @param array|null $options        Options like 'limit', 'skip' & 'sort' for the mongoDB->find query. If this equals null, this function will only count the amount of objects found and return an integer.
-     * @param array      $completeFilter The completeFilter query, unchanged, as used on the request.
+     * @param array $filter The filter to add owner and organization filters to.
      *
-     * @return array|int $this->handleResultPagination() array or an integer if $options = null, and we are only counting objects.
+     * @return array The updated filter (unless owner and organization filter was already present).
      */
-    public function retrieveObjectsFromCache(array $filter, ?array $options = null, array $completeFilter = [])
+    private function addOwnerOrgFilter(array $filter): array
     {
+        if (isset($filter['_self.owner.id']) === true || isset($filter['$and']['$or']['_self.owner.id'])) {
+            return $filter;
+        }
+        
         $user = $this->objectEntityService->findCurrentUser();
-
+        
         if ($user !== null && $user->getOrganization() !== null) {
             if (isset($filter['$or']) === true) {
                 $filter['$and'][] = ['$or' => $filter['$or']];
                 unset($filter['$or']);
             }
-
+            
             $orFilter          = [];
             $orFilter['$or'][] = ['_self.owner.id' => $user->getId()->toString()];
             $orFilter['$or'][] = ['_self.organization.id' => $user->getOrganization()->getId()->toString()];
@@ -871,16 +874,28 @@ class CacheService
         } else if ($user !== null) {
             $filter['_self.owner.id'] = $user->getId()->toString();
         }
+        
+        return $filter;
+    }
+    
+    /**
+     * Retrieves objects from a cache collection.
+     *
+     * @param array $filter The mongoDB query to filter with.
+     * @param array|null $options Options like 'limit', 'skip' & 'sort' for the mongoDB->find query.
+     * @param array $completeFilter The completeFilter query, unchanged, as used on the request.
+     *
+     * @return array|int $this->handleResultPagination() array with objects and pagination.
+     */
+    public function retrieveObjectsFromCache(array $filter, ?array $options = null, array $completeFilter = []): array
+    {
+        $filter = $this->addOwnerOrgFilter($filter);
 
         $this->session->set('mongoDBFilter', $filter);
 
         $collection = $this->client->objects->json;
-        $total      = $collection->count($filter);
-
-        // If options is null, we only count the objects.
-        if ($options === null) {
-            return $total;
-        }
+        $results    = $collection->find($filter, $options)->toArray();
+        $total      = $this->countObjectsInCache($filter);
 
         $results = $collection->find($filter, $options)->toArray();
 
@@ -933,7 +948,27 @@ class CacheService
         return $this->retrieveObjectsFromCache($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order], $completeFilter);
 
     }//end searchObjects()
-
+    
+    
+    /**
+     * Counts objects in a cache collection.
+     *
+     * @param array $filter The mongoDB query to filter with.
+     *
+     * @return int The amount of objects counted.
+     */
+    public function countObjectsInCache(array $filter): int
+    {
+        $filter = $this->addOwnerOrgFilter($filter);
+        
+        $this->session->set('mongoDBFilter', $filter);
+        
+        $collection = $this->client->objects->json;
+        return $collection->count($filter);
+        
+    }//end countObjectsInCache()
+    
+    
     /**
      * Counts objects found with the given search/filter parameters.
      *
@@ -963,7 +998,9 @@ class CacheService
         $this->handleSearch($filter, $completeFilter, $search);
 
         // Find / Search.
-        return $this->retrieveObjectsFromCache($filter);
+        return $this->countObjectsInCache($filter);
+        
+    }//end searchObjects()
 
     }//end countObjects()
 
