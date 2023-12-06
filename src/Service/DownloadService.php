@@ -76,7 +76,7 @@ class DownloadService
      * @param array $data The data to render.
      *
      * @return string The content rendered.
-     */    
+     */
     public function render(array $data, ?string $templateRef = null): string
     {
         if (isset($data['_self']['schema']['id']) === false && isset($data['message']) !== false) {
@@ -108,6 +108,7 @@ class DownloadService
         $content      = $twigTemplate->render(['object' => $data]);
 
         return $content;
+
     }//end render()
 
     /**
