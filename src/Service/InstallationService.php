@@ -1127,7 +1127,7 @@ class InstallationService
 
             return null;
         } else if ($endpoint !== null && $endpoint instanceof Endpoint) {
-            $this->style->writeln('updating endpoint '. $endpoint->getReference().' to version '.$endpointData['version']);
+            $this->style->writeln('updating endpoint '.$endpoint->getReference().' to version '.$endpointData['version']);
 
             $default                   = $endpoint->toSchema();
             $endpointData['pathRegex'] = $default['pathRegex'];
