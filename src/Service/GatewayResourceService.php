@@ -144,6 +144,7 @@ class GatewayResourceService
     /**
      * Find all sources that have a location that match the specified url.
      * Todo: we should use a mongoDB filter instead of this, sources should exist in MongoDB.
+     * Todo: for future reference, there is a function with very similar BL in the CustomerInteractionBundle->CustomerInteractionService->getSource(), we could/should merge that code with this function.
      *
      * @param string $url        The url we are trying to find a matching source for.
      * @param string $pluginName The name of the plugin that requests these resources.
