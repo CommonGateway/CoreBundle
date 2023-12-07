@@ -845,16 +845,18 @@ class CacheService
     }//end parseFilter()
 
     /**
-     * Retrieves objects from a cache collection.
+     * Adds owner and organization filters (multi tenancy) for searchObjects() or countObjects(). Or other MongoDB collection queries.
      *
-     * @param array $filter
-     * @param array $options
-     * @param array $completeFilter
+     * @param array $filter The filter to add owner and organization filters to.
      *
-     * @return array $this->handleResultPagination()
+     * @return array The updated filter (unless owner and organization filter was already present).
      */
-    public function retrieveObjectsFromCache(array $filter, array $options, array $completeFilter = []): array
+    private function addOwnerOrgFilter(array $filter): array
     {
+        if (isset($filter['_self.owner.id']) === true || isset($filter['$and']['$or']['_self.owner.id'])) {
+            return $filter;
+        }
+
         $user = $this->objectEntityService->findCurrentUser();
 
         if ($user !== null && $user->getOrganization() !== null) {
@@ -872,11 +874,30 @@ class CacheService
             $filter['_self.owner.id'] = $user->getId()->toString();
         }
 
+        return $filter;
+
+    }//end addOwnerOrgFilter()
+
+    /**
+     * Retrieves objects from a cache collection.
+     *
+     * @param array      $filter         The mongoDB query to filter with.
+     * @param array|null $options        Options like 'limit', 'skip' & 'sort' for the mongoDB->find query.
+     * @param array      $completeFilter The completeFilter query, unchanged, as used on the request.
+     *
+     * @return array|int $this->handleResultPagination() array with objects and pagination.
+     */
+    public function retrieveObjectsFromCache(array $filter, ?array $options = null, array $completeFilter = []): array
+    {
+        $filter = $this->addOwnerOrgFilter($filter);
+
         $this->session->set('mongoDBFilter', $filter);
 
         $collection = $this->client->objects->json;
         $results    = $collection->find($filter, $options)->toArray();
-        $total      = $collection->count($filter);
+        $total      = $this->countObjectsInCache($filter);
+
+        $results = $collection->find($filter, $options)->toArray();
 
         return $this->handleResultPagination($completeFilter, $results, $total);
 
@@ -891,7 +912,7 @@ class CacheService
      *
      * @throws Exception
      *
-     * @return array
+     * @return array The objects found
      */
     public function searchObjects(string $search = null, array $filter = [], array $entities = []): array
     {
@@ -927,6 +948,57 @@ class CacheService
         return $this->retrieveObjectsFromCache($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order], $completeFilter);
 
     }//end searchObjects()
+
+    /**
+     * Counts objects in a cache collection.
+     *
+     * @param array $filter The mongoDB query to filter with.
+     *
+     * @return int The amount of objects counted.
+     */
+    public function countObjectsInCache(array $filter): int
+    {
+        $filter = $this->addOwnerOrgFilter($filter);
+
+        $this->session->set('mongoDBFilter', $filter);
+
+        $collection = $this->client->objects->json;
+        return $collection->count($filter);
+
+    }//end countObjectsInCache()
+
+    /**
+     * Counts objects found with the given search/filter parameters.
+     *
+     * @param string|null $search   a string to search for within the given context
+     * @param array       $filter   an array of dot.notation filters for which to search with
+     * @param array       $entities schemas to limit te search to
+     *
+     * @throws Exception
+     *
+     * @return int
+     */
+    public function countObjects(string $search = null, array $filter = [], array $entities = []): int
+    {
+        // Backwards compatablity.
+        if (isset($this->client) === false) {
+            return 0;
+        }
+
+        $completeFilter = [];
+        $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
+        if ($filterParse !== null) {
+            $this->logger->error($filterParse);
+            return 0;
+        }
+
+        // Let's see if we need a search
+        $this->handleSearch($filter, $completeFilter, $search);
+
+        // Find / Search.
+        return $this->countObjectsInCache($filter);
+
+    }//end countObjects()
 
     /**
      * Creates an aggregation of results for possible query parameters

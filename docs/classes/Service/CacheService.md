@@ -18,6 +18,8 @@ This service provides a guzzle wrapper to work with sources in the common gatewa
 |[cacheObject](#cacheservicecacheobject)|Put a single object into the cache.|
 |[cacheShema](#cacheservicecacheshema)|Put a single schema into the cache.|
 |[cleanup](#cacheservicecleanup)|Remove non-existing items from the cache.|
+|[countObjects](#cacheservicecountobjects)|Counts objects found with the given search/filter parameters.|
+|[countObjectsInCache](#cacheservicecountobjectsincache)|Counts objects in a cache collection.|
 |[getEndpoint](#cacheservicegetendpoint)|Get a single endpoint from the cache.|
 |[getEndpoints](#cacheservicegetendpoints)||
 |[getObject](#cacheservicegetobject)|Get a single object from the cache.|
@@ -196,6 +198,70 @@ Remove non-existing items from the cache.
 <hr />
 
 
+### CacheService::countObjects  
+
+**Description**
+
+```php
+public countObjects (string|null $search, array $filter, array $entities)
+```
+
+Counts objects found with the given search/filter parameters. 
+
+ 
+
+**Parameters**
+
+* `(string|null) $search`
+: a string to search for within the given context  
+* `(array) $filter`
+: an array of dot.notation filters for which to search with  
+* `(array) $entities`
+: schemas to limit te search to  
+
+**Return Values**
+
+`int`
+
+
+
+
+**Throws Exceptions**
+
+
+`\Exception`
+
+
+<hr />
+
+
+### CacheService::countObjectsInCache  
+
+**Description**
+
+```php
+public countObjectsInCache (array $filter)
+```
+
+Counts objects in a cache collection. 
+
+ 
+
+**Parameters**
+
+* `(array) $filter`
+: The mongoDB query to filter with.  
+
+**Return Values**
+
+`int`
+
+> The amount of objects counted.
+
+
+<hr />
+
+
 ### CacheService::getEndpoint  
 
 **Description**
@@ -360,7 +426,7 @@ Removes an object from the cache.
 **Description**
 
 ```php
-public retrieveObjectsFromCache (array $filter, array $options, array $completeFilter)
+public retrieveObjectsFromCache (array $filter, array|null $options, array $completeFilter)
 ```
 
 Retrieves objects from a cache collection. 
@@ -370,14 +436,17 @@ Retrieves objects from a cache collection.
 **Parameters**
 
 * `(array) $filter`
-* `(array) $options`
+: The mongoDB query to filter with.  
+* `(array|null) $options`
+: Options like 'limit', 'skip' & 'sort' for the mongoDB->find query.  
 * `(array) $completeFilter`
+: The completeFilter query, unchanged, as used on the request.  
 
 **Return Values**
 
-`array`
+`array|int`
 
-> $this->handleResultPagination()
+> $this->handleResultPagination() array with objects and pagination.
 
 
 <hr />
@@ -408,7 +477,7 @@ Searches the object store for objects containing the search string.
 
 `array`
 
-
+> The objects found
 
 
 **Throws Exceptions**
