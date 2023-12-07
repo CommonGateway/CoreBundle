@@ -709,6 +709,7 @@ class CallService
                 $this->callLogger->warning('Cannot decode an empty response body');
                 return [];
             }
+
             $this->callLogger->error('Cannot decode an empty response body');
             return [];
         }
