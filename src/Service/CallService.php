@@ -705,6 +705,11 @@ class CallService
         // als geen content-type header dan content-type header is accept header.
         $responseBody = $response->getBody()->getContents();
         if (isset($responseBody) === false || empty($responseBody) === true) {
+            if (in_array($response->getStatusCode(), [200, 201]) === true) {
+                $this->callLogger->warning('Cannot decode an empty response body');
+                return [];
+            }
+
             $this->callLogger->error('Cannot decode an empty response body');
             return [];
         }
