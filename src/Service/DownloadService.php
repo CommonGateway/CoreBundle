@@ -95,7 +95,7 @@ class DownloadService
             $this->logger->warning('There are more than 1 templates for this object, resolving by rendering the first template found.');
         }
 
-        $template = $templates[0];
+        $template = $templates->first();
         if ($template instanceof Template !== true) {
             return '';
         }
