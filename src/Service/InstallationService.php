@@ -804,7 +804,7 @@ class InstallationService
 
         // Collection prefixes for schema's.
         $this->updateSchemasCollection(($data['collections'] ?? []));
-        
+
         // Set the default source for a schema.
         $this->editSchemaProperties(($data['schemas'] ?? []));
 
@@ -828,7 +828,7 @@ class InstallationService
 
         // Create templates with supportedSchemas (ref to uuid) and organization.
         $this->createTemplates(($data['templates'] ?? []));
-        
+
         // Let's see if we have things that we want to create cards for stuff
         // Since this might create cards for the stuff above this should always be last!!!
         $this->createCards(($data['cards'] ?? []));
@@ -1022,19 +1022,19 @@ class InstallationService
             if (isset($this->style) === true) {
                 $this->style->writeLn('Template found with reference '.$templateData['$id'].', version number ('.$templateData['version'].') is equal or lower than the current version');
             }
-            
+
             $this->logger->debug('Template found with reference '.$templateData['$id'].', version number ('.$templateData['version'].') is equal or lower than the current version');
-            
+
             return null;
         } else if ($template instanceof Template === true) {
             if (isset($this->style) === true) {
                 $this->style->writeln('Updating template '.$template->getReference().' to version '.$templateData['version']);
             }
-            
+
             $this->logger->debug('Updating template '.$template->getReference().' to version '.$templateData['version']);
-            
+
             $template->fromSchema($templateData);
-            
+
             $this->entityManager->persist($template);
             return $template;
         }//end if
