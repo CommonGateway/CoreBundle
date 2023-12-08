@@ -804,6 +804,9 @@ class InstallationService
 
         // Collection prefixes for schema's.
         $this->updateSchemasCollection(($data['collections'] ?? []));
+        
+        // Set the default source for a schema.
+        $this->editSchemaProperties(($data['schemas'] ?? []));
 
         // Endpoints for schema's and/or sources.
         $this->createEndpoints(($data['endpoints'] ?? []));
@@ -814,23 +817,21 @@ class InstallationService
         // Fix references in configuration of these actions.
         $this->fixConfigRef(($data['actions']['fixConfigRef'] ?? []));
 
-        // Cronjobs for actions for action handlers.
+        // Cronjobs for actions.
         $this->createCronjobs(($data['cronjobs']['actions'] ?? []));
 
-        // Create users with given Organization, Applications & SecurityGroups.
+        // Create Applications and connect organization searching it by reference.
         $this->createApplications(($data['applications'] ?? []));
 
-        // Create users with given Organization, Applications & SecurityGroups.
+        // Create users with given Organization & SecurityGroups.
         $this->createUsers(($data['users'] ?? []));
 
-        // Let's see if we have things that we want to create cards for stuff (Since this might create cards for the stuff above this should always be last).
-        $this->createCards(($data['cards'] ?? []));
-
-        // Set the default source for a schema.
-        $this->editSchemaProperties(($data['schemas'] ?? []));
-
-        // Create template
+        // Create templates with supportedSchemas (ref to uuid) and organization.
         $this->createTemplates(($data['templates'] ?? []));
+        
+        // Let's see if we have things that we want to create cards for stuff
+        // Since this might create cards for the stuff above this should always be last!!!
+        $this->createCards(($data['cards'] ?? []));
 
         if (isset($data['installationService']) === false || empty($data['installationService']) === true) {
             $this->logger->error($file->getFilename().' Doesn\'t contain an installation service');
@@ -892,10 +893,6 @@ class InstallationService
                 $source = $this->resourceService->getSource($schemaData['defaultSource'], 'commongateway/corebundle');
                 // Set the source as defaultSource to the schema.
                 $schema->setDefaultSource($source);
-            }
-
-            if (key_exists('createAuditTrails', $schemaData) === true) {
-                $schema->setCreateAuditTrails($schemaData['createAuditTrails']);
             }
 
             $this->entityManager->persist($schema);
@@ -1021,11 +1018,26 @@ class InstallationService
         }
 
         $template = $this->entityManager->getRepository('App:Template')->findOneBy(['reference' => $templateData['$id']]);
-        if ($template !== null) {
-            $this->logger->debug('Template found with reference '.$templateData['$id']);
-
+        if ($template !== null && isset($templateData['version']) === true && version_compare($templateData['version'], $template->getVersion()) <= 0) {
+            if (isset($this->style) === true) {
+                $this->style->writeLn('Template found with reference '.$templateData['$id'].', version number ('.$templateData['version'].') is equal or lower than the current version');
+            }
+            
+            $this->logger->debug('Template found with reference '.$templateData['$id'].', version number ('.$templateData['version'].') is equal or lower than the current version');
+            
             return null;
-        }
+        } else if ($template instanceof Template === true) {
+            if (isset($this->style) === true) {
+                $this->style->writeln('Updating template '.$template->getReference().' to version '.$templateData['version']);
+            }
+            
+            $this->logger->debug('Updating template '.$template->getReference().' to version '.$templateData['version']);
+            
+            $template->fromSchema($templateData);
+            
+            $this->entityManager->persist($template);
+            return $template;
+        }//end if
 
         $template = new Template($templateData);
 
@@ -1122,7 +1134,7 @@ class InstallationService
         }
 
         $endpoint = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $endpointData['$id']]);
-        if ($endpoint !== null && version_compare($endpointData['version'], $endpoint->getVersion()) <= 0) {
+        if ($endpoint !== null && isset($endpointData['version']) === true && version_compare($endpointData['version'], $endpoint->getVersion()) <= 0) {
             if (isset($this->style) === true) {
                 $this->style->writeLn('Endpoint found with reference '.$endpointData['$id'].', version number ('.$endpointData['version'].') is equal or lower than the current version');
             }
@@ -1130,7 +1142,7 @@ class InstallationService
             $this->logger->debug('Endpoint found with reference '.$endpointData['$id'].', version number ('.$endpointData['version'].') is equal or lower than the current version');
 
             return null;
-        } else if ($endpoint !== null && $endpoint instanceof Endpoint) {
+        } else if ($endpoint instanceof Endpoint === true) {
             if (isset($this->style) === true) {
                 $this->style->writeln('Updating endpoint '.$endpoint->getReference().' to version '.$endpointData['version']);
             }
