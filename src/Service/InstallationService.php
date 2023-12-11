@@ -1122,11 +1122,29 @@ class InstallationService
         }
 
         $endpoint = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $endpointData['$id']]);
-        if ($endpoint !== null) {
-            $this->logger->debug('Endpoint found with reference '.$endpointData['$id']);
+        if ($endpoint !== null && version_compare($endpointData['version'], $endpoint->getVersion()) <= 0) {
+            if (isset($this->style) === true) {
+                $this->style->writeLn('Endpoint found with reference '.$endpointData['$id'].', version number ('.$endpointData['version'].') is equal or lower than the current version');
+            }
+
+            $this->logger->debug('Endpoint found with reference '.$endpointData['$id'].', version number ('.$endpointData['version'].') is equal or lower than the current version');
 
             return null;
-        }
+        } else if ($endpoint !== null && $endpoint instanceof Endpoint) {
+            if (isset($this->style) === true) {
+                $this->style->writeln('Updating endpoint '.$endpoint->getReference().' to version '.$endpointData['version']);
+            }
+
+            $this->logger->debug('Updating endpoint '.$endpoint->getReference().' to version '.$endpointData['version']);
+
+            $default                   = $endpoint->toSchema();
+            $endpointData['pathRegex'] = $default['pathRegex'];
+
+            $endpoint->fromSchema($endpointData, $default);
+
+            $this->entityManager->persist($endpoint);
+            return $endpoint;
+        }//end if
 
         $endpoint = $this->constructEndpoint($type, $object ?? null, $endpointData);
         $this->entityManager->persist($endpoint);
