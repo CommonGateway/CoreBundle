@@ -76,12 +76,12 @@ public function __construct(
      * @param array $data The data to render.
      *
      * @return string The content rendered.
-     */
-public function render(array $data, ?string $templateRef = null): string
-{
-    if (isset($data['_self']['schema']['id']) === false && isset($data['message']) !== false) {
-        return "<html><body><h1>{$data['message']}</h1></body></html>";
-    }
+     */    
+    public function render(array $data, ?string $templateRef = null): string
+    {
+        if (isset($data['_self']['schema']['id']) === false && isset($data['message']) !== false) {
+            return "<html><body><h1>{$data['message']}</h1></body></html>";
+        }
 
     if (isset($templateRef) === true) {
         $template = $this->entityManager->getRepository('App:Template')->findOneBy(['reference' => $templateRef]);
@@ -98,16 +98,17 @@ public function render(array $data, ?string $templateRef = null): string
             $this->logger->warning('There are more than 1 templates for this object, resolving by rendering the first template found.');
         }
 
-        $template = $templates->first();
-        if ($template instanceof Template !== true) {
-            return '';
+            $template = $templates[0];
+            if ($template instanceof Template !== true) {
+                return '';
+            }
         }
 
         $twigTemplate = $this->twig->createTemplate($template->getContent());
         $content      = $twigTemplate->render(['object' => $data]);
 
         return $content;
-    }//end if
+    }//end render()
 
     /**
      * Downloads a docx.
