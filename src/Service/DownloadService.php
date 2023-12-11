@@ -73,7 +73,7 @@ class DownloadService
     /**
      * Renders a pdf.
      *
-     * @param array       $data The data to render.
+     * @param array       $data        The data to render.
      * @param string|null $templateRef The templateRef.
      *
      * @return string The content rendered.
