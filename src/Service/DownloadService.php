@@ -300,4 +300,4 @@ public function __construct(
 
         return $data;
     }//end flattenArray()
-}//end render()
+}//end class
