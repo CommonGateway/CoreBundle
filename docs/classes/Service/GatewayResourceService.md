@@ -57,7 +57,8 @@ public findSourcesForUrl (string $url, string $pluginName)
 
 Find all sources that have a location that match the specified url. 
 
-Todo: we should use a mongoDB filter instead of this, sources should exist in MongoDB. 
+Todo: we should use a mongoDB filter instead of this, sources should exist in MongoDB.  
+Todo: for future reference, there is a function with very similar BL in the CustomerInteractionBundle->CustomerInteractionService->getSource(), we could/should merge that code with this function. 
 
 **Parameters**
 
