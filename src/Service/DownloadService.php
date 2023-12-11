@@ -40,17 +40,17 @@ class DownloadService
     /**
      * @var EntityManagerInterface
      */
-    private EntityManagerInterface $entityManager;
+private EntityManagerInterface $entityManager;
 
     /**
      * @var LoggerInterface
      */
-    private LoggerInterface $logger;
+private LoggerInterface $logger;
 
     /**
      * @var Environment
      */
-    private Environment $twig;
+private Environment $twig;
 
     /**
      * The constructor sets al needed variables.
@@ -59,16 +59,16 @@ class DownloadService
      * @param LoggerInterface        $requestLogger The Logger
      * @param Environment            $twig          Twig
      */
-    public function __construct(
-        EntityManagerInterface $entityManager,
-        LoggerInterface $requestLogger,
-        Environment $twig
-    ) {
-        $this->entityManager = $entityManager;
-        $this->logger        = $requestLogger;
-        $this->twig          = $twig;
+public function __construct(
+    EntityManagerInterface $entityManager,
+    LoggerInterface $requestLogger,
+    Environment $twig
+) {
+    $this->entityManager = $entityManager;
+    $this->logger        = $requestLogger;
+    $this->twig          = $twig;
 
-    }//end __construct()
+}//end __construct()
 
     /**
      * Renders a pdf.
@@ -77,26 +77,26 @@ class DownloadService
      *
      * @return string The content rendered.
      */
-    public function render(array $data, ?string $templateRef = null): string
-    {
-        if (isset($data['_self']['schema']['id']) === false && isset($data['message']) !== false) {
-            return "<html><body><h1>{$data['message']}</h1></body></html>";
+public function render(array $data, ?string $templateRef = null): string
+{
+    if (isset($data['_self']['schema']['id']) === false && isset($data['message']) !== false) {
+        return "<html><body><h1>{$data['message']}</h1></body></html>";
+    }
+
+    if (isset($templateRef) === true) {
+        $template = $this->entityManager->getRepository('App:Template')->findOneBy(['reference' => $templateRef]);
+    } else {
+        $criteria = Criteria::create()->where(Criteria::expr()->memberOf("supportedSchemas", $data['_self']['schema']['id']));
+
+        $templates = new ArrayCollection($this->entityManager->getRepository('App:Template')->findAll());
+        $templates = $templates->matching($criteria);
+
+        if ($templates->count() === 0) {
+            $this->logger->error('There is no render template for this type of object.');
+            throw new BadRequestException('There is no render template for this type of object.', 406);
+        } else if ($templates->count() > 1) {
+            $this->logger->warning('There are more than 1 templates for this object, resolving by rendering the first template found.');
         }
-
-        if (isset($templateRef) === true) {
-            $template = $this->entityManager->getRepository('App:Template')->findOneBy(['reference' => $templateRef]);
-        } else {
-            $criteria = Criteria::create()->where(Criteria::expr()->memberOf("supportedSchemas", $data['_self']['schema']['id']));
-
-            $templates = new ArrayCollection($this->entityManager->getRepository('App:Template')->findAll());
-            $templates = $templates->matching($criteria);
-
-            if ($templates->count() === 0) {
-                $this->logger->error('There is no render template for this type of object.');
-                throw new BadRequestException('There is no render template for this type of object.', 406);
-            } else if ($templates->count() > 1) {
-                $this->logger->warning('There are more than 1 templates for this object, resolving by rendering the first template found.');
-            }
 
         $template = $templates->first();
         if ($template instanceof Template !== true) {
@@ -107,8 +107,7 @@ class DownloadService
         $content      = $twigTemplate->render(['object' => $data]);
 
         return $content;
-
-    }//end render()
+    }//end if
 
     /**
      * Downloads a docx.
@@ -153,7 +152,6 @@ class DownloadService
         \Safe\unlink($filename);
 
         return $rendered;
-
     }//end downloadDocx()
 
     /**
@@ -171,7 +169,6 @@ class DownloadService
         $response->headers->set('Content-Disposition', 'attachment; filename="data.html"');
 
         return $response->getContent();
-
     }//end downloadHtml()
 
     /**
@@ -192,7 +189,6 @@ class DownloadService
         $pdfWriter->render();
 
         return $pdfWriter->output();
-
     }//end downloadPdf()
 
     /**
@@ -211,7 +207,6 @@ class DownloadService
         $response->headers->set('Content-Disposition', 'attachment; filename="data.csv"');
 
         return $response;
-
     }//end downloadCSV()
 
     /**
@@ -278,7 +273,6 @@ class DownloadService
         $response->headers->set('Content-Disposition', $dispositionHeader);
 
         return $response;
-
     }//end downloadXLSX()
 
     /**
@@ -304,6 +298,5 @@ class DownloadService
         }
 
         return $data;
-
     }//end flattenArray()
-}//end class
+}//end render()
