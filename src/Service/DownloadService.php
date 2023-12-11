@@ -192,7 +192,6 @@ class DownloadService
 
     }//end downloadPdf()
 
-
     /**
      * Generates a CSV response from a given CSV string.
      *
