@@ -195,7 +195,7 @@ The method then streams this spreadsheet as a downloadable XLSX file to the clie
 **Description**
 
 ```php
-public render (array $data)
+public render (array $data, string|null $templateRef)
 ```
 
 Renders a pdf. 
@@ -206,6 +206,8 @@ Renders a pdf.
 
 * `(array) $data`
 : The data to render.  
+* `(string|null) $templateRef`
+: The templateRef.  
 
 **Return Values**
 
