@@ -177,13 +177,14 @@ class DownloadService
     /**
      * Downloads a pdf.
      *
-     * @param array $data The data to render for this pdf.
+     * @param array       $data        The data to render for this pdf.
+     * @param string|null $templateRef The templateRef.
      *
      * @return string The pdf as string output.
      */
-    public function downloadPdf(array $data): string
+    public function downloadPdf(array $data, ?string $templateRef = null): string
     {
-        $raw = $this->render($data);
+        $raw = $this->render($data, $templateRef);
 
         $pdfWriter = new Dompdf();
         $pdfWriter->setPaper('A4', 'portrait');
