@@ -818,7 +818,7 @@ class RequestService
         $this->identification = $this->getId();
 
         // If we have an ID we can get an Object to work with (except on gets we handle those from cache).
-        if (isset($this->identification) === true && empty($this->identification) === false && $this->data['method'] != 'GET') {
+        if (empty($this->identification) === false && $this->data['method'] != 'GET') {
             $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->identification]);
             if ($object === null) {
                 return new Response(
@@ -1032,11 +1032,11 @@ class RequestService
         case 'PUT':
             $eventType = 'commongateway.object.update';
 
-            // We dont have an id on a PUT so die.
-            if (isset($this->identification) === false) {
-                $this->logger->error('No id could be established for your request');
+            // We don't have an id on a PUT so die.
+            if (empty($this->identification) === true || empty($this->object) === true) {
+                $this->logger->error('No id or object could be established for your request');
 
-                return new Response('No id could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
+                return new Response('No id or object could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             }
 
             $this->session->set('object', $this->identification);
@@ -1098,11 +1098,11 @@ class RequestService
         case 'PATCH':
             $eventType = 'commongateway.object.update';
 
-            // We dont have an id on a PATCH so die.
-            if (isset($this->identification) === false) {
-                $this->logger->error('No id could be established for your request');
+            // We don't have an id on a PATCH so die.
+            if (empty($this->identification) === true || empty($this->object) === true) {
+                $this->logger->error('No id or object could be established for your request');
 
-                return new Response('No id could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
+                return new Response('No id or object could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             }
 
             $this->session->set('object', $this->identification);
@@ -1162,11 +1162,11 @@ class RequestService
             break;
         case 'DELETE':
 
-            // We dont have an id on a PUT so die.
-            if (isset($this->identification) === false) {
-                $this->logger->error('No id could be established for your request');
+            // We don't have an id or object on a DELETE so die.
+            if (empty($this->identification) === true || empty($this->object) === true) {
+                $this->logger->error('No id or object could be established for your request');
 
-                return new Response('No id could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
+                return new Response('No id or object could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             }
 
             $this->session->set('object', $this->identification);
