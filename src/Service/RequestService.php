@@ -1062,8 +1062,6 @@ class RequestService
                 return new Response('The body of your request is empty', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             }
 
-            $this->object = $this->entityManager->find('App:ObjectEntity', $this->identification);
-
             // if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
             $this->logger->debug('updating object '.$this->identification);
 
@@ -1129,8 +1127,6 @@ class RequestService
 
                 return new Response('The body of your request is empty', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             }
-
-            $this->object = $this->entityManager->find('App:ObjectEntity', $this->identification);
 
             // if ($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
             $this->logger->debug('updating object '.$this->identification);
