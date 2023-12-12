@@ -325,6 +325,7 @@ class MappingService
             if (isset($unsetIfValue) === true
                 && $value == $unsetIfValue
                 || ($unsetIfValue === '' && empty($value))
+                || ($unsetIfValue === '' && $value === null)
             ) {
                 $dotArray->delete($key);
             }
