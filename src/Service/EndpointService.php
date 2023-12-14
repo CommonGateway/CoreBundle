@@ -530,6 +530,12 @@ class EndpointService
         }
 
         if ($combinedArray === false) {
+            // Todo: When an id is not given the last element of the path array should be removed to ensure the arrays are of the same length.
+            array_pop($path);
+            $combinedArray = array_combine($path, explode('/', $pathRaw));
+        }
+
+        if ($combinedArray === false) {
             $this->logger->error('EndpointService->getNormalPath(): Failed to construct the parameters path array for the current endpoint.');
 
             $combinedArray = [];

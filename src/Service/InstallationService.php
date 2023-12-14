@@ -1143,14 +1143,16 @@ class InstallationService
 
             return null;
         } else if ($endpoint instanceof Endpoint === true) {
+            $version = ($endpointData['version'] ?? '0.0.1');
             if (isset($this->style) === true) {
-                $this->style->writeln('Updating endpoint '.$endpoint->getReference().' to version '.$endpointData['version']);
+                $this->style->writeln('Updating endpoint '.$endpoint->getReference().' to version '.$version);
             }
 
-            $this->logger->debug('Updating endpoint '.$endpoint->getReference().' to version '.$endpointData['version']);
+            $this->logger->debug('Updating endpoint '.$endpoint->getReference().' to version '.$version);
 
             $default                   = $endpoint->toSchema();
             $endpointData['pathRegex'] = $default['pathRegex'];
+            $endpointData['path']      = $default['path'];
 
             $endpoint->fromSchema($endpointData, $default);
 
