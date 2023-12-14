@@ -1143,7 +1143,7 @@ class InstallationService
 
             return null;
         } else if ($endpoint instanceof Endpoint === true) {
-            $version = $endpointData['version'] ?? '0.0.1';
+            $version = ($endpointData['version'] ?? '0.0.1');
             if (isset($this->style) === true) {
                 $this->style->writeln('Updating endpoint '.$endpoint->getReference().' to version '.$version);
             }
