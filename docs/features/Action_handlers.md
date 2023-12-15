@@ -3,7 +3,7 @@
 
 # Action Handlers
 
-This is a placeholder text, for now see [Events](Events.md) for more detailed information about actions & events.
+This is a placeholder text, for now, see [Events](Events.md) for more detailed information about actions & events.
 
 ## Actions
 
@@ -27,3 +27,4 @@ to do
 ## Creating your own action handlers
 
 to do
+
