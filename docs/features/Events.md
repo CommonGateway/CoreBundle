@@ -28,7 +28,7 @@ Storing the configuration for the action handler in the actual action means that
 
 ### Chaining actions
 
-Additionally, Actions can throw events themselves. You can build simple flows using this typical pattern (called chaining).. Currently, the gateway isn’t a full-blown BPMN engine and should not be used that way. It is however possible to integrate the BPMN engine into gateway flows using custom plugins (we are still looking for a sponsor for a Camunda or Flowable plugin).
+Additionally, Actions can throw events themselves. You can build simple flows using this typical pattern (called chaining). Currently, the gateway isn’t a full-blown BPMN engine and should not be used that way. It is however possible to integrate the BPMN engine into gateway flows using custom plugins (we are still looking for a sponsor for a Camunda or Flowable plugin).
 
 ## Event list
 
