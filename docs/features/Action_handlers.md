@@ -25,14 +25,14 @@ Additionally, Actions can throw events themselves. You can build simple flows us
 
 ## Using existing action handlers
 
-With any ActionHandler comes the possibility to creating a Common Gateway Action for it.
+With any ActionHandler comes the possibility of creating a Common Gateway Action for it.
 Actions can be created in a few different ways:
 - With the Common Gateway admin UI. _Tab 'Actions' in the sidebar._
 - By including your Action directly in the [installation files](Plugins.md#adding-core-schemas-to-your-plugin) of the bundle ([Common Gateway plugin](Plugins.md)) you are working with.
-- Use an API-platform tool like Postman to directly POST (, PATCH or UPDATE) your Action on the Common Gateway you are working with.
+- Use an API-platform tool like Postman to directly POST (, PATCH, or UPDATE) your Action on the Common Gateway you are working with.
 
-Creating Actions with the Gateway UI is easy and straight forward, but in some cases the configuration of an Action is to complex for the Gateway UI to handle.
-In these cases you will probably need to look into one of the other two options.
+Creating Actions with the Gateway UI is easy and straightforward, but in some cases, the configuration of an Action is too complex for the Gateway UI to handle.
+In these cases, you will probably need to look into one of the other two options.
 
 In order to understand Actions better please read here which properties any Action should at least have:
 - A `name`, your Action is going to need a name.
@@ -45,10 +45,10 @@ In order to understand Actions better please read here which properties any Acti
 
 Actions can also have some other optional properties:
 - `description` The description of your Action.
-- `throws` Similar as the listens array, but this is an array of [Common Gateway events](Events.md) triggers this Action wil throw after the Action is done running.
+- `throws` Similar as the listens array, but this is an array of [Common Gateway events](Events.md) triggers this Action will throw after the Action is done running.
 - `priority` The priority of the Action, higher priority Actions will be run before lower priority Actions. By default, this is set to 1.
 - `async` A boolean, if set to true the Action will be run asynchronous. By default, this is false.
-- `userId` The userId of a user. This user will be used to run this Action for, if there is no logged-in user. This helps when, for example: setting the owner & organization of newly created Object while running this Action. 
+- `userId` The userId of a user. This user will be used to run this Action, if there is no logged-in user. This helps when, for example: setting the owner & organization of a newly created Object while running this Action. 
 - `isLockable` A boolean, if set to true the Action can only run again if the last run has been completed. By default, this is false. 
 - `isEnabled` A boolean, if set to false the Action will never run. By default, this is true.
 
@@ -67,6 +67,6 @@ If you can't find something similar and want to create a new ActionHandler pleas
 
 As you can see, almost all ActionHandlers have their own Service as well. 
 This will not always be the case and is not something we expect will be the best option in all cases.
-What we do really recommend you do however, is not adding any business logic (code) in your ActionHandler.
+What we do really recommend you do, however, is not add any business logic (code) in your ActionHandler.
 Create a new Service or re-use an existing Service and add a public function with the name of your Handler to it.
-Then add your business logic in the Service, using (probably mostly) private functions.
+Then add your business logic to the Service, using (probably mostly) private functions.

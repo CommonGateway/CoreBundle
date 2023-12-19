@@ -7,7 +7,7 @@ Plugins are a neat way of separating concerns and making sure that client-specif
 
 The plugin structure is based on the [Symfony bundle system](https://symfony.com/doc/current/bundles.html). In other words, all Common Gateway plugins are Symfony bundles, and Symfony bundles can be Common Gateway plugins.
 
-You can consider a plugin for the Common Gateway as a configuration set to extend a base Gateway's functionality. It can contain schema’s, objects and or other configuration files. But also business logic and actual PHP code to solve use cases that the common gateway core simply won't cover.
+You can consider a plugin for the Common Gateway as a configuration set to extend a base Gateway's functionality. It can contain schema’s, objects, and or other configuration files. But also business logic and actual PHP code to solve use cases that the common gateway core simply won't cover.
 
 If you want to develop your own plugin, we suggest using the [Pet store plugin](https://github.com/CommonGateway/PetStoreBundle) as a starting point.
 
@@ -16,13 +16,13 @@ If you want to develop your own plugin, we suggest using the [Pet store plugin](
 
 If you start from a brand-new Gateway installation and head over to your Gateway UI, you can find the plugin section on the left side panel. You can search for the plugins you want to add from this tab by selecting Search for plugins. Find the plugin you wish to install and view its details page. You should see an install button in the top right corner if the plugin is not installed.
 
-The Common Gateway finds plugins to install with packagist. It does this entirely under the hood, and the only requirement is that plugins need a ‘common-gateway-plugin” tag. Packagist functions as a plugin store as well in this regard.
+The Common Gateway finds plugins to install with Packagist. It does this entirely under the hood, and the only requirement is that plugins need a ‘common-gateway-plugin” tag. Packagist functions as a plugin store as well in this regard.
 
 The plugins are installed, updated, and removed with the composer CLI. While this feature still exists for developers, we recommend using the user interface see plugins for installing plugins.
 
 
 ## Creating plugins
-The plugin structure is based on the [Symfony bundle system](https://symfony.com/doc/current/bundles.html), in other words all Common Gateway plugins are Symfony bundles and can be maintained in their own repository. There is no need to contribute your plugin to the Common Gateway organization and there is no gatekeeper. Anybody may develop a plugin at any time and retain full control and ownership of their code. If you want to develop your own plugin, we suggest using the Pet store plugin as a starting point and have a look at the tutorial.
+The plugin structure is based on the [Symfony bundle system](https://symfony.com/doc/current/bundles.html), in other words, all Common Gateway plugins are Symfony bundles and can be maintained in their own repository. There is no need to contribute your plugin to the Common Gateway organization and there is no gatekeeper. Anybody may develop a plugin at any time and retain full control and ownership of their code. If you want to develop your own plugin, we suggest using the Pet Store plugin as a starting point and have a look at the tutorial.
 
 If you want to develop your plugin, we recommend using the [PetStoreBundle](https://github.com/CommonGateway/PetStoreBundle). This method ensures all necessary steps are taken, and the plugin will be found and installable through the method described above.
 
@@ -54,11 +54,18 @@ The core schema’s of the gateway are defined as:
 > Note: While adding SecurityGroups through core schema's is allowed, adding (or changing) Users is not, because of security reasons, if you would like to add users (in a more secure way) take a look at how to configure an installation.json file.
 > - _'https://docs.commongateway.nl/schemas/User.schema.json',_
 
-[Here](https://github.com/CommonGateway/PetStoreBundle/blob/main/Installation/Schema/example.json) is an example. The $id and $schema properties are needed for the Gateway to find the plugin. The version property's value helps the Gateway decide whether an update is required and will update automatically.
+[Here](https://github.com/CommonGateway/PetStoreBundle/blob/main/Installation/Schema/example.json) is an example. \
+The $schema property is required for the Gateway to know what type of core schema needs to be created (/updated). 
+The $id property is required and as the name says operates as a unique identifier for this schema, so make sure this is unique. 
+The version property's value helps the Gateway decide whether an update is required and will update automatically.
 
 ## Installation
 
-The gateway supports installations, update and remove actions for plugins. Allowing them to change configurations and alter data, this is done through stallation.json file. The installation.json file is a fundamental part of the plugin installation process. It provides the necessary configuration for a plugin to integrate smoothly with the platform. This file should be located in the `/Installation` folder of the plugin's directory.
+The gateway supports installations, updates, and removal actions for plugins.
+Allowing them to change configurations and alter data, this is done through installation.json file.
+The installation.json file is a fundamental part of the plugin installation process. 
+It provides the necessary configuration for a plugin to integrate smoothly with the platform. 
+This file should be located in the `/Installation` folder of the plugin's directory.
 
 Here is an explanation of the various sections in the installation.json file:
 
@@ -68,9 +75,11 @@ Here is an explanation of the various sections in the installation.json file:
 
 - **installationService**: This specifies the service that handles the installation process. For example: "installationService": "CommonGateway\\PetStoreBundle\\Service\\InstallationService"
 
-The installation service allows you to run code during changes to the plugins livecycle. It **MUST** always implement the `CommonGateway\CoreBundle\Installer\InstallerInterface`. And it **CAN** provide functions that are called during changes to the plugin from the gateways installer.
+The installation service allows you to run code during changes to the plugin's lifecycle.
+It **MUST** always implement the [`CommonGateway\CoreBundle\Installer\InstallerInterface`](https://github.com/CommonGateway/CoreBundle/blob/master/src/Installer/InstallerInterface.php).
+And it **CAN** provide functions that are called during changes to the plugin from the gateways' installer.
 
-An example installationService could look like
+An example InstallationService could look like
 
 ```php
 <?php
@@ -185,7 +194,7 @@ class InstallationService implements InstallerInterface
 ```
 
 > Note:
-> In most cases it isn’t actually necessary to write an installation service, you can just load configurations by supplying the necessary objects.
+In most cases it isn’t actually necessary to write an installation service, you can just load configurations by supplying the necessary objects through schema.json files or use other more specific configurations in the installation.json file. We strongly recommend using this only for specific cases where you are sure that it cannot be done through the other methods mentioned.
 
 
 ### Configuration
@@ -194,23 +203,23 @@ There are two routes to include configuration (objects) in your plugin.
 The first and preferred way is that you [supply the object using a schema.json file](#adding-core-schemas-to-your-plugin), in that this they **MUST** be contained in de the `/Installation` folder of the plugin's directory and **SHOULD** be in a sub folder labeled after the type of object that you want to create e.g. `/Actions`.
 This is the preferred way (especially with larger plugins) because it keeps a repository more readable.
 
-The second, easier way is to include them directly into your installation.json. 
-This is possible for applications, users, cards, actions, collections, endpoints and cronjobs. 
+The second, easier way is to include them directly in your installation.json. 
+This is possible for applications, users, cards, actions, collections, endpoints, and cronjobs. 
 
-> **Note:** This is the preferred way in some cases, when you need some extra logic for adding your objects that the first option simply can not provide.
+> **Note:** This is the preferred way in some cases when you need some extra logic for adding your objects that the first option simply can not provide.
 
-If however you want to create objects from the `installation.json` you can use the following properties:
+If however, you want to create objects from the `installation.json` you can use the following properties:
 - **applications**: This is an array of applications related to the plugin. Each application should have properties like title, $id, $schema, version, description, and domains.
 
-- **users**: This section defines the users that have access to the plugin. Each user should have properties like $id, version, description, email, locale, and securityGroups.
+- **users**: This section defines the users that have access to the plugin. Each user should have properties like $id, version, description, email, locale, and SecurityGroups.
 
 - **cards**: This section includes properties like schemas, collections, and applications.
 
-- **actions**: This section defines the handlers and the actions associated with them. Each handler should have properties like reference, actionHandler, listens, and configuration. The configuration section includes specific parameters that the handler uses.
+- **actions**: This section defines the handlers and the actions associated with them. Each handler should have properties like reference, ActionHandler, listens, and configuration. The configuration section includes specific parameters that the handler uses.
 
 - **collections**: This is an array of collections that the plugin should have access to. Each collection should have properties like reference and schemaPrefix.
 
-- **endpoints**: This section defines the API endpoints that the plugin exposes. This section is divided into multipleSchemas and schemas. The multipleSchemas section allows defining endpoints that use multiple schemas. Each endpoint should have properties like $id, version, name, description, schemas, path, pathRegex, and methods. The schemas section allows defining endpoints specific to a schema.
+- **endpoints**: This section defines the API endpoints that the plugin exposes. This section is divided into multipleSchemas and schemas. The multipleSchemas section allows defining endpoints that use multiple schemas. Each endpoint should have properties like $id, version, name, description, schemas, path, pathRegex, and methods. The schemas section allows for defining endpoints specific to a schema.
 
 - **cronjobs**:
 
@@ -353,7 +362,7 @@ An example composer file would look like
 ```
 
 ### Publishing your plugin
-The gateway used the packagist netwerk for plugin discovery, that means that you do not need to upload your plugin to an appstore etc. You simply [submit your plugin repository to packagist](https://packagist.org/packages/submit).
+The gateway used the Packagist netwerk for plugin discovery, which means that you do not need to upload your plugin to an app store etc. You simply [submit your plugin repository to Packagist](https://packagist.org/packages/submit).
 
 > Note:
 > It is also possible to keep your plugins private, read more about that under {private packages](https://packagist.com/)

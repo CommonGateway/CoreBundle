@@ -73,12 +73,11 @@ The gateway subscribes to the following events by default.
 When adding your customizations to the Common Gateway, you should always follow the separation of concerns:
 
 keep flows small (don’t try to do too much in one flow)
-keep functionality ([actionHandlers](Action_handlers.md)) minimal
+keep functionality ([ActionHandlers](Action_handlers.md)) minimal
 
-For complex scenarios, consider using several chained actionHandlers.
+For complex scenarios, consider using several chained ActionHandlers.
 When adding your own flavor to the common gateway you should always follow separation of concerns.
 
-In other words, keep flows small, don’t try to do too much from a single flow, and keep your actionHandlers minimal. If things get more complex consider using several chained action handlers.
+In other words, keep flows small, don’t try to do too much from a single flow, and keep your ActionHandlers minimal. If things get more complex consider using several chained action handlers.
 
 > **ALWAYS** use the `[vendor].[plugin].[action].[sub action]` naming pattern for your events to prevent conflicts with other events. When adding events on an installation or app basis use: either the app (e.g `app..[action].[sub action]`) or cron (e.g. `cron.[action].[sub action]`) namespace patterns to keep your events recognizable.
-
