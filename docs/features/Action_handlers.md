@@ -58,4 +58,15 @@ Actions can also have some other optional properties:
 
 ## Creating your own action handlers
 
-to do, say something about Service containing BL code and that handlers should not contain BL. 
+When creating your own plugin or adding new code to an existing one, you might run into a situation where you want to create a new ActionHandler yourself.
+If this is the case, and in general when adding new business logic in any way, we strongly recommend you **always** first look if something similar to what you need already exists ([opencatalogi.nl](opencatalogi.nl)) and re-use that.
+
+If you can't find something similar and want to create a new ActionHandler please take a close look at these 2 examples:
+- [PetStoreBundle](https://github.com/CommonGateway/PetStoreBundle) -> [PetStoreHandler](https://github.com/CommonGateway/PetStoreBundle/blob/main/src/ActionHandler/PetStoreHandler.php) + [PetStoreService](https://github.com/CommonGateway/PetStoreBundle/blob/main/src/Service/PetStoreService.php)
+- [CustomerNotificationsBundle](https://github.com/CommonGateway/CustomerNotificationsBundle) -> [EmailHandler](https://github.com/CommonGateway/CustomerNotificationsBundle/blob/main/src/ActionHandler/EmailHandler.php) + [EmailService](https://github.com/CommonGateway/CustomerNotificationsBundle/blob/main/src/Service/EmailService.php)
+
+As you can see, almost all ActionHandlers have their own Service as well. 
+This will not always be the case and is not something we expect will be the best option in all cases.
+What we do really recommend you do however, is not adding any business logic (code) in your ActionHandler.
+Create a new Service or re-use an existing Service and add a public function with the name of your Handler to it.
+Then add your business logic in the Service, using (probably mostly) private functions.

@@ -32,10 +32,11 @@ In case you want to update or remove a plugin, go to “Plugins” in the Gatewa
 
 ## Adding Core Schema's, to your plugin
 
-You can include an installation folder in the root of your plugin repository containing schema.json files or other files. 
-Whenever the Gateway installs or updates a plugin, it looks for the schema map and handles all schema.json files in that folder as a schema upload.
+You can include an installation folder in the root of your plugin repository containing [Schema.json](https://json-schema.org/) files or other files. 
+Whenever the Gateway installs or updates a plugin, it looks for the schema map and handles all Schema.json files in that folder as a schema upload.
 
-Keep in mind that you will need to properly set the $schema of the object in order for the gateway to understand what schema you are trying to create. 
+Keep in mind that you will need to properly set the $schema of the object in order for the gateway to understand what schema you are trying to create.
+For some basic understanding of Schema.json objects please check [this](https://json-schema.org/learn/getting-started-step-by-step#starting-the-schema) 'getting started' page.
 The core schema’s of the gateway are defined as:
 
 - 'https://docs.commongateway.nl/schemas/Action.schema.json',
