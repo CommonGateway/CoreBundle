@@ -4,8 +4,9 @@
 > **Warning**
 > This file is maintained at the Conduction [Google Drive](https://docs.google.com/document/d/1aeNZ9I8H4iq2XigByu96lJSe3Cw-lMcWx8bcuJBHxcE/edit). Please make any suggestions or alterations there.
 
-The Common Gateway is based on event-driven architecture, meaning that all code and functionality are loosely coupled (see booth architecture and code quality). That means that at no point during the execution of business logic, a functionality should directly call a different functionality. This might seem complicated (and at times it is) but it provides two important benefits:
-
+The Common Gateway is based on event-driven architecture, meaning that all code and functionality are loosely coupled (see both [architecture](Architecture.md) and [code quality](Code_quality.md)). 
+That means that at no point during the execution of business logic, a functionality should directly call a different functionality. 
+This might seem complicated (and at times it is) but it provides two important benefits:
 - It allows us to divide the work of executing code among several “worker” containers (read more). Providing an extreme performance boost on production environments on heavy load business logic.
 - It allows all interested parties to develop plugins for the Common Gateway that directly hook into and extend the core functionality.
 
@@ -17,18 +18,21 @@ Object changes(e.g., CRUD actions)changes in objects (e.g. CRUD actions).
 
 ## Actions
 
-Actions are preconfigured sets of business logic that “listen” for one or more events to be thrown and then execute code. The [ActionHandler](Action_handlers.md) contains the executable code.
+Actions are preconfigured sets of business logic that “listen” for one or more events to be thrown and then execute code. 
+The [ActionHandler](Action_handlers.md) contains the executable code.
 
 Actions primarily consist of three things:
-The events it listens to
-The action handler that should be used to handle the action
-Configuration for that action handler
+- The events it listens to
+- The Action handler that should be used to handle the Action
+- Configuration for that action handler
 
-Storing the configuration for the action handler in the actual action means that actionHandlers can be reused. An example would be the mail actionHandler provided by the core bundle.  It can be used by actions hooking into the new user event to send a welcome email to new users AND by actions hooking into the logger event to send an email to the gateway admin whenever errors occur.
+Storing the configuration for the action handler in the actual Action means that ActionHandlers can be reused.
+An example would be the mail ActionHandler provided by the [CustomerNotificationsBundle](https://github.com/commonGateway/customernotificationsBundle).
+It can be used by Actions hooking into the new user event to send a welcome email to new users AND by Actions hooking into the logger event to send an email to the gateway admin whenever errors occur.
 
 ### Chaining actions
 
-Additionally, Actions can throw events themselves. You can build simple flows using this typical pattern (called chaining).. Currently, the gateway isn’t a full-blown BPMN engine and should not be used that way. It is however possible to integrate the BPMN engine into gateway flows using custom plugins (we are still looking for a sponsor for a Camunda or Flowable plugin).
+Additionally, Actions can throw events themselves. You can build simple flows using this typical pattern (called chaining). Currently, the gateway isn’t a full-blown BPMN engine and should not be used that way. It is however possible to integrate the BPMN engine into gateway flows using custom plugins (we are still looking for a sponsor for a Camunda or Flowable plugin).
 
 ## Event list
 
@@ -69,12 +73,11 @@ The gateway subscribes to the following events by default.
 When adding your customizations to the Common Gateway, you should always follow the separation of concerns:
 
 keep flows small (don’t try to do too much in one flow)
-keep functionality ([actionHandlers](Action_handlers.md)) minimal
+keep functionality ([ActionHandlers](Action_handlers.md)) minimal
 
-For complex scenarios, consider using several chained actionHandlers.
+For complex scenarios, consider using several chained ActionHandlers.
 When adding your own flavor to the common gateway you should always follow separation of concerns.
 
-In other words, keep flows small, don’t try to do too much from a single flow, and keep your actionHandlers minimal. If things get more complex consider using several chained action handlers.
+In other words, keep flows small, don’t try to do too much from a single flow, and keep your ActionHandlers minimal. If things get more complex consider using several chained action handlers.
 
 > **ALWAYS** use the `[vendor].[plugin].[action].[sub action]` naming pattern for your events to prevent conflicts with other events. When adding events on an installation or app basis use: either the app (e.g `app..[action].[sub action]`) or cron (e.g. `cron.[action].[sub action]`) namespace patterns to keep your events recognizable.
-
