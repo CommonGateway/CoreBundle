@@ -19,6 +19,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class ActionService
 {
+
     private EntityManagerInterface $entityManager;
 
     private ?SymfonyStyle $style = null;
@@ -26,7 +27,8 @@ class ActionService
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
-    }
+
+    }//end __construct()
 
     /**
      * Set symfony style in order to output to the console.
@@ -47,20 +49,22 @@ class ActionService
     {
         $actions = $this->entityManager->getRepository('App:Action')->findAll();
 
-        foreach($actions as $action) {
-            if($action instanceof Action === false) {
+        foreach ($actions as $action) {
+            if ($action instanceof Action === false) {
                 continue;
             }
 
-            if(class_exists($action->getClass()) === false) {
-                if($this->style instanceof SymfonyStyle === true) {
+            if (class_exists($action->getClass()) === false) {
+                if ($this->style instanceof SymfonyStyle === true) {
                     $this->style->writeln("Removing {$action->getName()}");
                 }
+
                 $this->entityManager->remove($action);
                 $this->entityManager->flush();
             }
         }
 
         return true;
-    }
-}
+
+    }//end scanActions()
+}//end class
