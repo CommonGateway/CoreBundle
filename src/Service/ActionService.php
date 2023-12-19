@@ -45,6 +45,11 @@ class ActionService
 
     }//end setStyle()
 
+    /**
+     * Scans all actions in the database for existing classes, removes the actions for which no class is present anymore.
+     *
+     * @return bool True if the scan has progressed successful.
+     */
     public function scanActions(): bool
     {
         $actions = $this->entityManager->getRepository('App:Action')->findAll();
