@@ -30,11 +30,13 @@ If you want to develop your plugin, we recommend using the [PetStoreBundle](http
 
 In case you want to update or remove a plugin, go to “Plugins” in the Gateway UI main menu and select “Installed”. Click on the plugin that you want to update or remove and press the Update or Remove button in the top right of the screen.
 
-## Adding Actions, Sources, Cronjobs, to your plugin
+## Adding Core Schema's, to your plugin
 
-You can include an installation folder in the root of your plugin repository containing schema.json files or other files. Whenever the Gateway installs or updates a plugin, it looks for the schema map and handles all schema.json files in that folder as a schema upload.
+You can include an installation folder in the root of your plugin repository containing schema.json files or other files. 
+Whenever the Gateway installs or updates a plugin, it looks for the schema map and handles all schema.json files in that folder as a schema upload.
 
-Keep in mind that you will need to properly set the $schema of the object in order for the gateway to understand what schema you are trying to create. The core schema’s of the gateway are defined as
+Keep in mind that you will need to properly set the $schema of the object in order for the gateway to understand what schema you are trying to create. 
+The core schema’s of the gateway are defined as:
 
 - 'https://docs.commongateway.nl/schemas/Action.schema.json',
 - 'https://docs.commongateway.nl/schemas/Application.schema.json',
@@ -51,7 +53,7 @@ Keep in mind that you will need to properly set the $schema of the object in ord
 > Note: While adding SecurityGroups through core schema's is allowed, adding (or changing) Users is not, because of security reasons, if you would like to add users (in a more secure way) take a look at how to configure an installation.json file.
 > - _'https://docs.commongateway.nl/schemas/User.schema.json',_
 
-[Here](https://github.com/CommonGateway/CoreBundle/blob/master/Schema/example.json) is an example. The $id and $schema properties are needed for the Gateway to find the plugin. The version property's value helps the Gateway decide whether an update is required and will update automatically.
+[Here](https://github.com/CommonGateway/PetStoreBundle/blob/main/Installation/Schema/example.json) is an example. The $id and $schema properties are needed for the Gateway to find the plugin. The version property's value helps the Gateway decide whether an update is required and will update automatically.
 
 ## Installation
 
@@ -186,7 +188,16 @@ class InstallationService implements InstallerInterface
 
 
 ### Configuration
-There are two routes to include configuration (objects) in your plugin. The first and easiest one is to include them directly into your installation.json. This is possible for applications, users, cards, actions, collections, endpoints and cronjobs. You can also supply the object separately, in that case they **MUST** be contained in de the `/Installation` folder of the plugin's directory and **SHOULD** be in a sub folder labeled after the type of object that you want to create e.g. `/Cards`. This is the preferred way (especially with larger plugins) because it keeps a repository more readable.
+There are two routes to include configuration (objects) in your plugin. 
+
+The first and preferred way is that you [supply the object using a schema.json file](#adding-core-schemas-to-your-plugin), in that this they **MUST** be contained in de the `/Installation` folder of the plugin's directory and **SHOULD** be in a sub folder labeled after the type of object that you want to create e.g. `/Actions`.
+This is the preferred way (especially with larger plugins) because it keeps a repository more readable.
+
+The second, easier way is to include them directly into your installation.json. 
+This is possible for applications, users, cards, actions, collections, endpoints and cronjobs. 
+
+> **Note:**
+> This is the preferred way in some cases, when you need some extra logic for adding your objects that the first option simply can not provide.
 
 If however you want to create objects from the `installation.json` you can use the following properties:
 - **applications**: This is an array of applications related to the plugin. Each application should have properties like title, $id, $schema, version, description, and domains.
@@ -237,7 +248,8 @@ Below is an example of the structure of an installation.json file:
 
 The above configuration represents a part of the installation.json for a hypothetical Pet Store plugin. It specifies the installation service, an application, and a user. Additional sections should be added as needed, following the structure outlined above.
 
-Please ensure that your installation.json file follows this structure and includes all required sections for your plugin. This will ensure a smooth installation process and correct integration of your plugin with the system
+Please ensure that your installation.json file follows this structure and includes all required sections for your plugin. 
+This will ensure a smooth installation process and correct integration of your plugin with the system.
 
 > Note:
 > The installation.json should not contain any descriptionarry information about the plugin. That should be provided through the `composer.json` in the root of the plugin.

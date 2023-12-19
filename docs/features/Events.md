@@ -20,11 +20,13 @@ Object changes(e.g., CRUD actions)changes in objects (e.g. CRUD actions).
 Actions are preconfigured sets of business logic that “listen” for one or more events to be thrown and then execute code. The [ActionHandler](Action_handlers.md) contains the executable code.
 
 Actions primarily consist of three things:
-The events it listens to
-The action handler that should be used to handle the action
-Configuration for that action handler
+- The events it listens to
+- The action handler that should be used to handle the action
+- Configuration for that action handler
 
-Storing the configuration for the action handler in the actual action means that actionHandlers can be reused. An example would be the mail actionHandler provided by the [CustomerNotificationsBundle](https://github.com/commonGateway/customernotificationsBundle). It can be used by actions hooking into the new user event to send a welcome email to new users AND by actions hooking into the logger event to send an email to the gateway admin whenever errors occur.
+Storing the configuration for the action handler in the actual action means that actionHandlers can be reused. 
+An example would be the mail actionHandler provided by the [CustomerNotificationsBundle](https://github.com/commonGateway/customernotificationsBundle). 
+It can be used by actions hooking into the new user event to send a welcome email to new users AND by actions hooking into the logger event to email the gateway admin whenever errors occur.
 
 ### Chaining actions
 
