@@ -4,8 +4,9 @@
 > **Warning**
 > This file is maintained at the Conduction [Google Drive](https://docs.google.com/document/d/1aeNZ9I8H4iq2XigByu96lJSe3Cw-lMcWx8bcuJBHxcE/edit). Please make any suggestions or alterations there.
 
-The Common Gateway is based on event-driven architecture, meaning that all code and functionality are loosely coupled (see booth architecture and code quality). That means that at no point during the execution of business logic, a functionality should directly call a different functionality. This might seem complicated (and at times it is) but it provides two important benefits:
-
+The Common Gateway is based on event-driven architecture, meaning that all code and functionality are loosely coupled (see both [architecture](Architecture.md) and [code quality](Code_quality.md)). 
+That means that at no point during the execution of business logic, a functionality should directly call a different functionality. 
+This might seem complicated (and at times it is) but it provides two important benefits:
 - It allows us to divide the work of executing code among several “worker” containers (read more). Providing an extreme performance boost on production environments on heavy load business logic.
 - It allows all interested parties to develop plugins for the Common Gateway that directly hook into and extend the core functionality.
 
@@ -17,16 +18,17 @@ Object changes(e.g., CRUD actions)changes in objects (e.g. CRUD actions).
 
 ## Actions
 
-Actions are preconfigured sets of business logic that “listen” for one or more events to be thrown and then execute code. The [ActionHandler](Action_handlers.md) contains the executable code.
+Actions are preconfigured sets of business logic that “listen” for one or more events to be thrown and then execute code. 
+The [ActionHandler](Action_handlers.md) contains the executable code.
 
 Actions primarily consist of three things:
 - The events it listens to
-- The action handler that should be used to handle the action
+- The Action handler that should be used to handle the Action
 - Configuration for that action handler
 
-Storing the configuration for the action handler in the actual action means that actionHandlers can be reused. 
-An example would be the mail actionHandler provided by the [CustomerNotificationsBundle](https://github.com/commonGateway/customernotificationsBundle). 
-It can be used by actions hooking into the new user event to send a welcome email to new users AND by actions hooking into the logger event to email the gateway admin whenever errors occur.
+Storing the configuration for the action handler in the actual Action means that ActionHandlers can be reused.
+An example would be the mail ActionHandler provided by the [CustomerNotificationsBundle](https://github.com/commonGateway/customernotificationsBundle).
+It can be used by Actions hooking into the new user event to send a welcome email to new users AND by Actions hooking into the logger event to send an email to the gateway admin whenever errors occur.
 
 ### Chaining actions
 

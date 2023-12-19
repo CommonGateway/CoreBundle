@@ -196,8 +196,7 @@ This is the preferred way (especially with larger plugins) because it keeps a re
 The second, easier way is to include them directly into your installation.json. 
 This is possible for applications, users, cards, actions, collections, endpoints and cronjobs. 
 
-> **Note:**
-> This is the preferred way in some cases, when you need some extra logic for adding your objects that the first option simply can not provide.
+> **Note:** This is the preferred way in some cases, when you need some extra logic for adding your objects that the first option simply can not provide.
 
 If however you want to create objects from the `installation.json` you can use the following properties:
 - **applications**: This is an array of applications related to the plugin. Each application should have properties like title, $id, $schema, version, description, and domains.
