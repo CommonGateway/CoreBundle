@@ -14,7 +14,7 @@ categories:
   - collaboration
   - it-development
 developmentStatus: beta
-softwareType: !!!
+softwareType: softwareAddon
 description:
   en:
     localisedName: CoreBundle
