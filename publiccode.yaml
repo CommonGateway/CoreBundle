@@ -14,27 +14,29 @@ categories:
   - collaboration
   - it-development
 developmentStatus: beta
-softwareType: !!!
+softwareType: softwareAddon
 description:
   en:
     localisedName: CoreBundle
     genericName: null
-    shortDescription: CoreBundle
+    shortDescription: "Common Gateway core"
     longDescription: "This repository holds the Common Gateway core as a Symfony Bundle."
     documentation: https://commongateway.github.io/CoreBundle
     apiDocumentation: null
-    features: []
+    features:
+      - Common Ground Gateway Plugin
     screenshots: []
     videos: []
     awards: []
   nl:
     localisedName: CoreBundle
     genericName: null
-    shortDescription: CoreBundle
+    shortDescription: "Common Gateway core"
     longDescription: "Deze repository bevat de Common Gateway core als een Symfony-bundel."
     documentation: https://commongateway.github.io/CoreBundle
     apiDocumentation: null
-    features: []
+    features:
+      - Common Ground Gateway Plugin
     screenshots: []
     videos: []
     awards: []
