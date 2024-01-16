@@ -383,7 +383,7 @@ class AuthenticationService
             $config['body'] = \Safe\json_encode($credentials);
             break;
         }//end switch
-        
+
         if (isset($authenticationConfig['headers']) === true) {
             $config['headers'] = $authenticationConfig['headers'];
         }
