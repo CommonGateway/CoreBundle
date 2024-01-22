@@ -192,13 +192,13 @@ class ValueService
             foreach ($value->getObjects() as $object) {
                 $value->removeObject($object);
             }
-            
+
             $identifier = $value->getStringValue();
-            $subobject = $this->findSubobject($identifier, $value);
+            $subobject  = $this->findSubobject($identifier, $value);
             if ($subobject !== null) {
                 $value->addObject($subobject);
             }
-        }
+        }//end if
 
         if ($value->getObjectEntity() instanceof ObjectEntity) {
             $value->getObjectEntity()->setDateModified(new \DateTime());
