@@ -562,7 +562,7 @@ class EndpointService
         $matchesCount = preg_match($regex, $pathRaw, $matches);
 
         if ($matchesCount != 1) {
-            $this->logger->error('EndpointService->getProxyPath(): Failed to find correct proxy endpoint in pathRaw string, trying to get normal endpoint path instead...');
+            $this->logger->warning('EndpointService->getProxyPath(): Failed to find correct proxy endpoint in pathRaw string, trying to get normal endpoint path instead...');
 
             return $this->getNormalPath($parameters);
         }
