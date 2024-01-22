@@ -188,16 +188,17 @@ class ValueService
 
             $value->setArrayValue([]);
             $value->setStringValue(null);
-        } else if ((Uuid::isValid($value->getStringValue()) === true || filter_var($value->getStringValue(), FILTER_VALIDATE_URL) === true) && $identifier = $value->getStringValue()) {
+        } else if ((Uuid::isValid($value->getStringValue()) === true || filter_var($value->getStringValue(), FILTER_VALIDATE_URL) !== false) && empty($value->getStringValue()) === false) {
             foreach ($value->getObjects() as $object) {
                 $value->removeObject($object);
             }
 
-            $subobject = $this->findSubobject($identifier, $value);
+            $identifier = $value->getStringValue();
+            $subobject  = $this->findSubobject($identifier, $value);
             if ($subobject !== null) {
                 $value->addObject($subobject);
             }
-        }
+        }//end if
 
         if ($value->getObjectEntity() instanceof ObjectEntity) {
             $value->getObjectEntity()->setDateModified(new \DateTime());
