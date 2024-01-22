@@ -161,6 +161,9 @@ class NotificationService
         // Get (source) id from notification data.
         $explodedUrl = explode('/', $url);
         $sourceId    = end($explodedUrl);
+        if (isset($this->configuration['sourceIdUrl']) === true && $this->configuration['sourceIdUrl'] === true) {
+            $sourceId = $url;
+        }
 
         $synchronization = $this->syncService->findSyncBySource($source, $entity, $sourceId);
         $synchronization->setEndpoint(str_replace($source->getLocation(), '', $url));
