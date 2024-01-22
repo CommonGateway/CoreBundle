@@ -56,7 +56,7 @@ class NotificationHandler implements ActionHandlerInterface
                     'default'     => false,
                     'example'     => true,
                     'nullable'    => true,
-                ]
+                ],
             ],
         ];
 
