@@ -152,7 +152,7 @@ class ValueService
 
         // Check if a synchronization with sourceId = url exists.
         $synchronization = $this->entityManager->getRepository('App:Synchronization')->findOneBy(['sourceId' => $url]);
-        if ($synchronization instanceof Synchronization === true) {
+        if ($synchronization !== null) {
             return $synchronization->getObject();
         }
 
@@ -167,7 +167,7 @@ class ValueService
                 'sourceId' => $sourceId,
             ]
         );
-        if ($synchronization instanceof Synchronization === true) {
+        if ($synchronization !== null) {
             return $synchronization->getObject();
         }
 

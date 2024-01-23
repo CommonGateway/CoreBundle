@@ -162,7 +162,7 @@ class GatewayResourceService
         $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['location' => $location]);
 
         // 2.b The source might be on a path e.g. /v1 so if whe cant find a source let try to cycle
-        if ($source instanceof Source === false && isset($parse['path']) === true) {
+        if ($source === null && isset($parse['path']) === true) {
             foreach (explode('/', $parse['path']) as $pathPart) {
                 if ($pathPart !== '') {
                     $location = $location.'/'.$pathPart;
@@ -176,7 +176,7 @@ class GatewayResourceService
             }
         }
 
-        if ($source instanceof Source === false) {
+        if ($source === null) {
             $this->pluginLogger->error("No source found for $url.", ['plugin' => $pluginName]);
             return null;
         }
