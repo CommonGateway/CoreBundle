@@ -150,7 +150,10 @@ class NotificationService
         $url = $dot->get($this->configuration['urlLocation']);
 
         // Find source by resource url from the notification.
-        $source = $this->findSource($url);
+        $source = $this->resourceService->findSourceForUrl($url, 'commongateway/corebundle', $endpoint);
+        if ($source === null) {
+            throw new Exception("Could not find a Source with this url: $url", 400);
+        }
 
         // Get the correct Entity.
         $entity = $this->resourceService->getSchema($this->configuration['entity'], 'commongateway/corebundle');
@@ -159,35 +162,12 @@ class NotificationService
         }
 
         // Get (source) id from notification data.
-        $explodedUrl = explode('/', $url);
-        $sourceId    = end($explodedUrl);
+        $sourceId = $this->syncService->getSourceId($endpoint, $url);
 
-        $synchronization = $this->syncService->findSyncBySource($source, $entity, $sourceId);
-        $synchronization->setEndpoint(str_replace($source->getLocation(), '', $url));
+        $synchronization = $this->syncService->findSyncBySource($source, $entity, $sourceId, $endpoint);
         $this->entityManager->persist($synchronization);
 
         return $synchronization;
 
     }//end findSync()
-
-    /**
-     * Tries to find a source using the url of the object a notification was created for.
-     *
-     * @param string $url The url we are trying to find a matching Source for.
-     *
-     * @throws Exception If we did not find one Source we throw an exception.
-     *
-     * @return Source The Source we found.
-     */
-    public function findSource(string $url): Source
-    {
-        $source = $this->resourceService->findSourceForUrl($url, 'commongateway/corebundle');
-
-        if ($source === null) {
-            throw new Exception("Could not find a Source with this url: $url", 400);
-        }
-
-        return $source;
-
-    }//end findSource()
 }//end class
