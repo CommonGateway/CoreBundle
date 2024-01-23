@@ -46,7 +46,7 @@ class ValueService
      * @var CacheService The cache service.
      */
     private CacheService $cacheService;
-    
+
     /**
      * The gateway resource service
      *
@@ -70,11 +70,11 @@ class ValueService
         CacheService $cacheService,
         GatewayResourceService $resourceService
     ) {
-        $this->entityManager = $entityManager;
-        $this->logger        = $objectLogger;
-        $this->syncService   = $syncService;
-        $this->parameterBag  = $parameterBag;
-        $this->cacheService  = $cacheService;
+        $this->entityManager   = $entityManager;
+        $this->logger          = $objectLogger;
+        $this->syncService     = $syncService;
+        $this->parameterBag    = $parameterBag;
+        $this->cacheService    = $cacheService;
         $this->resourceService = $resourceService;
 
     }//end __construct()
@@ -155,17 +155,22 @@ class ValueService
         if ($synchronization instanceof Synchronization === true) {
             return $synchronization->getObject();
         }
-        
+
         // Check if a synchronization with source->location/synchronization->endpoint/synchronization->sourceId exists.
-        $source = $this->resourceService->findSourceForUrl($url, 'conduction-nl/commonground-gateway', $endpoint);
-        $sourceId = $this->syncService->getSourceId($endpoint, $url);
-        $synchronization = $this->entityManager->getRepository('App:Synchronization')->findOneBy([
-            'gateway' => $source, 'entity' => $valueObject->getAttribute()->getObject(), 'endpoint' => $endpoint, 'sourceId' => $sourceId
-        ]);
+        $source          = $this->resourceService->findSourceForUrl($url, 'conduction-nl/commonground-gateway', $endpoint);
+        $sourceId        = $this->syncService->getSourceId($endpoint, $url);
+        $synchronization = $this->entityManager->getRepository('App:Synchronization')->findOneBy(
+            [
+                'gateway'  => $source,
+                'entity'   => $valueObject->getAttribute()->getObject(),
+                'endpoint' => $endpoint,
+                'sourceId' => $sourceId,
+            ]
+        );
         if ($synchronization instanceof Synchronization === true) {
             return $synchronization->getObject();
         }
-        
+
         // Finally, if we really don't have the object, get it from the source.
         return $this->syncService->aquireObject($url, $valueObject->getAttribute()->getObject());
 

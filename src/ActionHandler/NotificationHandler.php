@@ -49,7 +49,7 @@ class NotificationHandler implements ActionHandlerInterface
                     'description' => 'The reference of an Entity/Schema these notifications will be for. Used for creating a synchronization and synchronizing.',
                     'example'     => 'https://vng.opencatalogi.nl/schemas/zrc.zaak.schema.json',
                     'required'    => true,
-                ]
+                ],
             ],
         ];
 

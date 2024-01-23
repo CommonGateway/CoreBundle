@@ -146,9 +146,9 @@ class GatewayResourceService
      * Todo: we should use a mongoDB filter instead of this, sources should exist in MongoDB.
      * This function gets used in the CustomerInteractionBundle, Gateway->synchronizationService.
      *
-     * @param string $url           The url we are trying to find a matching source for.
-     * @param string $pluginName    The name of the plugin that requests these resources.
-     * @param string|null $endpoint The resulting endpoint (the remainder of the path).
+     * @param string      $url        The url we are trying to find a matching source for.
+     * @param string      $pluginName The name of the plugin that requests these resources.
+     * @param string|null $endpoint   The resulting endpoint (the remainder of the path).
      *
      * @return Source|null The source found or null.
      */
@@ -157,17 +157,17 @@ class GatewayResourceService
         // 1. Get the domain from the url
         $parse    = \Safe\parse_url($url);
         $location = $parse['scheme'].'://'.$parse['host'];
-        
+
         // 2.a Try to establish a source for the domain
         $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['location' => $location]);
-        
+
         // 2.b The source might be on a path e.g. /v1 so if whe cant find a source let try to cycle
         if ($source instanceof Source === false && isset($parse['path']) === true) {
             foreach (explode('/', $parse['path']) as $pathPart) {
                 if ($pathPart !== '') {
                     $location = $location.'/'.$pathPart;
                 }
-                
+
                 $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['location' => $location]);
                 if ($source !== null) {
                     $endpoint = str_replace($location, '', $url);
@@ -175,15 +175,15 @@ class GatewayResourceService
                 }
             }
         }
-        
+
         if ($source instanceof Source === false) {
             $this->pluginLogger->error("No source found for $url.", ['plugin' => $pluginName]);
             return null;
         }
-        
+
         return $source;
 
-    }//end findSourcesForUrl()
+    }//end findSourceForUrl()
 
     /**
      * Get a endpoint by reference.
