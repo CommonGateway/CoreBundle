@@ -161,9 +161,6 @@ class NotificationService
         // Get (source) id from notification data.
         $explodedUrl = explode('/', $url);
         $sourceId    = end($explodedUrl);
-        if (isset($this->configuration['sourceIdUrl']) === true && $this->configuration['sourceIdUrl'] === true) {
-            $sourceId = $url;
-        }
 
         $synchronization = $this->syncService->findSyncBySource($source, $entity, $sourceId);
         $synchronization->setEndpoint(str_replace($source->getLocation(), '', $url));
@@ -184,18 +181,13 @@ class NotificationService
      */
     public function findSource(string $url): Source
     {
-        $sources = $this->resourceService->findSourcesForUrl($url, 'commongateway/corebundle');
+        $source = $this->resourceService->findSourceForUrl($url, 'commongateway/corebundle');
 
-        if (count($sources) === 0) {
+        if ($source === null) {
             throw new Exception("Could not find a Source with this url: $url", 400);
         }
 
-        if (count($sources) > 1) {
-            // Todo: Maybe we want to just use the first one found or the one that matches the most, or just repeat for all sources?
-            throw new Exception("Found more than one Source (".count($sources).") with this url: $url", 400);
-        }
-
-        return $sources[0];
+        return $source;
 
     }//end findSource()
 }//end class
