@@ -50,13 +50,6 @@ class NotificationHandler implements ActionHandlerInterface
                     'example'     => 'https://vng.opencatalogi.nl/schemas/zrc.zaak.schema.json',
                     'required'    => true,
                 ],
-                'sourceIdUrl' => [
-                    'type'        => 'boolean',
-                    'description' => 'If set to true the entire url will be used instead of just the id at the end of the url, when setting the sourceId of the synchronization created',
-                    'default'     => false,
-                    'example'     => true,
-                    'nullable'    => true,
-                ],
             ],
         ];
 
