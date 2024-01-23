@@ -102,10 +102,10 @@ class NotificationService
         $this->configuration = $configuration;
 
         $this->logger->debug('NotificationService -> notificationHandler()');
-        
+
         $dot = new Dot($this->data);
         $url = $dot->get($this->configuration['urlLocation']);
-        
+
         // Get the correct Entity.
         $entity = $this->resourceService->getSchema($this->configuration['entity'], 'commongateway/corebundle');
         if ($entity === null) {
