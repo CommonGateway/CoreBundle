@@ -136,9 +136,18 @@ class ValueService
      */
     public function getSubObjectByUrl(string $url, Value $valueObject): ?ObjectEntity
     {
+        // Check if a synchronization with source->location/synchronization->endpoint/synchronization->sourceId exists.
+        $source          = $this->resourceService->findSourceForUrl($url, 'conduction-nl/commonground-gateway', $endpoint);
+        $sourceId        = $this->syncService->getSourceId($endpoint, $url);
+        
         // First check if the object is already being synced.
         foreach ($this->entityManager->getUnitOfWork()->getScheduledEntityInsertions() as $insertion) {
-            if ($insertion instanceof Synchronization === true && $insertion->getSourceId() === $url) {
+            if ($insertion instanceof Synchronization === true
+                && $insertion->getSource() === $source
+                && $insertion->getEntity() === $valueObject->getAttribute()->getObject()
+                && $insertion->getEndpoint() === $endpoint
+                && ($insertion->getSourceId() === $sourceId || $insertion->getSourceId() === $url)
+            ) {
                 return $insertion->getObject();
             }
         }
@@ -155,10 +164,7 @@ class ValueService
         if ($synchronization !== null) {
             return $synchronization->getObject();
         }
-
-        // Check if a synchronization with source->location/synchronization->endpoint/synchronization->sourceId exists.
-        $source          = $this->resourceService->findSourceForUrl($url, 'conduction-nl/commonground-gateway', $endpoint);
-        $sourceId        = $this->syncService->getSourceId($endpoint, $url);
+        
         $synchronization = $this->entityManager->getRepository('App:Synchronization')->findOneBy(
             [
                 'gateway'  => $source,
