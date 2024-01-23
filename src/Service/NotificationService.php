@@ -102,31 +102,23 @@ class NotificationService
         $this->configuration = $configuration;
 
         $this->logger->debug('NotificationService -> notificationHandler()');
-
-        // Find Synchronization with the data from the notification and action->configuration.
-        try {
-            $synchronization = $this->findSync();
-        } catch (Exception $exception) {
-            $this->logger->error($exception->getMessage());
-
-            $response = json_encode(['Message' => $exception->getMessage()]);
-
-            return ['response' => new Response($response, $exception->getCode(), ['Content-type' => 'application/json'])];
+        
+        $dot = new Dot($this->data);
+        $url = $dot->get($this->configuration['urlLocation']);
+        
+        // Get the correct Entity.
+        $entity = $this->resourceService->getSchema($this->configuration['entity'], 'commongateway/corebundle');
+        if ($entity === null) {
+            $response = json_encode(['Message' => "Could not find an Entity with this reference: {$this->configuration['entity']}"]);
+            return ['response' => new Response($response, 500, ['Content-type' => 'application/json'])];
         }
 
         try {
-            $response = $this->callService->call(
-                $synchronization->getSource(),
-                $synchronization->getEndpoint(),
-                'GET'
-            );
+            $this->syncService->aquireObject($url, $entity);
         } catch (\Exception $exception) {
-            $this->logger->error("Notification call before sync returned an Exception: {$exception->getMessage()}");
-            throw new Exception($exception->getMessage());
+            $response = json_encode(['Message' => "Notification call before sync returned an Exception: {$exception->getMessage()}"]);
+            return ['response' => new Response($response, 500, ['Content-type' => 'application/json'])];
         }//end try
-
-        $sourceResponse = json_decode($response->getBody()->getContents(), true);
-        $this->syncService->synchronize($synchronization, $sourceResponse);
 
         $this->entityManager->flush();
 
@@ -136,38 +128,4 @@ class NotificationService
         return $data;
 
     }//end notificationHandler()
-
-    /**
-     * Tries to find a synchronisation with the data from the notification and action->configuration.
-     *
-     * @throws Exception If we could not find a Source or Entity we throw an exception.
-     *
-     * @return Synchronization
-     */
-    private function findSync(): Synchronization
-    {
-        $dot = new Dot($this->data);
-        $url = $dot->get($this->configuration['urlLocation']);
-
-        // Find source by resource url from the notification.
-        $source = $this->resourceService->findSourceForUrl($url, 'commongateway/corebundle', $endpoint);
-        if ($source === null) {
-            throw new Exception("Could not find a Source with this url: $url", 400);
-        }
-
-        // Get the correct Entity.
-        $entity = $this->resourceService->getSchema($this->configuration['entity'], 'commongateway/corebundle');
-        if ($entity === null) {
-            throw new Exception("Could not find an Entity with this reference: {$this->configuration['entity']}", 500);
-        }
-
-        // Get (source) id from notification data.
-        $sourceId = $this->syncService->getSourceId($endpoint, $url);
-
-        $synchronization = $this->syncService->findSyncBySource($source, $entity, $sourceId, $endpoint);
-        $this->entityManager->persist($synchronization);
-
-        return $synchronization;
-
-    }//end findSync()
 }//end class
