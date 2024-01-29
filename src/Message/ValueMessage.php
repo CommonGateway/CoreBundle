@@ -50,7 +50,7 @@ class ValueMessage
         }
 
         if (Uuid::isValid($this->session->get('organization', "")) === true) {
-            $this->userId = $this->session->get('organization');
+            $this->organizationId = $this->session->get('organization');
         }
 
     }//end __construct()
