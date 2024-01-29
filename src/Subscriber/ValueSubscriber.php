@@ -25,24 +25,24 @@ class ValueSubscriber implements EventSubscriberInterface
      * @var MessageBusInterface The message bus
      */
     private MessageBusInterface $messageBus;
-    
+
     /**
      * The current session.
      *
      * @var SessionInterface $session
      */
     private SessionInterface $session;
-    
+
     /**
      * @param MessageBusInterface $messageBus
-     * @param SessionInterface $session
+     * @param SessionInterface    $session
      */
     public function __construct(
         MessageBusInterface $messageBus,
         SessionInterface $session
     ) {
         $this->messageBus = $messageBus;
-        $this->session = $session;
+        $this->session    = $session;
 
     }//end __construct()
 

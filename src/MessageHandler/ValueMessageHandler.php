@@ -35,7 +35,7 @@ class ValueMessageHandler implements MessageHandlerInterface
      * @var ValueRepository The value repository.
      */
     private ValueRepository $repository;
-    
+
     /**
      * @var SessionInterface The current session.
      */
@@ -55,7 +55,7 @@ class ValueMessageHandler implements MessageHandlerInterface
     ) {
         $this->valueService = $valueService;
         $this->repository   = $repository;
-        $this->session = $session;
+        $this->session      = $session;
 
     }//end __construct()
 
@@ -71,11 +71,11 @@ class ValueMessageHandler implements MessageHandlerInterface
     public function __invoke(ValueMessage $message): void
     {
         $value = $this->repository->find($message->getValueId());
-        
+
         if (empty($message->getUserId()) === false) {
             $this->session->set('user', $message->getUserId());
         }
-        
+
         if (empty($message->getOrganizationId()) === false) {
             $this->session->set('organization', $message->getOrganizationId());
         }
