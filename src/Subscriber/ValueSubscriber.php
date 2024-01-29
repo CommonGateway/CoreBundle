@@ -15,6 +15,7 @@ use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class ValueSubscriber implements EventSubscriberInterface
@@ -24,14 +25,24 @@ class ValueSubscriber implements EventSubscriberInterface
      * @var MessageBusInterface The message bus
      */
     private MessageBusInterface $messageBus;
-
+    
+    /**
+     * The current session.
+     *
+     * @var SessionInterface $session
+     */
+    private SessionInterface $session;
+    
     /**
      * @param MessageBusInterface $messageBus
+     * @param SessionInterface $session
      */
     public function __construct(
-        MessageBusInterface $messageBus
+        MessageBusInterface $messageBus,
+        SessionInterface $session
     ) {
         $this->messageBus = $messageBus;
+        $this->session = $session;
 
     }//end __construct()
 
@@ -66,7 +77,7 @@ class ValueSubscriber implements EventSubscriberInterface
             || filter_var($valueObject->getStringValue(), FILTER_VALIDATE_URL) !== false)
         ) {
             try {
-                $this->messageBus->dispatch(new ValueMessage($value->getObject()->getId()));
+                $this->messageBus->dispatch(new ValueMessage($this->session, $value->getObject()->getId()));
             } catch (\Exception $exception) {
             }
         }//end if

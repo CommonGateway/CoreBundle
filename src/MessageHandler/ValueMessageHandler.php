@@ -20,6 +20,7 @@ use CommonGateway\CoreBundle\Service\ValueService;
 use CommonGateway\CoreBundle\Subscriber\ActionSubscriber;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
 class ValueMessageHandler implements MessageHandlerInterface
@@ -34,17 +35,27 @@ class ValueMessageHandler implements MessageHandlerInterface
      * @var ValueRepository The value repository.
      */
     private ValueRepository $repository;
+    
+    /**
+     * @var SessionInterface The current session.
+     */
+    private SessionInterface $session;
 
     /**
      * Constructor.
      *
-     * @param ValueService    $valueService The value service.
-     * @param ValueRepository $repository   The value repository.
+     * @param ValueService     $valueService The value service.
+     * @param ValueRepository  $repository   The value repository.
+     * @param SessionInterface $session      The current session.
      */
-    public function __construct(ValueService $valueService, ValueRepository $repository)
-    {
+    public function __construct(
+        ValueService $valueService,
+        ValueRepository $repository,
+        SessionInterface $session
+    ) {
         $this->valueService = $valueService;
         $this->repository   = $repository;
+        $this->session = $session;
 
     }//end __construct()
 
@@ -60,6 +71,14 @@ class ValueMessageHandler implements MessageHandlerInterface
     public function __invoke(ValueMessage $message): void
     {
         $value = $this->repository->find($message->getValueId());
+        
+        if (empty($message->getUserId()) === false) {
+            $this->session->set('user', $message->getUserId());
+        }
+        
+        if (empty($message->getOrganizationId()) === false) {
+            $this->session->set('organization', $message->getOrganizationId());
+        }
 
         try {
             if ($value instanceof Value === true) {
