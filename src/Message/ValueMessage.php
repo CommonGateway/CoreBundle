@@ -26,14 +26,9 @@ class ValueMessage
     private UuidInterface $valueId;
 
     /**
-     * @var UuidInterface|null The id of the active user while this ValueMessage was created. Used to set the owner of any SubObjects created by handling this ValueMessage. This might be the user set for an Action or Cronjob.
+     * @var UuidInterface|null The id of the active user while this ValueMessage was created. Used to set the owner & organization of any SubObjects created by handling this ValueMessage. This might be the user set for an Action or Cronjob.
      */
     private ?UuidInterface $userId = null;
-
-    /**
-     * @var UuidInterface|null The id of the active (user->) organization while this ValueMessage was created. Used to set the organization of any SubObjects created by handling this ValueMessage. This might be the organization of the user set for an Action or Cronjob.
-     */
-    private ?UuidInterface $organizationId = null;
 
     /**
      * Constructor.
@@ -46,11 +41,7 @@ class ValueMessage
         $this->valueId = $valueId;
 
         if (Uuid::isValid($this->session->get('user', "")) === true) {
-            $this->userId = $this->session->get('user');
-        }
-
-        if (Uuid::isValid($this->session->get('organization', "")) === true) {
-            $this->organizationId = $this->session->get('organization');
+            $this->userId = Uuid::fromString($this->session->get('user'));
         }
 
     }//end __construct()
@@ -76,15 +67,4 @@ class ValueMessage
         return $this->userId;
 
     }//end getUserId()
-
-    /**
-     * Get the id of the active (user->) organization while this ValueMessage was created.
-     *
-     * @return UuidInterface The id of the active (user->) organization while this ValueMessage was created.
-     */
-    public function getOrganizationId(): UuidInterface
-    {
-        return $this->organizationId;
-
-    }//end getOrganizationId()
 }//end class

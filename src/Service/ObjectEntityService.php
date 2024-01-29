@@ -6,6 +6,7 @@ use App\Entity\ObjectEntity;
 use App\Entity\Organization;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -85,14 +86,19 @@ class ObjectEntityService
         }
         
         // Check if there is a Cronjob user in the session we can get the Owner & Organization from.
-        if (($user === null || $user->getOrganization() === null) && $this->session->get('currentCronjobUserId', false) !== false) {
+        if (($user === null || $user->getOrganization() === null) && Uuid::isValid($this->session->get('currentCronjobUserId', "")) === true) {
             $user = $this->entityManager->getRepository('App:User')->find($this->session->get('currentCronjobUserId'));
         }
         
         // Check if there is an Action user in the session we can get the Owner & Organization from.
         // todo: Maybe add config options to Entity of ObjectEntity, in order to always use Action User if possible, even if there is a logged in user?
-        if (($user === null || $user->getOrganization() === null) && $this->session->get('currentActionUserId', false) !== false) {
+        if (($user === null || $user->getOrganization() === null) && Uuid::isValid($this->session->get('currentActionUserId', "")) === true) {
             $user = $this->entityManager->getRepository('App:User')->find($this->session->get('currentActionUserId'));
+        }
+        
+        // Check if there is an ValueMessage user in the session we can get the Owner & Organization from.
+        if (($user === null || $user->getOrganization() === null) && Uuid::isValid($this->session->get('valueMessageUser', "") === true)) {
+            $user = $this->entityManager->getRepository('App:User')->find($this->session->get('valueMessageUser'));
         }
         
         if ($user !== null) {

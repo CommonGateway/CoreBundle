@@ -73,11 +73,7 @@ class ValueMessageHandler implements MessageHandlerInterface
         $value = $this->repository->find($message->getValueId());
 
         if (empty($message->getUserId()) === false) {
-            $this->session->set('user', $message->getUserId());
-        }
-
-        if (empty($message->getOrganizationId()) === false) {
-            $this->session->set('organization', $message->getOrganizationId());
+            $this->session->set('valueMessageUser', $message->getUserId()->toString());
         }
 
         try {
