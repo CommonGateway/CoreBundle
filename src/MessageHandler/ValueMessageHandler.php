@@ -81,7 +81,7 @@ class ValueMessageHandler implements MessageHandlerInterface
     public function __invoke(ValueMessage $message): void
     {
         $value = $this->repository->find($message->getValueId());
-        
+
         $this->session->remove('valueMessageUserId');
         if ($message->getUserId() !== null) {
             $this->session->set('valueMessageUserId', $message->getUserId()->toString());
@@ -91,6 +91,7 @@ class ValueMessageHandler implements MessageHandlerInterface
             if ($value instanceof Value === true) {
                 $this->valueService->connectSubObjects($value);
             }
+
             $this->session->remove('valueMessageUserId');
         } catch (Exception $exception) {
             $this->session->remove('valueMessageUserId');

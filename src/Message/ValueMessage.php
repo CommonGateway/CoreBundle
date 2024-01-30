@@ -32,7 +32,7 @@ class ValueMessage
     public function __construct(UuidInterface $valueId, ?UuidInterface $userId)
     {
         $this->valueId = $valueId;
-        $this->userId = $userId;
+        $this->userId  = $userId;
 
     }//end __construct()
 
