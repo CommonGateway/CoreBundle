@@ -41,7 +41,7 @@ class ValueMessageHandler implements MessageHandlerInterface
      * @var SessionInterface The current session.
      */
     private SessionInterface $session;
-    
+
     /**
      * @var LoggerInterface The logger.
      */
@@ -89,11 +89,12 @@ class ValueMessageHandler implements MessageHandlerInterface
             if ($value instanceof Value === true) {
                 $this->valueService->connectSubObjects($value);
             }
+
             $this->session->remove('valueMessageUser');
         } catch (Exception $exception) {
             $this->session->remove('valueMessageUser');
             $this->logger->error("Error while handling a ValueMessage for Value {$message->getValueId()}: ".$exception->getMessage());
-            
+
             throw $exception;
         }
 

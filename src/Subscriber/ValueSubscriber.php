@@ -30,7 +30,7 @@ class ValueSubscriber implements EventSubscriberInterface
      * @var SessionInterface $session The current session.
      */
     private SessionInterface $session;
-    
+
     /**
      * @var LoggerInterface The logger.
      */
