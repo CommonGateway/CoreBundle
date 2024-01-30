@@ -97,8 +97,8 @@ class ObjectEntityService
         }
         
         // Check if there is an ValueMessage user in the session we can get the Owner & Organization from.
-        if (($user === null || $user->getOrganization() === null) && Uuid::isValid($this->session->get('valueMessageUser', "") === true)) {
-            $user = $this->entityManager->getRepository('App:User')->find($this->session->get('valueMessageUser'));
+        if (($user === null || $user->getOrganization() === null) && Uuid::isValid($this->session->get('valueMessageUserId', "")) === true) {
+            $user = $this->entityManager->getRepository('App:User')->find($this->session->get('valueMessageUserId'));
         }
         
         if ($user !== null) {

@@ -1,11 +1,5 @@
 <?php
-/**
- * Handler for cache messages.
- *
- * @author Robert Zondervan (robert@conduction.nl)
- *
- * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
- */
+
 namespace CommonGateway\CoreBundle\MessageHandler;
 
 use App\Entity\ObjectEntity;
@@ -24,6 +18,13 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
+/**
+ * Handler for cache messages.
+ *
+ * @author Robert Zondervan <robert@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ */
 class ValueMessageHandler implements MessageHandlerInterface
 {
 
@@ -80,19 +81,19 @@ class ValueMessageHandler implements MessageHandlerInterface
     public function __invoke(ValueMessage $message): void
     {
         $value = $this->repository->find($message->getValueId());
-
-        if (empty($message->getUserId()) === false) {
-            $this->session->set('valueMessageUser', $message->getUserId()->toString());
+        
+        $this->session->remove('valueMessageUserId');
+        if ($message->getUserId() !== null) {
+            $this->session->set('valueMessageUserId', $message->getUserId()->toString());
         }
 
         try {
             if ($value instanceof Value === true) {
                 $this->valueService->connectSubObjects($value);
             }
-
-            $this->session->remove('valueMessageUser');
+            $this->session->remove('valueMessageUserId');
         } catch (Exception $exception) {
-            $this->session->remove('valueMessageUser');
+            $this->session->remove('valueMessageUserId');
             $this->logger->error("Error while handling a ValueMessage for Value {$message->getValueId()}: ".$exception->getMessage());
 
             throw $exception;
