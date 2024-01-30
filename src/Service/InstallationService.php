@@ -544,10 +544,29 @@ class InstallationService
         $objects = [];
 
         foreach ($schemas as $schema) {
-            $object = $this->handleObject($type, $schema);
-            if ($object === null) {
+            try {
+                $object = $this->handleObject($type, $schema);
+                if ($object === null) {
+                    continue;
+                }
+            } catch (Exception $exception) {
+                $id = '';
+                if (isset($schema['_id']) === true) {
+                    $id = $schema['_id'];
+                }
+
+                if (isset($schema['id']) === true) {
+                    $id = $schema['id'];
+                }
+
+                if (isset($this->style) === true) {
+                    $this->style->error("Failed to handle object $id (Schema: $type). Exception: ".$exception->getFile()." -> ".$exception->getLine()." -> ".$exception->getMessage());
+                }
+
+                $this->logger->error("Failed to handle object $id (Schema: $type). Exception: ".$exception->getFile()." -> ".$exception->getLine()." -> ".$exception->getMessage());
+
                 continue;
-            }
+            }//end try
 
             // Save it to the database.
             $this->entityManager->persist($object);
@@ -741,9 +760,8 @@ class InstallationService
             return null;
         }
 
-        // If we have an id let try to grab an object.
-        if (array_key_exists('id', $schema) === true) {
-            $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $schema['id']]);
+        if (array_key_exists('_id', $schema) === true) {
+            $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $schema['_id']]);
         }
 
         // Create it if we don't.
@@ -751,9 +769,8 @@ class InstallationService
             $object = new ObjectEntity($entity);
         }
 
-        // TODO: testdata objects seem to have twice as much subobjects as they should have. Duplicates... (example: kiss->klanten->telefoonnummers).
         // Now it gets a bit specif but for EAV data we allow nested fixed id's so let dive deep.
-        if ($this->entityManager->contains($object) === false && (array_key_exists('id', $schema) === true || array_key_exists('_id', $schema) === true)) {
+        if ($this->entityManager->contains($object) === false && array_key_exists('_id', $schema) === true) {
             $object = $this->schemaService->hydrate($object, $schema);
         }
 
@@ -766,8 +783,6 @@ class InstallationService
 
     /**
      * Specifically handles the installation file.
-     *
-     * @todo: clean up this function, split it into multiple smaller pieces.
      *
      * @param SplFileInfo $file The installation file.
      *
@@ -788,6 +803,9 @@ class InstallationService
         // Collection prefixes for schema's.
         $this->updateSchemasCollection(($data['collections'] ?? []));
 
+        // Set the default source for a schema.
+        $this->editSchemaProperties(($data['schemas'] ?? []));
+
         // Endpoints for schema's and/or sources.
         $this->createEndpoints(($data['endpoints'] ?? []));
 
@@ -797,23 +815,23 @@ class InstallationService
         // Fix references in configuration of these actions.
         $this->fixConfigRef(($data['actions']['fixConfigRef'] ?? []));
 
-        // Cronjobs for actions for action handlers.
+        // Cronjobs for actions.
         $this->createCronjobs(($data['cronjobs']['actions'] ?? []));
 
-        // Create users with given Organization, Applications & SecurityGroups.
+        // Create Applications and connect organization searching it by reference.
         $this->createApplications(($data['applications'] ?? []));
 
-        // Create users with given Organization, Applications & SecurityGroups.
+        // Create users with given Organization & SecurityGroups.
         $this->createUsers(($data['users'] ?? []));
 
-        // Let's see if we have things that we want to create cards for stuff (Since this might create cards for the stuff above this should always be last).
-        $this->createCards(($data['cards'] ?? []));
-
-        // Set the default source for a schema.
-        $this->editSchemaProperties(($data['schemas'] ?? []));
-
-        // Create template
+        // Create templates with supportedSchemas (ref to uuid) and organization.
         $this->createTemplates(($data['templates'] ?? []));
+
+        // TODO: when adding more createX functions here, use createApplications and createUsers as examples!
+        // TODO: And always keep createCards as the last function.
+        // Let's see if we have things that we want to create cards for stuff
+        // Since this might create cards for the stuff above this should always be last!!!
+        $this->createCards(($data['cards'] ?? []));
 
         if (isset($data['installationService']) === false || empty($data['installationService']) === true) {
             $this->logger->error($file->getFilename().' Doesn\'t contain an installation service');
@@ -838,6 +856,7 @@ class InstallationService
         try {
             if (isset($this->style) === true && method_exists(get_class($installationService), 'setStyle') === true) {
                 $this->style->newLine();
+                $this->style->writeLn('Running InstallationService->install for this plugin...');
                 $installationService->setStyle($this->style);
             }
 
@@ -875,10 +894,6 @@ class InstallationService
                 $source = $this->resourceService->getSource($schemaData['defaultSource'], 'commongateway/corebundle');
                 // Set the source as defaultSource to the schema.
                 $schema->setDefaultSource($source);
-            }
-
-            if (key_exists('createAuditTrails', $schemaData) === true) {
-                $schema->setCreateAuditTrails($schemaData['createAuditTrails']);
             }
 
             $this->entityManager->persist($schema);
@@ -947,7 +962,13 @@ class InstallationService
      */
     private function createTemplates(array $templatesData = []): array
     {
+        // TODO: rewrite this function and use createApplications / createUsers as example for it...
         $templates = [];
+
+        if (isset($this->style) === true && $templatesData !== []) {
+            $this->style->newline();
+            $this->style->writeLn('Create templates...');
+        }
 
         // Let's loop through the templatesData.
         foreach ($templatesData as $templateData) {
@@ -1003,12 +1024,28 @@ class InstallationService
             $templateData['organization'] = $this->entityManager->getRepository('App:Organization')->find('a1c8e0b6-2f78-480d-a9fb-9792142f4761');
         }
 
-        $template = $this->entityManager->getRepository('App:Template')->findOneBy(['reference' => $templateData['$id']]);
-        if ($template !== null) {
-            $this->logger->debug('Template found with reference '.$templateData['$id']);
+        $template                = $this->entityManager->getRepository('App:Template')->findOneBy(['reference' => $templateData['$id']]);
+        $templateData['version'] = ($templateData['version'] ?? '0.0.1');
+        if ($template !== null && version_compare($templateData['version'], $template->getVersion()) <= 0) {
+            if (isset($this->style) === true) {
+                $this->style->writeLn('Template found with reference '.$templateData['$id'].', version number ('.$templateData['version'].') is equal or lower than the current version');
+            }
+
+            $this->logger->debug('Template found with reference '.$templateData['$id'].', version number ('.$templateData['version'].') is equal or lower than the current version');
 
             return null;
-        }
+        } else if ($template !== null) {
+            if (isset($this->style) === true) {
+                $this->style->writeln('Updating template '.$template->getReference().' to version '.$templateData['version']);
+            }
+
+            $this->logger->debug('Updating template '.$template->getReference().' to version '.$templateData['version']);
+
+            $template->fromSchema($templateData);
+
+            $this->entityManager->persist($template);
+            return $template;
+        }//end if
 
         $template = new Template($templateData);
 
@@ -1029,6 +1066,11 @@ class InstallationService
     private function createEndpoints(array $endpointsData = []): array
     {
         $endpoints = [];
+
+        if (isset($this->style) === true && $endpointsData !== []) {
+            $this->style->newline();
+            $this->style->writeLn('Create endpoints...');
+        }
 
         // Let's loop through the endpointsData.
         foreach ($endpointsData as $type => $endpointTypeData) {
@@ -1097,7 +1139,6 @@ class InstallationService
             $object = $this->checkIfObjectExists($repository, $endpointData['reference'], $type);
         }
 
-        // Todo: this works, we should go to php 8.0 later.
         if (isset($endpointData['$id']) === false || str_contains($endpointData['$id'], '.endpoint.json') === false) {
             $endpointData['$id'] = $this->createEndpointReference($object ?? null, $type);
             if ($endpointData['$id'] === null) {
@@ -1105,12 +1146,32 @@ class InstallationService
             }
         }
 
-        $endpoint = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $endpointData['$id']]);
-        if ($endpoint !== null) {
-            $this->logger->debug('Endpoint found with reference '.$endpointData['$id']);
+        $endpoint                = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $endpointData['$id']]);
+        $endpointData['version'] = ($endpointData['version'] ?? '0.0.1');
+        if ($endpoint !== null && version_compare($endpointData['version'], $endpoint->getVersion()) <= 0) {
+            if (isset($this->style) === true) {
+                $this->style->writeLn('Endpoint found with reference '.$endpointData['$id'].', version number ('.$endpointData['version'].') is equal or lower than the current version');
+            }
+
+            $this->logger->debug('Endpoint found with reference '.$endpointData['$id'].', version number ('.$endpointData['version'].') is equal or lower than the current version');
 
             return null;
-        }
+        } else if ($endpoint !== null) {
+            if (isset($this->style) === true) {
+                $this->style->writeln('Updating endpoint '.$endpoint->getReference().' to version '.$endpointData['version']);
+            }
+
+            $this->logger->debug('Updating endpoint '.$endpoint->getReference().' to version '.$endpointData['version']);
+
+            $default                   = $endpoint->toSchema();
+            $endpointData['pathRegex'] = $default['pathRegex'];
+            $endpointData['path']      = $default['path'];
+
+            $endpoint->fromSchema($endpointData, $default);
+
+            $this->entityManager->persist($endpoint);
+            return $endpoint;
+        }//end if
 
         $endpoint = $this->constructEndpoint($type, $object ?? null, $endpointData);
         $this->entityManager->persist($endpoint);
@@ -1363,19 +1424,29 @@ class InstallationService
     {
         $actions = [];
 
+        if (isset($this->style) === true && $handlersData !== []) {
+            $this->style->newline();
+            $this->style->writeLn('Create actions...');
+        }
+
         foreach ($handlersData as $handlerData) {
             $actionHandler = $this->container->get($handlerData['actionHandler']);
 
             $action = $this->entityManager->getRepository('App:Action')->findOneBy(['class' => get_class($actionHandler)]);
 
-            $blockUpdate = true;
-            if ($action !== null && $action->getVersion() && isset($handlerData['version']) === true) {
+            $blockUpdate            = true;
+            $handlerData['version'] = ($handlerData['version'] ?? '0.0.1');
+            if ($action !== null && $action->getVersion()) {
                 $blockUpdate = version_compare($handlerData['version'], $action->getVersion()) <= 0;
             } else if ($action === null && isset($handlerData['version']) === true) {
                 $blockUpdate = false;
             }
 
             if ($action !== null && $blockUpdate === true) {
+                if (isset($this->style) === true) {
+                    $this->style->writeLn('Action found for '.$handlerData['actionHandler'].' with class '.get_class($actionHandler));
+                }
+
                 $this->logger->debug('Action found for '.$handlerData['actionHandler'].' with class '.get_class($actionHandler));
                 continue;
             }
@@ -1406,6 +1477,10 @@ class InstallationService
 
             $this->entityManager->persist($action);
             $actions[] = $action;
+
+            if (isset($this->style) === true) {
+                $this->style->writeLn('Action created for '.$handlerData['actionHandler'].' with class '.get_class($actionHandler));
+            }
 
             $this->logger->debug('Action created for '.$handlerData['actionHandler'].' with class '.get_class($actionHandler));
         }//end foreach
@@ -1576,6 +1651,11 @@ class InstallationService
     {
         $cronjobs = [];
 
+        if (isset($this->style) === true && $actions !== []) {
+            $this->style->newline();
+            $this->style->writeLn('Create cronjobs...');
+        }
+
         foreach ($actions as $reference) {
             $action = $this->entityManager->getRepository('App:Action')->findOneBy(['reference' => $reference]);
 
@@ -1584,10 +1664,25 @@ class InstallationService
                 continue;
             }
 
+            $cronjob = $this->entityManager->getRepository('App:Cronjob')->findOneBy(['name' => $action->getName(), 'throws' => [reset($action->getListens()->first())]]);
+            if ($cronjob !== null) {
+                if (isset($this->style) === true) {
+                    $this->style->writeLn('Cronjob found for action '.$reference.' with name '.$action->getName().' and throw: '.$action->getListens()->first());
+                }
+
+                $this->logger->debug('Cronjob found for action '.$reference.' with name '.$action->getName().' and throw: '.$action->getListens()->first());
+                continue;
+            }
+
             // TODO: CHECK IF THIS CRONJOB ALREADY EXISTS ?!?
             $cronjob = new Cronjob($action);
             $this->entityManager->persist($cronjob);
             $cronjobs[] = $cronjob;
+
+            if (isset($this->style) === true) {
+                $this->style->writeLn('Cronjob created for action '.$reference);
+            }
+
             $this->logger->debug('Cronjob created for action '.$reference);
         }//end foreach
 
@@ -1605,9 +1700,14 @@ class InstallationService
      *
      * @return array An array of applications.
      */
-    private function createApplications(array $applicationsData): array
+    private function createApplications(array $applicationsData = []): array
     {
         $orgRepository = $this->entityManager->getRepository('App:Organization');
+
+        if (isset($this->style) === true && $applicationsData !== []) {
+            $this->style->newline();
+            $this->style->writeLn('Create applications...');
+        }
 
         foreach ($applicationsData as $key => &$applicationData) {
             if (isset($applicationData['$id']) === false) {
@@ -1649,6 +1749,11 @@ class InstallationService
     private function createUsers(array $usersData = []): array
     {
         $orgRepository = $this->entityManager->getRepository('App:Organization');
+
+        if (isset($this->style) === true && $usersData !== []) {
+            $this->style->newline();
+            $this->style->writeLn('Create users...');
+        }
 
         foreach ($usersData as $key => &$userData) {
             if (isset($userData['email']) === false || isset($userData['securityGroups']) === false || isset($userData['$id']) === false) {
@@ -1709,7 +1814,6 @@ class InstallationService
             }
 
             foreach ($securityGroup->getScopes() as $scope) {
-                // Todo: This works, we should go to php 8.0 later.
                 if (str_contains(strtolower($scope), 'admin')) {
                     $this->logger->error('It is forbidden to change or add users with admin scopes!', ['securityGroup' => $reference, 'userData' => $userData]);
                     continue 2;
@@ -1768,6 +1872,11 @@ class InstallationService
     {
         $cards = [];
 
+        if (isset($this->style) === true && $cardsData !== []) {
+            $this->style->newline();
+            $this->style->writeLn('Create cards...');
+        }
+
         // Let's loop through the cardsData.
         foreach ($cardsData as $type => $references) {
             // Let's determine the proper repo to use.
@@ -1814,6 +1923,9 @@ class InstallationService
                 continue 2;
             }//end switch
 
+            // Type set in the DashboardCard object is without s at the end. We need this to search for existing DashboardCards.
+            $type = rtrim($type, 's');
+
             // Then we can handle some data.
             foreach ($references as $reference) {
                 $object = $repository->findOneBy(['reference' => $reference]);
@@ -1824,15 +1936,24 @@ class InstallationService
                 }
 
                 // Check if this dashboardCard already exists.
-                $dashboardCard = $this->entityManager->getRepository('App:DashboardCard')->findOneBy(['entity' => get_class($object), 'entityId' => $object->getId()]);
+                $dashboardCard = $this->entityManager->getRepository('App:DashboardCard')->findOneBy(['type' => $type, 'entityId' => $object->getId()]);
                 if ($dashboardCard !== null) {
-                    $this->logger->debug('DashboardCard found for '.get_class($object).' with id: '.$object->getId());
+                    if (isset($this->style) === true) {
+                        $this->style->writeLn('DashboardCard found for '.$type.' with id: '.$object->getId());
+                    }
+
+                    $this->logger->debug('DashboardCard found for '.$type.' with id: '.$object->getId());
                     continue;
                 }
 
                 $dashboardCard = new DashboardCard($object);
                 $cards[]       = $dashboardCard;
                 $this->entityManager->persist($dashboardCard);
+
+                if (isset($this->style) === true) {
+                    $this->style->writeLn('Dashboard Card created for '.$reference);
+                }
+
                 $this->logger->debug('Dashboard Card created for '.$reference);
             }//end foreach
         }//end foreach

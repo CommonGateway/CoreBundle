@@ -20,6 +20,7 @@ use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -73,6 +74,11 @@ class CacheService
     private SerializerInterface $serializer;
 
     /**
+     * @var SessionInterface $session
+     */
+    private SessionInterface $session;
+
+    /**
      * Object Entity Service.
      *
      * @var ObjectEntityService
@@ -86,6 +92,7 @@ class CacheService
      * @param ParameterBagInterface  $parameters          The Parameter bag
      * @param SerializerInterface    $serializer          The serializer
      * @param ObjectEntityService    $objectEntityService The Object Entity Service.
+     * @param SessionInterface       $session             The current session.
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -93,7 +100,8 @@ class CacheService
         LoggerInterface $cacheLogger,
         ParameterBagInterface $parameters,
         SerializerInterface $serializer,
-        ObjectEntityService $objectEntityService
+        ObjectEntityService $objectEntityService,
+        SessionInterface $session
     ) {
         $this->entityManager       = $entityManager;
         $this->cache               = $cache;
@@ -101,6 +109,7 @@ class CacheService
         $this->parameters          = $parameters;
         $this->serializer          = $serializer;
         $this->objectEntityService = $objectEntityService;
+        $this->session             = $session;
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }
@@ -399,11 +408,12 @@ class CacheService
     /**
      * Get a single object from the cache.
      *
-     * @param string $identification
+     * @param string      $identification The ID of an Object.
+     * @param string|null $schema         Only look for an object with this schema.
      *
      * @return array|null
      */
-    public function getObject(string $identification): ?array
+    public function getObject(string $identification, string $schema = null): ?array
     {
         // Backwards compatablity.
         if (isset($this->client) === false) {
@@ -411,6 +421,23 @@ class CacheService
         }
 
         $collection = $this->client->objects->json;
+
+        if ($schema !== null) {
+            if (Uuid::isValid($schema) === true) {
+                // $filter['_self.schema.id'] = 'b92a3a39-3639-4bf5-b2af-c404bc2cb005';
+                $filter['_self.schema.id'] = $schema;
+                $entityObject              = $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $schema]);
+            } else {
+                // $filter['_self.schema.ref'] = 'https://larping.nl/schema/example.schema.json';
+                $filter['_self.schema.ref'] = $schema;
+                $entityObject               = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema]);
+            }
+
+            if ($entityObject === null) {
+                $this->logger->warning("Could not find an Entity with id or reference = $schema during getObject($identification)");
+                return null;
+            }
+        }
 
         $user = $this->objectEntityService->findCurrentUser();
 
@@ -424,6 +451,8 @@ class CacheService
                 $filter['_self.owner.id'] = $user->getId()->toString();
             }
         }
+
+        $this->session->set('mongoDBFilter', $filter);
 
         // Check if object is in the cache?
         if ($object = $collection->findOne($filter)) {
@@ -628,6 +657,13 @@ class CacheService
                 return true;
             }
 
+            // not equals
+            if (array_key_exists('ne', $value) === true) {
+                $value = ['$ne' => $value['ne']];
+
+                return true;
+            }
+
             if (array_key_first($value) === '$elemMatch') {
                 return true;
             }
@@ -671,7 +707,6 @@ class CacheService
             return;
         }
 
-        // Todo: This works, we should go to php 8.0 later.
         if (str_contains($value, '%') === true) {
             $regex = str_replace('%', '', $value);
             $regex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $regex);
@@ -810,16 +845,18 @@ class CacheService
     }//end parseFilter()
 
     /**
-     * Retrieves objects from a cache collection.
+     * Adds owner and organization filters (multi tenancy) for searchObjects() or countObjects(). Or other MongoDB collection queries.
      *
-     * @param array $filter
-     * @param array $options
-     * @param array $completeFilter
+     * @param array $filter The filter to add owner and organization filters to.
      *
-     * @return array $this->handleResultPagination()
+     * @return array The updated filter (unless owner and organization filter was already present).
      */
-    public function retrieveObjectsFromCache(array $filter, array $options, array $completeFilter = []): array
+    private function addOwnerOrgFilter(array $filter): array
     {
+        if (isset($filter['_self.owner.id']) === true || isset($filter['$and']['$or']['_self.owner.id'])) {
+            return $filter;
+        }
+
         $user = $this->objectEntityService->findCurrentUser();
 
         if ($user !== null && $user->getOrganization() !== null) {
@@ -831,14 +868,36 @@ class CacheService
             $orFilter          = [];
             $orFilter['$or'][] = ['_self.owner.id' => $user->getId()->toString()];
             $orFilter['$or'][] = ['_self.organization.id' => $user->getOrganization()->getId()->toString()];
+            $orFilter['$or'][] = ['_self.organization.id' => null];
             $filter['$and'][]  = ['$or' => $orFilter['$or']];
         } else if ($user !== null) {
             $filter['_self.owner.id'] = $user->getId()->toString();
         }
 
+        return $filter;
+
+    }//end addOwnerOrgFilter()
+
+    /**
+     * Retrieves objects from a cache collection.
+     *
+     * @param array      $filter         The mongoDB query to filter with.
+     * @param array|null $options        Options like 'limit', 'skip' & 'sort' for the mongoDB->find query.
+     * @param array      $completeFilter The completeFilter query, unchanged, as used on the request.
+     *
+     * @return array|int $this->handleResultPagination() array with objects and pagination.
+     */
+    public function retrieveObjectsFromCache(array $filter, ?array $options = null, array $completeFilter = []): array
+    {
+        $filter = $this->addOwnerOrgFilter($filter);
+
+        $this->session->set('mongoDBFilter', $filter);
+
         $collection = $this->client->objects->json;
         $results    = $collection->find($filter, $options)->toArray();
-        $total      = $collection->count($filter);
+        $total      = $this->countObjectsInCache($filter);
+
+        $results = $collection->find($filter, $options)->toArray();
 
         return $this->handleResultPagination($completeFilter, $results, $total);
 
@@ -848,12 +907,12 @@ class CacheService
      * Searches the object store for objects containing the search string.
      *
      * @param string|null $search   a string to search for within the given context
-     * @param array       $filter   an array of dot.notation filters for wich to search with
+     * @param array       $filter   an array of dot.notation filters for which to search with
      * @param array       $entities schemas to limit te search to
      *
      * @throws Exception
      *
-     * @return array
+     * @return array The objects found
      */
     public function searchObjects(string $search = null, array $filter = [], array $entities = []): array
     {
@@ -875,13 +934,71 @@ class CacheService
         $this->setPagination($limit, $start, $completeFilter);
 
         // Order.
-        $order                                                   = isset($completeFilter['_order']) === true ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
-        empty($order) === false && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
+        $order = isset($completeFilter['_order']) === true ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
+        if (empty($order) === false) {
+            $order = array_map(
+                function ($value) {
+                    return (int) $value;
+                },
+                $order
+            );
+        }
 
         // Find / Search.
         return $this->retrieveObjectsFromCache($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order], $completeFilter);
 
     }//end searchObjects()
+
+    /**
+     * Counts objects in a cache collection.
+     *
+     * @param array $filter The mongoDB query to filter with.
+     *
+     * @return int The amount of objects counted.
+     */
+    public function countObjectsInCache(array $filter): int
+    {
+        $filter = $this->addOwnerOrgFilter($filter);
+
+        $this->session->set('mongoDBFilter', $filter);
+
+        $collection = $this->client->objects->json;
+        return $collection->count($filter);
+
+    }//end countObjectsInCache()
+
+    /**
+     * Counts objects found with the given search/filter parameters.
+     *
+     * @param string|null $search   a string to search for within the given context
+     * @param array       $filter   an array of dot.notation filters for which to search with
+     * @param array       $entities schemas to limit te search to
+     *
+     * @throws Exception
+     *
+     * @return int
+     */
+    public function countObjects(string $search = null, array $filter = [], array $entities = []): int
+    {
+        // Backwards compatablity.
+        if (isset($this->client) === false) {
+            return 0;
+        }
+
+        $completeFilter = [];
+        $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
+        if ($filterParse !== null) {
+            $this->logger->error($filterParse);
+            return 0;
+        }
+
+        // Let's see if we need a search
+        $this->handleSearch($filter, $completeFilter, $search);
+
+        // Find / Search.
+        return $this->countObjectsInCache($filter);
+
+    }//end countObjects()
 
     /**
      * Creates an aggregation of results for possible query parameters
@@ -895,6 +1012,10 @@ class CacheService
      */
     public function aggregateQueries(array $filter, array $entities)
     {
+        if (isset($filter['_queries']) === false) {
+            return [];
+        }
+
         $queries = $filter['_queries'];
 
         if (is_array($queries) === false) {

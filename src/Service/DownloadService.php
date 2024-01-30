@@ -73,31 +73,36 @@ class DownloadService
     /**
      * Renders a pdf.
      *
-     * @param array $data The data to render.
+     * @param array       $data        The data to render.
+     * @param string|null $templateRef The templateRef.
      *
      * @return string The content rendered.
      */
-    public function render(array $data): string
+    public function render(array $data, ?string $templateRef = null): string
     {
         if (isset($data['_self']['schema']['id']) === false && isset($data['message']) !== false) {
             return "<html><body><h1>{$data['message']}</h1></body></html>";
         }
 
-        $criteria = Criteria::create()->where(Criteria::expr()->memberOf("supportedSchemas", $data['_self']['schema']['id']));
+        if (isset($templateRef) === true) {
+            $template = $this->entityManager->getRepository('App:Template')->findOneBy(['reference' => $templateRef]);
+        } else {
+            $criteria = Criteria::create()->where(Criteria::expr()->memberOf("supportedSchemas", $data['_self']['schema']['id']));
 
-        $templates = new ArrayCollection($this->entityManager->getRepository('App:Template')->findAll());
-        $templates = $templates->matching($criteria);
+            $templates = new ArrayCollection($this->entityManager->getRepository('App:Template')->findAll());
+            $templates = $templates->matching($criteria);
 
-        if ($templates->count() === 0) {
-            $this->logger->error('There is no render template for this type of object.');
-            throw new BadRequestException('There is no render template for this type of object.', 406);
-        } else if ($templates->count() > 1) {
-            $this->logger->warning('There are more than 1 templates for this object, resolving by rendering the first template found.');
-        }
+            if ($templates->count() === 0) {
+                $this->logger->error('There is no render template for this type of object.');
+                throw new BadRequestException('There is no render template for this type of object.', 406);
+            } else if ($templates->count() > 1) {
+                $this->logger->warning('There are more than 1 templates for this object, resolving by rendering the first template found.');
+            }
 
-        $template = $templates[0];
-        if ($template instanceof Template !== true) {
-            return '';
+            $template = $templates->first();
+            if ($template instanceof Template !== true) {
+                return '';
+            }
         }
 
         $twigTemplate = $this->twig->createTemplate($template->getContent());
@@ -174,13 +179,14 @@ class DownloadService
     /**
      * Downloads a pdf.
      *
-     * @param array $data The data to render for this pdf.
+     * @param array       $data        The data to render for this pdf.
+     * @param string|null $templateRef The templateRef.
      *
      * @return string The pdf as string output.
      */
-    public function downloadPdf(array $data): string
+    public function downloadPdf(array $data, ?string $templateRef = null): string
     {
-        $raw = $this->render($data);
+        $raw = $this->render($data, $templateRef);
 
         $pdfWriter = new Dompdf();
         $pdfWriter->setPaper('A4', 'portrait');

@@ -109,7 +109,7 @@ class NotificationServiceTest extends TestCase
         $schema          = $this->createMock(Entity::class);
 
         $this->resourceService->expects($this->once())
-            ->method('findSourcesForUrl')
+            ->method('findSourceForUrl')
             ->with($data['url'])
             ->willReturn([$source]);
 
@@ -161,7 +161,7 @@ class NotificationServiceTest extends TestCase
         $source          = $this->createMock(Source::class);
 
         $this->resourceService->expects($this->once())
-            ->method('findSourcesForUrl')
+            ->method('findSourceForUrl')
             ->with($data['url'])
             ->willReturn([$source]);
 
@@ -201,7 +201,7 @@ class NotificationServiceTest extends TestCase
         $url = 'http://example.com/object/123';
 
         $this->resourceService->expects($this->once())
-            ->method('findSourcesForUrl')
+            ->method('findSourceForUrl')
             ->with($url, 'commongateway/corebundle')
             ->willReturn([]);
 
@@ -227,7 +227,7 @@ class NotificationServiceTest extends TestCase
         $sources = [$this->createMock(Source::class), $this->createMock(Source::class)];
 
         $this->resourceService->expects($this->once())
-            ->method('findSourcesForUrl')
+            ->method('findSourceForUrl')
             ->with($url, 'commongateway/corebundle')
             ->willReturn($sources);
 
@@ -254,7 +254,7 @@ class NotificationServiceTest extends TestCase
         $sources = [$source];
 
         $this->resourceService->expects($this->once())
-            ->method('findSourcesForUrl')
+            ->method('findSourceForUrl')
             ->with($url, 'commongateway/corebundle')
             ->willReturn($sources);
 

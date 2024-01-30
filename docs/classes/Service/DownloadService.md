@@ -137,7 +137,7 @@ Downloads a html.
 **Description**
 
 ```php
-public downloadPdf (array $data)
+public downloadPdf (array $data, string|null $templateRef)
 ```
 
 Downloads a pdf. 
@@ -148,6 +148,8 @@ Downloads a pdf.
 
 * `(array) $data`
 : The data to render for this pdf.  
+* `(string|null) $templateRef`
+: The templateRef.  
 
 **Return Values**
 
@@ -193,7 +195,7 @@ The method then streams this spreadsheet as a downloadable XLSX file to the clie
 **Description**
 
 ```php
-public render (array $data)
+public render (array $data, string|null $templateRef)
 ```
 
 Renders a pdf. 
@@ -204,6 +206,8 @@ Renders a pdf.
 
 * `(array) $data`
 : The data to render.  
+* `(string|null) $templateRef`
+: The templateRef.  
 
 **Return Values**
 

@@ -5,6 +5,7 @@ namespace CommonGateway\CoreBundle\Service;
 use Adbar\Dot;
 use App\Entity\Mapping;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\SyntaxError;
@@ -23,21 +24,39 @@ use Twig\Error\SyntaxError;
 class MappingService
 {
 
-    // Add symfony style bundle in order to output to the console.
+    /**
+     * Add symfony style bundle in order to output to the console.
+     *
+     * @var SymfonyStyle
+     */
     private SymfonyStyle $style;
 
-    // Create a private variable to store the twig environment.
+    /**
+     * Create a private variable to store the twig environment.
+     *
+     * @var Environment
+     */
     private Environment $twig;
+
+    /**
+     * The current session.
+     *
+     * @var SessionInterface $session
+     */
+    private SessionInterface $session;
 
     /**
      * Setting up the base class with required services.
      *
-     * @param Environment $twig
+     * @param Environment      $twig    The twig environment
+     * @param SessionInterface $session The current session
      */
     public function __construct(
-        Environment $twig
+        Environment $twig,
+        SessionInterface $session
     ) {
-        $this->twig = $twig;
+        $this->twig    = $twig;
+        $this->session = $session;
 
     }//end __construct()
 
@@ -96,6 +115,8 @@ class MappingService
      */
     public function mapping(Mapping $mappingObject, array $input, bool $list = false): array
     {
+        $this->session->set('mapping', $mappingObject->getId()->toString());
+
         // Check for list
         if ($list === true) {
             $list        = [];
@@ -221,7 +242,6 @@ class MappingService
     {
         $value = $dotArray->get($key);
 
-        // Todo: This works, we should go to php 8.0 later.
         if (str_starts_with($cast, 'unsetIfValue==') === true) {
             $unsetIfValue = substr($cast, 14);
             $cast         = 'unsetIfValue';
@@ -305,7 +325,12 @@ class MappingService
             if (isset($unsetIfValue) === true
                 && $value == $unsetIfValue
                 || ($unsetIfValue === '' && empty($value))
+                || ($unsetIfValue === '' && $value === null)
             ) {
+                $dotArray->delete($key);
+            }
+
+            if ($unsetIfValue === '' && is_array($value) === true && $this->areAllArrayKeysNull($value) === true) {
                 $dotArray->delete($key);
             }
             break;
@@ -318,6 +343,14 @@ class MappingService
                 $value = count($dotArray->get($countValue));
             }
             break;
+        case 'moneyStringToInt':
+            $value = str_replace('.', '', $value);
+            $value = (int) str_replace(',', '', $value);
+            break;
+        case 'intToMoneyString':
+            $value = ($value / 100);
+            $value = number_format($value, 2, '.', ',');
+            break;
         default:
             isset($this->style) === true && $this->style->info('Trying to cast to an unsupported cast type: '.$cast);
             break;
@@ -329,6 +362,33 @@ class MappingService
         }
 
     }//end handleCast()
+
+    /**
+     * Checks if all keys in multi-dimensional array are null.
+     *
+     * @param array $array Array to check.
+     *
+     * @return bool True if array keys are null else false.
+     */
+    private function areAllArrayKeysNull(array $array): bool
+    {
+        if (empty($array) === true) {
+            return true;
+        }
+
+        foreach ($array as $value) {
+            if (is_array($value) === true) {
+                if ($this->areAllArrayKeysNull($value) === false) {
+                    return false;
+                }
+            } else if (empty($value) === false) {
+                return false;
+            }
+        }
+
+        return true;
+
+    }//end areAllArrayKeysNull()
 
     /**
      * Converts a coordinate string to an array of coordinates.
