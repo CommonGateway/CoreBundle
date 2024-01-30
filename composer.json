@@ -36,7 +36,7 @@
     "doctrine/annotations": "^1.0",
     "doctrine/doctrine-bundle": "^2.4",
     "doctrine/doctrine-migrations-bundle": "^3.1",
-    "doctrine/orm": "^2.9",
+    "doctrine/orm": "^2.17",
     "dompdf/dompdf": "^2",
     "endroid/qr-code-bundle": "3.4",
     "guzzlehttp/guzzle": "6.5.8",
