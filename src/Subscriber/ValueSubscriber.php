@@ -22,27 +22,33 @@ class ValueSubscriber implements EventSubscriberInterface
 {
 
     /**
-     * @var MessageBusInterface The message bus
+     * @var MessageBusInterface The message bus.
      */
     private MessageBusInterface $messageBus;
 
     /**
-     * The current session.
-     *
-     * @var SessionInterface $session
+     * @var SessionInterface $session The current session.
      */
     private SessionInterface $session;
+    
+    /**
+     * @var LoggerInterface The logger.
+     */
+    private LoggerInterface $logger;
 
     /**
-     * @param MessageBusInterface $messageBus
-     * @param SessionInterface    $session
+     * @param MessageBusInterface $messageBus   The message bus.
+     * @param SessionInterface    $session      The current session.
+     * @param LoggerInterface     $objectLogger The logger.
      */
     public function __construct(
         MessageBusInterface $messageBus,
-        SessionInterface $session
+        SessionInterface $session,
+        LoggerInterface $objectLogger
     ) {
         $this->messageBus = $messageBus;
         $this->session    = $session;
+        $this->logger     = $objectLogger;
 
     }//end __construct()
 
@@ -79,6 +85,7 @@ class ValueSubscriber implements EventSubscriberInterface
             try {
                 $this->messageBus->dispatch(new ValueMessage($this->session, $value->getObject()->getId()));
             } catch (\Exception $exception) {
+                $this->logger->error("Error when trying to create a ValueMessage for Value {$value->getObject()->getId()}: ".$exception->getMessage());
             }
         }//end if
 
