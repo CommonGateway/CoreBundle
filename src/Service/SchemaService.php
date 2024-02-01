@@ -28,13 +28,13 @@ class SchemaService
 
     /**
      * @param EntityManagerInterface $entityManager The entity manager.
-     * @param LoggerInterface $schemaLogger The schema logger.
+     * @param LoggerInterface        $schemaLogger  The schema logger.
      */
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         LoggerInterface $schemaLogger
     ) {
-        $this->logger        = $schemaLogger;
+        $this->logger = $schemaLogger;
 
     }//end __construct()
 

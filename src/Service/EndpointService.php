@@ -53,11 +53,11 @@ class EndpointService
     /**
      * The constructor sets al needed variables.
      *
-     * @param EntityManagerInterface $entityManager The enitymanger
-     * @param RequestService $requestService The request service
+     * @param EntityManagerInterface   $entityManager   The enitymanger
+     * @param RequestService           $requestService  The request service
      * @param EventDispatcherInterface $eventDispatcher The event dispatcher
-     * @param RequestStack $requestStack The request stack
-     * @param LoggerInterface $endpointLogger The endpoint logger.
+     * @param RequestStack             $requestStack    The request stack
+     * @param LoggerInterface          $endpointLogger  The endpoint logger.
      */
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
@@ -66,8 +66,8 @@ class EndpointService
         RequestStack $requestStack,
         LoggerInterface $endpointLogger
     ) {
-        $this->session         = $requestStack->getSession();
-        $this->logger          = $endpointLogger;
+        $this->session = $requestStack->getSession();
+        $this->logger  = $endpointLogger;
 
     }//end __construct()
 

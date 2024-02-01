@@ -40,6 +40,7 @@ use Symfony\Component\Serializer\Serializer;
  */
 class RequestService
 {
+
     /**
      * @var LoggerInterface The request logger.
      */
@@ -49,7 +50,6 @@ class RequestService
      * @var SessionInterface The current session.
      */
     private SessionInterface $session;
-
 
     /**
      * @var array
@@ -72,11 +72,9 @@ class RequestService
     private string $identification;
 
     /**
-     * @var Entity|bool $schema
+     * @var Entity|boolean $schema
      */
     private Entity|bool $schema;
-
-
 
     /**
      * The constructor sets al needed variables.
@@ -114,8 +112,8 @@ class RequestService
         private readonly DownloadService $downloadService,
         RequestStack $requestStack
     ) {
-        $this->session           = $requestStack->getSession();
-        $this->logger            = $requestLogger;
+        $this->session = $requestStack->getSession();
+        $this->logger  = $requestLogger;
 
     }//end __construct()
 

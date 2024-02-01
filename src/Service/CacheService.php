@@ -60,24 +60,24 @@ class CacheService
     private SessionInterface $session;
 
     /**
-     * @param EntityManagerInterface $entityManager The entity manager
-     * @param CacheInterface $cache The cache interface
-     * @param LoggerInterface $cacheLogger The logger for the cache channel.
-     * @param ParameterBagInterface $parameters The Parameter bag
-     * @param SerializerInterface $serializer The serializer
-     * @param ObjectEntityService $objectEntityService The Object Entity Service.
-     * @param RequestStack $requestStack The request stack.
+     * @param EntityManagerInterface $entityManager       The entity manager
+     * @param CacheInterface         $cache               The cache interface
+     * @param LoggerInterface        $cacheLogger         The logger for the cache channel.
+     * @param ParameterBagInterface  $parameters          The Parameter bag
+     * @param SerializerInterface    $serializer          The serializer
+     * @param ObjectEntityService    $objectEntityService The Object Entity Service.
+     * @param RequestStack           $requestStack        The request stack.
      */
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        LoggerInterface                         $cacheLogger,
-        private readonly ParameterBagInterface  $parameters,
-        private readonly SerializerInterface    $serializer,
-        private readonly ObjectEntityService    $objectEntityService,
-        RequestStack                            $requestStack
+        LoggerInterface $cacheLogger,
+        private readonly ParameterBagInterface $parameters,
+        private readonly SerializerInterface $serializer,
+        private readonly ObjectEntityService $objectEntityService,
+        RequestStack $requestStack
     ) {
-        $this->logger              = $cacheLogger;
-        $this->session             = $requestStack->getSession();
+        $this->logger  = $cacheLogger;
+        $this->session = $requestStack->getSession();
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }

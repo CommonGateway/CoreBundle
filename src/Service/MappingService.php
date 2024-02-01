@@ -42,7 +42,7 @@ class MappingService
     /**
      * Setting up the base class with required services.
      *
-     * @param Environment      $twig    The twig environment
+     * @param Environment      $twig         The twig environment
      * @param SessionInterface $requestStack The current session
      */
     public function __construct(

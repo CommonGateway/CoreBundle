@@ -52,12 +52,12 @@ class CallService
     /**
      * The constructor sets al needed variables.
      *
-     * @param AuthenticationService $authenticationService The authentication service
-     * @param EntityManagerInterface $entityManager The entity manager
-     * @param FileService $fileService The file service
-     * @param MappingService $mappingService The mapping service
-     * @param RequestStack $requestStack The request stack.
-     * @param LoggerInterface $callLogger The logger for the call channel.
+     * @param AuthenticationService  $authenticationService The authentication service
+     * @param EntityManagerInterface $entityManager         The entity manager
+     * @param FileService            $fileService           The file service
+     * @param MappingService         $mappingService        The mapping service
+     * @param RequestStack           $requestStack          The request stack.
+     * @param LoggerInterface        $callLogger            The logger for the call channel.
      */
     public function __construct(
         private readonly AuthenticationService $authenticationService,
@@ -67,8 +67,8 @@ class CallService
         RequestStack $requestStack,
         private readonly LoggerInterface $callLogger
     ) {
-        $this->client                = new Client([]);
-        $this->session               = $requestStack->getSession();
+        $this->client  = new Client([]);
+        $this->session = $requestStack->getSession();
 
     }//end __construct()
 
