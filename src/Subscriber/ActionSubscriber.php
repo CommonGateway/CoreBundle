@@ -4,6 +4,7 @@ namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Event\ActionEvent;
 use CommonGateway\CoreBundle\Service\ActionService;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 
 class ActionSubscriber implements EventSubscriberInterface
