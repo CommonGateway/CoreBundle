@@ -16,7 +16,7 @@ use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Factory;
 use Respect\Validation\Rules;
 use Respect\Validation\Validator;
-use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
+use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

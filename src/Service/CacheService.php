@@ -16,7 +16,7 @@ use MongoDB\Client;
 use MongoDB\Collection;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
-use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
+use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
