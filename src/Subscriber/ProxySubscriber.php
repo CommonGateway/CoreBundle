@@ -2,7 +2,7 @@
 
 namespace CommonGateway\CoreBundle\Subscriber;
 
-use ApiPlatform\Core\EventListener\EventPriorities;
+use ApiPlatform\Symfony\EventListener\EventPriorities;
 use App\Entity\Gateway as Source;
 use CommonGateway\CoreBundle\Service\CallService;
 use CommonGateway\CoreBundle\Service\RequestService;

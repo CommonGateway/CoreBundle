@@ -2,7 +2,7 @@
 
 namespace CommonGateway\CoreBundle\Subscriber;
 
-use ApiPlatform\Core\EventListener\EventPriorities;
+use ApiPlatform\Symfony\EventListener\EventPriorities;
 use App\Service\GatewayService;
 use Exception;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;

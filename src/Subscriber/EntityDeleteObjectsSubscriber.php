@@ -2,7 +2,7 @@
 
 namespace CommonGateway\CoreBundle\Subscriber;
 
-use ApiPlatform\Core\EventListener\EventPriorities;
+use ApiPlatform\Symfony\EventListener\EventPriorities;
 use App\Entity\Entity;
 use CommonGateway\CoreBundle\Service\EavService;
 use Doctrine\ORM\EntityManagerInterface;
