@@ -50,15 +50,15 @@ class ActionService
      */
     public function __construct(
         private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly EntityManagerInterface   $entityManager,
-        RequestStack                              $requestStack,
-        Kernel                                    $kernel,
-        LoggerInterface                           $actionLogger,
-        private readonly MessageBusInterface      $messageBus
+        private readonly EntityManagerInterface $entityManager,
+        RequestStack $requestStack,
+        Kernel $kernel,
+        LoggerInterface $actionLogger,
+        private readonly MessageBusInterface $messageBus
     ) {
-        $this->session = $requestStack->getSession;
-        $this->logger           = $actionLogger;
-        $this->container        = $kernel->getContainer;
+        $this->session   = $requestStack->getSession;
+        $this->logger    = $actionLogger;
+        $this->container = $kernel->getContainer;
 
     }//end __construct()
 
@@ -421,9 +421,7 @@ class ActionService
         // else if (isset($this->io)) {
         // $this->io->text("Finished handling the Action {$action->getName()} that matched the 'sub'-ActionEvent data");
         // }
-
     }//end handleActionIoFinish()
-
 
     /**
      * If we got here through CronjobCommand, write user feedback to $this->io before handling Actions.
@@ -510,5 +508,4 @@ class ActionService
         return $event;
 
     }//end handleEvent()
-
 }//end class

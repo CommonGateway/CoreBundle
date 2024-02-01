@@ -26,7 +26,6 @@ use Symfony\Component\Messenger\MessageBusInterface;
 
 class ActionSubscriber implements EventSubscriberInterface
 {
-
     /**
      * @inheritDoc
      */
@@ -65,6 +64,4 @@ class ActionSubscriber implements EventSubscriberInterface
         return $this->actionService->handleEvent($event);
 
     }//end handleEvent()
-
-
 }//end class
