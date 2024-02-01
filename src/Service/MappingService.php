@@ -102,14 +102,14 @@ class MappingService
         return $result;
 
     }//end encodeArrayKeys()
-    
+
     /**
      * Turns all values that are BSONDocument to normal arrays.
      *
      * Make sure we don't have BSONDocument (MongoDB) in our input.
-     * 
+     *
      * @param mixed $inputValue A value from the input array (or the input if it's the first iteration).
-     * 
+     *
      * @return mixed $inputValue
      */
     private function bsonDocumentToArray($inputValue)
