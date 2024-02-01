@@ -13,6 +13,7 @@ use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Response;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
@@ -32,39 +33,14 @@ class CallService
 {
 
     /**
-     * @var AuthenticationService $authenticationService
-     */
-    private AuthenticationService $authenticationService;
-
-    /**
      * @var Client $client
      */
     private Client $client;
 
     /**
-     * @var EntityManagerInterface $entityManager
-     */
-    private EntityManagerInterface $entityManager;
-
-    /**
-     * @var FileService $fileService
-     */
-    private FileService $fileService;
-
-    /**
-     * @var MappingService $mappingService
-     */
-    private MappingService $mappingService;
-
-    /**
      * @var SessionInterface $session
      */
     private SessionInterface $session;
-
-    /**
-     * @var LoggerInterface $callLogger
-     */
-    private LoggerInterface $callLogger;
 
     /**
      * The source currently used for doing calls.
@@ -76,28 +52,23 @@ class CallService
     /**
      * The constructor sets al needed variables.
      *
-     * @param AuthenticationService  $authenticationService The authentication service
-     * @param EntityManagerInterface $entityManager         The entity manager
-     * @param FileService            $fileService           The file service
-     * @param MappingService         $mappingService        The mapping service
-     * @param SessionInterface       $session               The current session.
-     * @param LoggerInterface        $callLogger            The logger for the call channel.
+     * @param AuthenticationService $authenticationService The authentication service
+     * @param EntityManagerInterface $entityManager The entity manager
+     * @param FileService $fileService The file service
+     * @param MappingService $mappingService The mapping service
+     * @param RequestStack $requestStack The request stack.
+     * @param LoggerInterface $callLogger The logger for the call channel.
      */
     public function __construct(
-        AuthenticationService $authenticationService,
-        EntityManagerInterface $entityManager,
-        FileService $fileService,
-        MappingService $mappingService,
-        SessionInterface $session,
-        LoggerInterface $callLogger
+        private readonly AuthenticationService $authenticationService,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly FileService $fileService,
+        private readonly MappingService $mappingService,
+        RequestStack $requestStack,
+        private readonly LoggerInterface $callLogger
     ) {
-        $this->authenticationService = $authenticationService;
         $this->client                = new Client([]);
-        $this->entityManager         = $entityManager;
-        $this->fileService           = $fileService;
-        $this->mappingService        = $mappingService;
-        $this->session               = $session;
-        $this->callLogger            = $callLogger;
+        $this->session               = $requestStack->getSession();
 
     }//end __construct()
 

@@ -6,6 +6,7 @@ use App\Entity\ObjectEntity;
 use App\Entity\Organization;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -22,20 +23,6 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 class ObjectEntityService
 {
-
-    /**
-     * The entity manager.
-     *
-     * @var EntityManagerInterface
-     */
-    private EntityManagerInterface $entityManager;
-
-    /**
-     * Security for getting the current user.
-     *
-     * @var Security
-     */
-    private Security $security;
 
     /**
      * The current session.
@@ -57,16 +44,14 @@ class ObjectEntityService
     /**
      * @param EntityManagerInterface $entityManager The entity manager
      * @param Security               $security      Security for getting the current user
-     * @param SessionInterface       $session       The current session.
+     * @param SessionInterface       $requestStack       The current session.
      */
     public function __construct(
-        EntityManagerInterface $entityManager,
-        Security $security,
-        SessionInterface $session
+        private readonly EntityManagerInterface $entityManager,
+        private readonly Security $security,
+        RequestStack $requestStack
     ) {
-        $this->entityManager = $entityManager;
-        $this->security      = $security;
-        $this->session       = $session;
+        $this->session       = $requestStack->getSession();
 
     }//end __construct()
     

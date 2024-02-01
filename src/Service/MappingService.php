@@ -5,6 +5,7 @@ namespace CommonGateway\CoreBundle\Service;
 use Adbar\Dot;
 use App\Entity\Mapping;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Twig\Environment;
 use Twig\Error\LoaderError;
@@ -32,13 +33,6 @@ class MappingService
     private SymfonyStyle $style;
 
     /**
-     * Create a private variable to store the twig environment.
-     *
-     * @var Environment
-     */
-    private Environment $twig;
-
-    /**
      * The current session.
      *
      * @var SessionInterface $session
@@ -49,14 +43,13 @@ class MappingService
      * Setting up the base class with required services.
      *
      * @param Environment      $twig    The twig environment
-     * @param SessionInterface $session The current session
+     * @param SessionInterface $requestStack The current session
      */
     public function __construct(
-        Environment $twig,
-        SessionInterface $session
+        private readonly Environment $twig,
+        RequestStack $requestStack
     ) {
-        $this->twig    = $twig;
-        $this->session = $session;
+        $this->session = $requestStack->getSession();
 
     }//end __construct()
 

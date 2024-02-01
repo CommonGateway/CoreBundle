@@ -21,6 +21,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\NotAcceptableHttpException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
@@ -39,36 +40,16 @@ use Symfony\Component\Serializer\Serializer;
  */
 class RequestService
 {
+    /**
+     * @var LoggerInterface The request logger.
+     */
+    private LoggerInterface $logger;
 
     /**
-     * @var EntityManagerInterface
+     * @var SessionInterface The current session.
      */
-    private EntityManagerInterface $entityManager;
+    private SessionInterface $session;
 
-    /**
-     * @var CacheService
-     */
-    private CacheService $cacheService;
-
-    /**
-     * @var GatewayResourceService
-     */
-    private GatewayResourceService $resourceService;
-
-    /**
-     * @var MappingService
-     */
-    private MappingService $mappingService;
-
-    /**
-     * @var ValidationService
-     */
-    private ValidationService $validationService;
-
-    /**
-     * @var FileSystemHandleService The fileSystem service
-     */
-    private FileSystemHandleService $fileSystemService;
 
     /**
      * @var array
@@ -91,55 +72,11 @@ class RequestService
     private string $identification;
 
     /**
-     * @var $schema
+     * @var Entity|bool $schema
      */
-    private $schema;
-    // @Todo: cast to Entity|Boolean in php 8.
+    private Entity|bool $schema;
 
-    /**
-     * @var ReadUnreadService
-     */
-    private ReadUnreadService $readUnreadService;
 
-    /**
-     * @var SynchronizationService
-     */
-    private SynchronizationService $syncService;
-
-    /**
-     * @var CallService
-     */
-    private CallService $callService;
-
-    /**
-     * @var Security
-     */
-    private Security $security;
-
-    /**
-     * @var EventDispatcherInterface
-     */
-    private EventDispatcherInterface $eventDispatcher;
-
-    /**
-     * @var SerializerInterface
-     */
-    private SerializerInterface $serializer;
-
-    /**
-     * @var SessionInterface
-     */
-    private SessionInterface $session;
-
-    /**
-     * @var LoggerInterface
-     */
-    private LoggerInterface $logger;
-
-    /**
-     * @var DownloadService
-     */
-    private DownloadService $downloadService;
 
     /**
      * The constructor sets al needed variables.
@@ -156,42 +93,29 @@ class RequestService
      * @param Security                 $security          Security
      * @param EventDispatcherInterface $eventDispatcher   Event dispatcher
      * @param SerializerInterface      $serializer        The serializer
-     * @param SessionInterface         $session           The current session
      * @param LoggerInterface          $requestLogger     The logger interface
      * @param DownloadService          $downloadService   The download service
+     * @param RequestStack             $requestStack      The current request stack.
      */
     public function __construct(
-        EntityManagerInterface $entityManager,
-        GatewayResourceService $resourceService,
-        MappingService $mappingService,
-        ValidationService $validationService,
-        FileSystemHandleService $fileSystemService,
-        CacheService $cacheService,
-        ReadUnreadService $readUnreadService,
-        SynchronizationService $syncService,
-        CallService $callService,
-        Security $security,
-        EventDispatcherInterface $eventDispatcher,
-        SerializerInterface $serializer,
-        SessionInterface $session,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly GatewayResourceService $resourceService,
+        private readonly MappingService $mappingService,
+        private readonly ValidationService $validationService,
+        private readonly FileSystemHandleService $fileSystemService,
+        private readonly CacheService $cacheService,
+        private readonly ReadUnreadService $readUnreadService,
+        private readonly SynchronizationService $syncService,
+        private readonly CallService $callService,
+        private readonly Security $security,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly SerializerInterface $serializer,
         LoggerInterface $requestLogger,
-        DownloadService $downloadService
+        private readonly DownloadService $downloadService,
+        RequestStack $requestStack
     ) {
-        $this->entityManager     = $entityManager;
-        $this->cacheService      = $cacheService;
-        $this->resourceService   = $resourceService;
-        $this->mappingService    = $mappingService;
-        $this->validationService = $validationService;
-        $this->fileSystemService = $fileSystemService;
-        $this->readUnreadService = $readUnreadService;
-        $this->syncService       = $syncService;
-        $this->callService       = $callService;
-        $this->security          = $security;
-        $this->eventDispatcher   = $eventDispatcher;
-        $this->serializer        = $serializer;
-        $this->session           = $session;
+        $this->session           = $requestStack->getSession();
         $this->logger            = $requestLogger;
-        $this->downloadService   = $downloadService;
 
     }//end __construct()
 

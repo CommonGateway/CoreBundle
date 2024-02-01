@@ -20,6 +20,7 @@ use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -44,16 +45,6 @@ class CacheService
     private Client $client;
 
     /**
-     * @var EntityManagerInterface
-     */
-    private EntityManagerInterface $entityManager;
-
-    /**
-     * @var CacheInterface
-     */
-    private CacheInterface $cache;
-
-    /**
      * @var LoggerInterface
      */
     private LoggerInterface $logger;
@@ -64,52 +55,29 @@ class CacheService
     private SymfonyStyle $style;
 
     /**
-     * @var ParameterBagInterface
-     */
-    private ParameterBagInterface $parameters;
-
-    /**
-     * @var SerializerInterface
-     */
-    private SerializerInterface $serializer;
-
-    /**
      * @var SessionInterface $session
      */
     private SessionInterface $session;
 
     /**
-     * Object Entity Service.
-     *
-     * @var ObjectEntityService
-     */
-    private ObjectEntityService $objectEntityService;
-
-    /**
-     * @param EntityManagerInterface $entityManager       The entity manager
-     * @param CacheInterface         $cache               The cache interface
-     * @param LoggerInterface        $cacheLogger         The logger for the cache channel.
-     * @param ParameterBagInterface  $parameters          The Parameter bag
-     * @param SerializerInterface    $serializer          The serializer
-     * @param ObjectEntityService    $objectEntityService The Object Entity Service.
-     * @param SessionInterface       $session             The current session.
+     * @param EntityManagerInterface $entityManager The entity manager
+     * @param CacheInterface $cache The cache interface
+     * @param LoggerInterface $cacheLogger The logger for the cache channel.
+     * @param ParameterBagInterface $parameters The Parameter bag
+     * @param SerializerInterface $serializer The serializer
+     * @param ObjectEntityService $objectEntityService The Object Entity Service.
+     * @param RequestStack $requestStack The request stack.
      */
     public function __construct(
-        EntityManagerInterface $entityManager,
-        CacheInterface $cache,
-        LoggerInterface $cacheLogger,
-        ParameterBagInterface $parameters,
-        SerializerInterface $serializer,
-        ObjectEntityService $objectEntityService,
-        SessionInterface $session
+        private readonly EntityManagerInterface $entityManager,
+        LoggerInterface                         $cacheLogger,
+        private readonly ParameterBagInterface  $parameters,
+        private readonly SerializerInterface    $serializer,
+        private readonly ObjectEntityService    $objectEntityService,
+        RequestStack                            $requestStack
     ) {
-        $this->entityManager       = $entityManager;
-        $this->cache               = $cache;
         $this->logger              = $cacheLogger;
-        $this->parameters          = $parameters;
-        $this->serializer          = $serializer;
-        $this->objectEntityService = $objectEntityService;
-        $this->session             = $session;
+        $this->session             = $requestStack->getSession();
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }

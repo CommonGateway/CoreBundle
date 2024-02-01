@@ -22,28 +22,18 @@ class SchemaService
 {
 
     /**
-     * @var EntityManagerInterface
-     */
-    private EntityManagerInterface $entityManager;
-
-    /**
-     * @var LoggerInterface
+     * @var LoggerInterface The schema logger.
      */
     private LoggerInterface $logger;
 
     /**
-     * @var SessionInterface
-     */
-    private SessionInterface $session;
-
-    /**
-     * @param EntityManagerInterface $entityManager The entity manager
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param LoggerInterface $schemaLogger The schema logger.
      */
     public function __construct(
-        EntityManagerInterface $entityManager,
+        private readonly EntityManagerInterface $entityManager,
         LoggerInterface $schemaLogger
     ) {
-        $this->entityManager = $entityManager;
         $this->logger        = $schemaLogger;
 
     }//end __construct()

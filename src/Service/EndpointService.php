@@ -10,6 +10,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -30,35 +31,18 @@ class EndpointService
 {
 
     /**
-     * @var EntityManagerInterface
-     */
-    private EntityManagerInterface $entityManager;
-
-    /**
      * @var Request
      */
     private Request $request;
 
     /**
-     * @var SerializerInterface
-     */
-    private SerializerInterface $serializer;
-
-    /**
-     * @var RequestService
-     */
-    private RequestService $requestService;
-
-    /**
-     * @var EventDispatcherInterface
-     */
-    private EventDispatcherInterface $eventDispatcher;
-
-    /**
-     * @var SessionInterface
+     * @var SessionInterface The current session.
      */
     private SessionInterface $session;
 
+    /**
+     * @var LoggerInterface The endpoint logger.
+     */
     private LoggerInterface $logger;
 
     /**
@@ -69,26 +53,20 @@ class EndpointService
     /**
      * The constructor sets al needed variables.
      *
-     * @param EntityManagerInterface   $entityManager   The enitymanger
-     * @param SerializerInterface      $serializer      The serializer
-     * @param RequestService           $requestService  The request service
+     * @param EntityManagerInterface $entityManager The enitymanger
+     * @param RequestService $requestService The request service
      * @param EventDispatcherInterface $eventDispatcher The event dispatcher
-     * @param SessionInterface         $session         The current session
-     * @param LoggerInterface          $endpointLogger  The endpoint logger.
+     * @param RequestStack $requestStack The request stack
+     * @param LoggerInterface $endpointLogger The endpoint logger.
      */
     public function __construct(
-        EntityManagerInterface $entityManager,
-        SerializerInterface $serializer,
-        RequestService $requestService,
-        EventDispatcherInterface $eventDispatcher,
-        SessionInterface $session,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly RequestService $requestService,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        RequestStack $requestStack,
         LoggerInterface $endpointLogger
     ) {
-        $this->entityManager   = $entityManager;
-        $this->serializer      = $serializer;
-        $this->requestService  = $requestService;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->session         = $session;
+        $this->session         = $requestStack->getSession();
         $this->logger          = $endpointLogger;
 
     }//end __construct()
