@@ -210,39 +210,39 @@ class EndpointService
         // Determine the accept type.
         $this->logger->debug('Determine accept type from accept header');
         switch ($acceptHeader) {
-            case 'application/pdf':
-                return 'pdf';
-            case 'application/json':
-                return 'json';
-            case 'application/json+hal':
-            case 'application/hal+json':
-                return 'jsonhal';
-            case 'application/json+ld':
-            case 'application/ld+json':
-                return 'jsonld';
-            case 'application/json+fromio':
-            case 'application/formio+json':
-                return 'formio';
-            case 'application/json+schema':
-            case 'application/schema+json':
-                return 'schema';
-            case 'application/json+graphql':
-            case 'application/graphql+json':
-                return 'graphql';
-            case 'text/xml':
-            case 'application/xml':
-                return 'xml';
-            case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-                return 'xlsx';
-            case 'text/csv':
-                return 'csv';
-            case 'text/html':
-                return 'html';
-            case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-                return 'docx';
+        case 'application/pdf':
+            return 'pdf';
+        case 'application/json':
+            return 'json';
+        case 'application/json+hal':
+        case 'application/hal+json':
+            return 'jsonhal';
+        case 'application/json+ld':
+        case 'application/ld+json':
+            return 'jsonld';
+        case 'application/json+fromio':
+        case 'application/formio+json':
+            return 'formio';
+        case 'application/json+schema':
+        case 'application/schema+json':
+            return 'schema';
+        case 'application/json+graphql':
+        case 'application/graphql+json':
+            return 'graphql';
+        case 'text/xml':
+        case 'application/xml':
+            return 'xml';
+        case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+            return 'xlsx';
+        case 'text/csv':
+            return 'csv';
+        case 'text/html':
+            return 'html';
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            return 'docx';
                 break;
-            case 'application/json+aggregations':
-                return 'aggregations';
+        case 'application/json+aggregations':
+            return 'aggregations';
         }//end switch
 
         return null;
@@ -258,9 +258,10 @@ class EndpointService
      */
     public function getAcceptType(?Request $request = null): string
     {
-        if($request === null) {
+        if ($request === null) {
             $request = $this->request;
         }
+
         // Let's first look at the accept header.
         $acceptHeader = $request->headers->get('accept');
 
@@ -295,8 +296,8 @@ class EndpointService
         if (count($pathparts) >= 2) {
             $extension = end($pathparts);
             switch ($extension) {
-                case 'pdf':
-                    return 'pdf';
+            case 'pdf':
+                return 'pdf';
             }//end switch
         }
 
@@ -314,7 +315,7 @@ class EndpointService
      */
     public function decodeBody(?Request $request = null): ?array
     {
-        if($request === null) {
+        if ($request === null) {
             $request = $this->request;
         }
 
@@ -331,14 +332,14 @@ class EndpointService
 
         // Decode the body.
         switch ($contentType) {
-            case 'text/xml':
-            case 'application/xml':
-            case 'xml':
-                $xmlEncoder = new XmlEncoder();
+        case 'text/xml':
+        case 'application/xml':
+        case 'xml':
+            $xmlEncoder = new XmlEncoder();
 
-                return $xmlEncoder->decode($request->getContent(), 'xml');
-            default:
-                return json_decode($request->getContent(), true);
+            return $xmlEncoder->decode($request->getContent(), 'xml');
+        default:
+            return json_decode($request->getContent(), true);
         }//end switch
 
     }//end decodeBody()
@@ -423,10 +424,10 @@ class EndpointService
 
             $filename = null;
             if (preg_match(
-                    '/^(.+); *name="([^"]+)"(; *filename="([^"]+)")?/',
-                    $headers['content-disposition'],
-                    $matches
-                ) === false
+                '/^(.+); *name="([^"]+)"(; *filename="([^"]+)")?/',
+                $headers['content-disposition'],
+                $matches
+            ) === false
             ) {
                 preg_match(
                     '/^(.+); *name=([-+.\w]+)(; *filename=([-+.\w]+))?/',
@@ -441,14 +442,14 @@ class EndpointService
             // Handle your fields here.
             switch ($name) {
                 // This is a file upload.
-                case 'userfile':
-                    file_put_contents($filename, $body);
-                    break;
+            case 'userfile':
+                file_put_contents($filename, $body);
+                break;
 
                 // Default for all other files is to populate $data.
-                default:
-                    $data[$name] = substr($body, 0, (strlen($body) - 2));
-                    break;
+            default:
+                $data[$name] = substr($body, 0, (strlen($body) - 2));
+                break;
             }
         }//end foreach
 
