@@ -6,6 +6,7 @@ use App\Entity\Action;
 use App\Entity\User;
 use App\Event\ActionEvent;
 use App\Exception\AsynchronousException;
+use App\Kernel;
 use App\Message\ActionMessage;
 use App\Service\ObjectEntityService as GatewayObjectEntityService;
 use DateTime;
@@ -61,14 +62,14 @@ class ActionSubscriber implements EventSubscriberInterface
 
     public function __construct(
         EntityManagerInterface     $entityManager,
-        ContainerInterface         $container,
+        Kernel                     $kernel,
         GatewayObjectEntityService $gatewayOEService,
         SessionInterface           $session,
         LoggerInterface            $actionLogger,
         MessageBusInterface        $messageBus
     ) {
         $this->entityManager    = $entityManager;
-        $this->container        = $container;
+        $this->container        = $kernel->getContainer();
         $this->gatewayOEService = $gatewayOEService;
         $this->session          = $session;
         $this->messageBus       = $messageBus;
