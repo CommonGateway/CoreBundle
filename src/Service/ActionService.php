@@ -35,13 +35,13 @@ class ActionService
 
     /**
      * @param EventDispatcherInterface $eventDispatcher The event dispatcher.
-     * @param EntityManagerInterface   $entityManager   The entity manager
+     * @param EntityManagerInterface   $entityManager   The entity manager.
      * @param RequestStack             $requestStack    The request stack.
      */
     public function __construct(
-        private readonly EventDispatcher $eventDispatcher,
-        private readonly EntityManagerInterface $entityManager,
-        RequestStack $requestStack
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly EntityManagerInterface   $entityManager,
+        RequestStack                              $requestStack
     ) {
         $this->session = $requestStack->getSession;
 
