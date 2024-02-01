@@ -40,8 +40,8 @@ class ActionService
      */
     public function __construct(
         private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly EntityManagerInterface   $entityManager,
-        RequestStack                              $requestStack
+        private readonly EntityManagerInterface $entityManager,
+        RequestStack $requestStack
     ) {
         $this->session = $requestStack->getSession;
 
