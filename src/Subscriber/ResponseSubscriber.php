@@ -4,31 +4,26 @@ namespace CommonGateway\CoreBundle\Subscriber;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 class ResponseSubscriber implements EventSubscriberInterface
 {
-
-    /**
-     * @var EntityManagerInterface
-     */
-    private EntityManagerInterface $entityManager;
-
     /**
      * @var SessionInterface
      */
     private SessionInterface $session;
 
     /**
-     * @param EntityManagerInterface $entityManager The entity manager
-     * @param SessionInterface       $session       The sesion interface
+     * @param RequestStack           $requestStack  The current request stack.
      */
-    public function __construct(EntityManagerInterface $entityManager, SessionInterface $session)
+    public function __construct(
+        RequestStack $requestStack
+    )
     {
-        $this->entityManager = $entityManager;
-        $this->session       = $session;
+        $this->session       = $requestStack->getSession();
 
     }//end __construct()
 

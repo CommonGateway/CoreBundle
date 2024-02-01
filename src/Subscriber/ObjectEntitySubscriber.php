@@ -6,6 +6,7 @@ use App\Entity\ObjectEntity;
 use App\Event\ActionEvent;
 use App\Service\ObjectEntityService as GatewayObjectEntityService;
 use CommonGateway\CoreBundle\Message\CacheMessage;
+use CommonGateway\CoreBundle\Service\ActionService;
 use CommonGateway\CoreBundle\Service\AuditTrailService;
 use CommonGateway\CoreBundle\Service\CacheService;
 use CommonGateway\CoreBundle\Service\ObjectEntityService;
@@ -36,53 +37,11 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
 {
 
     /**
-     * (old) Gateway Object Entity Service.
-     *
-     * @var GatewayObjectEntityService
-     */
-    private GatewayObjectEntityService $gatewayOEService;
-
-    /**
-     * Object Entity Service.
-     *
-     * @var ObjectEntityService
-     */
-    private ObjectEntityService $objectEntityService;
-
-    /**
-     * The entity manager.
-     *
-     * @var EntityManagerInterface
-     */
-    private EntityManagerInterface $entityManager;
-
-    /**
      * The logger interface.
      *
      * @var LoggerInterface
      */
     private LoggerInterface $logger;
-
-    /**
-     * The request stack.
-     *
-     * @var RequestStack
-     */
-    private RequestStack $requestStack;
-
-    /**
-     * The cache service.
-     *
-     * @var CacheService
-     */
-    private CacheService $cacheService;
-
-    /**
-     * The Audit Trail service.
-     *
-     * @var AuditTrailService
-     */
-    private AuditTrailService $auditTrailService;
 
     /**
      * The current session.
@@ -92,55 +51,28 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
     private SessionInterface $session;
 
     /**
-     * The message bus.
-     *
-     * @var MessageBusInterface $messageBus
-     */
-    private MessageBusInterface $messageBus;
-
-    /**
-     * Event Dispatcher.
-     *
-     * @var EventDispatcherInterface $eventDispatcher
-     */
-    private EventDispatcherInterface $eventDispatcher;
-
-    /**
      * The constructor sets al needed variables.
      *
-     * @param GatewayObjectEntityService $gatewayOEService    The (old) Gateway Object Entity Service.
-     * @param ObjectEntityService        $objectEntityService The Object Entity Service.
-     * @param EntityManagerInterface     $entityManager       The entity manager.
-     * @param LoggerInterface            $pluginLogger        The logger interface.
-     * @param RequestStack               $requestStack        The request stack.
-     * @param CacheService               $cacheService        The cache service.
-     * @param AuditTrailService          $auditTrailService   The Audit Trail service.
-     * @param SessionInterface           $session             The current session.
-     * @param MessageBusInterface        $messageBus          The messageBus for async messages.
-     * @param EventDispatcherInterface   $eventDispatcher     Event Dispatcher.
+     * @param ObjectEntityService      $objectEntityService The Object Entity Service.
+     * @param LoggerInterface          $pluginLogger        The logger interface.
+     * @param RequestStack             $requestStack        The request stack.
+     * @param CacheService             $cacheService        The cache service.
+     * @param AuditTrailService        $auditTrailService   The Audit Trail service.
+     * @param MessageBusInterface      $messageBus          The messageBus for async messages.
+     * @param EventDispatcherInterface $eventDispatcher     Event Dispatcher.
+     * @param ActionService            $actionService       The action service.
      */
     public function __construct(
-        GatewayObjectEntityService $gatewayOEService,
-        ObjectEntityService $objectEntityService,
-        EntityManagerInterface $entityManager,
-        LoggerInterface $pluginLogger,
-        RequestStack $requestStack,
-        CacheService $cacheService,
-        AuditTrailService $auditTrailService,
-        SessionInterface $session,
-        MessageBusInterface $messageBus,
-        EventDispatcherInterface $eventDispatcher
+        private readonly ObjectEntityService      $objectEntityService,
+        LoggerInterface                           $pluginLogger,
+        private readonly RequestStack             $requestStack,
+        private readonly CacheService             $cacheService,
+        private readonly AuditTrailService        $auditTrailService,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly ActionService            $actionService
     ) {
-        $this->gatewayOEService    = $gatewayOEService;
-        $this->objectEntityService = $objectEntityService;
-        $this->entityManager       = $entityManager;
         $this->logger              = $pluginLogger;
-        $this->requestStack        = $requestStack;
-        $this->cacheService        = $cacheService;
-        $this->auditTrailService   = $auditTrailService;
-        $this->session             = $session;
-        $this->messageBus          = $messageBus;
-        $this->eventDispatcher     = $eventDispatcher;
+        $this->session             = $requestStack->getSession();
 
     }//end __construct()
 
@@ -413,7 +345,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
             $this->logger->info('Dispatch event with subtype: \'commongateway.object.sync\'');
 
             // Dispatch event.
-            $this->gatewayOEService->dispatchEvent('commongateway.action.event', $data, 'commongateway.object.sync');
+            $this->actionService->dispatchEvent('commongateway.action.event', $data, 'commongateway.object.sync');
         }
 
         // TODO: old DoctrineToGatewayEventSubscriber code: 'Created object in database.'

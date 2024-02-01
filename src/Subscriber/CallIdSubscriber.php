@@ -5,6 +5,7 @@ namespace CommonGateway\CoreBundle\Subscriber;
 use ApiPlatform\Symfony\EventListener\EventPriorities;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -14,9 +15,9 @@ class CallIdSubscriber implements EventSubscriberInterface
 
     private SessionInterface $session;
 
-    public function __construct(SessionInterface $session)
+    public function __construct(RequestStack $requestStack)
     {
-        $this->session = $session;
+        $this->session = $requestStack->getSession();
 
     }//end __construct()
 

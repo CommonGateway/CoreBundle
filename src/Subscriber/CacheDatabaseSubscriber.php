@@ -10,6 +10,7 @@ use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
@@ -22,39 +23,17 @@ use Symfony\Component\Messenger\MessageBusInterface;
  */
 class CacheDatabaseSubscriber implements EventSubscriberInterface
 {
-
-    /**
-     * The CacheService
-     *
-     * @var CacheService $cacheService
-     */
-    private CacheService $cacheService;
-
-    /**
-     * @var EntityManagerInterface $entityManager
-     */
-    private EntityManagerInterface $entityManager;
-
     /**
      * @var SessionInterface $session
      */
     private SessionInterface $session;
 
-    /**
-     * @var MessageBusInterface $messageBus The message bus.
-     */
-    private MessageBusInterface $messageBus;
 
     public function __construct(
-        CacheService $cacheService,
-        EntityManagerInterface $entityManager,
-        SessionInterface $session,
-        MessageBusInterface $messageBus
+        private readonly CacheService $cacheService,
+        RequestStack $requestStack,
     ) {
-        $this->cacheService  = $cacheService;
-        $this->entityManager = $entityManager;
-        $this->session       = $session;
-        $this->messageBus    = $messageBus;
+        $this->session       = $requestStack->getSession();
 
     }//end __construct()
 

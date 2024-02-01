@@ -5,15 +5,14 @@ namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Entity\ObjectEntity;
 use App\Event\ActionEvent;
-use CommonGateway\CoreBundle\Service\CacheService;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
-use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
@@ -30,53 +29,29 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
  */
 class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
 {
-
-    /**
-     * The CacheService
-     *
-     * @var CacheService $cacheService
-     */
-    private CacheService $cacheService;
-
-    /**
-     * @var EntityManagerInterface $entityManager
-     */
-    private EntityManagerInterface $entityManager;
-
     /**
      * @var SessionInterface $session
      */
     private SessionInterface $session;
 
     /**
-     * @var EventDispatcherInterface $eventDispatcher
+     * @var LoggerInterface $logger
      */
-    private EventDispatcherInterface $eventDispatcher;
-
-    /**
-     * @var Logger $logger
-     */
-    private Logger $logger;
+    private LoggerInterface $logger;
 
     /**
      * Load required services, should not be approached directly.
      *
-     * @param CacheService             $cacheService
-     * @param EntityManagerInterface   $entityManager
-     * @param SessionInterface         $session
+     * @param RequestStack             $requestStack
      * @param EventDispatcherInterface $eventDispatcher
      */
     public function __construct(
-        CacheService $cacheService,
-        EntityManagerInterface $entityManager,
-        SessionInterface $session,
-        EventDispatcherInterface $eventDispatcher
+        RequestStack                              $requestStack,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        LoggerInterface                           $objectLogger
     ) {
-        $this->cacheService    = $cacheService;
-        $this->entityManager   = $entityManager;
-        $this->session         = $session;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->logger          = new Logger('object');
+        $this->session         = $requestStack->getSession();
+        $this->logger          = $objectLogger;
 
     }//end __construct()
 
