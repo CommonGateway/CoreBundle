@@ -132,7 +132,8 @@ class MappingService
             foreach ($input as $key => $value) {
                 // Mapping function expects an array for $input, make sure we always pass an array to this function.
                 if (is_array($value) === false || empty($extraValues) === false) {
-                    $value = array_merge(['value' => $value], $extraValues);
+                    // todo: we want to remove ['value' => $value] from this at some point, for now required for DOWR to work
+                    $value = array_merge((array) $value, ['value' => $value], $extraValues);
                 }
 
                 $list[$key] = $this->mapping($mappingObject, $value);
