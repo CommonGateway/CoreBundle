@@ -8,6 +8,7 @@ use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
@@ -23,11 +24,6 @@ class ObjectUriSubscriber implements EventSubscriberInterface
 {
 
     /**
-     * @var ParameterBagInterface
-     */
-    private ParameterBagInterface $parameterBag;
-
-    /**
      * @var SessionInterface
      */
     private SessionInterface $session;
@@ -39,11 +35,10 @@ class ObjectUriSubscriber implements EventSubscriberInterface
      * @param SessionInterface      $session
      */
     public function __construct(
-        ParameterBagInterface $parameterBag,
-        SessionInterface $session
+        private readonly ParameterBagInterface $parameterBag,
+        RequestStack $requestStack
     ) {
-        $this->parameterBag = $parameterBag;
-        $this->session      = $session;
+        $this->session = $requestStack->getSession();
 
     }//end __construct()
 
