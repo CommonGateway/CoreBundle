@@ -23,17 +23,17 @@ use Symfony\Component\Messenger\MessageBusInterface;
  */
 class CacheDatabaseSubscriber implements EventSubscriberInterface
 {
+
     /**
      * @var SessionInterface $session
      */
     private SessionInterface $session;
 
-
     public function __construct(
         private readonly CacheService $cacheService,
         RequestStack $requestStack,
     ) {
-        $this->session       = $requestStack->getSession();
+        $this->session = $requestStack->getSession();
 
     }//end __construct()
 

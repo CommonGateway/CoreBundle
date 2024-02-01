@@ -29,6 +29,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
  */
 class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
 {
+
     /**
      * @var SessionInterface $session
      */
@@ -46,12 +47,12 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
      * @param EventDispatcherInterface $eventDispatcher
      */
     public function __construct(
-        RequestStack                              $requestStack,
+        RequestStack $requestStack,
         private readonly EventDispatcherInterface $eventDispatcher,
-        LoggerInterface                           $objectLogger
+        LoggerInterface $objectLogger
     ) {
-        $this->session         = $requestStack->getSession();
-        $this->logger          = $objectLogger;
+        $this->session = $requestStack->getSession();
+        $this->logger  = $objectLogger;
 
     }//end __construct()
 

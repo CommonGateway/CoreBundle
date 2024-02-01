@@ -11,19 +11,19 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class ResponseSubscriber implements EventSubscriberInterface
 {
+
     /**
      * @var SessionInterface
      */
     private SessionInterface $session;
 
     /**
-     * @param RequestStack           $requestStack  The current request stack.
+     * @param RequestStack $requestStack The current request stack.
      */
     public function __construct(
         RequestStack $requestStack
-    )
-    {
-        $this->session       = $requestStack->getSession();
+    ) {
+        $this->session = $requestStack->getSession();
 
     }//end __construct()
 

@@ -63,16 +63,16 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
      * @param ActionService            $actionService       The action service.
      */
     public function __construct(
-        private readonly ObjectEntityService      $objectEntityService,
-        LoggerInterface                           $pluginLogger,
-        private readonly RequestStack             $requestStack,
-        private readonly CacheService             $cacheService,
-        private readonly AuditTrailService        $auditTrailService,
+        private readonly ObjectEntityService $objectEntityService,
+        LoggerInterface $pluginLogger,
+        private readonly RequestStack $requestStack,
+        private readonly CacheService $cacheService,
+        private readonly AuditTrailService $auditTrailService,
         private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly ActionService            $actionService
+        private readonly ActionService $actionService
     ) {
-        $this->logger              = $pluginLogger;
-        $this->session             = $requestStack->getSession();
+        $this->logger  = $pluginLogger;
+        $this->session = $requestStack->getSession();
 
     }//end __construct()
 
