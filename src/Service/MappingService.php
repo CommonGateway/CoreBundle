@@ -375,7 +375,7 @@ class MappingService
             ) {
                 $value = null;
             }
-            
+
             if ($setNullIfValue === '' && is_array($value) === true && $this->areAllArrayKeysNull($value) === true) {
                 $value = null;
             }
