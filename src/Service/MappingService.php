@@ -275,6 +275,9 @@ class MappingService
         if (str_starts_with($cast, 'unsetIfValue==') === true) {
             $unsetIfValue = substr($cast, 14);
             $cast         = 'unsetIfValue';
+        } else if (str_starts_with($cast, 'setNullIfValue==') === true) {
+            $setNullIfValue = substr($cast, 16);
+            $cast           = 'setNullIfValue';
         } else if (str_starts_with($cast, 'countValue:') === true) {
             $countValue = substr($cast, 11);
             $cast       = 'countValue';
@@ -362,6 +365,19 @@ class MappingService
 
             if ($unsetIfValue === '' && is_array($value) === true && $this->areAllArrayKeysNull($value) === true) {
                 $dotArray->delete($key);
+            }
+            break;
+        case 'setNullIfValue':
+            if (isset($setNullIfValue) === true
+                && $value == $setNullIfValue
+                || ($setNullIfValue === '' && empty($value))
+                || ($setNullIfValue === '' && $value === null)
+            ) {
+                $value = null;
+            }
+            
+            if ($setNullIfValue === '' && is_array($value) === true && $this->areAllArrayKeysNull($value) === true) {
+                $value = null;
             }
             break;
         case 'countValue':
