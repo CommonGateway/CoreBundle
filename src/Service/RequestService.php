@@ -1205,7 +1205,7 @@ class RequestService
         }
 
         // Handle mapping for the result
-        if (isset($appEndpointConfig['out']['body']) === true) {
+        if (isset($appEndpointConfig['out']['body']) === true && (isset($result['message']) === true && $result['message'] !== 'Validation errors' || isset($result['message']) === false)) {
             $result = $this->handleAppEndpointConfig($result, $appEndpointConfig['out']['body']);
         }
 
