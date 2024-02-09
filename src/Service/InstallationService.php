@@ -693,9 +693,11 @@ class InstallationService
 
         if (array_key_exists('version', $schema) === false || $object->getVersion() === null || $object->getVersion() === '0.0.0') {
             if ((array_key_exists('version', $schema) === false || $schema['version'] === '0.0.0')
-                && ($object->getVersion() === null || $object->getVersion() === '0.0.0')) {
+                && ($object->getVersion() === null || $object->getVersion() === '0.0.0')
+            ) {
                 $schema['version'] = '0.0.1';
             }
+
             isset($this->style) === true && $this->style->writeln('The schema doesn\'t have a version number ('.($schema['version'] ?? null).') or the existing object doesn\'t have a version number ('.$object->getVersion().'), the object data is created');
             $this->logger->debug('The schema doesn\'t have a version number or the existing object doesn\'t have a version number, the object data is created', ['schema' => $schema['$id'], 'schemaVersion' => ($schema['version'] ?? null), 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
