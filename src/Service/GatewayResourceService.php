@@ -26,8 +26,6 @@ use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 
 /**
- *
- *
  * This service belongs to the open connector, open services and open registers framework.
  */
 class GatewayResourceService
