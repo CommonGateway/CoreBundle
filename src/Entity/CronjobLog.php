@@ -2,24 +2,24 @@
 
 namespace CommonGateway\CoreBundle\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+
+use ApiPlatform\Metadata\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ApiResource()
- *
- * @ORM\Entity()
- */
+#[
+    ApiResource(),
+    ORM\Entity()
+]
 class CronjobLog
 {
 
-    /**
-     * @ORM\Id
-     *
-     * @ORM\GeneratedValue
-     *
-     * @ORM\Column(type="integer")
-     */
+    #[
+        ORM\Id,
+        ORM\GeneratedValue,
+        ORM\Column(
+            type: 'integer'
+        )
+    ]
     private $id;
 
     /**
