@@ -59,7 +59,8 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         } catch (SessionNotFoundException $exception) {
             $this->session = new Session();
         }
-        $this->logger  = $objectLogger;
+
+        $this->logger = $objectLogger;
 
     }//end __construct()
 

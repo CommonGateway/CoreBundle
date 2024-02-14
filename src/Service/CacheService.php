@@ -80,12 +80,13 @@ class CacheService
         private readonly ObjectEntityService $objectEntityService,
         RequestStack $requestStack
     ) {
-        $this->logger  = $cacheLogger;
+        $this->logger = $cacheLogger;
         try {
             $this->session = $requestStack->getSession();
         } catch (SessionNotFoundException $exception) {
             $this->session = new Session();
         }
+
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }

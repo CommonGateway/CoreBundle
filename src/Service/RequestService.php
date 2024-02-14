@@ -120,7 +120,8 @@ class RequestService
         } catch (SessionNotFoundException $exception) {
             $this->session = new Session();
         }
-        $this->logger  = $requestLogger;
+
+        $this->logger = $requestLogger;
 
     }//end __construct()
 

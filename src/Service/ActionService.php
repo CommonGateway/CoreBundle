@@ -78,6 +78,7 @@ class ActionService
         } catch (SessionNotFoundException $exception) {
             $this->session = new Session();
         }
+
         $this->logger    = $actionLogger;
         $this->container = $kernel->getContainer();
 

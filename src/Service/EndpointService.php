@@ -75,7 +75,8 @@ class EndpointService
         } catch (SessionNotFoundException $exception) {
             $this->session = new Session();
         }
-        $this->logger  = $endpointLogger;
+
+        $this->logger = $endpointLogger;
 
     }//end __construct()
 

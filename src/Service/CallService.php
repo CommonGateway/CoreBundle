@@ -71,7 +71,7 @@ class CallService
         RequestStack $requestStack,
         private readonly LoggerInterface $callLogger
     ) {
-        $this->client  = new Client([]);
+        $this->client = new Client([]);
         try {
             $this->session = $requestStack->getSession();
         } catch (SessionNotFoundException $exception) {

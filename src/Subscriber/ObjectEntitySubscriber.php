@@ -73,7 +73,7 @@ class ObjectEntitySubscriber implements EventSubscriberInterface
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly ActionService $actionService
     ) {
-        $this->logger  = $pluginLogger;
+        $this->logger = $pluginLogger;
 
         try {
             $this->session = $requestStack->getSession();
