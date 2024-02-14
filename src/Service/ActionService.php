@@ -20,7 +20,9 @@ use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Exception\SessionNotFoundException;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
@@ -71,9 +73,13 @@ class ActionService
         LoggerInterface $actionLogger,
         private readonly MessageBusInterface $messageBus
     ) {
-        $this->session   = $requestStack->getSession;
+        try {
+            $this->session = $requestStack->getSession();
+        } catch (SessionNotFoundException $exception) {
+            $this->session = new Session();
+        }
         $this->logger    = $actionLogger;
-        $this->container = $kernel->getContainer;
+        $this->container = $kernel->getContainer();
 
     }//end __construct()
 

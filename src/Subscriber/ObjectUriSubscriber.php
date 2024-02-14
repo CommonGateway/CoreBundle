@@ -8,7 +8,9 @@ use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\Exception\SessionNotFoundException;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
@@ -38,7 +40,12 @@ class ObjectUriSubscriber implements EventSubscriberInterface
         private readonly ParameterBagInterface $parameterBag,
         RequestStack $requestStack
     ) {
-        $this->session = $requestStack->getSession();
+
+        try {
+            $this->session = $requestStack->getSession();
+        } catch (SessionNotFoundException $exception) {
+            $this->session = new Session();
+        }
 
     }//end __construct()
 

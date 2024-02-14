@@ -16,6 +16,8 @@ use MongoDB\Client;
 use MongoDB\Collection;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
+use Symfony\Component\HttpFoundation\Exception\SessionNotFoundException;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -79,7 +81,11 @@ class CacheService
         RequestStack $requestStack
     ) {
         $this->logger  = $cacheLogger;
-        $this->session = $requestStack->getSession();
+        try {
+            $this->session = $requestStack->getSession();
+        } catch (SessionNotFoundException $exception) {
+            $this->session = new Session();
+        }
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }

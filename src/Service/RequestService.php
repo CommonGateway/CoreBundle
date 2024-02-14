@@ -18,6 +18,7 @@ use Exception;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Exception\SessionNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -114,7 +115,11 @@ class RequestService
         private readonly DownloadService $downloadService,
         RequestStack $requestStack
     ) {
-        $this->session = $requestStack->getSession();
+        try {
+            $this->session = $requestStack->getSession();
+        } catch (SessionNotFoundException $exception) {
+            $this->session = new Session();
+        }
         $this->logger  = $requestLogger;
 
     }//end __construct()

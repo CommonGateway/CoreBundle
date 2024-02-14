@@ -5,7 +5,9 @@ namespace CommonGateway\CoreBundle\Service;
 use Adbar\Dot;
 use App\Entity\Mapping;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\HttpFoundation\Exception\SessionNotFoundException;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Twig\Environment;
 use Twig\Error\LoaderError;
@@ -51,7 +53,11 @@ class MappingService
         private readonly Environment $twig,
         RequestStack $requestStack
     ) {
-        $this->session = $requestStack->getSession();
+        try {
+            $this->session = $requestStack->getSession();
+        } catch (SessionNotFoundException $exception) {
+            $this->session = new Session();
+        }
 
     }//end __construct()
 

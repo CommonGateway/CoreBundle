@@ -12,7 +12,9 @@ use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Exception\SessionNotFoundException;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
@@ -51,7 +53,12 @@ class DoctrineToGatewayEventSubscriber implements EventSubscriberInterface
         private readonly EventDispatcherInterface $eventDispatcher,
         LoggerInterface $objectLogger
     ) {
-        $this->session = $requestStack->getSession();
+
+        try {
+            $this->session = $requestStack->getSession();
+        } catch (SessionNotFoundException $exception) {
+            $this->session = new Session();
+        }
         $this->logger  = $objectLogger;
 
     }//end __construct()

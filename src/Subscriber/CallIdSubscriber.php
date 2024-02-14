@@ -5,7 +5,9 @@ namespace CommonGateway\CoreBundle\Subscriber;
 use ApiPlatform\Symfony\EventListener\EventPriorities;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\Exception\SessionNotFoundException;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -17,7 +19,12 @@ class CallIdSubscriber implements EventSubscriberInterface
 
     public function __construct(RequestStack $requestStack)
     {
-        $this->session = $requestStack->getSession();
+
+        try {
+            $this->session = $requestStack->getSession();
+        } catch (SessionNotFoundException $exception) {
+            $this->session = new Session();
+        }
 
     }//end __construct()
 
