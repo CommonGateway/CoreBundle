@@ -28,6 +28,8 @@ use Symfony\Component\Serializer\Encoder\YamlEncoder;
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
  * @category Service
+ *
+ * This service belongs to the open connector framework.
  */
 class CallService
 {

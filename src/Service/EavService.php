@@ -12,6 +12,8 @@ use Doctrine\ORM\EntityManagerInterface;
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
  * @category Service
+ *
+ * This service belongs to the open registers framework.
  */
 class EavService
 {

@@ -20,6 +20,8 @@ use Symfony\Component\HttpFoundation\Response;
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  *
  * @category Service
+ *
+ * This service belongs to the open services framework.
  */
 class NotificationService
 {

@@ -16,6 +16,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  * @category Service
  *
  * See https://prometheus.io/docs/concepts/metric_types/ for mor information about metric types
+ *
+ * This service belongs to the open connector, open services and open registers framework.
  */
 class MetricsService
 {

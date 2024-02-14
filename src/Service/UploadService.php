@@ -25,6 +25,9 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use Symfony\Component\Serializer\Serializer;
 use function Safe\json_decode;
 
+/**
+ * This service belongs to the open services framework.
+ */
 class UploadService
 {
 

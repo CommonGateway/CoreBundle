@@ -24,6 +24,11 @@ use Symfony\Component\Serializer\Encoder\YamlEncoder;
 use Twig\Error\LoaderError;
 use Twig\Error\SyntaxError;
 
+/**
+ *
+ *
+ * This service belongs to the open connector framework.
+ */
 class FileSystemHandleService
 {
 

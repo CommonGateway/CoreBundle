@@ -15,6 +15,8 @@ use Doctrine\ORM\EntityManagerInterface;
  * @license EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
  * @category Service
+ *
+ * This service belongs to the open registers framework.
  */
 class HydrationService
 {

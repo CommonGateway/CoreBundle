@@ -19,6 +19,11 @@ use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
+/**
+ *
+ *
+ * This service belongs to the open registers framework.
+ */
 class ValueService
 {
 
