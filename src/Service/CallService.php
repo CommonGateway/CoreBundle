@@ -487,7 +487,6 @@ class CallService
                     $body = $xmlEncoder->decode($config[$configKey], 'xml');
                 } catch (Exception $exception) {
                     $this->callLogger->error("Could not map with mapping {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source. Body could not be decoded. ".$exception->getMessage());
-                    var_dump('hello darkness my old friend');
                 }
 
                 try {
