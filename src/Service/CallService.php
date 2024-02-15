@@ -12,6 +12,7 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Response;
 use Psr\Log\LoggerInterface;
+use Safe\Exceptions\JsonException;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
@@ -480,7 +481,16 @@ class CallService
 
             if (is_string($config[$configKey]) === true) {
                 try {
-                    $body               = $this->mappingService->mapping($mapping, \Safe\json_decode($config[$configKey], true));
+                    $body = \Safe\json_decode($config[$configKey]);
+                } catch (JsonException $exception) {
+                    $xmlEncoder = new XmlEncoder([]);
+                    $body       = $xmlEncoder->decode($config[$configKey], 'xml');
+                } catch (Exception $exception) {
+                    $this->callLogger->error("Could not map with mapping {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source. Body could not be decoded. ".$exception->getMessage());
+                }
+
+                try {
+                    $body               = $this->mappingService->mapping($mapping, $body);
                     $config[$configKey] = \Safe\json_encode($body);
                 } catch (Exception | LoaderError | SyntaxError $exception) {
                     $this->callLogger->error("Could not map with mapping {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source. ".$exception->getMessage());
