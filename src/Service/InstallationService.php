@@ -650,7 +650,7 @@ class InstallationService
         // $query = explode(',', ltrim($matches[2], '?'));
         // Load it if we have it.
         if (array_key_exists('$id', $schema) === true) {
-            $object = $this->entityManager->getRepository('App:'.$type)->findOneBy(['reference' => $schema['$id']]);
+            $object = $this->entityManager->getRepository('App\\Entity\\'.$type)->findOneBy(['reference' => $schema['$id']]);
         }
 
         // Create it if we don't.
@@ -755,7 +755,7 @@ class InstallationService
      */
     private function loadSchema(array $schema, string $type): ?ObjectEntity
     {
-        $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $type]);
+        $entity = $this->entityManager->getRepository(Entity::class)->findOneBy(['reference' => $type]);
         if ($entity === null) {
             $this->logger->error('trying to create data for non-existing entity', ['reference' => $type]);
 
@@ -763,7 +763,7 @@ class InstallationService
         }
 
         if (array_key_exists('_id', $schema) === true) {
-            $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $schema['_id']]);
+            $object = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['id' => $schema['_id']]);
         }
 
         // Create it if we don't.
@@ -916,7 +916,7 @@ class InstallationService
         $collections = 0;
 
         foreach ($collectionsData as $collectionData) {
-            $collection = $this->entityManager->getRepository('App:CollectionEntity')->findOneBy(['reference' => $collectionData['reference']]);
+            $collection = $this->entityManager->getRepository(CollectionEntity::class)->findOneBy(['reference' => $collectionData['reference']]);
             if ($collection === null) {
                 $this->logger->error('No collection found with this reference: '.$collectionData['reference']);
                 continue;
@@ -948,7 +948,7 @@ class InstallationService
      */
     private function addSchemasToCollection(CollectionEntity $collection, string $schemaPrefix)
     {
-        $entities = $this->entityManager->getRepository('App:Entity')->findByReferencePrefix($schemaPrefix);
+        $entities = $this->entityManager->getRepository(Entity::class)->findByReferencePrefix($schemaPrefix);
         foreach ($entities as $entity) {
             $entity->addCollection($collection);
         }
@@ -998,7 +998,7 @@ class InstallationService
      */
     private function createTemplate(array $templateData): ?Template
     {
-        $repository = $this->entityManager->getRepository('App:Entity');
+        $repository = $this->entityManager->getRepository(Entity::class);
 
         if (isset($templateData['supportedSchemas']) === false) {
             return null;
@@ -1016,17 +1016,17 @@ class InstallationService
         $templateData['supportedSchemas'] = $supportedSchemas;
 
         if (key_exists('organization', $templateData) === true) {
-            $orgRepository = $this->entityManager->getRepository('App:Organization');
+            $orgRepository = $this->entityManager->getRepository(Entity::class);
             $organization  = $this->checkIfObjectExists($orgRepository, $templateData['organization'], 'Organization');
 
             unset($templateData['organization']);
             $templateData['organization'] = $organization;
         } else {
             echo 'setting default organization';
-            $templateData['organization'] = $this->entityManager->getRepository('App:Organization')->find('a1c8e0b6-2f78-480d-a9fb-9792142f4761');
+            $templateData['organization'] = $this->entityManager->getRepository(Organization::class)->find('a1c8e0b6-2f78-480d-a9fb-9792142f4761');
         }
 
-        $template                = $this->entityManager->getRepository('App:Template')->findOneBy(['reference' => $templateData['$id']]);
+        $template                = $this->entityManager->getRepository(Template::class)->findOneBy(['reference' => $templateData['$id']]);
         $templateData['version'] = ($templateData['version'] ?? '0.0.1');
         if ($template !== null && version_compare($templateData['version'], $template->getVersion()) <= 0) {
             if (isset($this->style) === true) {
@@ -1122,9 +1122,9 @@ class InstallationService
     private function createEndpoint(string $type, array $endpointData): ?Endpoint
     {
         if ($type === 'sources') {
-            $repository = $this->entityManager->getRepository('App:Gateway');
+            $repository = $this->entityManager->getRepository(Gateway::class);
         } else {
-            $repository = $this->entityManager->getRepository('App:Entity');
+            $repository = $this->entityManager->getRepository(Entity::class);
         }
 
         if ($type === 'multipleSchemas') {
@@ -1148,7 +1148,7 @@ class InstallationService
             }
         }
 
-        $endpoint                = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $endpointData['$id']]);
+        $endpoint                = $this->entityManager->getRepository(Endpoint::class)->findOneBy(['reference' => $endpointData['$id']]);
         $endpointData['version'] = ($endpointData['version'] ?? '0.0.1');
         if ($endpoint !== null && version_compare($endpointData['version'], $endpoint->getVersion()) <= 0) {
             if (isset($this->style) === true) {
@@ -1311,7 +1311,7 @@ class InstallationService
                 $newEndpoint->removeEntity($removeEntity);
             }
 
-            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $newEndpointData['reference']]);
+            $entity = $this->entityManager->getRepository(Entity::class)->findOneBy(['reference' => $newEndpointData['reference']]);
             if ($entity !== null) {
                 $newEndpoint->addEntity($entity);
             }
@@ -1390,7 +1390,7 @@ class InstallationService
                 continue;
             }
 
-            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $subSchemaEndpointData['reference']]);
+            $entity = $this->entityManager->getRepository(Entity::class)->findOneBy(['reference' => $subSchemaEndpointData['reference']]);
             if ($entity === null) {
                 $this->logger->error('No entity found for '.$subSchemaEndpointData['reference'].' while trying to create a subSchemaEndpoint.');
                 continue;
@@ -1434,7 +1434,7 @@ class InstallationService
         foreach ($handlersData as $handlerData) {
             $actionHandler = $this->container->get($handlerData['actionHandler']);
 
-            $action = $this->entityManager->getRepository('App:Action')->findOneBy(['class' => get_class($actionHandler)]);
+            $action = $this->entityManager->getRepository(Action::class)->findOneBy(['class' => get_class($actionHandler)]);
 
             $blockUpdate            = true;
             $handlerData['version'] = ($handlerData['version'] ?? '0.0.1');
@@ -1505,7 +1505,7 @@ class InstallationService
         $actions = 0;
 
         foreach ($actionRefs as $reference) {
-            $action = $this->entityManager->getRepository('App:Action')->findOneBy(['reference' => $reference]);
+            $action = $this->entityManager->getRepository(Action::class)->findOneBy(['reference' => $reference]);
             if ($action === null) {
                 $this->logger->error('No action found with reference: '.$reference);
                 continue;
@@ -1560,7 +1560,7 @@ class InstallationService
             case 'uuid':
                 if (isset($value['$ref']) === true) {
                     try {
-                        $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $value['$ref']]);
+                        $entity = $this->entityManager->getRepository(Entity::class)->findOneBy(['reference' => $value['$ref']]);
                     } catch (Exception $exception) {
                         $this->logger->error("No entity found with reference {$value['$ref']} (addActionConfiguration() for installation.json)");
                     }
@@ -1595,7 +1595,7 @@ class InstallationService
             }//end if
 
             if ($key == 'entity' && is_string($override) === true && Uuid::isValid($override) === false) {
-                $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $override]);
+                $entity = $this->entityManager->getRepository(Entity::class)->findOneBy(['reference' => $override]);
                 if ($entity === null) {
                     $this->logger->error("No entity found with reference {$override} (overrideConfig() for installation.json)");
                     continue;
@@ -1607,7 +1607,7 @@ class InstallationService
             }//end if
 
             if ($key == 'source' && is_string($override) === true && Uuid::isValid($override) === false) {
-                $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $override]);
+                $source = $this->entityManager->getRepository(Gateway::class)->findOneBy(['reference' => $override]);
                 if ($source === null) {
                     $this->logger->error("No source found with reference {$override} (overrideConfig() for installation.json)");
                     continue;
@@ -1659,14 +1659,14 @@ class InstallationService
         }
 
         foreach ($actions as $reference) {
-            $action = $this->entityManager->getRepository('App:Action')->findOneBy(['reference' => $reference]);
+            $action = $this->entityManager->getRepository(Action::class)->findOneBy(['reference' => $reference]);
 
             if ($action === null) {
                 $this->logger->error('No action found for reference '.$reference);
                 continue;
             }
 
-            $cronjob = $this->entityManager->getRepository('App:Cronjob')->findOneBy(['name' => $action->getName(), 'throws' => [reset($action->getListens()->first())]]);
+            $cronjob = $this->entityManager->getRepository(Cronjob::class)->findOneBy(['name' => $action->getName(), 'throws' => [reset($action->getListens()->first())]]);
             if ($cronjob !== null) {
                 if (isset($this->style) === true) {
                     $this->style->writeLn('Cronjob found for action '.$reference.' with name '.$action->getName().' and throw: '.$action->getListens()->first());
@@ -1704,7 +1704,7 @@ class InstallationService
      */
     private function createApplications(array $applicationsData = []): array
     {
-        $orgRepository = $this->entityManager->getRepository('App:Organization');
+        $orgRepository = $this->entityManager->getRepository(Organization::class);
 
         if (isset($this->style) === true && $applicationsData !== []) {
             $this->style->newline();
@@ -1750,7 +1750,7 @@ class InstallationService
      */
     private function createUsers(array $usersData = []): array
     {
-        $orgRepository = $this->entityManager->getRepository('App:Organization');
+        $orgRepository = $this->entityManager->getRepository(Organization::class);
 
         if (isset($this->style) === true && $usersData !== []) {
             $this->style->newline();
@@ -1804,7 +1804,7 @@ class InstallationService
      */
     private function handleUserGroups(array &$userData): array
     {
-        $repository = $this->entityManager->getRepository('App:SecurityGroup');
+        $repository = $this->entityManager->getRepository(SecurityGroup::class);
 
         $securityGroups = $userData['securityGroups'];
         unset($userData['securityGroups']);
@@ -1839,7 +1839,7 @@ class InstallationService
      */
     private function handleUserApps(array &$userData): array
     {
-        $repository = $this->entityManager->getRepository('App:Application');
+        $repository = $this->entityManager->getRepository(Application::class);
 
         if (isset($userData['applications']) === false) {
             $userData['applications'] = ['https://docs.commongateway.nl/application/default.application.json'];
@@ -1884,41 +1884,35 @@ class InstallationService
             // Let's determine the proper repo to use.
             switch ($type) {
             case 'actions':
-                $repository = $this->entityManager->getRepository('App:Action');
+                $repository = $this->entityManager->getRepository(Action::class);
                 break;
             case 'applications':
-                $repository = $this->entityManager->getRepository('App:Application');
+                $repository = $this->entityManager->getRepository(Application::class);
                 break;
             case 'collections':
-                $repository = $this->entityManager->getRepository('App:CollectionEntity');
+                $repository = $this->entityManager->getRepository(CollectionEntity::class);
                 break;
             case 'cronjobs':
-                $repository = $this->entityManager->getRepository('App:Cronjob');
+                $repository = $this->entityManager->getRepository(Cronjob::class);
                 break;
             case 'endpoints':
-                $repository = $this->entityManager->getRepository('App:Endpoint');
+                $repository = $this->entityManager->getRepository(Endpoint::class);
                 break;
             case 'schemas':
-                $repository = $this->entityManager->getRepository('App:Entity');
+                $repository = $this->entityManager->getRepository(Entity::class);
                 break;
             case 'sources':
-                $repository = $this->entityManager->getRepository('App:Gateway');
+                $repository = $this->entityManager->getRepository(Gateway::class);
                 break;
             case 'mappings':
-                $repository = $this->entityManager->getRepository('App:Mapping');
+                $repository = $this->entityManager->getRepository(Mapping::class);
                 break;
             case 'objects':
-                $repository = $this->entityManager->getRepository('App:ObjectEntity');
+                $repository = $this->entityManager->getRepository(ObjectEntity::class);
                 break;
             case 'organizations':
-                $repository = $this->entityManager->getRepository('App:Organization');
+                $repository = $this->entityManager->getRepository(Organization::class);
                 break;
-                // case 'securityGroups':
-                // $repository = $this->entityManager->getRepository('App:SecurityGroup');
-                // break;
-                // case 'users':
-                // $repository = $this->entityManager->getRepository('App:User');
-                // break;
             default:
                 // We can't do anything so...
                 $this->logger->error('Unknown type used for the creation of a dashboard card: '.$type);
