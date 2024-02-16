@@ -100,7 +100,7 @@ class ProxySubscriber implements EventSubscriberInterface
             return;
         }
 
-        $source = $this->entityManager->getRepository('App:Gateway')->find($event->getRequest()->attributes->get('id'));
+        $source = $this->entityManager->getRepository(Source::class)->find($event->getRequest()->attributes->get('id'));
         if (!$source instanceof Source) {
             return;
         }

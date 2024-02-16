@@ -64,7 +64,7 @@ final class EntityDeleteObjectsSubscriber implements EventSubscriberInterface
         }
 
         // Let's see if we have the proper info on our route.
-        $entity = $this->entityManager->getRepository('App:Entity')->find($event->getRequest()->attributes->get('id'));
+        $entity = $this->entityManager->getRepository(Entity::class)->find($event->getRequest()->attributes->get('id'));
         $method = $event->getRequest()->getMethod();
         if ($entity instanceof Entity === false || $method !== 'POST') {
             return;

@@ -3,6 +3,8 @@
 namespace CommonGateway\CoreBundle\Subscriber;
 
 use ApiPlatform\Symfony\EventListener\EventPriorities;
+use App\Entity\Entity;
+use App\Entity\ObjectEntity;
 use App\Exception\GatewayException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -57,7 +59,7 @@ final class EntityToSchemaSubscriber implements EventSubscriberInterface
             throw new GatewayException('Cannot give a schema if no entity is given');
         }
 
-        if ($objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->find($objectId)) {
+        if ($objectEntity = $this->entityManager->getRepository(ObjectEntity::class)->find($objectId)) {
             $schema = $objectEntity->getEntity()->toSchema($objectEntity);
             if (isset($schema['required']) === false) {
                 $schema['required'] = [];
@@ -66,7 +68,7 @@ final class EntityToSchemaSubscriber implements EventSubscriberInterface
             $event->setResponse(new Response(json_encode($schema), Response::HTTP_OK, ['content-type' => 'application/json+schema']));
         }
 
-        if ($entity = $this->entityManager->getRepository('App:Entity')->find($objectId)) {
+        if ($entity = $this->entityManager->getRepository(Entity::class)->find($objectId)) {
             $schema = $entity->toSchema(null);
             if (isset($schema['required']) === false) {
                 $schema['required'] = [];

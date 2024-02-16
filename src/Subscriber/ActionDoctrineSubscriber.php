@@ -3,6 +3,7 @@
 namespace CommonGateway\CoreBundle\Subscriber;
 
 use ApiPlatform\Symfony\EventListener\EventPriorities;
+use App\Entity\Action;
 use App\Service\ActionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -62,9 +63,9 @@ class ActionDoctrineSubscriber implements EventSubscriberInterface
 
         if ($route == 'api_actions_get_collection') {
             if ($event->getRequest()->query->count() > 0) {
-                $actions = $this->entityManager->getRepository('App:Action')->findBy($event->getRequest()->query->all());
+                $actions = $this->entityManager->getRepository(Action::class)->findBy($event->getRequest()->query->all());
             } else {
-                $actions = $this->entityManager->getRepository('App:Action')->findAll();
+                $actions = $this->entityManager->getRepository(Action::class)->findAll();
             }
 
             $response = [];
@@ -82,7 +83,7 @@ class ActionDoctrineSubscriber implements EventSubscriberInterface
         if ($route == 'api_actions_get_item') {
             $actionId = $event->getRequest()->attributes->get('_route_params') ? $event->getRequest()->attributes->get('_route_params')['id'] : null;
             // The id of the resource
-            $action = $this->entityManager->getRepository('App:Action')->find($actionId);
+            $action = $this->entityManager->getRepository(Action::class)->find($actionId);
 
             $handler = $this->actionService->getHandlerForAction($action);
             $config  = $handler->getConfiguration();

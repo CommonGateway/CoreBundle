@@ -162,7 +162,7 @@ class CacheService
             && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
         ) {
             isset($this->style) === true && $this->style->section('Caching Objects\'s');
-            $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
+            $objectEntities = $this->entityManager->getRepository(ObjectEntity::class)->findAll();
             isset($this->style) === true && $this->style->writeln('Found '.count($objectEntities).' objects\'s');
 
             foreach ($objectEntities as $objectEntity) {
@@ -180,7 +180,7 @@ class CacheService
             && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
         ) {
             isset($this->style) === true && $this->style->section('Caching Schema\'s');
-            $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
+            $schemas = $this->entityManager->getRepository(Entity::class)->findAll();
             isset($this->style) === true && $this->style->writeln('Found '.count($schemas).' Schema\'s');
 
             foreach ($schemas as $schema) {
@@ -198,7 +198,7 @@ class CacheService
             && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
         ) {
             isset($this->style) === true && $this->style->section('Caching Endpoint\'s');
-            $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
+            $endpoints = $this->entityManager->getRepository(Endpoint::class)->findAll();
             isset($this->style) === true && $this->style->writeln('Found '.count($endpoints).' Endpoint\'s');
 
             foreach ($endpoints as $endpoint) {
@@ -290,7 +290,7 @@ class CacheService
         }
 
         // todo: temp fix to make sure we have the latest version of this ObjectEntity before we cache it.
-        $updatedObjectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $objectEntity->getId()->toString()]);
+        $updatedObjectEntity = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['id' => $objectEntity->getId()->toString()]);
         if ($updatedObjectEntity !== null) {
             $objectEntity = $updatedObjectEntity;
         } else if (isset($this->style) === true) {
@@ -351,7 +351,7 @@ class CacheService
             return null;
         }
 
-        $user = $this->entityManager->getRepository('App:User')->findOneBy(['id' => $objectEntity->getOwner()]);
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $objectEntity->getOwner()]);
 
         if ($user === null) {
             $this->logger->warning("Could not find a User with id = {$objectEntity->getOwner()} for the owner of Object: {$objectEntity->getId()->toString()}");
@@ -403,11 +403,11 @@ class CacheService
             if (Uuid::isValid($schema) === true) {
                 // $filter['_self.schema.id'] = 'b92a3a39-3639-4bf5-b2af-c404bc2cb005';
                 $filter['_self.schema.id'] = $schema;
-                $entityObject              = $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $schema]);
+                $entityObject              = $this->entityManager->getRepository(Entity::class)->findOneBy(['id' => $schema]);
             } else {
                 // $filter['_self.schema.ref'] = 'https://larping.nl/schema/example.schema.json';
                 $filter['_self.schema.ref'] = $schema;
-                $entityObject               = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema]);
+                $entityObject               = $this->entityManager->getRepository(Entity::class)->findOneBy(['reference' => $schema]);
             }
 
             if ($entityObject === null) {
@@ -437,7 +437,7 @@ class CacheService
         }
 
         // Fall back tot the entity manager.
-        if ($object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $identification])) {
+        if ($object = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['id' => $identification])) {
             if ($user !== null && $object->getOwner() !== $user->getId()->toString()) {
                 return null;
             }
@@ -732,11 +732,11 @@ class CacheService
             if (Uuid::isValid($entity) === true) {
                 // $filter['_self.schema.id'] = 'b92a3a39-3639-4bf5-b2af-c404bc2cb005';
                 $filter['_self.schema.id']['$in'][] = $entity;
-                $entityObject                       = $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $entity]);
+                $entityObject                       = $this->entityManager->getRepository(Entity::class)->findOneBy(['id' => $entity]);
             } else {
                 // $filter['_self.schema.ref'] = 'https://larping.nl/schema/example.schema.json';
                 $filter['_self.schema.ref']['$in'][] = $entity;
-                $entityObject                        = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $entity]);
+                $entityObject                        = $this->entityManager->getRepository(Entity::class)->findOneBy(['reference' => $entity]);
             }
 
             if ($entityObject === null) {
@@ -1033,7 +1033,7 @@ class CacheService
     // return null;
     // }
     // This checks for each attribute of the given Entity if $attribute->getSortable() is true.
-    // $orderCheck = $this->entityManager->getRepository('App:ObjectEntity')->getOrderParameters($entity, '', 1, true);
+    // $orderCheck = $this->entityManager->getRepository(ObjectEntity::class)->getOrderParameters($entity, '', 1, true);
     // if (is_array($order) === false) {
     // $orderCheckStr = implode(', ', $orderCheck);
     // $message       = 'Please give an attribute to order on. Like this: ?_order[attributeName]=desc/asc. Supported order query parameters: '.$orderCheckStr;
@@ -1069,7 +1069,7 @@ class CacheService
     // return null;
     // }
     // This checks for each attribute of the given Entity if $attribute->getSearchable() is true.
-    // $filterCheck = $this->entityManager->getRepository('App:ObjectEntity')->getFilterParameters($entity, '', 1, true);
+    // $filterCheck = $this->entityManager->getRepository(ObjectEntity::class)->getFilterParameters($entity, '', 1, true);
     // foreach (array_keys($filters) as $param) {
     // if (in_array($param, $filterCheck) === false) {
     // $unsupportedParams = isset($unsupportedParams) === false ? $param : "$unsupportedParams, $param";
@@ -1210,7 +1210,7 @@ class CacheService
             $this->style->writeln('Start caching endpoint '.$endpoint->getId()->toString().' with name: '.$endpoint->getName());
         }
 
-        $updatedEndpoint = $this->entityManager->getRepository('App:Endpoint')->find($endpoint->getId());
+        $updatedEndpoint = $this->entityManager->getRepository(Endpoint::class)->find($endpoint->getId());
         if ($updatedEndpoint !== null) {
             $endpoint = $updatedEndpoint;
         } else if (isset($this->style) === true) {
@@ -1277,7 +1277,7 @@ class CacheService
             return $object;
         }
 
-        if ($object = $this->entityManager->getRepository('App:Endpoint')->find($identification)) {
+        if ($object = $this->entityManager->getRepository(Endpoint::class)->find($identification)) {
             return $this->serializer->normalize($object);
         }
 

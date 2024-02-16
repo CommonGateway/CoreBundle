@@ -96,14 +96,14 @@ class ReadUnreadService
         }
 
         // First, check if there is an Unread object for this Object+User. If so, return null.
-        $unreads = $this->entityManager->getRepository('App:Unread')->findBy(['object' => $objectEntity, 'userId' => $userId]);
+        $unreads = $this->entityManager->getRepository(Unread::class)->findBy(['object' => $objectEntity, 'userId' => $userId]);
         if (empty($unreads) === false) {
             return null;
         }
 
         // Use sql to find last get item audit trail of the current user for the given object.
         // But only if this audit trail was created after the object was last modified.
-        $auditTrails = $this->entityManager->getRepository('App:AuditTrail')->findDateRead($objectEntity->getId()->toString(), $userId);
+        $auditTrails = $this->entityManager->getRepository(AuditTrail::class)->findDateRead($objectEntity->getId()->toString(), $userId);
         if (empty($auditTrails) === false
             && $auditTrails[0] instanceof AuditTrail
             && $auditTrails[0]->getCreationDate() > $objectEntity->getDateModified()
@@ -127,7 +127,7 @@ class ReadUnreadService
      */
     public function setDateRead(AuditTrailService $auditTrailService, string $identification)
     {
-        $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $identification]);
+        $objectEntity = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['id' => $identification]);
 
         $this->removeUnreads($objectEntity);
 
@@ -156,7 +156,7 @@ class ReadUnreadService
             $userId = $user->getUserIdentifier();
         }
 
-        $unreads = $this->entityManager->getRepository('App:Unread')->findBy(['object' => $objectEntity, 'userId' => $userId]);
+        $unreads = $this->entityManager->getRepository(Unread::class)->findBy(['object' => $objectEntity, 'userId' => $userId]);
         if (empty($unreads) === false) {
             return;
         }
@@ -184,7 +184,7 @@ class ReadUnreadService
         }
 
         // Check if there exist Unread objects for this Object+User. If so, delete them.
-        $unreads = $this->entityManager->getRepository('App:Unread')->findBy(['object' => $objectEntity, 'userId' => $userId]);
+        $unreads = $this->entityManager->getRepository(Unread::class)->findBy(['object' => $objectEntity, 'userId' => $userId]);
         foreach ($unreads as $unread) {
             $this->entityManager->remove($unread);
         }

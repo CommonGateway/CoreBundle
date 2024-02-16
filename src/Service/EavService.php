@@ -4,6 +4,7 @@ namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Attribute;
 use App\Entity\Entity;
+use App\Entity\ObjectEntity;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -49,7 +50,7 @@ class EavService
         }
 
         // Find the attributes.
-        $attributes = $this->entityManager->getRepository('App:Attribute')->findBy(['reference' => $entity->getReference(), 'object' => null]);
+        $attributes = $this->entityManager->getRepository(Attribute::class)->findBy(['reference' => $entity->getReference(), 'object' => null]);
 
         // Add them to the entity.
         foreach ($attributes as $attribute) {
@@ -74,7 +75,7 @@ class EavService
             return $attribute;
         }
 
-        $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $attribute->getReference()]);
+        $entity = $this->entityManager->getRepository(Entity::class)->findOneBy(['reference' => $attribute->getReference()]);
         if ($entity !== null) {
             $attribute->setObject($entity);
         }
@@ -97,12 +98,12 @@ class EavService
 
         // Get all the objects for a specific entity
         if ($entity !== null) {
-            $objects = $this->entityManager->getRepository('App:ObjectEntity')->findBy(['entity' => $entity]);
+            $objects = $this->entityManager->getRepository(ObjectEntity::class)->findBy(['entity' => $entity]);
         }
 
         // Or just get all the objects
         if ($entity === null) {
-            // $objects = $this->entityManager->getRepository('App:ObjectEntity')->findAll();.
+            // $objects = $this->entityManager->getRepository(ObjectEntity::class)->findAll();.
         }
 
         // And let's delete them

@@ -47,7 +47,7 @@ class SchemaService
      */
     public function validateObjects(): int
     {
-        $objects = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
+        $objects = $this->entityManager->getRepository(ObjectEntity::class)->findAll();
 
         $this->logger->info('Validating:'.count($objects).'objects\'s');
 
@@ -68,7 +68,7 @@ class SchemaService
      */
     public function validateValues(): int
     {
-        $values = $this->entityManager->getRepository('App:Value')->findAll();
+        $values = $this->entityManager->getRepository(Value::class)->findAll();
 
         $this->logger->info('Validating:'.count($values).'values\'s');
 
@@ -88,7 +88,7 @@ class SchemaService
      */
     public function validateSchemas(): int
     {
-        $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
+        $schemas = $this->entityManager->getRepository(Entity::class)->findAll();
 
         $this->logger->info('Validating:'.count($schemas).'schema\'s');
 
@@ -229,7 +229,7 @@ class SchemaService
             $objectEntity->setId($id);
             $this->entityManager->persist($objectEntity);
             $this->entityManager->flush();
-            $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $id]);
+            $objectEntity = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['id' => $id]);
 
             $this->logger->debug('Defintive object id ('.$objectEntity->getId().')');
         } else {
@@ -257,7 +257,7 @@ class SchemaService
                                 if (is_array($subvalue) === true) {
                                     // If we have an id let try to grab an object.
                                     if (array_key_exists('_id', $subvalue) === true) {
-                                        $subObject = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $subvalue['_id']]);
+                                        $subObject = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['id' => $subvalue['_id']]);
                                     }
 
                                     // Create it if we don't.
@@ -276,7 +276,7 @@ class SchemaService
                                 } else {
                                     // Is not an array.
                                     $idValue   = $subvalue;
-                                    $subObject = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
+                                    $subObject = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['id' => $idValue]);
                                     // Safety.
                                     if ($subObject === null) {
                                         $this->logger->error('Could not find an object for id '.$idValue.' (SchemaService->hydrate)');
@@ -299,7 +299,7 @@ class SchemaService
                     if (is_array($value) === true) {
                         // If we have an id let try to grab an object.
                         if (array_key_exists('_id', $value) === true) {
-                            $singleSubObject = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $value['_id']]);
+                            $singleSubObject = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['id' => $value['_id']]);
                         }
 
                         // Create it if we don't.
@@ -318,7 +318,7 @@ class SchemaService
                     } else {
                         // Is not an array.
                         $idValue         = $value;
-                        $singleSubObject = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $idValue]);
+                        $singleSubObject = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['id' => $idValue]);
                         // Safety.
                         if ($singleSubObject === null) {
                             $this->logger->error('Could not find an object for id '.$idValue.' (SchemaService->hydrate)');

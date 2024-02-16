@@ -2,6 +2,7 @@
 
 namespace CommonGateway\CoreBundle\Command;
 
+use App\Entity\ObjectEntity;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -89,7 +90,7 @@ class DataClearCommand extends Command
             return Command::FAILURE;
         }
 
-        $objects = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
+        $objects = $this->entityManager->getRepository(ObjectEntity::class)->findAll();
 
         $symfonyStyle->writeln('Found '.count($objects).' objects');
 

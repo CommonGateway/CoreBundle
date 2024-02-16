@@ -344,7 +344,7 @@ class EndpointService
         // The third parameters ensures that /prefix/api/a/api/b will become ['/prefix', 'a/api/b'].
         // See https://www.php.net/manual/en/function.explode.php for more information.
         $path     = explode('/api/', $path, 2)[1];
-        $endpoint = $this->entityManager->getRepository('App:Endpoint')->findByMethodRegex($this->request->getMethod(), $path);
+        $endpoint = $this->entityManager->getRepository(Endpoint::class)->findByMethodRegex($this->request->getMethod(), $path);
 
         if ($endpoint !== null) {
             return $endpoint;

@@ -2,6 +2,7 @@
 
 namespace CommonGateway\CoreBundle\Service\Validation\Rules;
 
+use App\Entity\ObjectEntity;
 use Doctrine\ORM\EntityManagerInterface;
 use Respect\Validation\Rules\AbstractRule;
 
@@ -60,7 +61,7 @@ final class ObjectExists extends AbstractRule
             $criteria['entity'] = $this->schemaId;
         }
 
-        $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy($criteria);
+        $objectEntity = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy($criteria);
         if ($objectEntity === null) {
             return false;
         }

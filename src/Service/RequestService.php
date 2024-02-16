@@ -4,11 +4,13 @@ namespace CommonGateway\CoreBundle\Service;
 
 use Adbar\Dot;
 use App\Entity\Application;
+use App\Entity\AuditTrail;
 use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\Gateway as Source;
 use App\Entity\ObjectEntity;
 use App\Entity\Mapping;
+use App\Entity\SecurityGroup;
 use App\Event\ActionEvent;
 use App\Exception\GatewayException;
 use App\Service\SynchronizationService;
@@ -414,7 +416,7 @@ class RequestService
         }//end if
 
         // If we don't have a user, return the anonymous security group its scopes.
-        $anonymousSecurityGroup = $this->entityManager->getRepository('App:SecurityGroup')->findOneBy(['anonymous' => true]);
+        $anonymousSecurityGroup = $this->entityManager->getRepository(SecurityGroup::class)->findOneBy(['anonymous' => true]);
         if ($anonymousSecurityGroup !== null) {
             $scopes = [];
             foreach ($anonymousSecurityGroup->getScopes() as $scope) {
@@ -526,11 +528,11 @@ class RequestService
 
         // We only end up here if there is no endpoint or an unlimited endpoint.
         if (isset($identification) === true) {
-            return $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $identification]);
+            return $this->entityManager->getRepository(Entity::class)->findOneBy(['id' => $identification]);
         }
 
         if (isset($reference) === true) {
-            return $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference]);
+            return $this->entityManager->getRepository(Entity::class)->findOneBy(['reference' => $reference]);
         }
 
         // There is no way to establish an schema so.
@@ -749,7 +751,7 @@ class RequestService
 
         // If we have an ID we can get an Object to work with (except on gets we handle those from cache).
         if (empty($this->identification) === false && $this->data['method'] != 'GET') {
-            $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->identification]);
+            $object = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['id' => $this->identification]);
             if ($object === null) {
                 return new Response(
                     $this->serializeData(
@@ -849,7 +851,7 @@ class RequestService
                 $result = $this->cacheService->getObject($this->identification);
 
                 if (isset($this->data['query']['versie']) === true) {
-                    $auditTrails = $this->entityManager->getRepository('App:AuditTrail')->findBy(['resource' => $this->identification]);
+                    $auditTrails = $this->entityManager->getRepository(AuditTrail::class)->findBy(['resource' => $this->identification]);
 
                     foreach ($auditTrails as $auditTrail) {
                         if ($auditTrail->getAmendments() !== null
@@ -1198,7 +1200,7 @@ class RequestService
     {
         if (isset($this->data['headers']['x-mapping'][0]) === true) {
             if (Uuid::isValid($this->data['headers']['x-mapping'][0]) === true) {
-                $mapping = $this->entityManager->getRepository('App:Mapping')->find($this->data['headers']['x-mapping'][0]);
+                $mapping = $this->entityManager->getRepository(Mapping::class)->find($this->data['headers']['x-mapping'][0]);
             }
         }
 
@@ -1360,7 +1362,7 @@ class RequestService
     private function getAppEndpointConfig(): array
     {
         // @TODO set created application to the session
-        $application = $this->entityManager->getRepository('App:Application')->findOneBy(['id' => $this->session->get('application')]);
+        $application = $this->entityManager->getRepository(Application::class)->findOneBy(['id' => $this->session->get('application')]);
         if ($application instanceof Application === false
             || $application->getConfiguration() === null
         ) {
@@ -1490,7 +1492,7 @@ class RequestService
 
         if ($proxy === null) {
             // Note: $this->object is never set if method === 'GET'. And in case we have a Get Collection we have to use _id anyway.
-            $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $result['_id']]);
+            $objectEntity = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['id' => $result['_id']]);
 
             if ($objectEntity instanceof ObjectEntity === false) {
                 return null;
@@ -1501,7 +1503,7 @@ class RequestService
 
         // Todo: a temporary way to be able to use this function for proxy endpoints, until we figured out a beter way how we can save proxy objects as ObjectEntity.
         // Todo: For now we just add '_self'.'schema'.'ref' with Source mapping
-        $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $result['_self']['schema']['ref']]);
+        $entity = $this->entityManager->getRepository(Entity::class)->findOneBy(['reference' => $result['_self']['schema']['ref']]);
         if ($entity instanceof Entity === false) {
             return null;
         }
@@ -1528,7 +1530,7 @@ class RequestService
      */
     public function proxyRequestHandler(array $parameters, array $configuration): array
     {
-        $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $configuration['source']]);
+        $source = $this->entityManager->getRepository(Source::class)->findOneBy(['reference' => $configuration['source']]);
 
         return ['response' => $this->proxyHandler($parameters, $configuration, $source)];
 

@@ -64,7 +64,7 @@ class GatewayResourceService
      */
     public function getSchema(string $reference, string $pluginName): ?Entity
     {
-        $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference]);
+        $entity = $this->entityManager->getRepository(Entity::class)->findOneBy(['reference' => $reference]);
 
         if (Uuid::isValid($reference) === true && $entity === null) {
             $entity = $this->entityManager->find('App:Entity', $reference);
@@ -87,7 +87,7 @@ class GatewayResourceService
      */
     public function getObject(string $id): ?ObjectEntity
     {
-        $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->find($id);
+        $objectEntity = $this->entityManager->getRepository(ObjectEntity::class)->find($id);
         if ($objectEntity === null) {
             $this->pluginLogger->error("No objectEntity found for $id.");
         }
@@ -106,7 +106,7 @@ class GatewayResourceService
      */
     public function getMapping(string $reference, string $pluginName): ?Mapping
     {
-        $mapping = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $reference]);
+        $mapping = $this->entityManager->getRepository(Mapping::class)->findOneBy(['reference' => $reference]);
 
         if (Uuid::isValid($reference) === true && $mapping === null) {
             $mapping = $this->entityManager->find('App:Mapping', $reference);
@@ -130,7 +130,7 @@ class GatewayResourceService
      */
     public function getSource(string $reference, string $pluginName): ?Source
     {
-        $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $reference]);
+        $source = $this->entityManager->getRepository(Source::class)->findOneBy(['reference' => $reference]);
 
         if (Uuid::isValid($reference) === true && $source === null) {
             $source = $this->entityManager->find('App:Gateway', $reference);
@@ -162,7 +162,7 @@ class GatewayResourceService
         $location = $parse['scheme'].'://'.$parse['host'];
 
         // 2.a Try to establish a source for the domain
-        $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['location' => $location]);
+        $source = $this->entityManager->getRepository(Source::class)->findOneBy(['location' => $location]);
 
         // 2.b The source might be on a path e.g. /v1 so if whe cant find a source let try to cycle
         if ($source === null && isset($parse['path']) === true) {
@@ -171,7 +171,7 @@ class GatewayResourceService
                     $location = $location.'/'.$pathPart;
                 }
 
-                $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['location' => $location]);
+                $source = $this->entityManager->getRepository(Source::class)->findOneBy(['location' => $location]);
                 if ($source !== null) {
                     $endpoint = str_replace($location, '', $url);
                     break;
@@ -199,7 +199,7 @@ class GatewayResourceService
     public function getEndpoint(string $reference, string $pluginName): ?Endpoint
     {
 
-        $endpoint = $this->entityManager->getRepository('App:Endpoint')->findOneBy(['reference' => $reference]);
+        $endpoint = $this->entityManager->getRepository(Endpoint::class)->findOneBy(['reference' => $reference]);
 
         if (Uuid::isValid($reference) === true && $endpoint === null) {
             $endpoint = $this->entityManager->find('App:Endpoint', $reference);
@@ -223,7 +223,7 @@ class GatewayResourceService
      */
     public function getAction(string $reference, string $pluginName): ?Action
     {
-        $action = $this->entityManager->getRepository('App:Action')->findOneBy(['reference' => $reference]);
+        $action = $this->entityManager->getRepository(Action::class)->findOneBy(['reference' => $reference]);
 
         if (Uuid::isValid($reference) === true && $action === null) {
             $action = $this->entityManager->find('App:Action', $reference);

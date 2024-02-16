@@ -69,7 +69,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
             && !$object->getObject() // It isn't currently connected to a schema.
         ) {
             $reference = ($object->getReference() ?? $object->getSchema());
-            $entity    = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $reference]);
+            $entity    = $this->entityManager->getRepository(Entity::class)->findOneBy(['reference' => $reference]);
             if ($entity !== null) {
                 $object->setObject($entity);
                 if ($object->getInversedByPropertyName() && !$object->getInversedBy()) {
@@ -86,7 +86,7 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
         if ($object instanceof Entity // Is it an entity.
             && $object->getReference() // Does it have a reference.
         ) {
-            $attributes = $this->entityManager->getRepository('App:Attribute')->findBy(['schema' => $object->getReference()]);
+            $attributes = $this->entityManager->getRepository(Attribute::class)->findBy(['schema' => $object->getReference()]);
             foreach ($attributes as $attribute) {
                 if ($attribute instanceof Attribute === false) {
                     continue;

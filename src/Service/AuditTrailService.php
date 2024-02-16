@@ -5,6 +5,7 @@ namespace CommonGateway\CoreBundle\Service;
 use Adbar\Dot;
 use App\Entity\AuditTrail;
 use App\Entity\ObjectEntity;
+use App\Entity\User;
 use App\Entity\Unread;
 use Doctrine\ORM\EntityManagerInterface;
 use Safe\DateTime;
@@ -148,7 +149,7 @@ class AuditTrailService
 
         if ($this->security->getUser() !== null) {
             $userId = $this->security->getUser()->getUserIdentifier();
-            $user   = $this->entityManager->getRepository('App:User')->find($userId);
+            $user   = $this->entityManager->getRepository(User::class)->find($userId);
         }
 
         $auditTrail->setApplicationId('Anonymous');

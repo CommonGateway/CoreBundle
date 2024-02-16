@@ -59,7 +59,7 @@ class DashboardCardDoctrineSubscriber implements EventSubscriberInterface
         $route = $event->getRequest()->attributes->get('_route');
 
         if ($route == 'api_dashboard_cards_get_collection') {
-            $dashboardCards = $this->entityManager->getRepository('App:DashboardCard')->findAll();
+            $dashboardCards = $this->entityManager->getRepository(DashboardCard::class)->findAll();
 
             $response = [];
             foreach ($dashboardCards as $dashboardCard) {
@@ -73,7 +73,7 @@ class DashboardCardDoctrineSubscriber implements EventSubscriberInterface
         if ($route == 'api_dashboard_cards_get_item') {
             $objectId = $event->getRequest()->attributes->get('_route_params') ? $event->getRequest()->attributes->get('_route_params')['id'] : null;
             // The id of the resource
-            $dashboardCard = $this->entityManager->getRepository('App:DashboardCard')->find($objectId);
+            $dashboardCard = $this->entityManager->getRepository(DashboardCard::class)->find($objectId);
             $dashboardCard = $this->addObject($dashboardCard);
             $event->setControllerResult($dashboardCard);
         }

@@ -3,6 +3,7 @@
 namespace CommonGateway\CoreBundle\Subscriber;
 
 use ApiPlatform\Symfony\EventListener\EventPriorities;
+use App\Entity\Translation;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -40,7 +41,7 @@ class TranslationTablesSubscriber implements EventSubscriberInterface
         $path  = $event->getRequest()->getPathInfo();
 
         if ($route === 'api_translations_get_table_names_collection' && $path === '/admin/table_names') {
-            $translationsRepo = $this->entityManager->getRepository('App:Translation');
+            $translationsRepo = $this->entityManager->getRepository(Translation::class);
 
             $event->setResponse(
                 new Response(

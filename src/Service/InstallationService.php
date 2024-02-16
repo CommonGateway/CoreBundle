@@ -1122,7 +1122,7 @@ class InstallationService
     private function createEndpoint(string $type, array $endpointData): ?Endpoint
     {
         if ($type === 'sources') {
-            $repository = $this->entityManager->getRepository(Gateway::class);
+            $repository = $this->entityManager->getRepository(Source::class);
         } else {
             $repository = $this->entityManager->getRepository(Entity::class);
         }
@@ -1607,7 +1607,7 @@ class InstallationService
             }//end if
 
             if ($key == 'source' && is_string($override) === true && Uuid::isValid($override) === false) {
-                $source = $this->entityManager->getRepository(Gateway::class)->findOneBy(['reference' => $override]);
+                $source = $this->entityManager->getRepository(Source::class)->findOneBy(['reference' => $override]);
                 if ($source === null) {
                     $this->logger->error("No source found with reference {$override} (overrideConfig() for installation.json)");
                     continue;
@@ -1902,7 +1902,7 @@ class InstallationService
                 $repository = $this->entityManager->getRepository(Entity::class);
                 break;
             case 'sources':
-                $repository = $this->entityManager->getRepository(Gateway::class);
+                $repository = $this->entityManager->getRepository(Source::class);
                 break;
             case 'mappings':
                 $repository = $this->entityManager->getRepository(Mapping::class);
@@ -1932,7 +1932,7 @@ class InstallationService
                 }
 
                 // Check if this dashboardCard already exists.
-                $dashboardCard = $this->entityManager->getRepository('App:DashboardCard')->findOneBy(['type' => $type, 'entityId' => $object->getId()]);
+                $dashboardCard = $this->entityManager->getRepository(DashboardCard::class)->findOneBy(['type' => $type, 'entityId' => $object->getId()]);
                 if ($dashboardCard !== null) {
                     if (isset($this->style) === true) {
                         $this->style->writeLn('DashboardCard found for '.$type.' with id: '.$object->getId());

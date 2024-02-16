@@ -2,6 +2,11 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use App\Entity\Application;
+use App\Entity\Entity;
+use App\Entity\ObjectEntity;
+use App\Entity\Organization;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use MongoDB\Client;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -116,19 +121,19 @@ class MetricsService
                 'name'  => 'app_users',
                 'type'  => 'gauge',
                 'help'  => 'The current amount of users',
-                'value' => $this->entityManager->getRepository('App:User')->count([]),
+                'value' => $this->entityManager->getRepository(User::class)->count([]),
             ],
             [
                 'name'  => 'app_organizations',
                 'type'  => 'gauge',
                 'help'  => 'The current amount of organizations',
-                'value' => $this->entityManager->getRepository('App:Organization')->count([]),
+                'value' => $this->entityManager->getRepository(Organization::class)->count([]),
             ],
             [
                 'name'  => 'app_applications',
                 'type'  => 'gauge',
                 'help'  => 'The current amount of applications',
-                'value' => $this->entityManager->getRepository('App:Application')->count([]),
+                'value' => $this->entityManager->getRepository(Application::class)->count([]),
             ],
             [
                 // todo: count (request) monologs with unique request id
@@ -243,14 +248,14 @@ class MetricsService
     {
         $collection = $this->client->objects->json;
 
-        $schemas = $this->entityManager->getRepository('App:Entity')
+        $schemas = $this->entityManager->getRepository(Entity::class)
             ->findAllSelect('e.id, e.name, e.description, e.reference, e.version');
 
         $metrics[] = [
             'name'  => 'app_objects_count',
             'type'  => 'gauge',
             'help'  => 'The amount of objects in the data layer',
-            'value' => $this->entityManager->getRepository('App:ObjectEntity')->count([]),
+            'value' => $this->entityManager->getRepository(ObjectEntity::class)->count([]),
         ];
         $metrics[] = [
             'name'  => 'app_cached_objects_count',

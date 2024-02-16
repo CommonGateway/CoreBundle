@@ -155,18 +155,18 @@ class ValueService
 
         // Then check if the url is internal.
         $self         = str_replace(rtrim($this->parameterBag->get('app_url'), '/'), '', $url);
-        $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['self' => $self]);
+        $objectEntity = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['self' => $self]);
         if ($objectEntity !== null) {
             return $objectEntity;
         }
 
         // Check if a synchronization with sourceId = url exists.
-        $synchronization = $this->entityManager->getRepository('App:Synchronization')->findOneBy(['sourceId' => $url]);
+        $synchronization = $this->entityManager->getRepository(Synchronization::class)->findOneBy(['sourceId' => $url]);
         if ($synchronization !== null) {
             return $synchronization->getObject();
         }
 
-        $synchronization = $this->entityManager->getRepository('App:Synchronization')->findOneBy(
+        $synchronization = $this->entityManager->getRepository(Synchronization::class)->findOneBy(
             [
                 'gateway'  => $source,
                 'entity'   => $valueObject->getAttribute()->getObject(),

@@ -3,6 +3,9 @@
 namespace CommonGateway\CoreBundle\Subscriber;
 
 use ApiPlatform\Symfony\EventListener\EventPriorities;
+use App\Entity\Action;
+use App\Entity\Gateway as Source;
+use App\Entity\ObjectEntity;
 use App\Entity\Synchronization;
 use App\Service\SynchronizationService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -50,21 +53,21 @@ class EavSyncSubscriber implements EventSubscriberInterface
         $sourceId = $event->getRequest()->attributes->get('sourceId');
 
         // Grap the objects for the ids
-        $objectEntity = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $objectId]);
-        $source       = $this->entityManager->getRepository('App:Gateway')->findOneBy(['id' => $sourceId]);
+        $objectEntity = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['id' => $objectId]);
+        $source       = $this->entityManager->getRepository(Source::class)->findOneBy(['id' => $sourceId]);
 
         $sourceId = $event->getRequest()->query->get('externalId', '');
         $endpoint = $event->getRequest()->query->get('endpoint', null);
         $actionId = $event->getRequest()->query->get('action', null);
         // Get a sync objcet
         $status = 202;
-        if (!$synchronization = $this->entityManager->getRepository('App:Synchronization')->findOneBy(['object' => $objectEntity->getId(), 'gateway' => $source])) {
+        if (!$synchronization = $this->entityManager->getRepository(Synchronization::class)->findOneBy(['object' => $objectEntity->getId(), 'gateway' => $source])) {
             $synchronization = new Synchronization($source);
             $synchronization->setObject($objectEntity);
             $synchronization->setSourceId($sourceId);
             $synchronization->setEndpoint($endpoint);
             if ($actionId) {
-                $action = $this->entityManager->getRepository('App:Action')->findOneBy(['id' => $actionId]);
+                $action = $this->entityManager->getRepository(Action::class)->findOneBy(['id' => $actionId]);
                 $synchronization->setAction($action);
             }
 

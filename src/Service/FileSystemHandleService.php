@@ -16,6 +16,7 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
+use App\Entity\Mapping;
 use Doctrine\ORM\EntityManagerInterface;
 use League\Flysystem\Filesystem;
 use Psr\Log\LoggerInterface;
@@ -260,7 +261,7 @@ class FileSystemHandleService
         }
 
         if (array_key_exists('mapping', $endpointConfigIn[$key]) === true) {
-            $mapping = $this->entityManager->getRepository('App:Mapping')
+            $mapping = $this->entityManager->getRepository(Mapping::class)
                 ->findOneBy(['reference' => $endpointConfigIn[$key]['mapping']]);
             if ($mapping === null) {
                 $this->callLogger->error("Could not find mapping with reference {$endpointConfigIn[$key]['mapping']} while handling $key EndpointConfigIn for a Filesystem Source.");

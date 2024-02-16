@@ -108,7 +108,7 @@ class OasService
     private function addEndpoints(array $oas): array
     {
         // Get all the endpoints.
-        $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
+        $endpoints = $this->entityManager->getRepository(Endpoint::class)->findAll();
 
         $oas['components']['schemas'] = [];
         // Add the endpoints to the OAS.

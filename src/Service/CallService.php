@@ -3,6 +3,7 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
+use App\Entity\Mapping;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use GuzzleHttp\Client;
@@ -450,7 +451,7 @@ class CallService
         }
 
         if (array_key_exists('mapping', $endpointConfigOut[$configKey])) {
-            $mapping = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $endpointConfigOut[$configKey]['mapping']]);
+            $mapping = $this->entityManager->getRepository(Mapping::class)->findOneBy(['reference' => $endpointConfigOut[$configKey]['mapping']]);
             if ($mapping === null) {
                 $this->callLogger->error("Could not find mapping with reference {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source");
 
@@ -611,7 +612,7 @@ class CallService
         }
 
         if (array_key_exists('mapping', $endpointConfigIn[$responseProperty]) === true) {
-            $mapping = $this->entityManager->getRepository('App:Mapping')->findOneBy(['reference' => $endpointConfigIn[$responseProperty]['mapping']]);
+            $mapping = $this->entityManager->getRepository(Mapping::class)->findOneBy(['reference' => $endpointConfigIn[$responseProperty]['mapping']]);
             if ($mapping === null) {
                 $this->callLogger->error("Could not find mapping with reference {$endpointConfigIn[$responseProperty]['mapping']} while handling $responseProperty EndpointConfigIn for a Source.");
 

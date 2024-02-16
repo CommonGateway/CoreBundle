@@ -2,8 +2,10 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use App\Entity\Action;
 use App\Entity\Entity;
 use App\Entity\ObjectEntity;
+use App\Entity\User;
 use App\Event\ActionEvent;
 use App\Exception\AsynchronousException;
 use App\Kernel;
@@ -151,7 +153,7 @@ class ActionService
 
         if (isset($data['response']['id'])) {
             // Get the object that triggered the initial PUT dispatchEvent.
-            $object = $this->entityManager->getRepository('App:ObjectEntity')->find($data['response']['id']);
+            $object = $this->entityManager->getRepository(ObjectEntity::class)->find($data['response']['id']);
             if ($object instanceof ObjectEntity and !in_array($data['response']['id'], $triggeredParentEvents)) {
                 // Prevent endless loop of dispatching events.
                 $triggeredParentEvents[] = $data['response']['id'];
@@ -185,7 +187,7 @@ class ActionService
         if (array_key_exists('entity', $data)
             && ($type === 'commongateway.object.update' || $subType === 'commongateway.object.update')
         ) {
-            $entity = $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $data['entity']]);
+            $entity = $this->entityManager->getRepository(Entity::class)->findOneBy(['id' => $data['entity']]);
             if ($entity instanceof Entity) {
                 $this->checkTriggerParentEvents($entity, $data, $triggeredParentEvents);
 
@@ -228,7 +230,7 @@ class ActionService
         // After runFunction() is done, even if it returns an exception, currentActionUserId should be removed from cache (outside this function)
         $this->session->remove('currentActionUserId');
         if ($action->getUserId() !== null && Uuid::isValid($action->getUserId()) === true) {
-            $user = $this->entityManager->getRepository('App:User')->find($action->getUserId());
+            $user = $this->entityManager->getRepository(User::class)->find($action->getUserId());
             if ($user instanceof User === true) {
                 $this->session->set('currentActionUserId', $action->getUserId());
             }
@@ -483,7 +485,7 @@ class ActionService
         // Normal behaviour is using the $event->getType(), but if $event->getSubType() is set, use that one instead.
         $listeningToThrow = !$event->getSubType() ? $event->getType() : $event->getSubType();
 
-        $actions      = $this->entityManager->getRepository('App:Action')->findByListens($listeningToThrow);
+        $actions      = $this->entityManager->getRepository(Action::class)->findByListens($listeningToThrow);
         $totalActions = is_countable($actions) ? count($actions) : 0;
 
         $this->logger->info('Handling actions for event: '.$listeningToThrow.', found '.$totalActions.' listening actions');

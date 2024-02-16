@@ -87,11 +87,11 @@ class DownloadService
         }
 
         if (isset($templateRef) === true) {
-            $template = $this->entityManager->getRepository('App:Template')->findOneBy(['reference' => $templateRef]);
+            $template = $this->entityManager->getRepository(Template::class)->findOneBy(['reference' => $templateRef]);
         } else {
             $criteria = Criteria::create()->where(Criteria::expr()->memberOf("supportedSchemas", $data['_self']['schema']['id']));
 
-            $templates = new ArrayCollection($this->entityManager->getRepository('App:Template')->findAll());
+            $templates = new ArrayCollection($this->entityManager->getRepository(Template::class)->findAll());
             $templates = $templates->matching($criteria);
 
             if ($templates->count() === 0) {
