@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
+use Symfony\Component\Stopwatch\Stopwatch;
 
 /**
  * Service to call external sources.
@@ -73,6 +74,8 @@ class CallService
      * @var Source
      */
     private Source $source;
+    
+    private Stopwatch $stopwatch;
 
     /**
      * The constructor sets al needed variables.
@@ -90,7 +93,8 @@ class CallService
         FileService $fileService,
         MappingService $mappingService,
         SessionInterface $session,
-        LoggerInterface $callLogger
+        LoggerInterface $callLogger,
+        Stopwatch $stopwatch
     ) {
         $this->authenticationService = $authenticationService;
         $this->client                = new Client([]);
@@ -99,6 +103,7 @@ class CallService
         $this->mappingService        = $mappingService;
         $this->session               = $session;
         $this->callLogger            = $callLogger;
+        $this->stopwatch              = $stopwatch;
 
     }//end __construct()
 
@@ -822,6 +827,8 @@ class CallService
      */
     public function getAllResults(Source $source, string $endpoint = '', array $config = []): array
     {
+        $this->stopwatch->start('getAllResults', 'core-bundle');
+        
         $this->source = $source;
 
         $this->callLogger->info('Fetch all data from source and combine the results into one array');
@@ -864,7 +871,11 @@ class CallService
             } else if (isset($decodedResponse[0]) === true) {
                 $results = array_merge($decodedResponse, $results);
             }
+            
+            $this->stopwatch->lap('getAllResults');
         }//end while
+        
+        $this->stopwatch->stop('getAllResults');
 
         return $results;
 
