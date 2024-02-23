@@ -721,6 +721,7 @@ class CallService
                 $this->callLogger->info('Responses with status code 204 have no response body.');
                 return [];
             }
+
             if (in_array($response->getStatusCode(), [200, 201]) === true) {
                 $this->callLogger->warning('Cannot decode an empty response body (status = 200 or 201).');
                 return [];
