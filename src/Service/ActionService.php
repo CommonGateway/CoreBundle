@@ -380,7 +380,7 @@ class ActionService
      * @param string $separator
      * @param string $keyValueSeparator
      *
-     * @return string
+     * @return     string
      * @deprecated
      */
     public function implodeMultiArray(array $array, string $separator = ', ', string $keyValueSeparator = '='): string
@@ -392,6 +392,7 @@ class ActionService
             if ($key === array_key_first($array)) {
                 $currentSeparator = '';
             }
+
             if (is_array($value)) {
                 $str .= "$currentSeparator\"$key\"{$keyValueSeparator}[{$this->implodeMultiArray($value, $separator, $keyValueSeparator)}]";
             } else {
@@ -400,7 +401,8 @@ class ActionService
         }
 
         return $str;
-    }
+
+    }//end implodeMultiArray()
 
     /**
      * If we got here through CronjobCommand, write user feedback to $this->io before handling an Action.

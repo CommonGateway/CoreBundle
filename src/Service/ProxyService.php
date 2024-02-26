@@ -12,9 +12,9 @@ class ProxyService
         private readonly MappingService $mappingService,
         private readonly EntityManagerInterface $entityManager,
         private readonly Logger $callLogger
-    ){
+    ) {
 
-    }
+    }//end __construct()
 
     /**
      * Handles endpointConfig for a specific endpoint on a source and a specific configuration key like: 'query' or 'headers'.
@@ -218,31 +218,29 @@ class ProxyService
 
     }//end handleEndpointsConfigIn()
 
-
-    public function callProxy (
+    public function callProxy(
         Source $source,
         string $endpoint,
         string $method,
         array $config = [],
-    ): Response
-    {
+    ): Response {
         $endpointsConfig = $source->getEndpointsConfig();
 
-        if (empty($endpointsConfig)=== true
+        if (empty($endpointsConfig) === true
             || (array_key_exists($endpoint, $endpointsConfig) === false
-                && array_key_exists('global', $endpointsConfig) === false
-            )
+            && array_key_exists('global', $endpointsConfig) === false)
         ) {
-            return $this->callService->call(source: $source, endpoint: $endpoint, method: $method, config: $config);;
+            return $this->callService->call(source: $source, endpoint: $endpoint, method: $method, config: $config);
+            ;
         }
 
-        if(array_key_exists($endpoint, $endpointsConfig) === true) {
+        if (array_key_exists($endpoint, $endpointsConfig) === true) {
             $endpointConfig = $endpointsConfig[$endpoint];
         } else if (array_key_exists('global', $endpointsConfig) === true) {
             $endpointConfig = $endpointsConfig['global'];
         }
 
-        if(isset($endpointConfig['out']) === true) {
+        if (isset($endpointConfig['out']) === true) {
             // TODO: dit reduceren tot één functiecall
             $config = $this->handleEndpointConfigOut(config: $config, endpointConfigOut: $endpointConfig['out'], configKey: 'query');
             $config = $this->handleEndpointConfigOut(config: $config, endpointConfigOut: $endpointConfig['out'], configKey: 'headers');
@@ -251,14 +249,15 @@ class ProxyService
 
         try {
             $response = $this->callService->call(source: $source, endpoint: $endpoint, method: $method, config: $config);
-        } catch(ServerException | ClientException | RequestException | Exception $exception) {
+        } catch (ServerException | ClientException | RequestException | Exception $exception) {
             // TODO
         }
 
-        if(isset($endpointConfig['in']) === true) {
+        if (isset($endpointConfig['in']) === true) {
             $response = $this->handleEndpointsConfigIn(endpoint: $endpoint, response: $response);
         }
 
         return $response;
-    }
-}
+
+    }//end callProxy()
+}//end class
