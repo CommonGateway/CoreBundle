@@ -217,11 +217,11 @@ class CacheService
         $this->client->endpoints->json->createIndex(['$**' => 'text']);
 
         if (isset($config['endpoints']) === false || $config['endpoints'] !== true) {
-            $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
+            $this->removeDataFromCache($this->client->endpoints->json, Endpoint::class);
         }
 
         if (isset($config['objects']) === false || $config['objects'] !== true) {
-            $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
+            $this->removeDataFromCache($this->client->objects->json, ObjectEntity::class);
         }
 
         return Command::SUCCESS;

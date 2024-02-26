@@ -67,7 +67,7 @@ class GatewayResourceService
         $entity = $this->entityManager->getRepository(Entity::class)->findOneBy(['reference' => $reference]);
 
         if (Uuid::isValid($reference) === true && $entity === null) {
-            $entity = $this->entityManager->find('App:Entity', $reference);
+            $entity = $this->entityManager->find(Entity::class, $reference);
         }
 
         if ($entity === null) {
@@ -109,7 +109,7 @@ class GatewayResourceService
         $mapping = $this->entityManager->getRepository(Mapping::class)->findOneBy(['reference' => $reference]);
 
         if (Uuid::isValid($reference) === true && $mapping === null) {
-            $mapping = $this->entityManager->find('App:Mapping', $reference);
+            $mapping = $this->entityManager->find(Mapping::class, $reference);
         }
 
         if ($mapping === null) {
@@ -133,7 +133,7 @@ class GatewayResourceService
         $source = $this->entityManager->getRepository(Source::class)->findOneBy(['reference' => $reference]);
 
         if (Uuid::isValid($reference) === true && $source === null) {
-            $source = $this->entityManager->find('App:Gateway', $reference);
+            $source = $this->entityManager->find(Source::class, $reference);
         }
 
         if ($source === null) {
@@ -202,7 +202,7 @@ class GatewayResourceService
         $endpoint = $this->entityManager->getRepository(Endpoint::class)->findOneBy(['reference' => $reference]);
 
         if (Uuid::isValid($reference) === true && $endpoint === null) {
-            $endpoint = $this->entityManager->find('App:Endpoint', $reference);
+            $endpoint = $this->entityManager->find(Endpoint::class, $reference);
         }
 
         if ($endpoint === null) {
@@ -226,7 +226,7 @@ class GatewayResourceService
         $action = $this->entityManager->getRepository(Action::class)->findOneBy(['reference' => $reference]);
 
         if (Uuid::isValid($reference) === true && $action === null) {
-            $action = $this->entityManager->find('App:Action', $reference);
+            $action = $this->entityManager->find(Action::class, $reference);
         }
 
         if ($action === null) {

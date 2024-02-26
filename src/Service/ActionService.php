@@ -374,6 +374,35 @@ class ActionService
     }//end handleActionThrows()
 
     /**
+     * Implodes a multidimensional array to a string.
+     *
+     * @param array  $array
+     * @param string $separator
+     * @param string $keyValueSeparator
+     *
+     * @return string
+     * @deprecated
+     */
+    public function implodeMultiArray(array $array, string $separator = ', ', string $keyValueSeparator = '='): string
+    {
+        $str = '';
+
+        foreach ($array as $key => $value) {
+            $currentSeparator = $separator;
+            if ($key === array_key_first($array)) {
+                $currentSeparator = '';
+            }
+            if (is_array($value)) {
+                $str .= "$currentSeparator\"$key\"{$keyValueSeparator}[{$this->implodeMultiArray($value, $separator, $keyValueSeparator)}]";
+            } else {
+                $str .= "$currentSeparator\"$key\"$keyValueSeparator\"$value\"";
+            }
+        }
+
+        return $str;
+    }
+
+    /**
      * If we got here through CronjobCommand, write user feedback to $this->io before handling an Action.
      *
      * @param Action      $action
@@ -390,7 +419,7 @@ class ActionService
             && $this->session->get('currentCronJobSubThrow') == $event->getSubType()
         ) {
             $currentCronJobThrow = true;
-            $this->io->block("Found an Action with matching conditions: [{$this->gatewayOEService->implodeMultiArray($action->getConditions())}]");
+            $this->io->block("Found an Action with matching conditions: [{$this->implodeMultiArray($action->getConditions())}]");
             $this->io->definitionList(
                 'The conditions of the following Action match with the ActionEvent data',
                 new TableSeparator(),
@@ -408,7 +437,7 @@ class ActionService
                 ['LastRunTime' => $action->getLastRunTime()],
                 ['Status' => is_null($action->getStatus()) ? null : ($action->getStatus() ? 'True' : 'False')],
             );
-            $this->io->block("The configuration of this Action: [{$this->gatewayOEService->implodeMultiArray($action->getConfiguration())}]");
+            $this->io->block("The configuration of this Action: [{$this->implodeMultiArray($action->getConfiguration())}]");
         }//end if
 
         // Commented out this log, to avoid log creation overload. Only add back for debug reasons.
