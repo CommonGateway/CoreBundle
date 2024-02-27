@@ -16,16 +16,17 @@ use Twig\Error\LoaderError;
 
 class ProxyService
 {
+
     /**
      * @var Source|null The source that we are current working with.
      */
     private ?Source $source = null;
 
     /**
-     * @param CallService $callService The call service.
-     * @param MappingService $mappingService The mapping service.
-     * @param EntityManagerInterface $entityManager The entity manager.
-     * @param LoggerInterface $callLogger The logger for call related logs.
+     * @param CallService            $callService    The call service.
+     * @param MappingService         $mappingService The mapping service.
+     * @param EntityManagerInterface $entityManager  The entity manager.
+     * @param LoggerInterface        $callLogger     The logger for call related logs.
      */
     public function __construct(
         private readonly CallService $callService,
@@ -55,7 +56,7 @@ class ProxyService
             return $config;
         }
 
-        if(array_key_exists(key: 'mapping', array: $endpointConfigOut[$configKey]) === false) {
+        if (array_key_exists(key: 'mapping', array: $endpointConfigOut[$configKey]) === false) {
             return $config;
         }
 
@@ -171,10 +172,10 @@ class ProxyService
      * Handles the endpointsConfig of a Source after we did an api-call.
      * See FileSystemService->handleEndpointsConfigIn() for how we handle this on FileSystem sources.
      *
-     * @param array $endpointConfigIn
-     * @param Response|null $response The response of an api-call we might want to change.
-     * @param Exception|null $exception The Exception thrown as response of an api-call that we might want to change.
-     * @param string|null $responseContent The response content of an api-call that threw an Exception that we might want to change.
+     * @param array          $endpointConfigIn
+     * @param Response|null  $response         The response of an api-call we might want to change.
+     * @param Exception|null $exception        The Exception thrown as response of an api-call that we might want to change.
+     * @param string|null    $responseContent  The response content of an api-call that threw an Exception that we might want to change.
      *
      * @return Response The response.
      */
@@ -202,10 +203,10 @@ class ProxyService
     }//end handleEndpointsConfigIn()
 
     /**
-     * @param Source $source    The source to send the request to.
-     * @param string $endpoint  The endpoint on the proxy to send the request to.
-     * @param string $method    The method of the request to send.
-     * @param array $config     The configuration to use with the request.
+     * @param Source $source   The source to send the request to.
+     * @param string $endpoint The endpoint on the proxy to send the request to.
+     * @param string $method   The method of the request to send.
+     * @param array  $config   The configuration to use with the request.
      *
      * @return Response The resulting response.
      *
@@ -221,7 +222,7 @@ class ProxyService
 
         if (empty($endpointsConfig) === true
             || (array_key_exists(key: $endpoint, array: $endpointsConfig) === false
-                && array_key_exists(key: 'global', array: $endpointsConfig) === false)
+            && array_key_exists(key: 'global', array: $endpointsConfig) === false)
         ) {
             return $this->callService->call(source: $source, endpoint: $endpoint, method: $method, config: $config);
         }
@@ -249,6 +250,7 @@ class ProxyService
                 $this->source = $source;
                 return $this->handleEndpointsConfigIn(endpointConfigIn: $endpointConfig['in'], exception: $exception);
             }
+
             throw $exception;
         }
 

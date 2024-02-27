@@ -108,7 +108,7 @@ class CallService
             $config['verify'] = $this->fileService->writeFile(baseFilename: 'verify', contents: $config['verify']);
         }
 
-    }//end getCertificate()
+    }//end setCertificate()
 
     /**
      * Removes certificates and private keys from disk if they are not necessary anymore.
@@ -158,7 +158,6 @@ class CallService
         return $headers;
 
     }//end removeEmptyHeaders()
-
 
     /**
      * Uses input parameters to create array with data used for creating a log after any call to a Source.
@@ -345,7 +344,7 @@ class CallService
             $this->entityManager->persist(object: $this->source);
 
             throw $exception;
-        }
+        }//end try
 
         $createCertificates && $this->removeFiles(configuration: $config);
 
@@ -417,17 +416,17 @@ class CallService
 
         // This if is statement prevents binary code from being used a string.
         if (in_array(
-                needle: $contentType,
-                haystack: [
-                    'application/pdf',
-                    'application/pdf; charset=utf-8',
-                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8',
-                    'application/msword',
-                    'image/jpeg',
-                    'image/png',
-                ]
-            ) === false
+            needle: $contentType,
+            haystack: [
+                'application/pdf',
+                'application/pdf; charset=utf-8',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8',
+                'application/msword',
+                'image/jpeg',
+                'image/png',
+            ]
+        ) === false
         ) {
             $this->callLogger->debug(message: 'Response content: '.$responseBody);
         }
@@ -441,30 +440,30 @@ class CallService
         }
 
         switch ($contentType) {
-            case 'text/plain':
-                return $responseBody;
-            case 'text/yaml':
-            case 'text/x-yaml':
-            case 'text/yaml; charset=utf-8':
-                return $yamlEncoder->decode(data: $responseBody, format: 'yaml');
-            case 'text/xml':
-            case 'text/xml; charset=utf-8':
-            case 'application/pdf':
-            case 'application/pdf; charset=utf-8':
-            case 'application/msword':
-            case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-            case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8':
-            case 'image/jpeg':
-            case 'image/png':
-                $this->callLogger->debug(message: 'Response content: binary code..');
-                return base64_encode(string: $responseBody);
-            case 'application/xml':
-            case 'application/xml; charset=utf-8':
-                return $xmlEncoder->decode(data: $responseBody, format: 'xml');
-            case 'application/json':
-            case 'application/json; charset=utf-8':
-            default:
-                $result = json_decode(json: $responseBody, associative: true);
+        case 'text/plain':
+            return $responseBody;
+        case 'text/yaml':
+        case 'text/x-yaml':
+        case 'text/yaml; charset=utf-8':
+            return $yamlEncoder->decode(data: $responseBody, format: 'yaml');
+        case 'text/xml':
+        case 'text/xml; charset=utf-8':
+        case 'application/pdf':
+        case 'application/pdf; charset=utf-8':
+        case 'application/msword':
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8':
+        case 'image/jpeg':
+        case 'image/png':
+            $this->callLogger->debug(message: 'Response content: binary code..');
+            return base64_encode(string: $responseBody);
+        case 'application/xml':
+        case 'application/xml; charset=utf-8':
+            return $xmlEncoder->decode(data: $responseBody, format: 'xml');
+        case 'application/json':
+        case 'application/json; charset=utf-8':
+        default:
+            $result = json_decode(json: $responseBody, associative: true);
         }//end switch
 
         if (isset($result) === true) {
