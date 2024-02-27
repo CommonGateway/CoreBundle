@@ -3,15 +3,35 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Gateway as Source;
+use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Response;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\ExpressionLanguage\SyntaxError;
+use Twig\Error\LoaderError;
 
 class ProxyService
 {
+    /**
+     * @var Source|null The source that we are current working with.
+     */
+    private ?Source $source = null;
+
+    /**
+     * @param CallService $callService The call service.
+     * @param MappingService $mappingService The mapping service.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param LoggerInterface $callLogger The logger for call related logs.
+     */
     public function __construct(
         private readonly CallService $callService,
         private readonly MappingService $mappingService,
         private readonly EntityManagerInterface $entityManager,
-        private readonly Logger $callLogger
+        private readonly LoggerInterface $callLogger
     ) {
 
     }//end __construct()
@@ -28,36 +48,39 @@ class ProxyService
      */
     private function handleEndpointConfigOut(array $config, array $endpointConfigOut, string $configKey): array
     {
-        $this->callLogger->info('Handling outgoing configuration for endpoint');
 
-        if (array_key_exists($configKey, $config) === false || array_key_exists($configKey, $endpointConfigOut) === false) {
+        $this->callLogger->info(message: 'Handling outgoing configuration for endpoint');
+
+        if (array_key_exists(key: $configKey, array: $config) === false || array_key_exists(key: $configKey, array: $endpointConfigOut) === false) {
             return $config;
         }
 
-        if (array_key_exists('mapping', $endpointConfigOut[$configKey])) {
-            $mapping = $this->entityManager->getRepository(Mapping::class)->findOneBy(['reference' => $endpointConfigOut[$configKey]['mapping']]);
-            if ($mapping === null) {
-                $this->callLogger->error("Could not find mapping with reference {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source");
+        if(array_key_exists(key: 'mapping', array: $endpointConfigOut[$configKey]) === false) {
+            return $config;
+        }
 
-                return $config;
-            }//end if
+        $mapping = $this->entityManager->getRepository(className: Mapping::class)->findOneBy(criteria: ['reference' => $endpointConfigOut[$configKey]['mapping']]);
+        if ($mapping === null) {
+            $this->callLogger->error(message: "Could not find mapping with reference {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source");
 
-            if (is_string($config[$configKey]) === true) {
-                try {
-                    $body               = $this->mappingService->mapping($mapping, \Safe\json_decode($config[$configKey], true));
-                    $config[$configKey] = \Safe\json_encode($body);
-                } catch (Exception | LoaderError | SyntaxError $exception) {
-                    $this->callLogger->error("Could not map with mapping {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source. ".$exception->getMessage());
-                }
-            }//end if
+            return $config;
+        }//end if
 
-            if (is_array($config[$configKey]) === true) {
-                try {
-                    $config[$configKey] = $this->mappingService->mapping($mapping, $config[$configKey]);
-                } catch (Exception | LoaderError | SyntaxError $exception) {
-                    $this->callLogger->error("Could not map with mapping {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source. ".$exception->getMessage());
-                }
-            }//end if
+        if (is_string(value: $config[$configKey]) === true) {
+            try {
+                $body               = $this->mappingService->mapping(mappingObject: $mapping, input: \Safe\json_decode(json: $config[$configKey], assoc: true));
+                $config[$configKey] = \Safe\json_encode(value: $body);
+            } catch (Exception | LoaderError | SyntaxError $exception) {
+                $this->callLogger->error(message: "Could not map with mapping {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source. ".$exception->getMessage());
+            }
+        }//end if
+
+        if (is_array(value: $config[$configKey]) === true) {
+            try {
+                $config[$configKey] = $this->mappingService->mapping(mappingObject: $mapping, input: $config[$configKey]);
+            } catch (Exception | LoaderError | SyntaxError $exception) {
+                $this->callLogger->error(message: "Could not map with mapping {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source. ".$exception->getMessage());
+            }
         }//end if
 
         return $config;
@@ -77,35 +100,27 @@ class ProxyService
      */
     private function handleEndpointConfigInEx(array $endpointConfigIn, Exception $exception, ?string $responseContent): Response
     {
-        // Check if error is set and the exception has a getResponse() otherwise just throw the exception.
-        if (array_key_exists('error', $endpointConfigIn) === false
-            || method_exists(get_class($exception), 'getResponse') === false
-            || $exception->getResponse() === null
-        ) {
-            throw $exception;
-        }
-
-        $body = json_decode($responseContent, true);
+        $body = \Safe\json_decode(json: $responseContent, assoc: true);
 
         // Create exception array.
         $exceptionArray = [
             'statusCode' => $exception->getResponse()->getStatusCode(),
             'headers'    => $exception->getResponse()->getHeaders(),
-            'body'       => ($body ?? $exception->getResponse()->getBody()->getContents()),
+            'body'       => ($body ?? $this->callService->decodeResponse(source: $this->source, response: $exception->getResponse())),
             'message'    => $exception->getMessage(),
         ];
 
-        $headers = $this->handleEndpointConfigIn($exception->getResponse()->getHeaders(), $endpointConfigIn, 'headers');
-        $error   = $this->handleEndpointConfigIn($exceptionArray, $endpointConfigIn, 'error');
+        $headers = $this->handleEndpointConfigIn(responseData: $exception->getResponse()->getHeaders(), endpointConfigIn: $endpointConfigIn, responseProperty: 'headers');
+        $error   = $this->handleEndpointConfigIn(responseData: $exceptionArray, endpointConfigIn: $endpointConfigIn, responseProperty: 'error');
 
-        if (array_key_exists('statusCode', $error)) {
+        if (array_key_exists(key: 'statusCode', array: $error)) {
             $statusCode = $error['statusCode'];
             unset($error['statusCode']);
         }
 
-        $error = json_encode($error);
+        $error = \Safe\json_encode(value: $error);
 
-        return new Response(($statusCode ?? $exception->getCode()), $headers, $error, $exception->getResponse()->getProtocolVersion());
+        return new Response(status: ($statusCode ?? $exception->getCode()), headers: $headers, body: $error, version: $exception->getResponse()->getProtocolVersion());
 
     }//end handleEndpointConfigInEx()
 
@@ -120,31 +135,33 @@ class ProxyService
      *
      * @return array The configuration array.
      */
-    private function handleEndpointConfigIn($responseData, array $endpointConfigIn, string $responseProperty): array
+    private function handleEndpointConfigIn(array|string $responseData, array $endpointConfigIn, string $responseProperty): array|string
     {
         $this->callLogger->info('Handling incoming configuration for endpoint');
-        if (empty($responseData) === true || array_key_exists($responseProperty, $endpointConfigIn) === false) {
+        if (empty($responseData) === true || array_key_exists(key: $responseProperty, array: $endpointConfigIn) === false) {
             return $responseData;
         }
 
-        if (array_key_exists('mapping', $endpointConfigIn[$responseProperty]) === true) {
-            $mapping = $this->entityManager->getRepository(Mapping::class)->findOneBy(['reference' => $endpointConfigIn[$responseProperty]['mapping']]);
-            if ($mapping === null) {
-                $this->callLogger->error("Could not find mapping with reference {$endpointConfigIn[$responseProperty]['mapping']} while handling $responseProperty EndpointConfigIn for a Source.");
+        if (array_key_exists(key: 'mapping', array: $endpointConfigIn[$responseProperty]) === false) {
+            return $responseData;
+        }
 
-                return $responseData;
-            }
+        $mapping = $this->entityManager->getRepository(className: Mapping::class)->findOneBy(criteria: ['reference' => $endpointConfigIn[$responseProperty]['mapping']]);
+        if ($mapping === null) {
+            $this->callLogger->error("Could not find mapping with reference {$endpointConfigIn[$responseProperty]['mapping']} while handling $responseProperty EndpointConfigIn for a Source.");
 
-            if (is_array($responseData) === false) {
-                $responseData = json_decode($responseData->getContents(), true);
-            }
+            return $responseData;
+        }
 
-            try {
-                $responseData = $this->mappingService->mapping($mapping, $responseData);
-            } catch (Exception | LoaderError | SyntaxError $exception) {
-                $this->callLogger->error("Could not map with mapping {$endpointConfigIn[$responseProperty]['mapping']} while handling $responseProperty EndpointConfigIn for a Source. ".$exception->getMessage());
-            }
-        }//end if
+        if (is_array(value: $responseData) === false) {
+            $responseData = json_decode(json: $responseData->getContents(), associative: true);
+        }
+
+        try {
+            $responseData = $this->mappingService->mapping(mappingObject: $mapping, input: $responseData);
+        } catch (Exception | LoaderError | SyntaxError $exception) {
+            $this->callLogger->error("Could not map with mapping {$endpointConfigIn[$responseProperty]['mapping']} while handling $responseProperty EndpointConfigIn for a Source. ".$exception->getMessage());
+        }
 
         return $responseData;
 
@@ -154,70 +171,46 @@ class ProxyService
      * Handles the endpointsConfig of a Source after we did an api-call.
      * See FileSystemService->handleEndpointsConfigIn() for how we handle this on FileSystem sources.
      *
-     * @param string         $endpoint        The endpoint used to do an api-call on the source.
-     * @param Response|null  $response        The response of an api-call we might want to change.
-     * @param Exception|null $exception       The Exception thrown as response of an api-call that we might want to change.
-     * @param string|null    $responseContent The response content of an api-call that threw an Exception that we might want to change.
-     *
-     * @throws Exception
+     * @param array $endpointConfigIn
+     * @param Response|null $response The response of an api-call we might want to change.
+     * @param Exception|null $exception The Exception thrown as response of an api-call that we might want to change.
+     * @param string|null $responseContent The response content of an api-call that threw an Exception that we might want to change.
      *
      * @return Response The response.
      */
-    private function handleEndpointsConfigIn(string $endpoint, ?Response $response, ?Exception $exception = null, ?string $responseContent = null): Response
+    private function handleEndpointsConfigIn(array $endpointConfigIn, ?Response $response = null, ?Exception $exception = null, ?string $responseContent = null): Response
     {
-        $this->callLogger->info('Handling incoming configuration for endpoints');
-        $endpointsConfig = $this->source->getEndpointsConfig();
-        if (empty($endpointsConfig)) {
-            if ($response !== null) {
-                return $response;
-            }
-
-            if ($exception !== null) {
-                throw $exception;
-            }
-        }
-
-        if (array_key_exists($endpoint, $endpointsConfig) === true
-            && array_key_exists('in', $endpointsConfig[$endpoint]) === false
-            || array_key_exists('global', $endpointsConfig) === true
-            && array_key_exists('in', $endpointsConfig['global']) === false
-        ) {
-            if ($response !== null) {
-                return $response;
-            }
-
-            if ($exception !== null) {
-                throw $exception;
-            }
-        }//end if
-
-        // Let's check if the endpoint used on this source has "in" configuration in the EndpointsConfig of the source.
-        if (array_key_exists($endpoint, $endpointsConfig) === true && array_key_exists('in', $endpointsConfig[$endpoint])) {
-            $endpointConfigIn = $endpointsConfig[$endpoint]['in'];
-        } else if (array_key_exists('global', $endpointsConfig) === true && array_key_exists('in', $endpointsConfig['global'])) {
-            $endpointConfigIn = $endpointsConfig['global']['in'];
-        }
 
         // Let's check if we are dealing with an Exception and not a Response.
-        if (isset($endpointConfigIn) === true && $response === null && $exception !== null) {
-            return $this->handleEndpointConfigInEx($endpointConfigIn, $exception, $responseContent);
+        if ($response === null && $exception !== null) {
+            return $this->handleEndpointConfigInEx(endpointConfigIn: $endpointConfigIn, exception: $exception, responseContent: $responseContent);
         }
 
         // Handle endpointConfigIn for a Response.
-        if (isset($endpointConfigIn) === true && $response !== null) {
-            $headers = $this->handleEndpointConfigIn($response->getHeaders(), $endpointConfigIn, 'headers');
-            $body    = $this->handleEndpointConfigIn($response->getBody(), $endpointConfigIn, 'body');
+        if ($response !== null) {
+            $headers = $this->handleEndpointConfigIn(responseData: $response->getHeaders(), endpointConfigIn: $endpointConfigIn, responseProperty: 'headers');
+            $body    = $this->handleEndpointConfigIn(responseData: $response->getBody(), endpointConfigIn: $endpointConfigIn, responseProperty: 'body');
 
             // Todo: handle content-type.
-            is_array($body) === true && $body = json_encode($body);
+            is_array(value: $body) === true && $body = json_encode(value: $body);
 
-            return new Response($response->getStatusCode(), $headers, $body, $response->getProtocolVersion());
+            return new Response(status: $response->getStatusCode(), headers: $headers, body: $body, version: $response->getProtocolVersion());
         }
 
         return $response;
 
     }//end handleEndpointsConfigIn()
 
+    /**
+     * @param Source $source    The source to send the request to.
+     * @param string $endpoint  The endpoint on the proxy to send the request to.
+     * @param string $method    The method of the request to send.
+     * @param array $config     The configuration to use with the request.
+     *
+     * @return Response The resulting response.
+     *
+     * @throws \Exception
+     */
     public function callProxy(
         Source $source,
         string $endpoint,
@@ -227,21 +220,19 @@ class ProxyService
         $endpointsConfig = $source->getEndpointsConfig();
 
         if (empty($endpointsConfig) === true
-            || (array_key_exists($endpoint, $endpointsConfig) === false
-            && array_key_exists('global', $endpointsConfig) === false)
+            || (array_key_exists(key: $endpoint, array: $endpointsConfig) === false
+                && array_key_exists(key: 'global', array: $endpointsConfig) === false)
         ) {
             return $this->callService->call(source: $source, endpoint: $endpoint, method: $method, config: $config);
-            ;
         }
 
-        if (array_key_exists($endpoint, $endpointsConfig) === true) {
+        if (array_key_exists(key: $endpoint, array: $endpointsConfig) === true) {
             $endpointConfig = $endpointsConfig[$endpoint];
-        } else if (array_key_exists('global', $endpointsConfig) === true) {
+        } else if (array_key_exists(key: 'global', array: $endpointsConfig) === true) {
             $endpointConfig = $endpointsConfig['global'];
         }
 
         if (isset($endpointConfig['out']) === true) {
-            // TODO: dit reduceren tot één functiecall
             $config = $this->handleEndpointConfigOut(config: $config, endpointConfigOut: $endpointConfig['out'], configKey: 'query');
             $config = $this->handleEndpointConfigOut(config: $config, endpointConfigOut: $endpointConfig['out'], configKey: 'headers');
             $config = $this->handleEndpointConfigOut(config: $config, endpointConfigOut: $endpointConfig['out'], configKey: 'body');
@@ -249,12 +240,20 @@ class ProxyService
 
         try {
             $response = $this->callService->call(source: $source, endpoint: $endpoint, method: $method, config: $config);
-        } catch (ServerException | ClientException | RequestException | Exception $exception) {
-            // TODO
+        } catch (ServerException | ClientException | RequestException | GuzzleException | Exception $exception) {
+            if (isset($endpointConfig['in']) === true
+                && isset($endpointConfig['in']['error']) === true
+                && method_exists(object_or_class: get_class(object: $exception), method: 'getResponse') === true
+                && $exception->getResponse() !== null
+            ) {
+                $this->source = $source;
+                return $this->handleEndpointsConfigIn(endpointConfigIn: $endpointConfig['in'], exception: $exception);
+            }
+            throw $exception;
         }
 
         if (isset($endpointConfig['in']) === true) {
-            $response = $this->handleEndpointsConfigIn(endpoint: $endpoint, response: $response);
+            $response = $this->handleEndpointsConfigIn(endpointConfigIn: $endpointConfig['in'], response: $response);
         }
 
         return $response;
