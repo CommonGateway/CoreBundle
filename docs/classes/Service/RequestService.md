@@ -13,6 +13,9 @@ Handles incoming request from endpoints or controllers that relate to the gatewa
 |[__construct](#requestservice__construct)|The constructor sets al needed variables.|
 |[checkEmbedded](#requestservicecheckembedded)|If embedded should be shown or not.|
 |[createResponse](#requestservicecreateresponse)|Creating the response object.|
+|[federationProxyHandler](#requestservicefederationproxyhandler)||
+|[getFederationConfig](#requestservicegetfederationconfig)||
+|[getFederationSources](#requestservicegetfederationsources)||
 |[getId](#requestservicegetid)|Get the ID from given parameters.|
 |[getSchema](#requestservicegetschema)|Get the schema from given parameters returns false if no schema could be established.|
 |[getScopes](#requestservicegetscopes)|Get a scopes array for the current user (or of the anonymus if no user s logged in).|
@@ -22,6 +25,7 @@ Handles incoming request from endpoints or controllers that relate to the gatewa
 |[requestHandler](#requestservicerequesthandler)|Handles incoming requests and is responsible for generating a response.|
 |[serializeData](#requestserviceserializedata)|Determines the right content type and serializes the data accordingly.|
 |[shouldWeUnsetEmbedded](#requestserviceshouldweunsetembedded)|Handle the Application Endpoint Configuration for embedded. If embedded should be shown or not.|
+|[useRelayRating](#requestserviceuserelayrating)||
 
 
 
@@ -127,6 +131,78 @@ Creating the response object.
 `\Response`
 
 
+
+
+<hr />
+
+
+### RequestService::federationProxyHandler  
+
+**Description**
+
+```php
+ federationProxyHandler (void)
+```
+
+ 
+
+ 
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`void`
+
+
+<hr />
+
+
+### RequestService::getFederationConfig  
+
+**Description**
+
+```php
+ getFederationConfig (void)
+```
+
+ 
+
+ 
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`void`
+
+
+<hr />
+
+
+### RequestService::getFederationSources  
+
+**Description**
+
+```php
+ getFederationSources (void)
+```
+
+ 
+
+ 
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`void`
 
 
 <hr />
@@ -384,6 +460,30 @@ Configuration Example 2: ['global']['out']['embedded']['unset']['except'] = ['ap
 `array|null`
 
 > The updated result.
+
+
+<hr />
+
+
+### RequestService::useRelayRating  
+
+**Description**
+
+```php
+ useRelayRating (void)
+```
+
+ 
+
+ 
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`void`
 
 
 <hr />
