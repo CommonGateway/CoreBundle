@@ -26,6 +26,7 @@ use GuzzleHttp\TransferStats;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpClient\Exception\JsonException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -830,7 +831,8 @@ class RequestService
     public function getFederationSources(array &$config, Collection $proxies): Collection
     {
         if (isset($config['query']['_federalization_use_sources']) === true && isset($config['query']['_federalization_exclude_sources']) === true) {
-            throw new Exception('Use of sources and exclusion of sources cannot be done in the same request');
+            $this->logger->error('Use of sources and exclusion of sources cannot be done in the same request');
+            throw new JsonException('Use of sources and exclusion of sources cannot be done in the same request', 400);
         }
 
         $usedSourceIds     = [];
