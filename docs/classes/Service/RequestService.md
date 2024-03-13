@@ -13,9 +13,9 @@ Handles incoming request from endpoints or controllers that relate to the gatewa
 |[__construct](#requestservice__construct)|The constructor sets al needed variables.|
 |[checkEmbedded](#requestservicecheckembedded)|If embedded should be shown or not.|
 |[createResponse](#requestservicecreateresponse)|Creating the response object.|
-|[federationProxyHandler](#requestservicefederationproxyhandler)||
-|[getFederationConfig](#requestservicegetfederationconfig)||
-|[getFederationSources](#requestservicegetfederationsources)||
+|[federationProxyHandler](#requestservicefederationproxyhandler)|Runs a federated request to a multitude of proxies and aggregrates the results.|
+|[getFederationConfig](#requestservicegetfederationconfig)|Update configuration from federation query parameters, sets timeout and http_errors, unsets the query parameters.|
+|[getFederationSources](#requestservicegetfederationsources)|Takes the config array and includes or excludes sources for federated requests based upon query parameters.|
 |[getId](#requestservicegetid)|Get the ID from given parameters.|
 |[getSchema](#requestservicegetschema)|Get the schema from given parameters returns false if no schema could be established.|
 |[getScopes](#requestservicegetscopes)|Get a scopes array for the current user (or of the anonymus if no user s logged in).|
@@ -25,7 +25,7 @@ Handles incoming request from endpoints or controllers that relate to the gatewa
 |[requestHandler](#requestservicerequesthandler)|Handles incoming requests and is responsible for generating a response.|
 |[serializeData](#requestserviceserializedata)|Determines the right content type and serializes the data accordingly.|
 |[shouldWeUnsetEmbedded](#requestserviceshouldweunsetembedded)|Handle the Application Endpoint Configuration for embedded. If embedded should be shown or not.|
-|[useRelayRating](#requestserviceuserelayrating)||
+|[useRelayRating](#requestserviceuserelayrating)|Checks if the query parameter to relay rating is set and if so, return the value while unsetting the query parameter.|
 
 
 
@@ -141,20 +141,33 @@ Creating the response object.
 **Description**
 
 ```php
- federationProxyHandler (void)
+public federationProxyHandler (\Collection $proxies, string $path, array $config)
 ```
 
- 
+Runs a federated request to a multitude of proxies and aggregrates the results. 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(\Collection) $proxies`
+: The proxies to send the request to.  
+* `(string) $path`
+: The path to send the request to.  
+* `(array) $config`
+: The call configuration.  
 
 **Return Values**
 
-`void`
+`\Response`
+
+> The resulting response.
+
+
+**Throws Exceptions**
+
+
+`\Exception`
 
 
 <hr />
@@ -165,20 +178,23 @@ Creating the response object.
 **Description**
 
 ```php
- getFederationConfig (void)
+public getFederationConfig (array $config)
 ```
 
- 
+Update configuration from federation query parameters, sets timeout and http_errors, unsets the query parameters. 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(array) $config`
+: The original call configuration including the federation query parameters.  
 
 **Return Values**
 
-`void`
+`array`
+
+> The updated call configuration.
 
 
 <hr />
@@ -189,21 +205,32 @@ Creating the response object.
 **Description**
 
 ```php
- getFederationSources (void)
+public getFederationSources (array $config, \Collection $proxies)
 ```
 
- 
+Takes the config array and includes or excludes sources for federated requests based upon query parameters. 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(array) $config`
+: The call configuration.  
+* `(\Collection) $proxies`
+: The full list of proxies configured for the endpoint.  
 
 **Return Values**
 
-`void`
+`\Collection`
 
+> The list of proxies that remains after including or excluding sources.
+
+
+**Throws Exceptions**
+
+
+`\Exception`
+> Thrown when both include and exclude query parameters are given.
 
 <hr />
 
@@ -470,20 +497,23 @@ Configuration Example 2: ['global']['out']['embedded']['unset']['except'] = ['ap
 **Description**
 
 ```php
- useRelayRating (void)
+public useRelayRating (array $config)
 ```
 
- 
+Checks if the query parameter to relay rating is set and if so, return the value while unsetting the query parameter. 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(array) $config`
+: The call configuration.  
 
 **Return Values**
 
-`void`
+`bool`
+
+
 
 
 <hr />

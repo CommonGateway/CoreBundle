@@ -26,6 +26,7 @@ use GuzzleHttp\TransferStats;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpClient\Exception\JsonException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -798,6 +799,12 @@ class RequestService
 
     }//end proxyHandler()
 
+    /**
+     * Checks if the query parameter to relay rating is set and if so, return the value while unsetting the query parameter.
+     *
+     * @param  array $config The call configuration.
+     * @return bool
+     */
     public function useRelayRating(array &$config): bool
     {
         $returnValue = true;
@@ -811,17 +818,29 @@ class RequestService
 
     }//end useRelayRating()
 
+    /**
+     * Takes the config array and includes or excludes sources for federated requests based upon query parameters.
+     *
+     * @param array      $config  The call configuration.
+     * @param Collection $proxies The full list of proxies configured for the endpoint.
+     *
+     * @return Collection The list of proxies that remains after including or excluding sources.
+     *
+     * @throws Exception Thrown when both include and exclude query parameters are given.
+     */
     public function getFederationSources(array &$config, Collection $proxies): Collection
     {
         if (isset($config['query']['_federalization_use_sources']) === true && isset($config['query']['_federalization_exclude_sources']) === true) {
-            throw new Exception('Use of sources and exclusion of sources cannot be done in the same request');
+            $this->logger->error('Use of sources and exclusion of sources cannot be done in the same request');
+            throw new JsonException('Use of sources and exclusion of sources cannot be done in the same request', 400);
         }
 
         $usedSourceIds     = [];
         $excludedSourceIds = [];
 
+        // Returns all proxies when neither uses or excludes are given, this can be done by not setting the query parameters, but also by setting uses to * or excludes to null
         if ((isset($config['query']['_federalization_use_sources']) === true && $config['query']['_federalization_use_sources'] === '*')
-            || (isset($config['query']['_federalization_exclude_sources']) === true && $config['query']['_federalization_exclude_sources'] === null)
+            || (isset($config['query']['_federalization_exclude_sources']) === true && $config['query']['_federalization_exclude_sources'] === 'null')
             || (isset($config['query']['_federalization_use_sources']) === false && isset($config['query']['_federalization_exclude_sources']) === false)
         ) {
             unset($config['query']['_federalization_exclude_sources'], $config['query']['_federalization_use_sources']);
@@ -846,6 +865,13 @@ class RequestService
 
     }//end getFederationSources()
 
+    /**
+     * Update configuration from federation query parameters, sets timeout and http_errors, unsets the query parameters.
+     *
+     * @param array $config The original call configuration including the federation query parameters.
+     *
+     * @return array The updated call configuration.
+     */
     public function getFederationConfig(array $config): array
     {
         $config['timeout']     = 3;
@@ -865,6 +891,17 @@ class RequestService
 
     }//end getFederationConfig()
 
+    /**
+     * Runs a federated request to a multitude of proxies and aggregrates the results.
+     *
+     * @param Collection $proxies The proxies to send the request to.
+     * @param string     $path    The path to send the request to.
+     * @param array      $config  The call configuration.
+     *
+     * @return Response The resulting response.
+     *
+     * @throws Exception
+     */
     public function federationProxyHandler(Collection $proxies, string $path, array $config): Response
     {
         $this->requestTimes = [];
