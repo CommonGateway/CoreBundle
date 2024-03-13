@@ -14,7 +14,7 @@ Handles incoming request from endpoints or controllers that relate to the gatewa
 |[checkEmbedded](#requestservicecheckembedded)|If embedded should be shown or not.|
 |[createResponse](#requestservicecreateresponse)|Creating the response object.|
 |[federationProxyHandler](#requestservicefederationproxyhandler)|Runs a federated request to a multitude of proxies and aggregrates the results.|
-|[getFederationConfig](#requestservicegetfederationconfig)||
+|[getFederationConfig](#requestservicegetfederationconfig)|Update configuration from federation query parameters, sets timeout and http_errors, unsets the query parameters.|
 |[getFederationSources](#requestservicegetfederationsources)|Takes the config array and includes or excludes sources for federated requests based upon query parameters.|
 |[getId](#requestservicegetid)|Get the ID from given parameters.|
 |[getSchema](#requestservicegetschema)|Get the schema from given parameters returns false if no schema could be established.|
@@ -178,20 +178,23 @@ Runs a federated request to a multitude of proxies and aggregrates the results.
 **Description**
 
 ```php
- getFederationConfig (void)
+public getFederationConfig (array $config)
 ```
 
- 
+Update configuration from federation query parameters, sets timeout and http_errors, unsets the query parameters. 
 
  
 
 **Parameters**
 
-`This function has no parameters.`
+* `(array) $config`
+: The original call configuration including the federation query parameters.  
 
 **Return Values**
 
-`void`
+`array`
+
+> The updated call configuration.
 
 
 <hr />
