@@ -801,7 +801,7 @@ class RequestService
     /**
      * Checks if the query parameter to relay rating is set and if so, return the value while unsetting the query parameter.
      *
-     * @param array $config The call configuration.
+     * @param  array $config The call configuration.
      * @return bool
      */
     public function useRelayRating(array &$config): bool
@@ -820,7 +820,7 @@ class RequestService
     /**
      * Takes the config array and includes or excludes sources for federated requests based upon query parameters.
      *
-     * @param array $config The call configuration.
+     * @param array      $config  The call configuration.
      * @param Collection $proxies The full list of proxies configured for the endpoint.
      *
      * @return Collection The list of proxies that remains after including or excluding sources.
@@ -885,8 +885,8 @@ class RequestService
      * Runs a federated request to a multitude of proxies and aggregrates the results.
      *
      * @param Collection $proxies The proxies to send the request to.
-     * @param string $path The path to send the request to.
-     * @param array $config The call configuration.
+     * @param string     $path    The path to send the request to.
+     * @param array      $config  The call configuration.
      *
      * @return Response The resulting response.
      *
