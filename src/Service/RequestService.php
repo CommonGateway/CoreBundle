@@ -862,6 +862,13 @@ class RequestService
 
     }//end getFederationSources()
 
+    /**
+     * Update configuration from federation query parameters, sets timeout and http_errors, unsets the query parameters.
+     *
+     * @param array $config The original call configuration including the federation query parameters.
+     *
+     * @return array The updated call configuration.
+     */
     public function getFederationConfig(array $config): array
     {
         $config['timeout']     = 3;
