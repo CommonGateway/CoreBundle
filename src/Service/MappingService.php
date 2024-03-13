@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\SyntaxError;
+use MongoDB\Model\BSONDocument;
 
 /**
  * The mapping service handles the mapping (or transformation) of array A (input) to array B (output).
@@ -103,6 +104,31 @@ class MappingService
     }//end encodeArrayKeys()
 
     /**
+     * Turns all values that are BSONDocument to normal arrays.
+     *
+     * Make sure we don't have BSONDocument (MongoDB) in our input.
+     *
+     * @param mixed $inputValue A value from the input array (or the input if it's the first iteration).
+     *
+     * @return mixed $inputValue
+     */
+    private function bsonDocumentToArray($inputValue)
+    {
+        if ($inputValue instanceof BSONDocument === true) {
+            $inputValue = $inputValue->getArrayCopy();
+        }
+
+        if (is_array($inputValue) === true) {
+            foreach ($inputValue as $key => $value) {
+                $inputValue[$key] = $this->bsonDocumentToArray($value);
+            }
+        }
+
+        return $inputValue;
+
+    }//end bsonDocumentToArray()
+
+    /**
      * Maps (transforms) an array (input) to a different array (output).
      *
      * @param Mapping $mappingObject The mapping object that forms the recipe for the mapping
@@ -116,6 +142,9 @@ class MappingService
     public function mapping(Mapping $mappingObject, array $input, bool $list = false): array
     {
         $this->session->set('mapping', $mappingObject->getId()->toString());
+
+        // Make sure we don't have BSONDocument (MongoDB) in our input.
+        $input = $this->bsonDocumentToArray($input);
 
         // Check for list
         if ($list === true) {
@@ -132,7 +161,8 @@ class MappingService
             foreach ($input as $key => $value) {
                 // Mapping function expects an array for $input, make sure we always pass an array to this function.
                 if (is_array($value) === false || empty($extraValues) === false) {
-                    $value = array_merge(['value' => $value], $extraValues);
+                    // todo: we want to remove ['value' => $value] from this at some point, for now required for DOWR to work
+                    $value = array_merge((array) $value, ['value' => $value], $extraValues);
                 }
 
                 $list[$key] = $this->mapping($mappingObject, $value);
@@ -245,6 +275,9 @@ class MappingService
         if (str_starts_with($cast, 'unsetIfValue==') === true) {
             $unsetIfValue = substr($cast, 14);
             $cast         = 'unsetIfValue';
+        } else if (str_starts_with($cast, 'setNullIfValue==') === true) {
+            $setNullIfValue = substr($cast, 16);
+            $cast           = 'setNullIfValue';
         } else if (str_starts_with($cast, 'countValue:') === true) {
             $countValue = substr($cast, 11);
             $cast       = 'countValue';
@@ -332,6 +365,19 @@ class MappingService
 
             if ($unsetIfValue === '' && is_array($value) === true && $this->areAllArrayKeysNull($value) === true) {
                 $dotArray->delete($key);
+            }
+            break;
+        case 'setNullIfValue':
+            if (isset($setNullIfValue) === true
+                && $value == $setNullIfValue
+                || ($setNullIfValue === '' && empty($value))
+                || ($setNullIfValue === '' && $value === null)
+            ) {
+                $value = null;
+            }
+
+            if ($setNullIfValue === '' && is_array($value) === true && $this->areAllArrayKeysNull($value) === true) {
+                $value = null;
             }
             break;
         case 'countValue':

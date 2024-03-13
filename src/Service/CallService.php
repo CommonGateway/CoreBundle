@@ -12,6 +12,7 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Response;
 use Psr\Log\LoggerInterface;
+use Safe\Exceptions\JsonException;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
@@ -480,8 +481,19 @@ class CallService
 
             if (is_string($config[$configKey]) === true) {
                 try {
-                    $body               = $this->mappingService->mapping($mapping, \Safe\json_decode($config[$configKey], true));
+                    $body = \Safe\json_decode($config[$configKey]);
+                } catch (JsonException $exception) {
+                    $xmlEncoder = new XmlEncoder([]);
+                    $body       = $xmlEncoder->decode($config[$configKey], 'xml');
+                } catch (Exception $exception) {
+                    $this->callLogger->error("Could not map with mapping {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source. Body could not be decoded. ".$exception->getMessage());
+                }
+
+                try {
+                    $body               = $this->mappingService->mapping($mapping, $body);
                     $config[$configKey] = \Safe\json_encode($body);
+
+                    $config['headers']['content-type'] = 'application/json';
                 } catch (Exception | LoaderError | SyntaxError $exception) {
                     $this->callLogger->error("Could not map with mapping {$endpointConfigOut[$configKey]['mapping']} while handling $configKey EndpointConfigOut for a Source. ".$exception->getMessage());
                 }
@@ -705,12 +717,17 @@ class CallService
         // als geen content-type header dan content-type header is accept header.
         $responseBody = $response->getBody()->getContents();
         if (isset($responseBody) === false || empty($responseBody) === true) {
-            if (in_array($response->getStatusCode(), [200, 201]) === true) {
-                $this->callLogger->warning('Cannot decode an empty response body');
+            if ($response->getStatusCode() === 204) {
+                $this->callLogger->info('Responses with status code 204 have no response body.');
                 return [];
             }
 
-            $this->callLogger->error('Cannot decode an empty response body');
+            if (in_array($response->getStatusCode(), [200, 201]) === true) {
+                $this->callLogger->warning('Cannot decode an empty response body (status = 200 or 201).');
+                return [];
+            }
+
+            $this->callLogger->error('Cannot decode an empty response body.');
             return [];
         }
 
