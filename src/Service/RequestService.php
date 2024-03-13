@@ -798,6 +798,12 @@ class RequestService
 
     }//end proxyHandler()
 
+    /**
+     * Checks if the query parameter to relay rating is set and if so, return the value while unsetting the query parameter.
+     *
+     * @param array $config The call configuration.
+     * @return bool
+     */
     public function useRelayRating(array &$config): bool
     {
         $returnValue = true;
@@ -811,6 +817,16 @@ class RequestService
 
     }//end useRelayRating()
 
+    /**
+     * Takes the config array and includes or excludes sources for federated requests based upon query parameters.
+     *
+     * @param array $config The call configuration.
+     * @param Collection $proxies The full list of proxies configured for the endpoint.
+     *
+     * @return Collection The list of proxies that remains after including or excluding sources.
+     *
+     * @throws Exception Thrown when both include and exclude query parameters are given.
+     */
     public function getFederationSources(array &$config, Collection $proxies): Collection
     {
         if (isset($config['query']['_federalization_use_sources']) === true && isset($config['query']['_federalization_exclude_sources']) === true) {
@@ -865,6 +881,17 @@ class RequestService
 
     }//end getFederationConfig()
 
+    /**
+     * Runs a federated request to a multitude of proxies and aggregrates the results.
+     *
+     * @param Collection $proxies The proxies to send the request to.
+     * @param string $path The path to send the request to.
+     * @param array $config The call configuration.
+     *
+     * @return Response The resulting response.
+     *
+     * @throws Exception
+     */
     public function federationProxyHandler(Collection $proxies, string $path, array $config): Response
     {
         $this->requestTimes = [];
