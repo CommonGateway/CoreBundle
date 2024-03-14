@@ -10,6 +10,7 @@ use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ServerException;
+use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Psr7\Response;
 use Psr\Log\LoggerInterface;
 use Safe\Exceptions\JsonException;
@@ -227,7 +228,7 @@ class CallService
         array $config = [],
         bool $asynchronous = false,
         bool $createCertificates = true
-    ): Response {
+    ) {
         $this->source = $source;
         $this->session->set('source', $this->source->getId()->toString());
         $this->callLogger->info('Calling source '.$this->source->getName());
@@ -301,7 +302,7 @@ class CallService
             if ($asynchronous === false) {
                 $response = $this->client->request($method, $url, $config);
             } else {
-                $response = $this->client->requestAsync($method, $url, $config);
+                return $this->client->requestAsync($method, $url, $config);
             }
 
             $this->source->setStatus($response->getStatusCode());
