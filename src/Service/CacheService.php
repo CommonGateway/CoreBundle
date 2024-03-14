@@ -830,7 +830,14 @@ class CacheService
      */
     private function addOwnerOrgFilter(array $filter): array
     {
-        if (isset($filter['_self.owner.id']) === true || isset($filter['$and']['$or']['_self.owner.id'])) {
+        if (isset($filter['$and']) === true) {
+            $andCount = (count($filter['$and']) - 1);
+            if (isset($filter['$and'][$andCount]['$or'][0]['_self.owner.id']) === true) {
+                return $filter;
+            }
+        }
+
+        if (isset($filter['_self.owner.id']) === true) {
             return $filter;
         }
 
@@ -871,7 +878,6 @@ class CacheService
         $this->session->set('mongoDBFilter', $filter);
 
         $collection = $this->client->objects->json;
-        $results    = $collection->find($filter, $options)->toArray();
         $total      = $this->countObjectsInCache($filter);
 
         $results = $collection->find($filter, $options)->toArray();
@@ -1087,9 +1093,9 @@ class CacheService
      * the _search query is present in $completeFilter query params, then we use that instead.
      * _search query param supports filtering on specific properties with ?_search[property1,property2]=value.
      *
-     * @param array       $filter
-     * @param array       $completeFilter
-     * @param string|null $search
+     * @param array       $filter         The filter array for mongoDB so far.
+     * @param array       $completeFilter All filters used with query params, will also contain properties like _order and _search.
+     * @param string|null $search         A string to search with, or null.
      *
      * @return void
      */
@@ -1103,9 +1109,9 @@ class CacheService
             return;
         }
 
-        // Normal search on every property with type text (includes strings).
+        // Normal search on every property with type text (includes strings), like this: ?_search=value.
         if (is_string($search) === true) {
-            $filter['$text'] = ['$search' => $search];
+            $filter = $this->handleSearchString($filter, $search);
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value.
         else if (is_array($search) === true) {
@@ -1115,8 +1121,8 @@ class CacheService
             }
 
             $searchRegex = [
-                '$regex'   => $searchRegex,
-                '$options' => 'i',
+                '$regex'   => ".*$searchRegex.*",
+                '$options' => 'im',
             ];
             $properties  = explode(',', array_key_first($search));
             foreach ($properties as $property) {
@@ -1126,6 +1132,54 @@ class CacheService
         }
 
     }//end handleSearch()
+
+    /**
+     * Uses given $search string to add a filter on all properties to the existing $filter array.
+     * Will try to do a wildcard search using $regex on all attributes of the entities in $filter['_self.schema.id']['$in'].
+     * Else uses the $text + $search mongoDB query in order to do a non wildcard search on all string type properties.
+     *
+     * @param array  $filter The filter array for mongoDB so far.
+     * @param string $search The search string to search all properties with.
+     *
+     * @return array The updated filter array.
+     */
+    private function handleSearchString(array $filter, string $search): array
+    {
+        // Non wildcard version, just in case we do not have '_self.schema.id'
+        if (isset($filter['_self.schema.id']['$in']) === false) {
+            $filter['$text'] = ['$search' => $search];
+            return $filter;
+        }
+
+        // Use regex in order to do wildcard search.
+        $searchRegex = [
+            '$regex'   => ".*$search.*",
+            '$options' => 'im',
+        ];
+
+        // Add regex wildcard search for each attribute of each entity we are filtering on.
+        $countEntities = 0;
+        foreach ($filter['_self.schema.id']['$in'] as $entityId) {
+            $entityObject = $this->entityManager->getRepository(Entity::class)->find($entityId);
+            if ($entityObject === null) {
+                $this->logger->error("Could not find an Entity with id = $entityId during handleSearch()");
+                continue;
+            }
+
+            $countEntities = ($countEntities + 1);
+            foreach ($entityObject->getAttributes() as $attribute) {
+                $filter['$or'][][$attribute->getName()] = $searchRegex;
+            }
+        }
+
+        // If we somehow did not find any entities we should just use non wildcard search instead of returning all objects without filtering.
+        if ($countEntities === 0) {
+            $filter['$text'] = ['$search' => $search];
+        }
+
+        return $filter;
+
+    }//end handleSearchString()
 
     /**
      * Decides the pagination values.

@@ -685,7 +685,7 @@ class InstallationService
             return $object;
         }
 
-        if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) > 0) {
+        if (array_key_exists('version', $schema) === true && version_compare($schema['version'], $object->getVersion()) > 0 && $object->getVersion() !== '0.0.0') {
             isset($this->style) === true && $this->style->writeln('The schema has a version number ('.$schema['version'].') higher than the current version ('.$object->getVersion().'), the object data is updated');
             $this->logger->debug('The schema has a version number higher than the current version, the object data is updated', ['schema' => $schema['$id'], 'schemaVersion' => $schema['version'], 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);
@@ -693,7 +693,13 @@ class InstallationService
             return $object;
         }
 
-        if (array_key_exists('version', $schema) === false || $object->getVersion() === null) {
+        if (array_key_exists('version', $schema) === false || $object->getVersion() === null || $object->getVersion() === '0.0.0') {
+            if ((array_key_exists('version', $schema) === false || $schema['version'] === '0.0.0')
+                && ($object->getVersion() === null || $object->getVersion() === '0.0.0')
+            ) {
+                $schema['version'] = '0.0.1';
+            }
+
             isset($this->style) === true && $this->style->writeln('The schema doesn\'t have a version number ('.($schema['version'] ?? null).') or the existing object doesn\'t have a version number ('.$object->getVersion().'), the object data is created');
             $this->logger->debug('The schema doesn\'t have a version number or the existing object doesn\'t have a version number, the object data is created', ['schema' => $schema['$id'], 'schemaVersion' => ($schema['version'] ?? null), 'objectVersion' => $object->getVersion()]);
             $object->fromSchema($schema);

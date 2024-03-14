@@ -230,7 +230,7 @@ class GatewayResourceService
         }
 
         if ($action === null) {
-            $this->logger->error("No action found for $reference.", ['plugin' => $pluginName]);
+            $this->pluginLogger->error("No action found for $reference.", ['plugin' => $pluginName]);
         }//end if
 
         return $action;

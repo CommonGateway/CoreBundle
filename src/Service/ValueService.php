@@ -20,6 +20,13 @@ use Ramsey\Uuid\Uuid;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 /**
+ * Handles connecting sub-objects for ValueMessages.
+ *
+ * @Author Robert Zondervan <rober@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Service
  * This service belongs to the open registers framework.
  */
 class ValueService
