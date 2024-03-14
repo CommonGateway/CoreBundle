@@ -79,7 +79,7 @@ Logs can be retrieved through the `admin/logs` endpoint that provides them from 
 ## Mail when logs are created
 It is possible to configure an Action ( See [Events.md](Events.md)) in such a way that on log creation an email is sent automatically. For this, your Action needs to listen to the Gateway event `commongateway.log.create` and needs to be handled by the ActionHandler named `EmailHandler`.
 
-> **Note:** In the future you might need the CommunicationBundle Plugin in order to use the EmailHandler for sending emails. For now, it is a default of the Gateway.
+> **Note:** You will need the [CustomerNotificationsBundle](https://github.com/CommonGateway/CustomerNotificationsBundle) in order to use the EmailHandler for sending emails.
 
 > **Note:** The event `commongateway.log.create` is not thrown for logs with [log level](#log-levels) `DEBUG`, `INFO`, `NOTICE`, or `WARNING`.
 

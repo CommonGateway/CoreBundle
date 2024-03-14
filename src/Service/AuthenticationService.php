@@ -384,6 +384,10 @@ class AuthenticationService
             break;
         }//end switch
 
+        if (isset($authenticationConfig['headers']) === true) {
+            $config['headers'] = $authenticationConfig['headers'];
+        }
+
         $guzzleConfig = $source->getConfiguration();
         $client       = new Client($guzzleConfig);
         $response     = $client->post($authenticationConfig['tokenUrl'], $config);
