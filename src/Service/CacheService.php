@@ -118,7 +118,7 @@ class CacheService
         $this->objectEntityService = $objectEntityService;
         $this->session             = $session;
         if ($this->parameters->get('cache_url', false)) {
-            $this->client        = new Client($this->parameters->get('cache_url'));
+            $this->client = new Client($this->parameters->get('cache_url'));
         }
 
         // Use current user and the organization of this user to get the correct objects database client.
@@ -166,10 +166,10 @@ class CacheService
         $objectDatabases = $this->entityManager->getRepository(Database::class)->findAll();
         foreach ($objectDatabases as $database) {
             $objectsClient = new Client($database->getUri());
-            $collection = $objectsClient->objects->json;
-            
-            $filter     = [];
-            $objects    = $collection->find($filter)->toArray();
+            $collection    = $objectsClient->objects->json;
+
+            $filter  = [];
+            $objects = $collection->find($filter)->toArray();
             isset($this->style) === true && $this->style->writeln('Found '.count($objects).' in Database '.$database->getReference());
         }
 
@@ -196,20 +196,20 @@ class CacheService
 
         // Backwards compatablity.
         if (((isset($config['schemas']) === false || $config['schemas'] !== true)
-                || (isset($config['endpoints']) === false || $config['endpoints'] !== true))
+            || (isset($config['endpoints']) === false || $config['endpoints'] !== true))
             && isset($this->client) === false
         ) {
             isset($this->style) === true && $this->style->writeln('No cache client found, halting warmup');
-            
+
             return Command::FAILURE;
         }
-        
+
         $objectDatabases = $this->entityManager->getRepository(Database::class)->findAll();
         if (isset($config['objects']) === false || $config['objects'] !== true
             && count($objectDatabases) === 0
         ) {
             isset($this->style) === true && $this->style->writeln('No objects cache client found, halting warmup');
-            
+
             return Command::FAILURE;
         }
 
@@ -266,25 +266,25 @@ class CacheService
                 }
             }
         }
-        
+
         // Created indexes and remove data from cache.
         if (isset($config['objects']) === false || $config['objects'] !== true) {
             foreach ($objectDatabases as $database) {
                 $objectsClient = new Client($database->getUri());
-                
+
                 $objectsClient->objects->json->createIndex(['$**' => 'text']);
-                
+
                 $this->removeDataFromCache($objectsClient->objects->json, 'App:ObjectEntity');
             }
         }
-        
+
         if (isset($config['schemas']) === false || $config['schemas'] !== true) {
             $this->client->schemas->json->createIndex(['$**' => 'text']);
         }
 
         if (isset($config['endpoints']) === false || $config['endpoints'] !== true) {
             $this->client->endpoints->json->createIndex(['$**' => 'text']);
-            
+
             $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
         }
 
@@ -343,13 +343,13 @@ class CacheService
         if ($objectEntity->getEntity() === null) {
             return $objectEntity;
         }
-        
+
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
-        } elseif (empty($objectEntity->getOrganization()->getDatabase() === false)) {
+        } else if (empty($objectEntity->getOrganization()->getDatabase() === false)) {
             $objectsClient = new Client($objectEntity->getOrganization()->getDatabase()->getUri());
-            $collection = $objectsClient->objects->json;
-        } elseif (isset($this->client) === true) {
+            $collection    = $objectsClient->objects->json;
+        } else if (isset($this->client) === true) {
             $collection = $this->client->objects->json;
         } else {
             return $objectEntity;
@@ -440,10 +440,10 @@ class CacheService
     {
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
-        } elseif (empty($objectEntity->getOrganization()->getDatabase() === false)) {
+        } else if (empty($objectEntity->getOrganization()->getDatabase() === false)) {
             $objectsClient = new Client($objectEntity->getOrganization()->getDatabase()->getUri());
-            $collection = $objectsClient->objects->json;
-        } elseif (isset($this->client) === true) {
+            $collection    = $objectsClient->objects->json;
+        } else if (isset($this->client) === true) {
             $collection = $this->client->objects->json;
         } else {
             return;
@@ -471,8 +471,8 @@ class CacheService
             $objectEntity = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['id' => $identification]);
             if ($objectEntity !== null && empty($objectEntity->getOrganization()->getDatabase() === false)) {
                 $objectsClient = new Client($objectEntity->getOrganization()->getDatabase()->getUri());
-                $collection = $objectsClient->objects->json;
-            } elseif (isset($this->client) === true) {
+                $collection    = $objectsClient->objects->json;
+            } else if (isset($this->client) === true) {
                 $collection = $this->client->objects->json;
             } else {
                 return null;
@@ -956,16 +956,16 @@ class CacheService
         $filter = $this->addOwnerOrgFilter($filter);
 
         $this->session->set('mongoDBFilter', $filter);
-        
+
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
-        } elseif (isset($this->client) === true) {
+        } else if (isset($this->client) === true) {
             $collection = $this->client->objects->json;
         } else {
             return [];
         }
-        
-        $total      = $this->countObjectsInCache($filter);
+
+        $total = $this->countObjectsInCache($filter);
 
         $results = $collection->find($filter, $options)->toArray();
 
@@ -1031,15 +1031,15 @@ class CacheService
         $filter = $this->addOwnerOrgFilter($filter);
 
         $this->session->set('mongoDBFilter', $filter);
-        
+
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
-        } elseif (isset($this->client) === true) {
+        } else if (isset($this->client) === true) {
             $collection = $this->client->objects->json;
         } else {
             return 0;
         }
-        
+
         return $collection->count($filter);
 
     }//end countObjectsInCache()
@@ -1107,16 +1107,16 @@ class CacheService
 
         // Let's see if we need a search
         $this->handleSearch($filter, $completeFilter, null);
-        
+
         $result = [];
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
-        } elseif (isset($this->client) === true) {
+        } else if (isset($this->client) === true) {
             $collection = $this->client->objects->json;
         } else {
             return $result;
         }
-        
+
         foreach ($queries as $query) {
             $result[$query] = $collection->aggregate([['$match' => $filter], ['$unwind' => "\${$query}"], ['$group' => ['_id' => "\${$query}", 'count' => ['$sum' => 1]]]])->toArray();
         }
