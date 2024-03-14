@@ -43,7 +43,7 @@ class CacheService
      * @var Client
      */
     private Client $client;
-    
+
     /**
      * @var Client
      */
@@ -117,10 +117,10 @@ class CacheService
         $this->objectEntityService = $objectEntityService;
         $this->session             = $session;
         if ($this->parameters->get('cache_url', false)) {
-            $this->client = new Client($this->parameters->get('cache_url'));
+            $this->client        = new Client($this->parameters->get('cache_url'));
             $this->objectsClient = $this->client;
         }
-        
+
         // Use current user and the organization of this user to get the correct objects database client.
         $user = $this->objectEntityService->findCurrentUser();
         if ($user !== null && $user->getOrganization() !== null) {
