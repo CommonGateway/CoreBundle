@@ -122,6 +122,7 @@ class ObjectEntityService
         $object = $this->setOwner($object, $user);
         return $this->setOrganization($object, $user);
         // Do not persist here, because this triggers the subscriber that calls this setOwnerAndOrg() function.
+
     }//end setOwnerAndOrg()
 
     /**
