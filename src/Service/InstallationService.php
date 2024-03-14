@@ -103,6 +103,7 @@ class InstallationService
         'https://docs.commongateway.nl/schemas/CollectionEntity.schema.json',
         'https://docs.commongateway.nl/schemas/Cronjob.schema.json',
         'https://docs.commongateway.nl/schemas/DashboardCard.schema.json',
+        'https://docs.commongateway.nl/schemas/Database.schema.json',
         'https://docs.commongateway.nl/schemas/Endpoint.schema.json',
         'https://docs.commongateway.nl/schemas/Entity.schema.json',
         'https://docs.commongateway.nl/schemas/Gateway.schema.json',

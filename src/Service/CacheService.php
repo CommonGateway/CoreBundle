@@ -5,6 +5,7 @@ namespace CommonGateway\CoreBundle\Service;
 use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\ObjectEntity;
+use App\Entity\Organization;
 use App\Entity\User;
 use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use DateTime;
@@ -42,6 +43,11 @@ class CacheService
      * @var Client
      */
     private Client $client;
+    
+    /**
+     * @var Client
+     */
+    private Client $objectsClient;
 
     /**
      * @var EntityManagerInterface
@@ -112,6 +118,16 @@ class CacheService
         $this->session             = $session;
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
+            $this->objectsClient = $this->client;
+        }
+        
+        // Use current user and the organization of this user to get the correct objects database client.
+        $user = $this->objectEntityService->findCurrentUser();
+        if ($user !== null && $user->getOrganization() !== null) {
+            $organization = $this->entityManager->getRepository(Organization::class)->find($user->getOrganization());
+            if ($organization !== null && $organization->getDatabase() !== null) {
+                $this->objectsClient = new Client($organization->getDatabase()->getUri());
+            }
         }
 
     }//end __construct()
