@@ -59,7 +59,8 @@ class ValueMessageHandler implements MessageHandlerInterface
         } catch (SessionNotFoundException $exception) {
             $this->session = new Session();
         }
-        $this->logger       = $objectLogger;
+
+        $this->logger = $objectLogger;
 
     }//end __construct()
 
