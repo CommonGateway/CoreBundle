@@ -15,6 +15,7 @@ use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\Exception\SessionNotFoundException;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -42,8 +43,13 @@ class ValueSubscriber implements EventSubscriberInterface
         LoggerInterface $objectLogger,
         RequestStack $requestStack
     ) {
-        $this->session = $requestStack->getSession();
-        $this->logger  = $objectLogger;
+        try {
+            $this->session = $requestStack->getSession();
+        } catch (SessionNotFoundException $exception) {
+            $this->session = new Session();
+        }
+
+        $this->logger     = $objectLogger;
 
     }//end __construct()
 
