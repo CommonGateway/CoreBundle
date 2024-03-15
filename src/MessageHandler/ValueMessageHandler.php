@@ -50,7 +50,6 @@ class ValueMessageHandler implements MessageHandlerInterface
     public function __construct(
         private readonly ValueService $valueService,
         private readonly ValueRepository $repository,
-        SessionInterface $session,
         LoggerInterface $objectLogger,
         RequestStack $requestStack
     ) {
