@@ -15,17 +15,12 @@ use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class ValueSubscriber implements EventSubscriberInterface
 {
-
-    /**
-     * @var MessageBusInterface The message bus.
-     */
-    private MessageBusInterface $messageBus;
-
     /**
      * @var SessionInterface $session The current session.
      */
@@ -37,17 +32,16 @@ class ValueSubscriber implements EventSubscriberInterface
     private LoggerInterface $logger;
 
     /**
-     * @param MessageBusInterface $messageBus   The message bus.
-     * @param SessionInterface    $session      The current session.
-     * @param LoggerInterface     $objectLogger The logger.
+     * @param MessageBusInterface $messageBus The message bus.
+     * @param LoggerInterface $objectLogger The logger.
+     * @param RequestStack $requestStack
      */
     public function __construct(
-        MessageBusInterface $messageBus,
-        SessionInterface $session,
-        LoggerInterface $objectLogger
+        private readonly MessageBusInterface $messageBus,
+        LoggerInterface $objectLogger,
+        RequestStack $requestStack
     ) {
-        $this->messageBus = $messageBus;
-        $this->session    = $session;
+        $this->session    = $requestStack->getSession();
         $this->logger     = $objectLogger;
 
     }//end __construct()
