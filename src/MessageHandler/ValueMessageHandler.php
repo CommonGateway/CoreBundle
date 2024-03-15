@@ -15,6 +15,7 @@ use CommonGateway\CoreBundle\Subscriber\ActionSubscriber;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
@@ -27,16 +28,6 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
  */
 class ValueMessageHandler implements MessageHandlerInterface
 {
-
-    /**
-     * @var ValueService The value service.
-     */
-    private ValueService $valueService;
-
-    /**
-     * @var ValueRepository The value repository.
-     */
-    private ValueRepository $repository;
 
     /**
      * @var SessionInterface The current session.
@@ -57,14 +48,17 @@ class ValueMessageHandler implements MessageHandlerInterface
      * @param LoggerInterface  $objectLogger The logger.
      */
     public function __construct(
-        ValueService $valueService,
-        ValueRepository $repository,
+        private readonly ValueService $valueService,
+        private readonly ValueRepository $repository,
         SessionInterface $session,
-        LoggerInterface $objectLogger
+        LoggerInterface $objectLogger,
+        RequestStack $requestStack
     ) {
-        $this->valueService = $valueService;
-        $this->repository   = $repository;
-        $this->session      = $session;
+        try {
+            $this->session = $requestStack->getSession();
+        } catch (SessionNotFoundException $exception) {
+            $this->session = new Session();
+        }
         $this->logger       = $objectLogger;
 
     }//end __construct()
