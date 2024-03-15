@@ -122,7 +122,7 @@ class CacheService
         }
 
     }//end __construct()
-    
+
     /**
      * Use current user and the organization of this user to get the correct objects database client.
      *
@@ -137,8 +137,9 @@ class CacheService
                 $this->objectsClient = new Client($organization->getDatabase()->getUri());
             }
         }
-    }
-    
+
+    }//end setObjectClient()
+
     /**
      * Set symfony style in order to output to the console.
      *
@@ -966,7 +967,7 @@ class CacheService
         $filter = $this->addOwnerOrgFilter($filter);
 
         $this->session->set('mongoDBFilter', $filter);
-        
+
         $this->setObjectClient();
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
@@ -1042,7 +1043,7 @@ class CacheService
         $filter = $this->addOwnerOrgFilter($filter);
 
         $this->session->set('mongoDBFilter', $filter);
-        
+
         $this->setObjectClient();
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
