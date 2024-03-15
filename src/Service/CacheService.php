@@ -356,7 +356,7 @@ class CacheService
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
         } else if (empty($objectEntity->getOrganization()->getDatabase() === false)) {
-            $database = $objectEntity->getOrganization()->getDatabase();
+            $database      = $objectEntity->getOrganization()->getDatabase();
             $objectsClient = new Client($database->getUri());
             $collection    = $objectsClient->objects->json;
         } else if (isset($this->client) === true) {
@@ -370,6 +370,7 @@ class CacheService
             if (isset($database) === true) {
                 $databaseRef = $database->getReference();
             }
+
             $this->style->writeln($databaseRef.' ===> Start caching object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName());
         }
 
