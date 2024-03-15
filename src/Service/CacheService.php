@@ -213,7 +213,7 @@ class CacheService
         }
 
         $objectDatabases = $this->entityManager->getRepository(Database::class)->findAll();
-        if (isset($config['objects']) === false || $config['objects'] !== true
+        if ((isset($config['objects']) === false || $config['objects'] !== true)
             && count($objectDatabases) === 0
         ) {
             isset($this->style) === true && $this->style->writeln('No objects cache client found, halting warmup');
@@ -282,7 +282,7 @@ class CacheService
 
                 $objectsClient->objects->json->createIndex(['$**' => 'text']);
 
-                $this->removeDataFromCache($objectsClient->objects->json, 'App:ObjectEntity');
+                $this->removeDataFromCache($objectsClient->objects->json, 'App:ObjectEntity', $database);
             }
         }
 
@@ -300,11 +300,11 @@ class CacheService
 
     }//end warmup()
 
-    private function removeDataFromCache(Collection $collection, string $type): void
+    private function removeDataFromCache(Collection $collection, string $type, Database $database = null): void
     {
         if (isset($this->style) === true) {
-            $this->style->newline();
-            $this->style->writeln(["Removing deleted $type", '============']);
+            $databaseMsg = $database ? ' from Database: '.$database->getReference() : null;
+            $this->style->section("Removing deleted $type".$databaseMsg);
         }
 
         $objects = $collection->find()->toArray();
@@ -356,7 +356,8 @@ class CacheService
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
         } else if (empty($objectEntity->getOrganization()->getDatabase() === false)) {
-            $objectsClient = new Client($objectEntity->getOrganization()->getDatabase()->getUri());
+            $database = $objectEntity->getOrganization()->getDatabase();
+            $objectsClient = new Client($database->getUri());
             $collection    = $objectsClient->objects->json;
         } else if (isset($this->client) === true) {
             $collection = $this->client->objects->json;
@@ -365,7 +366,11 @@ class CacheService
         }
 
         if (isset($this->style) === true) {
-            $this->style->writeln('Start caching object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName());
+            $databaseRef = $this->parameters->get('cache_url');
+            if (isset($database) === true) {
+                $databaseRef = $database->getReference();
+            }
+            $this->style->writeln($databaseRef.' ===> Start caching object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName());
         }
 
         // todo: temp fix to make sure we have the latest version of this ObjectEntity before we cache it.
