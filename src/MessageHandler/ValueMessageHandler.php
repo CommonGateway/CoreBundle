@@ -42,10 +42,10 @@ class ValueMessageHandler implements MessageHandlerInterface
     /**
      * Constructor.
      *
-     * @param ValueService $valueService The value service.
-     * @param ValueRepository $repository The value repository.
+     * @param ValueService    $valueService The value service.
+     * @param ValueRepository $repository   The value repository.
      * @param LoggerInterface $objectLogger The logger.
-     * @param RequestStack $requestStack
+     * @param RequestStack    $requestStack
      */
     public function __construct(
         private readonly ValueService $valueService,

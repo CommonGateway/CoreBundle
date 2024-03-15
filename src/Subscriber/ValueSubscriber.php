@@ -21,6 +21,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 
 class ValueSubscriber implements EventSubscriberInterface
 {
+
     /**
      * @var SessionInterface $session The current session.
      */
@@ -32,17 +33,17 @@ class ValueSubscriber implements EventSubscriberInterface
     private LoggerInterface $logger;
 
     /**
-     * @param MessageBusInterface $messageBus The message bus.
-     * @param LoggerInterface $objectLogger The logger.
-     * @param RequestStack $requestStack
+     * @param MessageBusInterface $messageBus   The message bus.
+     * @param LoggerInterface     $objectLogger The logger.
+     * @param RequestStack        $requestStack
      */
     public function __construct(
         private readonly MessageBusInterface $messageBus,
         LoggerInterface $objectLogger,
         RequestStack $requestStack
     ) {
-        $this->session    = $requestStack->getSession();
-        $this->logger     = $objectLogger;
+        $this->session = $requestStack->getSession();
+        $this->logger  = $objectLogger;
 
     }//end __construct()
 
