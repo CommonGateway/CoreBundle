@@ -121,7 +121,15 @@ class CacheService
             $this->client = new Client($this->parameters->get('cache_url'));
         }
 
-        // Use current user and the organization of this user to get the correct objects database client.
+    }//end __construct()
+    
+    /**
+     * Use current user and the organization of this user to get the correct objects database client.
+     *
+     * @return void
+     */
+    private function setObjectClient()
+    {
         $user = $this->objectEntityService->findCurrentUser();
         if ($user !== null && $user->getOrganization() !== null) {
             $organization = $this->entityManager->getRepository(Organization::class)->find($user->getOrganization());
@@ -129,9 +137,8 @@ class CacheService
                 $this->objectsClient = new Client($organization->getDatabase()->getUri());
             }
         }
-
-    }//end __construct()
-
+    }
+    
     /**
      * Set symfony style in order to output to the console.
      *
@@ -344,6 +351,7 @@ class CacheService
             return $objectEntity;
         }
 
+        $this->setObjectClient();
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
         } else if (empty($objectEntity->getOrganization()->getDatabase() === false)) {
@@ -438,6 +446,7 @@ class CacheService
      */
     public function removeObject(ObjectEntity $objectEntity): void
     {
+        $this->setObjectClient();
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
         } else if (empty($objectEntity->getOrganization()->getDatabase() === false)) {
@@ -465,6 +474,7 @@ class CacheService
      */
     public function getObject(string $identification, string $schema = null): ?array
     {
+        $this->setObjectClient();
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
         } else {
@@ -956,7 +966,8 @@ class CacheService
         $filter = $this->addOwnerOrgFilter($filter);
 
         $this->session->set('mongoDBFilter', $filter);
-
+        
+        $this->setObjectClient();
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
         } else if (isset($this->client) === true) {
@@ -1031,7 +1042,8 @@ class CacheService
         $filter = $this->addOwnerOrgFilter($filter);
 
         $this->session->set('mongoDBFilter', $filter);
-
+        
+        $this->setObjectClient();
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
         } else if (isset($this->client) === true) {
@@ -1109,6 +1121,7 @@ class CacheService
         $this->handleSearch($filter, $completeFilter, null);
 
         $result = [];
+        $this->setObjectClient();
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
         } else if (isset($this->client) === true) {
