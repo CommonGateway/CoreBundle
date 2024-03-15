@@ -49,7 +49,7 @@ class ValueSubscriber implements EventSubscriberInterface
             $this->session = new Session();
         }
 
-        $this->logger     = $objectLogger;
+        $this->logger = $objectLogger;
 
     }//end __construct()
 
