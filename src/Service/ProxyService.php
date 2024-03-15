@@ -234,7 +234,7 @@ class ProxyService
 
         if (empty($endpointsConfig) === true
             || (array_key_exists(key: $endpoint, array: $endpointsConfig) === false
-                && array_key_exists(key: 'global', array: $endpointsConfig) === false)
+            && array_key_exists(key: 'global', array: $endpointsConfig) === false)
         ) {
             return $this->callService->call(source: $source, endpoint: $endpoint, method: $method, config: $config, asynchronous: $asynchronous);
         }
@@ -273,7 +273,6 @@ class ProxyService
         return $response;
 
     }//end callProxy()
-
 
     private function proxyConfigBuilder(): array
     {
@@ -592,7 +591,8 @@ class ProxyService
             }
 
             $decoded            = $this->callService->decodeResponse(source: $proxies[$id], response: $response['value']);
-            $decoded['results'] = array_map(callback:
+            $decoded['results'] = array_map(
+                callback:
                 function (array $value) use ($proxies, $id) {
                     $value['_source'] = $proxies[$id]->getId()->toString();
                     return $value;
