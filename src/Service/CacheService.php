@@ -464,6 +464,8 @@ class CacheService
         } else {
             return;
         }
+        
+        // Todo: cascade remove subobjects (Check Attribute->getCascadeDelete() & Attribute->getMayBeOrphaned())
 
         $identification = $objectEntity->getId()->toString();
 

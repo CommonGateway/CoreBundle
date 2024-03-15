@@ -1367,6 +1367,8 @@ class RequestService
 
                 return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             }
+            
+            // Todo: cascade remove subobjects (Check Attribute->getCascadeDelete() & Attribute->getMayBeOrphaned())
 
             $this->entityManager->remove($this->object);
             $this->entityManager->flush();
