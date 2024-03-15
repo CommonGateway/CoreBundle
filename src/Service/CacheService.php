@@ -464,9 +464,8 @@ class CacheService
         } else {
             return;
         }
-        
-        // Todo: cascade remove subobjects (Check Attribute->getCascadeDelete() & Attribute->getMayBeOrphaned())
 
+        // Todo: cascade remove subobjects (Check Attribute->getCascadeDelete() & Attribute->getMayBeOrphaned())
         $identification = $objectEntity->getId()->toString();
 
         $collection->findOneAndDelete(['_id' => $identification]);
