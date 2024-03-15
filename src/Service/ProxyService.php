@@ -587,7 +587,7 @@ class ProxyService
             if ($response['state'] === 'rejected' && ($response['reason'] instanceof ConnectException || $config['http_errors'] === false)) {
                 continue;
             } else if ($response['state'] === 'rejected' && ($response['reason'] instanceof ServerException || $response['reason'] instanceof ClientException)) {
-                $this->logger->error(message: $reponse['reason']->getMessage());
+                $this->logger->error(message: $response['reason']->getMessage());
                 return new SymfonyResponse(content: \Safe\json_encode(value: ['message' => $response['reason']->getMessage()]), status: 523, headers: ['content-type' => 'application/json']);
             }
 
