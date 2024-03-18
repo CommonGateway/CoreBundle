@@ -212,15 +212,6 @@ class CacheService
             return Command::FAILURE;
         }
 
-        $objectDatabases = $this->entityManager->getRepository(Database::class)->findAll();
-        if ((isset($config['objects']) === false || $config['objects'] !== true)
-            && count($objectDatabases) === 0
-        ) {
-            isset($this->style) === true && $this->style->writeln('No objects cache client found, halting warmup');
-
-            return Command::FAILURE;
-        }
-
         // Objects.
         if ((isset($config['objects']) === false || $config['objects'] !== true)
             && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
@@ -276,6 +267,7 @@ class CacheService
         }
 
         // Created indexes and remove data from cache.
+        $objectDatabases = $this->entityManager->getRepository(Database::class)->findAll();
         if (isset($config['objects']) === false || $config['objects'] !== true) {
             foreach ($objectDatabases as $database) {
                 $objectsClient = new Client($database->getUri());
@@ -284,6 +276,9 @@ class CacheService
 
                 $this->removeDataFromCache($objectsClient->objects->json, 'App:ObjectEntity', $database);
             }
+            
+            $this->client->objects->json->createIndex(['$**' => 'text']);
+            $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
         }
 
         if (isset($config['schemas']) === false || $config['schemas'] !== true) {
