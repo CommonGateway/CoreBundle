@@ -212,15 +212,6 @@ class CacheService
             return Command::FAILURE;
         }
 
-        $objectDatabases = $this->entityManager->getRepository(Database::class)->findAll();
-        if ((isset($config['objects']) === false || $config['objects'] !== true)
-            && count($objectDatabases) === 0
-        ) {
-            isset($this->style) === true && $this->style->writeln('No objects cache client found, halting warmup');
-
-            return Command::FAILURE;
-        }
-
         // Objects.
         if ((isset($config['objects']) === false || $config['objects'] !== true)
             && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
@@ -276,6 +267,7 @@ class CacheService
         }
 
         // Created indexes and remove data from cache.
+        $objectDatabases = $this->entityManager->getRepository(Database::class)->findAll();
         if (isset($config['objects']) === false || $config['objects'] !== true) {
             foreach ($objectDatabases as $database) {
                 $objectsClient = new Client($database->getUri());
@@ -284,6 +276,9 @@ class CacheService
 
                 $this->removeDataFromCache($objectsClient->objects->json, 'App:ObjectEntity', $database);
             }
+
+            $this->client->objects->json->createIndex(['$**' => 'text']);
+            $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
         }
 
         if (isset($config['schemas']) === false || $config['schemas'] !== true) {
@@ -355,7 +350,7 @@ class CacheService
         $this->setObjectClient();
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
-        } else if (empty($objectEntity->getOrganization()->getDatabase() === false)) {
+        } else if (empty($objectEntity->getOrganization()->getDatabase()) === false) {
             $database      = $objectEntity->getOrganization()->getDatabase();
             $objectsClient = new Client($database->getUri());
             $collection    = $objectsClient->objects->json;
@@ -456,7 +451,7 @@ class CacheService
         $this->setObjectClient();
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
-        } else if (empty($objectEntity->getOrganization()->getDatabase() === false)) {
+        } else if (empty($objectEntity->getOrganization()->getDatabase()) === false) {
             $objectsClient = new Client($objectEntity->getOrganization()->getDatabase()->getUri());
             $collection    = $objectsClient->objects->json;
         } else if (isset($this->client) === true) {
@@ -487,7 +482,7 @@ class CacheService
             $collection = $this->objectsClient->objects->json;
         } else {
             $objectEntity = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['id' => $identification]);
-            if ($objectEntity !== null && empty($objectEntity->getOrganization()->getDatabase() === false)) {
+            if ($objectEntity !== null && empty($objectEntity->getOrganization()->getDatabase()) === false) {
                 $objectsClient = new Client($objectEntity->getOrganization()->getDatabase()->getUri());
                 $collection    = $objectsClient->objects->json;
             } else if (isset($this->client) === true) {
