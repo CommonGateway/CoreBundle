@@ -276,7 +276,7 @@ class CacheService
 
                 $this->removeDataFromCache($objectsClient->objects->json, 'App:ObjectEntity', $database);
             }
-            
+
             $this->client->objects->json->createIndex(['$**' => 'text']);
             $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
         }
