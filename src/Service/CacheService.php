@@ -216,7 +216,7 @@ class CacheService
         if ((isset($config['objects']) === false || $config['objects'] !== true)
             && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
         ) {
-            isset($this->style) === true && $this->style->section('Caching Objects\'s');
+            isset($this->style) === true && $this->style->section('Caching Objects');
             $objectEntities = $this->entityManager->getRepository(ObjectEntity::class)->findAll();
             isset($this->style) === true && $this->style->writeln('Found '.count($objectEntities).' objects\'s');
 
