@@ -191,22 +191,18 @@ class CacheService
 
     }//end cleanup()
 
+    
     /**
-     * Gets all object entities from a bundle/package.
+     * Gets all schema references from a bundle/package.
      * 
-     * Reads all /Installation/Schema files from a bundle/package and gets the references from the schemas. Then fetches all object entities from entities found with the references.
+     * Reads all /Installation/Schema files from a bundle/package and gets the references from the schemas.
      * 
      * @param string $bundleToCache
      * 
-     * @return mixed|bool ObjectEntities or false.
+     * @return array Schema references.
      */
-    private function getObjectEntitiesFromBundle(string $bundleToCache) {
-        if ($this->filesystem->exists('vendor/'.$bundleToCache.'/Installation/Schema') === false) {
-            $this->logger->debug('Bundle /Installation/Schema folder not found', ['location' => 'vendor/'.$bundleToCache]);
-
-            return false;
-        }
-        
+    private function getSchemaReferencesFromBundle(string $bundleToCache): array
+    {
         $hits = new Finder();
         $hits = $hits->in('vendor/'.$bundleToCache.'/Installation/Schema');
 
@@ -223,6 +219,21 @@ class CacheService
                 $schemaRefs[] = $schema['$id'];
             }
         }
+
+        return $schemaRefs;
+
+    }//end getObjectEntitiesFromBundle()
+
+    /**
+     * Gets all object entities from a bundle/package.
+     * 
+     * Reads all /Installation/Schema files from a bundle/package and gets the references from the schemas. Then fetches all object entities from entities found with the references.
+     * 
+     * @param array $schemaRefs
+     * 
+     * @return mixed|bool ObjectEntities or false.
+     */
+    private function getObjectEntitiesFromBundle(array $schemaRefs) {
 
         return $this->entityManager->getRepository(ObjectEntity::class)->findByReferences($schemaRefs);
 
@@ -258,13 +269,16 @@ class CacheService
             return Command::FAILURE;
         }
 
+        $schemaRefs = [];
+
         // Objects.
         if ((isset($config['objects']) === false || $config['objects'] !== true)
             && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
         ) {
             isset($this->style) === true && $this->style->section('Caching Objects');
             if ($bundleToCache !== null) {
-                $objectEntities = $this->getObjectEntitiesFromBundle($bundleToCache);
+                $schemaRefs = $this->getSchemaReferencesFromBundle($bundleToCache);
+                $objectEntities = $this->getObjectEntitiesFromBundle($schemaRefs);
                 if ($objectEntities === false) {
                     return Command::FAILURE;
                 }
@@ -281,16 +295,12 @@ class CacheService
                     continue;
                 }
             }
-
-            if ($bundleToCache !== null) {
-                isset($this->style) === true && $this->style->writeln('When caching a specific bundle, will only cache the objects for now. ');
-                return Command::SUCCESS;
-            }
         }
 
         // Schemas.
         if ((isset($config['schemas']) === false || $config['schemas'] !== true)
             && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
+        && $bundleToCache === null
         ) {
             isset($this->style) === true && $this->style->section('Caching Schema\'s');
             $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
@@ -309,6 +319,7 @@ class CacheService
         // Endpoints.
         if ((isset($config['endpoints']) === false || $config['endpoints'] !== true)
             && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
+            && $bundleToCache === null
         ) {
             isset($this->style) === true && $this->style->section('Caching Endpoint\'s');
             $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
@@ -332,18 +343,18 @@ class CacheService
 
                 $objectsClient->objects->json->createIndex(['$**' => 'text']);
 
-                $this->removeDataFromCache($objectsClient->objects->json, 'App:ObjectEntity', $database);
+                $this->removeDataFromCache($objectsClient->objects->json, 'App:ObjectEntity', $database, $schemaRefs);
             }
 
             $this->client->objects->json->createIndex(['$**' => 'text']);
-            $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
+            $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity', null, $schemaRefs);
         }
 
-        if (isset($config['schemas']) === false || $config['schemas'] !== true) {
+        if ((isset($config['schemas']) === false || $config['schemas'] !== true) && $bundleToCache === null) {
             $this->client->schemas->json->createIndex(['$**' => 'text']);
         }
 
-        if (isset($config['endpoints']) === false || $config['endpoints'] !== true) {
+        if ((isset($config['endpoints']) === false || $config['endpoints'] !== true) && $bundleToCache === null) {
             $this->client->endpoints->json->createIndex(['$**' => 'text']);
 
             $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
@@ -353,14 +364,22 @@ class CacheService
 
     }//end warmup()
 
-    private function removeDataFromCache(Collection $collection, string $type, Database $database = null): void
+    private function removeDataFromCache(Collection $collection, string $type, Database $database = null, array $schemaRefs = []): void
     {
         if (isset($this->style) === true) {
             $databaseMsg = $database ? ' from Database: '.$database->getReference() : null;
             $this->style->section("Removing deleted $type".$databaseMsg);
         }
 
-        $objects = $collection->find()->toArray();
+        if (empty($schemaRefs) === false) {
+            $filter = [];
+            foreach ($schemaRefs as $schemaRef) {
+                $filter['_self.schema.id']['$in'][] = $schemaRef;
+            }
+            $objects = $collection->find($filter, [])->toArray();
+        } else {
+            $objects = $collection->find()->toArray();
+        }
         foreach ($objects as $object) {
             if ($this->entityManager->find($type, $object['_id']) === null) {
                 if (isset($this->style) === true) {
