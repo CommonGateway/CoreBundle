@@ -551,7 +551,7 @@ Set symfony style in order to output to the console.
 **Description**
 
 ```php
-public warmup (array $config)
+public warmup (array $config, string|null $bundleToCache)
 ```
 
 Throws all available objects into the cache. 
@@ -562,6 +562,8 @@ Throws all available objects into the cache.
 
 * `(array) $config`
 : An array which can contain the keys 'objects', 'schemas' and/or 'endpoints' to skip caching these specific objects. Can also contain the key removeOnly in order to only remove from cache.  
+* `(string|null) $bundleToCache`
+: Bundle to cache objects from  
 
 **Return Values**
 

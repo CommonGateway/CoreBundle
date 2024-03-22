@@ -25,6 +25,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 
 /**
  * Service to call external sources.
@@ -86,6 +88,11 @@ class CacheService
     private SessionInterface $session;
 
     /**
+     * @var Filesystem $filesystem
+     */
+    private Filesystem $filesystem;
+
+    /**
      * Object Entity Service.
      *
      * @var ObjectEntityService
@@ -120,6 +127,8 @@ class CacheService
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }
+
+        $this->filesystem = new Filesystem();
 
     }//end __construct()
 
@@ -184,13 +193,62 @@ class CacheService
     }//end cleanup()
 
     /**
+     * Gets all schema references from a bundle/package.
+     *
+     * Reads all /Installation/Schema files from a bundle/package and gets the references from the schemas.
+     *
+     * @param string $bundleToCache
+     *
+     * @return array Schema references.
+     */
+    private function getSchemaReferencesFromBundle(string $bundleToCache): array
+    {
+        $hits = new Finder();
+        $hits = $hits->in('vendor/'.$bundleToCache.'/Installation/Schema');
+
+        $schemaRefs = [];
+        foreach ($hits->files() as $file) {
+            $schema = json_decode($file->getContents(), true);
+            if (empty($schema) === true) {
+                $this->logger->error($file->getFilename().' is not a valid json object');
+
+                return false;
+            }
+
+            if (isset($schema['$id']) === true) {
+                $schemaRefs[] = $schema['$id'];
+            }
+        }
+
+        return $schemaRefs;
+
+    }//end getSchemaReferencesFromBundle()
+
+    /**
+     * Gets all object entities from a bundle/package.
+     *
+     * Reads all /Installation/Schema files from a bundle/package and gets the references from the schemas. Then fetches all object entities from entities found with the references.
+     *
+     * @param array $schemaRefs
+     *
+     * @return mixed|bool ObjectEntities or false.
+     */
+    private function getObjectEntitiesFromBundle(array $schemaRefs)
+    {
+
+        return $this->entityManager->getRepository(ObjectEntity::class)->findByReferences($schemaRefs);
+
+    }//end getObjectEntitiesFromBundle()
+
+    /**
      * Throws all available objects into the cache.
      *
-     * @param array $config An array which can contain the keys 'objects', 'schemas' and/or 'endpoints' to skip caching these specific objects. Can also contain the key removeOnly in order to only remove from cache.
+     * @param array       $config        An array which can contain the keys 'objects', 'schemas' and/or 'endpoints' to skip caching these specific objects. Can also contain the key removeOnly in order to only remove from cache.
+     * @param string|null $bundleToCache Bundle to cache objects from
      *
      * @return int
      */
-    public function warmup(array $config = []): int
+    public function warmup(array $config = [], ?string $bundleToCache = null): int
     {
         isset($this->style) === true && $this->style->writeln(
             [
@@ -212,12 +270,23 @@ class CacheService
             return Command::FAILURE;
         }
 
+        $schemaRefs = [];
+
         // Objects.
         if ((isset($config['objects']) === false || $config['objects'] !== true)
             && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
         ) {
             isset($this->style) === true && $this->style->section('Caching Objects');
-            $objectEntities = $this->entityManager->getRepository(ObjectEntity::class)->findAll();
+            if ($bundleToCache !== null) {
+                $schemaRefs     = $this->getSchemaReferencesFromBundle($bundleToCache);
+                $objectEntities = $this->getObjectEntitiesFromBundle($schemaRefs);
+                if ($objectEntities === false) {
+                    return Command::FAILURE;
+                }
+            } else {
+                $objectEntities = $this->entityManager->getRepository(ObjectEntity::class)->findAll();
+            }
+
             isset($this->style) === true && $this->style->writeln('Found '.count($objectEntities).' objects\'s');
 
             foreach ($objectEntities as $objectEntity) {
@@ -228,11 +297,12 @@ class CacheService
                     continue;
                 }
             }
-        }
+        }//end if
 
         // Schemas.
         if ((isset($config['schemas']) === false || $config['schemas'] !== true)
             && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
+            && $bundleToCache === null
         ) {
             isset($this->style) === true && $this->style->section('Caching Schema\'s');
             $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
@@ -251,6 +321,7 @@ class CacheService
         // Endpoints.
         if ((isset($config['endpoints']) === false || $config['endpoints'] !== true)
             && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
+            && $bundleToCache === null
         ) {
             isset($this->style) === true && $this->style->section('Caching Endpoint\'s');
             $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
@@ -274,18 +345,18 @@ class CacheService
 
                 $objectsClient->objects->json->createIndex(['$**' => 'text']);
 
-                $this->removeDataFromCache($objectsClient->objects->json, 'App:ObjectEntity', $database);
+                $this->removeDataFromCache($objectsClient->objects->json, 'App:ObjectEntity', $schemaRefs, $database);
             }
 
             $this->client->objects->json->createIndex(['$**' => 'text']);
-            $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
+            $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity', $schemaRefs);
         }
 
-        if (isset($config['schemas']) === false || $config['schemas'] !== true) {
+        if ((isset($config['schemas']) === false || $config['schemas'] !== true) && $bundleToCache === null) {
             $this->client->schemas->json->createIndex(['$**' => 'text']);
         }
 
-        if (isset($config['endpoints']) === false || $config['endpoints'] !== true) {
+        if ((isset($config['endpoints']) === false || $config['endpoints'] !== true) && $bundleToCache === null) {
             $this->client->endpoints->json->createIndex(['$**' => 'text']);
 
             $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
@@ -295,14 +366,24 @@ class CacheService
 
     }//end warmup()
 
-    private function removeDataFromCache(Collection $collection, string $type, Database $database = null): void
+    private function removeDataFromCache(Collection $collection, string $type, array $schemaRefs = [], Database $database = null): void
     {
         if (isset($this->style) === true) {
             $databaseMsg = $database ? ' from Database: '.$database->getReference() : null;
             $this->style->section("Removing deleted $type".$databaseMsg);
         }
 
-        $objects = $collection->find()->toArray();
+        if (empty($schemaRefs) === false) {
+            $filter = [];
+            foreach ($schemaRefs as $schemaRef) {
+                $filter['_self.schema.id']['$in'][] = $schemaRef;
+            }
+
+            $objects = $collection->find($filter, [])->toArray();
+        } else {
+            $objects = $collection->find()->toArray();
+        }
+
         foreach ($objects as $object) {
             if ($this->entityManager->find($type, $object['_id']) === null) {
                 if (isset($this->style) === true) {
