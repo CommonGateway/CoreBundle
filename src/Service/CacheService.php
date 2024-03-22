@@ -343,11 +343,11 @@ class CacheService
 
                 $objectsClient->objects->json->createIndex(['$**' => 'text']);
 
-                $this->removeDataFromCache($objectsClient->objects->json, 'App:ObjectEntity', $database, $schemaRefs);
+                $this->removeDataFromCache($objectsClient->objects->json, 'App:ObjectEntity', $schemaRefs, $database);
             }
 
             $this->client->objects->json->createIndex(['$**' => 'text']);
-            $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity', null, $schemaRefs);
+            $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity', $schemaRefs);
         }
 
         if ((isset($config['schemas']) === false || $config['schemas'] !== true) && $bundleToCache === null) {
@@ -364,7 +364,7 @@ class CacheService
 
     }//end warmup()
 
-    private function removeDataFromCache(Collection $collection, string $type, Database $database = null, array $schemaRefs = []): void
+    private function removeDataFromCache(Collection $collection, string $type, array $schemaRefs = [], Database $database = null): void
     {
         if (isset($this->style) === true) {
             $databaseMsg = $database ? ' from Database: '.$database->getReference() : null;
