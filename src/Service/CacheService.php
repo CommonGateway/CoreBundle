@@ -25,6 +25,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 
 /**
  * Service to call external sources.
@@ -86,6 +88,11 @@ class CacheService
     private SessionInterface $session;
 
     /**
+     * @var Filesystem $filesystem
+     */
+    private Filesystem $filesystem;
+
+    /**
      * Object Entity Service.
      *
      * @var ObjectEntityService
@@ -120,6 +127,7 @@ class CacheService
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }
+        $this->filesystem      = new Filesystem();
 
     }//end __construct()
 
@@ -184,13 +192,51 @@ class CacheService
     }//end cleanup()
 
     /**
+     * Gets all object entities from a bundle/package.
+     * 
+     * Reads all /Installation/Schema files from a bundle/package and gets the references from the schemas. Then fetches all object entities from entities found with the references.
+     * 
+     * @param string $bundleToCache
+     * 
+     * @return mixed|bool ObjectEntities or false.
+     */
+    private function getObjectEntitiesFromBundle(string $bundleToCache) {
+        if ($this->filesystem->exists('vendor/'.$bundleToCache.'/Installation/Schema') === false) {
+            $this->logger->debug('Bundle /Installation/Schema folder not found', ['location' => 'vendor/'.$bundleToCache]);
+
+            return false;
+        }
+        
+        $hits = new Finder();
+        $hits = $hits->in('vendor/'.$bundleToCache.'/Installation/Schema');
+
+        $schemaRefs = [];
+        foreach ($hits->files() as $file) {
+            $schema = json_decode($file->getContents(), true);
+            if (empty($schema) === true) {
+                $this->logger->error($file->getFilename().' is not a valid json object');
+
+                return false;
+            }
+            
+            if (isset($schema['$id']) === true) {
+                $schemaRefs[] = $schema['$id'];
+            }
+        }
+
+        return $this->entityManager->getRepository(ObjectEntity::class)->findByReferences($schemaRefs);
+
+    }//end getObjectEntitiesFromBundle()
+
+    /**
      * Throws all available objects into the cache.
      *
      * @param array $config An array which can contain the keys 'objects', 'schemas' and/or 'endpoints' to skip caching these specific objects. Can also contain the key removeOnly in order to only remove from cache.
-     *
+     * @param string|null $bundleToCache Bundle to cache objects from
+     * 
      * @return int
      */
-    public function warmup(array $config = []): int
+    public function warmup(array $config = [], ?string $bundleToCache = null): int
     {
         isset($this->style) === true && $this->style->writeln(
             [
@@ -217,7 +263,14 @@ class CacheService
             && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
         ) {
             isset($this->style) === true && $this->style->section('Caching Objects');
-            $objectEntities = $this->entityManager->getRepository(ObjectEntity::class)->findAll();
+            if ($bundleToCache !== null) {
+                $objectEntities = $this->getObjectEntitiesFromBundle($bundleToCache);
+                if ($objectEntities === false) {
+                    return Command::FAILURE;
+                }
+            } else {
+                $objectEntities = $this->entityManager->getRepository(ObjectEntity::class)->findAll();
+            }
             isset($this->style) === true && $this->style->writeln('Found '.count($objectEntities).' objects\'s');
 
             foreach ($objectEntities as $objectEntity) {
@@ -227,6 +280,11 @@ class CacheService
                     $this->styleCatchException($exception);
                     continue;
                 }
+            }
+
+            if ($bundleToCache !== null) {
+                isset($this->style) === true && $this->style->writeln('When caching a specific bundle, will only cache the objects for now. ');
+                return Command::SUCCESS;
             }
         }
 

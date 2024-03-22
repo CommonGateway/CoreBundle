@@ -53,6 +53,7 @@ class CacheWarmupCommand extends Command
             ->addOption('schemas', 's', InputOption::VALUE_OPTIONAL, 'Skip caching schemas during cache warmup', false)
             ->addOption('endpoints', 'p', InputOption::VALUE_OPTIONAL, 'Skip caching endpoints during cache warmup', false)
             ->addOption('removeOnly', 'r', InputOption::VALUE_OPTIONAL, 'Only do the remove data from cache during this command', false)
+            ->addOption('cacheOnly', 'b', InputOption::VALUE_OPTIONAL, 'Only cache objects from a specific bundle', false)
             ->setDescription('This command puts all objects into the cache')
             ->setHelp('This command allows you to run further installation an configuration actions after installing a plugin');
 
@@ -70,6 +71,8 @@ class CacheWarmupCommand extends Command
     {
         $this->cacheService->setStyle(new SymfonyStyle($input, $output));
 
+        $bundleToCache = null;
+
         $config = [];
         if ($input->getOption('objects') !== false) {
             $config['objects'] = true;
@@ -86,8 +89,11 @@ class CacheWarmupCommand extends Command
         if ($input->getOption('removeOnly') !== false) {
             $config['removeOnly'] = true;
         }
+        if ($input->getOption('cacheOnly') !== null) {
+           $bundleToCache = $input->getOption('cacheOnly');
+        }
 
-        return $this->cacheService->warmup($config);
+        return $this->cacheService->warmup($config, $bundleToCache);
 
     }//end execute()
 }//end class
