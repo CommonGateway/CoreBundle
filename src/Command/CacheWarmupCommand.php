@@ -72,7 +72,7 @@ class CacheWarmupCommand extends Command
         $this->cacheService->setStyle(new SymfonyStyle($input, $output));
 
         $bundleToCache = null;
-        $config = [];
+        $config        = [];
         if ($input->getOption('objects') !== false) {
             $config['objects'] = true;
         }
@@ -88,8 +88,9 @@ class CacheWarmupCommand extends Command
         if ($input->getOption('removeOnly') !== false) {
             $config['removeOnly'] = true;
         }
+
         if ($input->getOption('cacheBundle') !== null && $input->getOption('cacheBundle') !== false) {
-           $bundleToCache = $input->getOption('cacheBundle');
+            $bundleToCache = $input->getOption('cacheBundle');
         }
 
         return $this->cacheService->warmup($config, $bundleToCache);
