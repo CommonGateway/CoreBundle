@@ -133,7 +133,7 @@ class EndpointService
         // If we have an proxy we will handle just that.
         if (empty($endpoint->getProxy()) === false) {
             $this->logger->info('Handling proxied endpoint');
-            $parameters['response'] = $this->requestService->proxyHandler($parameters, []);
+            $parameters['response'] = $this->requestService->proxyHandler($parameters, [], null, $endpoint->getProxyOverrulesAuthentication());
         }
 
         // If we have shema's let's handle those.

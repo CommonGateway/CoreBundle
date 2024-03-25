@@ -662,7 +662,7 @@ class RequestService
      *
      * @return Response The data as returned bij the original source
      */
-    public function proxyHandler(array $data, array $configuration, ?Source $proxy = null): Response
+    public function proxyHandler(array $data, array $configuration, ?Source $proxy = null, bool $overruleAuth = false): Response
     {
         $this->data          = $data;
         $this->configuration = $configuration;
@@ -718,7 +718,9 @@ class RequestService
         }
 
         // Don't pass gateway authorization to the source.
-        unset($this->data['headers']['authorization']);
+        if ($overruleAuth === false) {
+            unset($this->data['headers']['authorization']);
+        }
 
         $url = \Safe\parse_url($proxy->getLocation());
 
@@ -730,7 +732,10 @@ class RequestService
                     $proxy,
                     $this->data['path'],
                     $this->data['method'],
-                    $this->proxyConfigBuilder()
+                    $this->proxyConfigBuilder(),
+                    false,
+                    true,
+                    $overruleAuth
                 );
             } else {
                 $result = $this->fileSystemService->call($proxy, $this->data['path']);

@@ -227,7 +227,8 @@ class CallService
         string $method = 'GET',
         array $config = [],
         bool $asynchronous = false,
-        bool $createCertificates = true
+        bool $createCertificates = true,
+        bool $overruleAuth = false
     ) {
         $this->source = $source;
         $this->session->set('source', $this->source->getId()->toString());
@@ -262,6 +263,9 @@ class CallService
             'method' => $method,
         ];
         $config      = array_merge_recursive($this->getAuthentication($config, $requestInfo), $config);
+        if ($overruleAuth === false) {
+            $config = array_merge_recursive($this->getAuthentication($config, $requestInfo), $config);
+        }
 
         // Backwards compatible, $this->source->getHeaders = deprecated.
         $config['headers'] = array_merge(($this->source->getHeaders() ?? []), $config['headers']);
