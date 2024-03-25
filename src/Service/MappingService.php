@@ -341,6 +341,11 @@ class MappingService
             $value = html_entity_decode($value);
             $value = json_decode($value, true);
             break;
+        case 'utf8':
+            // https://www.php.net/manual/en/function.iconv.php
+            setlocale(LC_CTYPE, 'cs_CZ');
+            $value = iconv('UTF-8', 'ASCII//TRANSLIT', $value);
+            break;
         case 'nullStringToNull':
             if ($value === 'null') {
                 $value = null;
