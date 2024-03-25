@@ -413,24 +413,25 @@ In some cases, you might want to change the properties variable type or if you a
 
 We can cast values by including a cast property in our mapping, the following type casts are currently available:
 
-| Cast           | Function (php docs)                                                                              | Twig | Notes                                               |
-|----------------|--------------------------------------------------------------------------------------------------|------|-----------------------------------------------------|
-| string         | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   | x                                                   |
-| bool / boolean | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   | x                                                   |
-| int / integer  | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   | x                                                   |
-| float          | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   | x                                                   |
-| array          | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   | x                                                   |
-| date           | [php date function](https://www.php.net/manual/en/function.date)                                 | No   | x                                                   |
-| url            | [php urlencode function](https://www.php.net/manual/en/function.urlencode.php)                   | Yes  | x                                                   |
-| urlDecode      | [php urldecode function](https://www.php.net/manual/en/function.urldecode.php)                   | Yes  | x                                                   |
-| rawurl         | [php rawurlencode function](https://www.php.net/manual/en/function.rawurlencode.php)             | Yes  | x                                                   |
-| rawurlDecode   | [php rawurldecode function](https://www.php.net/manual/en/function.rawurldecode.php)             | Yes  | x                                                   |
-| html           | [php htmlentities function](https://www.php.net/manual/en/function.htmlentities.php)             | Yes  | x                                                   |
-| htmlDecode     | [php html_entity_decode function](https://www.php.net/manual/en/function.html-entity-decode.php) | Yes  | x                                                   |
-| base64         | [php base64-encode function](https://www.php.net/manual/en/function.base64-encode.php)           | Yes  | x                                                   |
-| base64Decode   | [php base64-decode function](https://www.php.net/manual/en/function.base64-decode.php)           | Yes  | x                                                   |
-| json           | [php json-encode function](https://www.php.net/manual/en/function.json-encode.php)               | Yes  | x                                                   |
-| jsonToArray    | [php json-decode function](https://www.php.net/manual/en/function.json-decode.php)               | Yes  | The htmlDecode cast is always done before this cast |
+| Cast           | Function (php docs)                                                                              | Twig | Notes                                                   |
+|----------------|--------------------------------------------------------------------------------------------------|------|---------------------------------------------------------|
+| string         | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   | x                                                       |
+| bool / boolean | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   | x                                                       |
+| int / integer  | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   | x                                                       |
+| float          | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   | x                                                       |
+| array          | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   | x                                                       |
+| date           | [php date function](https://www.php.net/manual/en/function.date)                                 | No   | x                                                       |
+| url            | [php urlencode function](https://www.php.net/manual/en/function.urlencode.php)                   | Yes  | x                                                       |
+| urlDecode      | [php urldecode function](https://www.php.net/manual/en/function.urldecode.php)                   | Yes  | x                                                       |
+| rawurl         | [php rawurlencode function](https://www.php.net/manual/en/function.rawurlencode.php)             | Yes  | x                                                       |
+| rawurlDecode   | [php rawurldecode function](https://www.php.net/manual/en/function.rawurldecode.php)             | Yes  | x                                                       |
+| html           | [php htmlentities function](https://www.php.net/manual/en/function.htmlentities.php)             | Yes  | x                                                       |
+| htmlDecode     | [php html_entity_decode function](https://www.php.net/manual/en/function.html-entity-decode.php) | Yes  | x                                                       |
+| base64         | [php base64-encode function](https://www.php.net/manual/en/function.base64-encode.php)           | Yes  | x                                                       |
+| base64Decode   | [php base64-decode function](https://www.php.net/manual/en/function.base64-decode.php)           | Yes  | x                                                       |
+| json           | [php json-encode function](https://www.php.net/manual/en/function.json-encode.php)               | Yes  | x                                                       |
+| jsonToArray    | [php json-decode function](https://www.php.net/manual/en/function.json-decode.php)               | Yes  | The htmlDecode cast is always done before this cast     |
+| utf8           | [php iconv function](https://www.php.net/manual/en/function.iconv.php)                           | Yes  | from_encoding = 'UTF-8' to_encoding = 'ASCII//TRANSLIT' |
 
 That means that we can write a mapping like
 

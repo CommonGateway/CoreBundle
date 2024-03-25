@@ -431,7 +431,7 @@ class CacheService
         $this->setObjectClient();
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
-        } else if (empty($objectEntity->getOrganization()->getDatabase()) === false) {
+        } else if ($objectEntity->getOrganization() !== null && $objectEntity->getOrganization()->getDatabase() !== null) {
             $database      = $objectEntity->getOrganization()->getDatabase();
             $objectsClient = new Client($database->getUri());
             $collection    = $objectsClient->objects->json;
@@ -532,7 +532,7 @@ class CacheService
         $this->setObjectClient();
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
-        } else if (empty($objectEntity->getOrganization()->getDatabase()) === false) {
+        } else if ($objectEntity->getOrganization() !== null && $objectEntity->getOrganization()->getDatabase() !== null) {
             $objectsClient = new Client($objectEntity->getOrganization()->getDatabase()->getUri());
             $collection    = $objectsClient->objects->json;
         } else if (isset($this->client) === true) {
@@ -563,7 +563,7 @@ class CacheService
             $collection = $this->objectsClient->objects->json;
         } else {
             $objectEntity = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['id' => $identification]);
-            if ($objectEntity !== null && empty($objectEntity->getOrganization()->getDatabase()) === false) {
+            if ($objectEntity !== null && $objectEntity->getOrganization() !== null && $objectEntity->getOrganization()->getDatabase() !== null) {
                 $objectsClient = new Client($objectEntity->getOrganization()->getDatabase()->getUri());
                 $collection    = $objectsClient->objects->json;
             } else if (isset($this->client) === true) {
