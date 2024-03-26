@@ -211,39 +211,39 @@ class EndpointService
         // Determine the accept type.
         $this->logger->debug('Determine accept type from accept header');
         switch ($acceptHeader) {
-            case 'application/pdf':
-                return 'pdf';
-            case 'application/json':
-                return 'json';
-            case 'application/json+hal':
-            case 'application/hal+json':
-                return 'jsonhal';
-            case 'application/json+ld':
-            case 'application/ld+json':
-                return 'jsonld';
-            case 'application/json+fromio':
-            case 'application/formio+json':
-                return 'formio';
-            case 'application/json+schema':
-            case 'application/schema+json':
-                return 'schema';
-            case 'application/json+graphql':
-            case 'application/graphql+json':
-                return 'graphql';
-            case 'text/xml':
-            case 'application/xml':
-                return 'xml';
-            case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-                return 'xlsx';
-            case 'text/csv':
-                return 'csv';
-            case 'text/html':
-                return 'html';
-            case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-                return 'docx';
+        case 'application/pdf':
+            return 'pdf';
+        case 'application/json':
+            return 'json';
+        case 'application/json+hal':
+        case 'application/hal+json':
+            return 'jsonhal';
+        case 'application/json+ld':
+        case 'application/ld+json':
+            return 'jsonld';
+        case 'application/json+fromio':
+        case 'application/formio+json':
+            return 'formio';
+        case 'application/json+schema':
+        case 'application/schema+json':
+            return 'schema';
+        case 'application/json+graphql':
+        case 'application/graphql+json':
+            return 'graphql';
+        case 'text/xml':
+        case 'application/xml':
+            return 'xml';
+        case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+            return 'xlsx';
+        case 'text/csv':
+            return 'csv';
+        case 'text/html':
+            return 'html';
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            return 'docx';
                 break;
-            case 'application/json+aggregations':
-                return 'aggregations';
+        case 'application/json+aggregations':
+            return 'aggregations';
         }//end switch
 
         return null;
@@ -293,8 +293,8 @@ class EndpointService
         if (count($pathparts) >= 2) {
             $extension = end($pathparts);
             switch ($extension) {
-                case 'pdf':
-                    return 'pdf';
+            case 'pdf':
+                return 'pdf';
             }//end switch
         }
 
@@ -325,14 +325,14 @@ class EndpointService
 
         // Decode the body.
         switch ($contentType) {
-            case 'text/xml':
-            case 'application/xml':
-            case 'xml':
-                $xmlEncoder = new XmlEncoder();
+        case 'text/xml':
+        case 'application/xml':
+        case 'xml':
+            $xmlEncoder = new XmlEncoder();
 
-                return $xmlEncoder->decode($this->request->getContent(), 'xml');
-            default:
-                return json_decode($this->request->getContent(), true);
+            return $xmlEncoder->decode($this->request->getContent(), 'xml');
+        default:
+            return json_decode($this->request->getContent(), true);
         }//end switch
 
     }//end decodeBody()
@@ -417,10 +417,10 @@ class EndpointService
 
             $filename = null;
             if (preg_match(
-                    '/^(.+); *name="([^"]+)"(; *filename="([^"]+)")?/',
-                    $headers['content-disposition'],
-                    $matches
-                ) === false
+                '/^(.+); *name="([^"]+)"(; *filename="([^"]+)")?/',
+                $headers['content-disposition'],
+                $matches
+            ) === false
             ) {
                 preg_match(
                     '/^(.+); *name=([-+.\w]+)(; *filename=([-+.\w]+))?/',
@@ -435,14 +435,14 @@ class EndpointService
             // Handle your fields here.
             switch ($name) {
                 // This is a file upload.
-                case 'userfile':
-                    file_put_contents($filename, $body);
-                    break;
+            case 'userfile':
+                file_put_contents($filename, $body);
+                break;
 
                 // Default for all other files is to populate $data.
-                default:
-                    $data[$name] = substr($body, 0, (strlen($body) - 2));
-                    break;
+            default:
+                $data[$name] = substr($body, 0, (strlen($body) - 2));
+                break;
             }
         }//end foreach
 
@@ -485,6 +485,7 @@ class EndpointService
             if (in_array(strtoupper($parameters['method']), ['GET', 'DELETE']) === false) {
                 $this->logger->warning('The request does not have a body, this might result in undefined behaviour');
             }
+
             $parameters['body'] = [];
 
             // In a lot of conditions (basically any illegal post) this will return an error. But we want an empty array instead.
@@ -500,16 +501,16 @@ class EndpointService
 
         $files = $this->request->files->all();
 
-        foreach($files as $key => $file) {
-            if($file instanceof UploadedFile === false) {
+        foreach ($files as $key => $file) {
+            if ($file instanceof UploadedFile === false) {
                 continue;
             }
+
             $parameters['post'][$key] = [
                 'multipart-contents' => $file->getContent(),
-                'multipart-filename' => $file->getClientOriginalName()
+                'multipart-filename' => $file->getClientOriginalName(),
             ];
         }
-
 
         if ($parameters['method'] === 'PUT' && $parameters['post'] === [] && $parameters['body'] === []) {
             $parameters['post'] = $this->getPutData();
