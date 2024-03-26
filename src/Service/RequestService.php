@@ -798,7 +798,6 @@ class RequestService
                 $statusCode = 502;
             }
 
-            var_dump($exception->getMessage(), $exception->getTraceAsString());
             $content  = $this->serializeData(
                 [
                     'message' => $exception->getMessage(),

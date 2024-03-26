@@ -262,7 +262,7 @@ class CallService
             'url'    => $url,
             'method' => $method,
         ];
-        $config      = array_merge_recursive($this->getAuthentication($config, $requestInfo), $config);
+
         if ($overruleAuth === false) {
             $config = array_merge_recursive($this->getAuthentication($config, $requestInfo), $config);
         }
