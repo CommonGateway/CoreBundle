@@ -233,5 +233,5 @@ The response will have the following format:
 Here we see that platforms is the query parameter set in `queries[]`, the values in `_id` are the values for this property in the database, and `count` is the number of occurrences of this value.
 
 > **Note**
-> Use the aggregations-endpoint only on properties that can have a limited number of values. Using it on free fields may result in database overloading or bad performance for the aggregations.
+> Use the aggregations endpoint only on properties that can have a limited number of values. Using it on free fields may result in database overloading or bad performance for the aggregations.
 
