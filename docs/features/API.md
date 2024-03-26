@@ -155,7 +155,7 @@ The returned data can be limited using the _fields query parameter. This paramet
   "born":{
     "city":"Amsterdam",
     "country":"Netherlands",
-    "date":"1985-07-27"	
+    "date":"1985-07-27"
   }
 }
 ```
@@ -165,7 +165,7 @@ Of we then query using ` _fields[]=firstname&_fields[]=born.date` we would expec
 {
   "firstname":"John",
   "born":{
-    "date":"1985-07-27"	
+    "date":"1985-07-27"
   }
 }
 ```
@@ -198,36 +198,36 @@ The aggregation endpoint will take into account the filters already set, includi
 The response will have the following format:
 ```json
 {
-    "platforms": [
-        {
-            "_id": "haven",
-            "count": 46
-        },
-        {
-            "_id": "gaia-x",
-            "count": 44
-        },
-        {
-            "_id": "mac",
-            "count": 12
-        },
-        {
-            "_id": "nlx",
-            "count": 46
-        },
-        {
-            "_id": "web",
-            "count": 96
-        },
-        {
-            "_id": "windows",
-            "count": 12
-        },
-        {
-            "_id": "linux",
-            "count": 12
-        }
-    ]
+  "platforms": [
+    {
+      "_id": "haven",
+      "count": 46
+    },
+    {
+      "_id": "gaia-x",
+      "count": 44
+    },
+    {
+      "_id": "mac",
+      "count": 12
+    },
+    {
+      "_id": "nlx",
+      "count": 46
+    },
+    {
+      "_id": "web",
+      "count": 96
+    },
+    {
+      "_id": "windows",
+      "count": 12
+    },
+    {
+      "_id": "linux",
+      "count": 12
+    }
+  ]
 }
 ```
 Here we see that platforms is the query parameter set in `queries[]`, the values in `_id` are the values for this property in the database, and `count` is the number of occurrences of this value.
