@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -485,6 +486,8 @@ class EndpointService
                 $this->logger->warning('The request does not have a body, this might result in undefined behaviour');
             }
 
+            $parameters['body'] = [];
+
             // In a lot of conditions (basically any illegal post) this will return an error. But we want an empty array instead.
         }
 
@@ -495,6 +498,19 @@ class EndpointService
 
         // Let's get all the post variables.
         $parameters['post'] = $this->request->request->all();
+
+        $files = $this->request->files->all();
+
+        foreach ($files as $key => $file) {
+            if ($file instanceof UploadedFile === false) {
+                continue;
+            }
+
+            $parameters['post'][$key] = [
+                'multipart-contents' => $file->getContent(),
+                'multipart-filename' => $file->getClientOriginalName(),
+            ];
+        }
 
         if ($parameters['method'] === 'PUT' && $parameters['post'] === [] && $parameters['body'] === []) {
             $parameters['post'] = $this->getPutData();

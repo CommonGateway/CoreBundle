@@ -626,9 +626,18 @@ class RequestService
             array_walk(
                 $post,
                 function (&$value, $key) {
+                    if (is_array($value) === true
+                        && in_array('multipart-contents', array_keys($value)) === true
+                        && in_array('multipart-filename', array_keys($value)) === true
+                    ) {
+                        $filename = $value['multipart-filename'];
+                        $value    = $value['multipart-contents'];
+                    }
+
                     $value = [
                         'name'     => $key,
                         'contents' => $value,
+                        'filename' => $filename,
                     ];
                 }
             );
