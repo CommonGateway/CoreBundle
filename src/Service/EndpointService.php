@@ -504,7 +504,10 @@ class EndpointService
             if($file instanceof UploadedFile === false) {
                 continue;
             }
-            $parameters['post'][$key] = $file->getContent();
+            $parameters['post'][$key] = [
+                'multipart-contents' => $file->getContent(),
+                'multipart-filename' => $file->getClientOriginalName()
+            ];
         }
 
 
