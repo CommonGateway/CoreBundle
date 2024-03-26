@@ -11,7 +11,7 @@
 | Name | Description |
 |------|-------------|
 |[__construct](#gatewayresourceservice__construct)|The constructor sets al needed variables.|
-|[findSourcesForUrl](#gatewayresourceservicefindsourcesforurl)|Find all sources that have a location that match the specified url.|
+|[findSourceForUrl](#gatewayresourceservicefindsourceforurl)|Find a source that has a location that match the specified url.|
 |[getAction](#gatewayresourceservicegetaction)|Get an action by reference.|
 |[getEndpoint](#gatewayresourceservicegetendpoint)|Get a endpoint by reference.|
 |[getMapping](#gatewayresourceservicegetmapping)|Get a mapping by reference.|
@@ -47,17 +47,18 @@ The constructor sets al needed variables.
 <hr />
 
 
-### GatewayResourceService::findSourcesForUrl  
+### GatewayResourceService::findSourceForUrl  
 
 **Description**
 
 ```php
-public findSourcesForUrl (string $url, string $pluginName)
+public findSourceForUrl (string $url, string $pluginName, string|null $endpoint)
 ```
 
-Find all sources that have a location that match the specified url. 
+Find a source that has a location that match the specified url. 
 
-Todo: we should use a mongoDB filter instead of this, sources should exist in MongoDB. 
+Todo: we should use a mongoDB filter instead of this, sources should exist in MongoDB.  
+This function gets used in the CustomerInteractionBundle, Gateway->synchronizationService. 
 
 **Parameters**
 
@@ -65,12 +66,14 @@ Todo: we should use a mongoDB filter instead of this, sources should exist in Mo
 : The url we are trying to find a matching source for.  
 * `(string) $pluginName`
 : The name of the plugin that requests these resources.  
+* `(string|null) $endpoint`
+: The resulting endpoint (the remainder of the path).  
 
 **Return Values**
 
-`array|null`
+`\Source|null`
 
-
+> The source found or null.
 
 
 <hr />

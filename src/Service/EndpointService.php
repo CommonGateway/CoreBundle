@@ -15,6 +15,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\SerializerInterface;
+use ValueError;
 
 /**
  * This service handles calls on the ZZ endpoint (or in other words abstract routing).
@@ -132,7 +133,7 @@ class EndpointService
         // If we have an proxy we will handle just that.
         if (empty($endpoint->getProxy()) === false) {
             $this->logger->info('Handling proxied endpoint');
-            $parameters['response'] = $this->requestService->proxyHandler($parameters, []);
+            $parameters['response'] = $this->requestService->proxyHandler($parameters, [], null, $endpoint->getProxyOverrulesAuthentication());
         }
 
         // If we have shema's let's handle those.
@@ -473,18 +474,21 @@ class EndpointService
         $this->logger->debug('Get the query string');
         $parameters['querystring'] = $this->request->getQueryString();
 
-        try {
-            $parameters['body'] = $this->request->toArray();
-        } catch (Exception $exception) {
-            $this->logger->warning('The request does not have a body, this might result in undefined behaviour');
-            // In a lot of condtions (basically any illigal post) this will return an error. But we want an empty array instead.
-        }
-
-        $parameters['crude_body'] = $this->request->getContent();
-
         $this->logger->debug('Get general request information');
         $parameters['method'] = $this->request->getMethod();
         $parameters['query']  = $this->request->query->all();
+
+        try {
+            $parameters['body'] = $this->request->toArray();
+        } catch (Exception $exception) {
+            if (in_array(strtoupper($parameters['method']), ['GET', 'DELETE']) === false) {
+                $this->logger->warning('The request does not have a body, this might result in undefined behaviour');
+            }
+
+            // In a lot of conditions (basically any illegal post) this will return an error. But we want an empty array instead.
+        }
+
+        $parameters['crude_body'] = $this->request->getContent();
 
         // Let's get all the headers.
         $parameters['headers'] = $this->request->headers->all();
@@ -518,10 +522,16 @@ class EndpointService
 
         try {
             $combinedArray = array_combine($path, explode('/', $pathRaw));
-        } catch (Exception $exception) {
+        } catch (ValueError $exception) {
             $this->logger->error('EndpointService->getNormalPath(): $exception');
 
-            // Todo: When an id is not given the last element of the path array should be removed to ensure the arrays are of the same lenght.
+            // Todo: When an id is not given the last element of the path array should be removed to ensure the arrays are of the same length.
+            array_pop($path);
+            $combinedArray = array_combine($path, explode('/', $pathRaw));
+        }
+
+        if ($combinedArray === false) {
+            // Todo: When an id is not given the last element of the path array should be removed to ensure the arrays are of the same length.
             array_pop($path);
             $combinedArray = array_combine($path, explode('/', $pathRaw));
         }
@@ -553,7 +563,7 @@ class EndpointService
         $matchesCount = preg_match($regex, $pathRaw, $matches);
 
         if ($matchesCount != 1) {
-            $this->logger->error('EndpointService->getProxyPath(): Failed to find correct proxy endpoint in pathRaw string, trying to get normal endpoint path instead...');
+            $this->logger->warning('EndpointService->getProxyPath(): Failed to find correct proxy endpoint in pathRaw string, trying to get normal endpoint path instead...');
 
             return $this->getNormalPath($parameters);
         }

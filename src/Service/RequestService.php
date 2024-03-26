@@ -12,12 +12,21 @@ use App\Entity\Mapping;
 use App\Event\ActionEvent;
 use App\Exception\GatewayException;
 use App\Service\SynchronizationService;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\ServerException;
+use GuzzleHttp\Promise\Promise;
+use GuzzleHttp\Promise\Utils;
+use GuzzleHttp\TransferStats;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpClient\Exception\JsonException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -140,6 +149,8 @@ class RequestService
      * @var DownloadService
      */
     private DownloadService $downloadService;
+
+    private array $requestTimes;
 
     /**
      * The constructor sets al needed variables.
@@ -651,7 +662,7 @@ class RequestService
      *
      * @return Response The data as returned bij the original source
      */
-    public function proxyHandler(array $data, array $configuration, ?Source $proxy = null): Response
+    public function proxyHandler(array $data, array $configuration, ?Source $proxy = null, bool $overruleAuth = false): Response
     {
         $this->data          = $data;
         $this->configuration = $configuration;
@@ -702,8 +713,14 @@ class RequestService
             $this->data['path'] = '';
         }
 
+        if (count($data['endpoint']->getFederationProxies()) > 1) {
+            return $this->federationProxyHandler($data['endpoint']->getFederationProxies(), $this->data['path'], $this->proxyConfigBuilder());
+        }
+
         // Don't pass gateway authorization to the source.
-        unset($this->data['headers']['authorization']);
+        if ($overruleAuth === false) {
+            unset($this->data['headers']['authorization']);
+        }
 
         $url = \Safe\parse_url($proxy->getLocation());
 
@@ -715,7 +732,10 @@ class RequestService
                     $proxy,
                     $this->data['path'],
                     $this->data['method'],
-                    $this->proxyConfigBuilder()
+                    $this->proxyConfigBuilder(),
+                    false,
+                    true,
+                    $overruleAuth
                 );
             } else {
                 $result = $this->fileSystemService->call($proxy, $this->data['path']);
@@ -785,6 +805,174 @@ class RequestService
     }//end proxyHandler()
 
     /**
+     * Checks if the query parameter to relay rating is set and if so, return the value while unsetting the query parameter.
+     *
+     * @param  array $config The call configuration.
+     * @return bool
+     */
+    public function useRelayRating(array &$config): bool
+    {
+        $returnValue = true;
+        if (isset($config['query']['_federalization_relay_rating']) === true) {
+            $returnValue = $config['query']['_federalization_relay_rating'];
+
+            unset($config['query']['_federalization_relay_rating']);
+        }
+
+        return $returnValue;
+
+    }//end useRelayRating()
+
+    /**
+     * Takes the config array and includes or excludes sources for federated requests based upon query parameters.
+     *
+     * @param array      $config  The call configuration.
+     * @param Collection $proxies The full list of proxies configured for the endpoint.
+     *
+     * @return Collection The list of proxies that remains after including or excluding sources.
+     *
+     * @throws Exception Thrown when both include and exclude query parameters are given.
+     */
+    public function getFederationSources(array &$config, Collection $proxies): Collection
+    {
+        if (isset($config['query']['_federalization_use_sources']) === true && isset($config['query']['_federalization_exclude_sources']) === true) {
+            $this->logger->error('Use of sources and exclusion of sources cannot be done in the same request');
+            throw new Exception('Use of sources and exclusion of sources cannot be done in the same request');
+        }
+
+        $usedSourceIds     = [];
+        $excludedSourceIds = [];
+
+        // Returns all proxies when neither uses or excludes are given, this can be done by not setting the query parameters, but also by setting uses to * or excludes to null
+        if ((isset($config['query']['_federalization_use_sources']) === true && $config['query']['_federalization_use_sources'] === '*')
+            || (isset($config['query']['_federalization_exclude_sources']) === true && $config['query']['_federalization_exclude_sources'] === 'null')
+            || (isset($config['query']['_federalization_use_sources']) === false && isset($config['query']['_federalization_exclude_sources']) === false)
+        ) {
+            unset($config['query']['_federalization_exclude_sources'], $config['query']['_federalization_use_sources']);
+            return $proxies;
+        } else if (isset($config['query']['_federalization_use_sources']) === true && $config['query']['_federalization_use_sources'] !== '*') {
+            $usedSourceIds = explode(',', $config['query']['_federalization_use_sources']);
+        } else if (isset($config['query']['_federalization_exclude_sources']) === true && $config['query']['_federalization_exclude_sources'] !== null) {
+            $excludedSourceIds = explode(',', $config['query']['_federalization_exclude_sources']);
+        }
+
+        foreach ($proxies as $key => $proxy) {
+            if (($usedSourceIds !== [] && in_array($proxy->getId()->toString(), $usedSourceIds) === false)
+                || ($excludedSourceIds !== [] && in_array($proxy->getId()->toString(), $excludedSourceIds) === true)
+            ) {
+                $proxies->remove($key);
+            }
+        }
+
+        unset($config['query']['_federalization_exclude_sources'], $config['query']['_federalization_use_sources']);
+
+        return $proxies;
+
+    }//end getFederationSources()
+
+    /**
+     * Update configuration from federation query parameters, sets timeout and http_errors, unsets the query parameters.
+     *
+     * @param array $config The original call configuration including the federation query parameters.
+     *
+     * @return array The updated call configuration.
+     */
+    public function getFederationConfig(array $config): array
+    {
+        $config['timeout']     = 3;
+        $config['http_errors'] = true;
+
+        if (isset($config['query']['_federalization_timeout']) === true) {
+            $config['timeout'] = ($config['query']['_federalization_timeout'] / 1000);
+            unset($config['query']['_federalization_timeout']);
+        }
+
+        if (isset($config['query']['_federalization_ignore_error']) === true) {
+            $config['http_errors'] = $config['query']['_federalization_ignore_error'] === "false" ? true : false;
+            unset($config['query']['_federalization_ignore_error']);
+        }
+
+        return $config;
+
+    }//end getFederationConfig()
+
+    /**
+     * Runs a federated request to a multitude of proxies and aggregrates the results.
+     *
+     * @param Collection $proxies The proxies to send the request to.
+     * @param string     $path    The path to send the request to.
+     * @param array      $config  The call configuration.
+     *
+     * @return Response The resulting response.
+     *
+     * @throws Exception
+     */
+    public function federationProxyHandler(Collection $proxies, string $path, array $config): Response
+    {
+        $this->requestTimes = [];
+
+        try {
+            $proxies = $this->getFederationSources($config, $proxies);
+        } catch (Exception $exception) {
+            return new Response(\Safe\json_encode(['message' => $exception->getMessage()]), 400, ['content-type' => 'application/json']);
+        }
+
+        $config = $this->getFederationConfig($config);
+
+        $promises = [];
+        foreach ($proxies as $id => $proxy) {
+            $config['on_stats'] = function (TransferStats $stats) use ($id) {
+                $this->requestTimes[$id] = $stats->getTransferTime();
+            };
+
+            $promises[$id] = $this->callService->call($proxy, $path, 'GET', $config, true);
+        }
+
+        $responses = Utils::settle($promises)->wait();
+
+        $results['_sources'] = [];
+        $results['results']  = new ArrayCollection();
+        foreach ($responses as $id => $response) {
+            if ($response['state'] === 'rejected' && ($response['reason'] instanceof ConnectException || $config['http_errors'] === false)) {
+                continue;
+            } else if ($response['state'] === 'rejected' && ($response['reason'] instanceof ServerException || $response['reason'] instanceof ClientException)) {
+                $this->logger->error($reponse['reason']->getMessage());
+                return new Response(\Safe\json_encode(['message' => $response['reason']->getMessage()]), 523, ['content-type' => 'application/json']);
+            }
+
+            $decoded            = $this->callService->decodeResponse($proxies[$id], $response['value']);
+            $decoded['results'] = array_map(
+                function (array $value) use ($proxies, $id) {
+                    $value['_source'] = $proxies[$id]->getId()->toString();
+                    return $value;
+                },
+                $decoded['results']
+            );
+
+            // This if statement is here for the comfort of programmers so IDEs recognise value as Response, the value can never be anything else than value.
+            if ($response['value'] instanceof \GuzzleHttp\Psr7\Response === false) {
+                continue;
+            }
+
+            $results['_sources'][] = [
+                'id'               => $proxies[$id]->getId()->toString(),
+                'name'             => $proxies[$id]->getName(),
+                'reference'        => $proxies[$id]->getReference(),
+                'status_code'      => $response['value']->getStatusCode(),
+                'response_time'    => (int) ($this->requestTimes[$id] * 1000),
+                'objects_returned' => count($decoded['results']),
+            ];
+
+            $results['results'] = new ArrayCollection(array_merge($results['results']->toArray(), $decoded['results']));
+        }//end foreach
+
+        $content = $this->serializer->serialize($results, 'json');
+
+        return new Response($content, 200, ['Content-Type' => 'application/json']);
+
+    }//end federationProxyHandler()
+
+    /**
      * Handles incoming requests and is responsible for generating a response.
      * todo: we want to merge requestHandler() and proxyHandler() code at some point.
      *
@@ -818,7 +1006,7 @@ class RequestService
         $this->identification = $this->getId();
 
         // If we have an ID we can get an Object to work with (except on gets we handle those from cache).
-        if (isset($this->identification) === true && empty($this->identification) === false && $this->data['method'] != 'GET') {
+        if (empty($this->identification) === false && $this->data['method'] != 'GET') {
             $object = $this->entityManager->getRepository('App:ObjectEntity')->findOneBy(['id' => $this->identification]);
             if ($object === null) {
                 return new Response(
@@ -931,8 +1119,6 @@ class RequestService
                     }
                 }
 
-                // check endpoint throws foreach and set the eventtype.
-                // use event dispatcher.
                 // If we do not have an object we throw an 404.
                 if ($result === null) {
                     return new Response(
@@ -1034,11 +1220,11 @@ class RequestService
         case 'PUT':
             $eventType = 'commongateway.object.update';
 
-            // We dont have an id on a PUT so die.
-            if (isset($this->identification) === false) {
-                $this->logger->error('No id could be established for your request');
+            // We don't have an id on a PUT so die.
+            if (empty($this->identification) === true || empty($this->object) === true) {
+                $this->logger->error('No id or object could be established for your request');
 
-                return new Response('No id could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
+                return new Response('No id or object could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             }
 
             $this->session->set('object', $this->identification);
@@ -1063,8 +1249,6 @@ class RequestService
 
                 return new Response('The body of your request is empty', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             }
-
-            $this->object = $this->entityManager->find('App:ObjectEntity', $this->identification);
 
             // if ($validation = $this->object->validate($this->content) && $this->object->hydrate($content, true)) {
             $this->logger->debug('updating object '.$this->identification);
@@ -1102,11 +1286,11 @@ class RequestService
         case 'PATCH':
             $eventType = 'commongateway.object.update';
 
-            // We dont have an id on a PATCH so die.
-            if (isset($this->identification) === false) {
-                $this->logger->error('No id could be established for your request');
+            // We don't have an id on a PATCH so die.
+            if (empty($this->identification) === true || empty($this->object) === true) {
+                $this->logger->error('No id or object could be established for your request');
 
-                return new Response('No id could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
+                return new Response('No id or object could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             }
 
             $this->session->set('object', $this->identification);
@@ -1131,8 +1315,6 @@ class RequestService
 
                 return new Response('The body of your request is empty', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             }
-
-            $this->object = $this->entityManager->find('App:ObjectEntity', $this->identification);
 
             // if ($this->object->hydrate($this->content) && $validation = $this->object->validate()) {
             $this->logger->debug('updating object '.$this->identification);
@@ -1168,11 +1350,11 @@ class RequestService
             break;
         case 'DELETE':
 
-            // We dont have an id on a PUT so die.
-            if (isset($this->identification) === false) {
-                $this->logger->error('No id could be established for your request');
+            // We don't have an id or object on a DELETE so die.
+            if (empty($this->identification) === true || empty($this->object) === true) {
+                $this->logger->error('No id or object could be established for your request');
 
-                return new Response('No id could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
+                return new Response('No id or object could be established for your request', '400', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             }
 
             $this->session->set('object', $this->identification);
@@ -1191,6 +1373,7 @@ class RequestService
                 return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
             }
 
+            // Todo: cascade remove subobjects (Check Attribute->getCascadeDelete() & Attribute->getMayBeOrphaned())
             $this->entityManager->remove($this->object);
             $this->entityManager->flush();
             $this->logger->info('Succesfully deleted object');
@@ -1211,7 +1394,7 @@ class RequestService
         }
 
         // Handle mapping for the result
-        if (isset($appEndpointConfig['out']['body']) === true) {
+        if (isset($appEndpointConfig['out']['body']) === true && (isset($result['message']) === true && $result['message'] !== 'Validation errors' || isset($result['message']) === false)) {
             $result = $this->handleAppEndpointConfig($result, $appEndpointConfig['out']['body']);
         }
 

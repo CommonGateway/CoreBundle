@@ -142,32 +142,48 @@ class GatewayResourceService
     }//end getSource()
 
     /**
-     * Find all sources that have a location that match the specified url.
+     * Find a source that has a location that match the specified url.
      * Todo: we should use a mongoDB filter instead of this, sources should exist in MongoDB.
+     * This function gets used in the CustomerInteractionBundle, Gateway->synchronizationService.
      *
-     * @param string $url        The url we are trying to find a matching source for.
-     * @param string $pluginName The name of the plugin that requests these resources.
+     * @param string      $url        The url we are trying to find a matching source for.
+     * @param string      $pluginName The name of the plugin that requests these resources.
+     * @param string|null $endpoint   The resulting endpoint (the remainder of the path).
      *
-     * @return array|null
+     * @return Source|null The source found or null.
      */
-    public function findSourcesForUrl(string $url, string $pluginName): ?array
+    public function findSourceForUrl(string $url, string $pluginName, ?string &$endpoint = null): ?Source
     {
-        $sources    = [];
-        $allSources = $this->entityManager->getRepository('App:Gateway')->findAll();
+        // 1. Get the domain from the url
+        $parse    = \Safe\parse_url($url);
+        $location = $parse['scheme'].'://'.$parse['host'];
 
-        foreach ($allSources as $source) {
-            if (empty($source->getLocation()) === false && str_contains($url, $source->getLocation()) === true) {
-                $sources[] = $source;
+        // 2.a Try to establish a source for the domain
+        $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['location' => $location]);
+
+        // 2.b The source might be on a path e.g. /v1 so if whe cant find a source let try to cycle
+        if ($source === null && isset($parse['path']) === true) {
+            foreach (explode('/', $parse['path']) as $pathPart) {
+                if ($pathPart !== '') {
+                    $location = $location.'/'.$pathPart;
+                }
+
+                $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['location' => $location]);
+                if ($source !== null) {
+                    $endpoint = str_replace($location, '', $url);
+                    break;
+                }
             }
         }
 
-        if (empty($sources) === true) {
-            $this->pluginLogger->error("No sources found for $url.", ['plugin' => $pluginName]);
-        }//end if
+        if ($source === null) {
+            $this->pluginLogger->error("No source found for $url.", ['plugin' => $pluginName]);
+            return null;
+        }
 
-        return $sources;
+        return $source;
 
-    }//end findSourcesForUrl()
+    }//end findSourceForUrl()
 
     /**
      * Get a endpoint by reference.
@@ -211,7 +227,7 @@ class GatewayResourceService
         }
 
         if ($action === null) {
-            $this->logger->error("No action found for $reference.", ['plugin' => $pluginName]);
+            $this->pluginLogger->error("No action found for $reference.", ['plugin' => $pluginName]);
         }//end if
 
         return $action;

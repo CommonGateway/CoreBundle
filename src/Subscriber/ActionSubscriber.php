@@ -117,6 +117,9 @@ class ActionSubscriber implements EventSubscriberInterface
         if (isset($this->io)) {
             $this->io->text("Run ActionHandlerInterface \"{$action->getClass()}\"");
             $this->io->newLine();
+            if (method_exists(get_class($object), 'setStyle') === true) {
+                $object->setStyle($this->io);
+            }
         }
 
         $actionRanGood = true;
