@@ -53,7 +53,7 @@
     "phpoffice/phpword": "^0.18.2",
     "phpoffice/phpspreadsheet": "^1.29",
     "ramsey/uuid": "^3.8 | ^4.7",
-    "ramsey/uuid-doctrine": "^2.0",
+    "ramsey/uuid-doctrine": "^1.5 | ^2.0",
     "respect/validation": "^2.2",
     "setono/cron-expression-bundle": "^1.5",
     "stof/doctrine-extensions-bundle": "^1.3",
