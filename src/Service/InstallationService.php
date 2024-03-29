@@ -182,7 +182,7 @@ class InstallationService
         if (isset($config['plugin']) === true) {
             $this->logger->debug('Running plugin installer for a single plugin: '.$config['plugin']);
             $this->install($config['plugin'], $config);
-            
+
             if (isset($config['cache-warmup']) === true) {
                 isset($this->style) === true && $this->style->section('Doing a cache warmup after installer is done...');
                 $this->logger->debug('Doing a cache warmup after installer is done...');
@@ -200,7 +200,7 @@ class InstallationService
         foreach ($plugins as $plugin) {
             $this->install($plugin['name'], $config);
         }
-        
+
         if (isset($config['cache-warmup']) === true) {
             isset($this->style) === true && $this->style->section('Doing a cache warmup after installer is done...');
             $this->logger->debug('Doing a cache warmup after installer is done...');
