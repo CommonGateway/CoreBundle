@@ -182,7 +182,7 @@ class InstallationService
         if (isset($config['plugin']) === true) {
             $this->logger->debug('Running plugin installer for a single plugin: '.$config['plugin']);
             $this->install($config['plugin'], $config);
-            
+
             if (isset($config['cache-warmup']) === true && $config['cache-warmup'] === true) {
                 isset($this->style) === true && $this->style->section('Doing a cache warmup after installer is done...');
                 $this->logger->debug('Doing a cache warmup after installer is done...');
@@ -200,7 +200,7 @@ class InstallationService
         foreach ($plugins as $plugin) {
             $this->install($plugin['name'], $config);
         }
-        
+
         if (isset($config['cache-warmup']) === true && $config['cache-warmup'] === true) {
             isset($this->style) === true && $this->style->section('Doing a cache warmup after installer is done...');
             $this->logger->debug('Doing a cache warmup after installer is done...');
@@ -227,7 +227,7 @@ class InstallationService
     {
         isset($this->style) === true && $this->style->section('Installing plugin '.$bundle);
         $this->logger->debug('Installing plugin '.$bundle, ['plugin' => $bundle]);
-        
+
         if (isset($config['skip-schema']) === false || $config['skip-schema'] !== true) {
             // First we want to read all the files so that we have all the content we should install.
             // Let's check the basic folders for legacy purposes. todo: remove these at some point.
@@ -240,7 +240,7 @@ class InstallationService
             $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Data');
             // A function that translates old core schema references to the new ones. Only here for backwards compatibility.
             $this->translateCoreReferences();
-            
+
             // Then the folder where everything should be.
             $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Installation');
         }
@@ -339,7 +339,7 @@ class InstallationService
         if (isset($config['data']) === true && $config['data'] !== false) {
             return;
         }
-        
+
         $finder = new Finder();
         $files  = $finder->in($this->vendorFolder.'/'.$bundle.'/Installation')->files()->name('data.json');
         if (isset($this->style) === true) {
@@ -363,7 +363,7 @@ class InstallationService
      * Handles the installation.json file if it exists in the Installation folder.
      *
      * @param string $bundle The bundle.
-     * @param array $config Optional config.
+     * @param array  $config Optional config.
      *
      * @throws Exception
      *
@@ -374,7 +374,7 @@ class InstallationService
         if ($this->filesystem->exists($this->vendorFolder.'/'.$bundle.'/Installation/installation.json') === false) {
             return;
         }
-        
+
         $finder = new Finder();
         // todo: maybe only allow installation.json file in root of Installation folder?
         // $finder->depth('== 0');
@@ -803,8 +803,8 @@ class InstallationService
     /**
      * Specifically handles the installation.json file.
      *
-     * @param SplFileInfo $file The installation.json file.
-     * @param array $config Optional config.
+     * @param SplFileInfo $file   The installation.json file.
+     * @param array       $config Optional config.
      *
      * @throws Exception
      *
@@ -819,11 +819,11 @@ class InstallationService
 
             return false;
         }
-        
+
         if (isset($config['skip-schema']) === false || $config['skip-schema'] !== true) {
             $this->handleInstallerObjects($data);
         }
-        
+
         if (isset($config['skip-script']) === true && $config['skip-script'] === true) {
             return true;
         }
@@ -869,7 +869,7 @@ class InstallationService
         }
 
     }//end handleInstaller()
-    
+
     /**
      * Handles creating or updating Core objects using information from the installation.json file.
      *
@@ -883,37 +883,38 @@ class InstallationService
     {
         // Collection prefixes for schema's.
         $this->updateSchemasCollection(($data['collections'] ?? []));
-        
+
         // Set the default source for a schema.
         $this->editSchemaProperties(($data['schemas'] ?? []));
-        
+
         // Endpoints for schema's and/or sources.
         $this->createEndpoints(($data['endpoints'] ?? []));
-        
+
         // Actions for action handlers.
         $this->createActions(($data['actions']['handlers'] ?? []));
-        
+
         // Fix references in configuration of these actions.
         $this->fixConfigRef(($data['actions']['fixConfigRef'] ?? []));
-        
+
         // Cronjobs for actions.
         $this->createCronjobs(($data['cronjobs']['actions'] ?? []));
-        
+
         // Create Applications and connect organization searching it by reference.
         $this->createApplications(($data['applications'] ?? []));
-        
+
         // Create users with given Organization & SecurityGroups.
         $this->createUsers(($data['users'] ?? []));
-        
+
         // Create templates with supportedSchemas (ref to uuid) and organization.
         $this->createTemplates(($data['templates'] ?? []));
-        
+
         // TODO: when adding more createX functions here, use createApplications and createUsers as examples!
         // TODO: And always keep createCards as the last function.
         // Let's see if we have things that we want to create cards for stuff
         // Since this might create cards for the stuff above this should always be last!!!
         $this->createCards(($data['cards'] ?? []));
-    }
+
+    }//end handleInstallerObjects()
 
     /**
      * This function adds a given default source to the schema.
