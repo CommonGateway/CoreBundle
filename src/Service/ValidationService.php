@@ -425,18 +425,24 @@ class ValidationService
         // Get the Rule for the type of this Attribute.
         // (Note: make sure to not call functions like this twice when using the Rule twice in a When Rule).
         $attTypeRule = $this->getAttTypeRule($attribute);
-
-        // If attribute type is correct continue validation of attribute format.
-        $attTypeValidator->addRule(
-            new Rules\When(
-            // IF.
-                $attTypeRule,
-                // TRUE.
-                $this->getAttFormatValidator($attribute),
-                // FALSE.
-                $attTypeRule
-            )
-        );
+        
+        // Check if the format of the attribute is not null
+        if ($attribute->getFormat() !== null) {
+            // If attribute type is correct and format is not null, continue validation of attribute format.
+            $attTypeValidator->addRule(
+                new Rules\When(
+                    // IF.
+                    $attTypeRule,
+                    // TRUE - Validate the format since format is not null.
+                    $this->getAttFormatValidator($attribute),
+                    // FALSE - Just confirm the type if format is null.
+                    $attTypeRule
+                )
+            );
+        } else {
+            // If the format is null, only validate the type.
+            $attTypeValidator->addRule($attTypeRule);
+        }
 
         return $attTypeValidator;
 
