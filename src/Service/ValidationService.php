@@ -7,6 +7,7 @@ use App\Entity\Entity;
 use App\Exception\GatewayException;
 use CommonGateway\CoreBundle\Service\Validation\Rules as CustomRules;
 use DateTime;
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Cache\CacheException;
 use Psr\Cache\InvalidArgumentException;
@@ -27,6 +28,13 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ValidationService
 {
+
+    /**
+     * The Entity Manager.
+     *
+     * @var EntityManagerInterface $entityManager
+     */
+    private EntityManagerInterface $entityManager;
 
     /**
      * The cache interface.
@@ -52,12 +60,16 @@ class ValidationService
     /**
      * The constructor sets al needed variables.
      *
-     * @param CacheInterface $cache
+     * @param EntityManagerInterface $entityManager The Entity Manager.
+     * @param CacheInterface         $cache         The cache interface.
      */
     public function __construct(
+        EntityManagerInterface $entityManager,
         CacheInterface $cache
     ) {
-        $this->cache = $cache;
+        $this->entityManager = $entityManager;
+        $this->cache         = $cache;
+
         Factory::setDefaultInstance(
             (new Factory())
                 ->withRuleNamespace('CommonGateway\CoreBundle\Service\Validation\Rules')
@@ -126,24 +138,23 @@ class ValidationService
 
         $this->level = $level;
 
+        // Todo: put this back so that we use caching, after https://conduction.atlassian.net/browse/GW-183 is fixed.
         // Try and get a validator for this Entity(+method) from cache.
-        $item = $this->cache->getItem('entityValidators_'.$entity->getId()->toString().'_'.$this->method);
-        if ($item->isHit() === true) {
-            // Todo: put this back so that we use caching, after https://conduction.atlassian.net/browse/GW-183 is fixed.
+        // $item = $this->cache->getItem('entityValidators_'.$entity->getId()->toString().'_'.$this->method);
+        // if ($item->isHit() === true) {
             // return $item->get();
-        }
-
+        // }
         // No Validator found in cache for this Entity(+method), so create a new Validator and cache that.
         $validator = new Validator();
         $validator = $this->addAttributeValidators($entity, $validator);
 
-        $item->set($validator);
+        // Todo: put this back so that we use caching, after https://conduction.atlassian.net/browse/GW-183 is fixed.
+        // $item->set($validator);
         // Tag for all Entity Validators.
         // $item->tag('entityValidator');
         // Tag for the Validators of this specific Entity.
         // $item->tag('entityValidator_'.$entity->getId()->toString());
-        $this->cache->save($item);
-
+        // $this->cache->save($item);
         return $validator;
 
     }//end getEntityValidator()
@@ -415,17 +426,23 @@ class ValidationService
         // (Note: make sure to not call functions like this twice when using the Rule twice in a When Rule).
         $attTypeRule = $this->getAttTypeRule($attribute);
 
-        // If attribute type is correct continue validation of attribute format.
-        $attTypeValidator->addRule(
-            new Rules\When(
-            // IF.
-                $attTypeRule,
-                // TRUE.
-                $this->getAttFormatValidator($attribute),
-                // FALSE.
-                $attTypeRule
-            )
-        );
+        // Check if the format of the attribute is not null
+        if ($attribute->getFormat() !== null) {
+            // If attribute type is correct and format is not null, continue validation of attribute format.
+            $attTypeValidator->addRule(
+                new Rules\When(
+                    // IF.
+                    $attTypeRule,
+                    // TRUE - Validate the format since format is not null.
+                    $this->getAttFormatValidator($attribute),
+                    // FALSE - Just confirm the type if format is null.
+                    $attTypeRule
+                )
+            );
+        } else {
+            // If the format is null, only validate the type.
+            $attTypeValidator->addRule($attTypeRule);
+        }
 
         return $attTypeValidator;
 
@@ -530,6 +547,18 @@ class ValidationService
         // Make sure we do not allow empty string for an object.
         // (will also invalidate null, but if attribute is nullable and the value is null we never get here and never check this rule).
         $objectValidator->addRule(new Rules\NotEmpty());
+
+        // If the input is a UUID, validate if an ObjectEntity with that UUID and Schema = $attribute->getObject() exists.
+        $objectValidator->addRule(
+            new Rules\When(
+            // IF.
+                new Rules\Uuid(),
+                // TRUE.
+                new CustomRules\ObjectExists($this->entityManager, $attribute->getObject() !== null ? $attribute->getObject()->getId()->toString() : null),
+                // FALSE.
+                new Rules\AlwaysValid()
+            )
+        );
 
         // Todo: Make a custom rule for cascading so we can give custom exception messages back?
         // Todo: maybe check if an object with the given UUID actually exists?

@@ -2,9 +2,11 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use App\Entity\Database;
 use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\ObjectEntity;
+use App\Entity\Organization;
 use App\Entity\User;
 use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use DateTime;
@@ -20,8 +22,11 @@ use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 
 /**
  * Service to call external sources.
@@ -41,6 +46,11 @@ class CacheService
      * @var Client
      */
     private Client $client;
+
+    /**
+     * @var Client
+     */
+    private Client $objectsClient;
 
     /**
      * @var EntityManagerInterface
@@ -73,6 +83,16 @@ class CacheService
     private SerializerInterface $serializer;
 
     /**
+     * @var SessionInterface $session
+     */
+    private SessionInterface $session;
+
+    /**
+     * @var Filesystem $filesystem
+     */
+    private Filesystem $filesystem;
+
+    /**
      * Object Entity Service.
      *
      * @var ObjectEntityService
@@ -86,6 +106,7 @@ class CacheService
      * @param ParameterBagInterface  $parameters          The Parameter bag
      * @param SerializerInterface    $serializer          The serializer
      * @param ObjectEntityService    $objectEntityService The Object Entity Service.
+     * @param SessionInterface       $session             The current session.
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -93,7 +114,8 @@ class CacheService
         LoggerInterface $cacheLogger,
         ParameterBagInterface $parameters,
         SerializerInterface $serializer,
-        ObjectEntityService $objectEntityService
+        ObjectEntityService $objectEntityService,
+        SessionInterface $session
     ) {
         $this->entityManager       = $entityManager;
         $this->cache               = $cache;
@@ -101,11 +123,31 @@ class CacheService
         $this->parameters          = $parameters;
         $this->serializer          = $serializer;
         $this->objectEntityService = $objectEntityService;
+        $this->session             = $session;
         if ($this->parameters->get('cache_url', false)) {
             $this->client = new Client($this->parameters->get('cache_url'));
         }
 
+        $this->filesystem = new Filesystem();
+
     }//end __construct()
+
+    /**
+     * Use current user and the organization of this user to get the correct objects database client.
+     *
+     * @return void
+     */
+    private function setObjectClient()
+    {
+        $user = $this->objectEntityService->findCurrentUser();
+        if ($user !== null && $user->getOrganization() !== null) {
+            $organization = $this->entityManager->getRepository(Organization::class)->find($user->getOrganization());
+            if ($organization !== null && $organization->getDatabase() !== null) {
+                $this->objectsClient = new Client($organization->getDatabase()->getUri());
+            }
+        }
+
+    }//end setObjectClient()
 
     /**
      * Set symfony style in order to output to the console.
@@ -138,21 +180,75 @@ class CacheService
         );
 
         isset($this->style) === true && $this->style->section('Cleaning Object\'s');
-        $collection = $this->client->objects->json;
-        $filter     = [];
-        $objects    = $collection->find($filter)->toArray();
-        isset($this->style) === true && $this->style->writeln('Found '.count($objects).'');
+        $objectDatabases = $this->entityManager->getRepository(Database::class)->findAll();
+        foreach ($objectDatabases as $database) {
+            $objectsClient = new Client($database->getUri());
+            $collection    = $objectsClient->objects->json;
+
+            $filter  = [];
+            $objects = $collection->find($filter)->toArray();
+            isset($this->style) === true && $this->style->writeln('Found '.count($objects).' in Database '.$database->getReference());
+        }
 
     }//end cleanup()
 
     /**
+     * Gets all schema references from a bundle/package.
+     *
+     * Reads all /Installation/Schema files from a bundle/package and gets the references from the schemas.
+     *
+     * @param string $bundleToCache
+     *
+     * @return array Schema references.
+     */
+    private function getSchemaReferencesFromBundle(string $bundleToCache): array
+    {
+        $hits = new Finder();
+        $hits = $hits->in('vendor/'.$bundleToCache.'/Installation/Schema');
+
+        $schemaRefs = [];
+        foreach ($hits->files() as $file) {
+            $schema = json_decode($file->getContents(), true);
+            if (empty($schema) === true) {
+                $this->logger->error($file->getFilename().' is not a valid json object');
+
+                return false;
+            }
+
+            if (isset($schema['$id']) === true) {
+                $schemaRefs[] = $schema['$id'];
+            }
+        }
+
+        return $schemaRefs;
+
+    }//end getSchemaReferencesFromBundle()
+
+    /**
+     * Gets all object entities from a bundle/package.
+     *
+     * Reads all /Installation/Schema files from a bundle/package and gets the references from the schemas. Then fetches all object entities from entities found with the references.
+     *
+     * @param array $schemaRefs
+     *
+     * @return mixed|bool ObjectEntities or false.
+     */
+    private function getObjectEntitiesFromBundle(array $schemaRefs)
+    {
+
+        return $this->entityManager->getRepository(ObjectEntity::class)->findByReferences($schemaRefs);
+
+    }//end getObjectEntitiesFromBundle()
+
+    /**
      * Throws all available objects into the cache.
      *
-     * @param array $config An array which can contain the keys 'objects', 'schemas' and/or 'endpoints' to skip caching these specific objects. Can also contain the key removeOnly in order to only remove from cache.
+     * @param array       $config        An array which can contain the keys 'objects', 'schemas' and/or 'endpoints' to skip caching these specific objects. Can also contain the key removeOnly in order to only remove from cache.
+     * @param string|null $bundleToCache Bundle to cache objects from
      *
      * @return int
      */
-    public function warmup(array $config = []): int
+    public function warmup(array $config = [], ?string $bundleToCache = null): int
     {
         isset($this->style) === true && $this->style->writeln(
             [
@@ -165,18 +261,32 @@ class CacheService
         isset($this->style) === true && $this->style->writeln('Connecting to '.$this->parameters->get('cache_url'));
 
         // Backwards compatablity.
-        if (isset($this->client) === false) {
+        if (((isset($config['schemas']) === false || $config['schemas'] !== true)
+            || (isset($config['endpoints']) === false || $config['endpoints'] !== true))
+            && isset($this->client) === false
+        ) {
             isset($this->style) === true && $this->style->writeln('No cache client found, halting warmup');
 
-            return Command::SUCCESS;
+            return Command::FAILURE;
         }
+
+        $schemaRefs = [];
 
         // Objects.
         if ((isset($config['objects']) === false || $config['objects'] !== true)
             && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
         ) {
-            isset($this->style) === true && $this->style->section('Caching Objects\'s');
-            $objectEntities = $this->entityManager->getRepository('App:ObjectEntity')->findAll();
+            isset($this->style) === true && $this->style->section('Caching Objects');
+            if ($bundleToCache !== null) {
+                $schemaRefs     = $this->getSchemaReferencesFromBundle($bundleToCache);
+                $objectEntities = $this->getObjectEntitiesFromBundle($schemaRefs);
+                if ($objectEntities === false) {
+                    return Command::FAILURE;
+                }
+            } else {
+                $objectEntities = $this->entityManager->getRepository(ObjectEntity::class)->findAll();
+            }
+
             isset($this->style) === true && $this->style->writeln('Found '.count($objectEntities).' objects\'s');
 
             foreach ($objectEntities as $objectEntity) {
@@ -187,11 +297,12 @@ class CacheService
                     continue;
                 }
             }
-        }
+        }//end if
 
         // Schemas.
         if ((isset($config['schemas']) === false || $config['schemas'] !== true)
             && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
+            && $bundleToCache === null
         ) {
             isset($this->style) === true && $this->style->section('Caching Schema\'s');
             $schemas = $this->entityManager->getRepository('App:Entity')->findAll();
@@ -210,6 +321,7 @@ class CacheService
         // Endpoints.
         if ((isset($config['endpoints']) === false || $config['endpoints'] !== true)
             && (isset($config['removeOnly']) === false || $config['removeOnly'] !== true)
+            && $bundleToCache === null
         ) {
             isset($this->style) === true && $this->style->section('Caching Endpoint\'s');
             $endpoints = $this->entityManager->getRepository('App:Endpoint')->findAll();
@@ -225,31 +337,53 @@ class CacheService
             }
         }
 
-        // Created indexes.
-        $this->client->objects->json->createIndex(['$**' => 'text']);
-        $this->client->schemas->json->createIndex(['$**' => 'text']);
-        $this->client->endpoints->json->createIndex(['$**' => 'text']);
+        // Created indexes and remove data from cache.
+        $objectDatabases = $this->entityManager->getRepository(Database::class)->findAll();
+        if (isset($config['objects']) === false || $config['objects'] !== true) {
+            foreach ($objectDatabases as $database) {
+                $objectsClient = new Client($database->getUri());
 
-        if (isset($config['endpoints']) === false || $config['endpoints'] !== true) {
-            $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
+                $objectsClient->objects->json->createIndex(['$**' => 'text']);
+
+                $this->removeDataFromCache($objectsClient->objects->json, 'App:ObjectEntity', $schemaRefs, $database);
+            }
+
+            $this->client->objects->json->createIndex(['$**' => 'text']);
+            $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity', $schemaRefs);
         }
 
-        if (isset($config['objects']) === false || $config['objects'] !== true) {
-            $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity');
+        if ((isset($config['schemas']) === false || $config['schemas'] !== true) && $bundleToCache === null) {
+            $this->client->schemas->json->createIndex(['$**' => 'text']);
+        }
+
+        if ((isset($config['endpoints']) === false || $config['endpoints'] !== true) && $bundleToCache === null) {
+            $this->client->endpoints->json->createIndex(['$**' => 'text']);
+
+            $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
         }
 
         return Command::SUCCESS;
 
     }//end warmup()
 
-    private function removeDataFromCache(Collection $collection, string $type): void
+    private function removeDataFromCache(Collection $collection, string $type, array $schemaRefs = [], Database $database = null): void
     {
         if (isset($this->style) === true) {
-            $this->style->newline();
-            $this->style->writeln(["Removing deleted $type", '============']);
+            $databaseMsg = $database ? ' from Database: '.$database->getReference() : null;
+            $this->style->section("Removing deleted $type".$databaseMsg);
         }
 
-        $objects = $collection->find()->toArray();
+        if (empty($schemaRefs) === false) {
+            $filter = [];
+            foreach ($schemaRefs as $schemaRef) {
+                $filter['_self.schema.id']['$in'][] = $schemaRef;
+            }
+
+            $objects = $collection->find($filter, [])->toArray();
+        } else {
+            $objects = $collection->find()->toArray();
+        }
+
         foreach ($objects as $object) {
             if ($this->entityManager->find($type, $object['_id']) === null) {
                 if (isset($this->style) === true) {
@@ -294,13 +428,26 @@ class CacheService
             return $objectEntity;
         }
 
-        // Backwards compatablity.
-        if (isset($this->client) === false) {
+        $this->setObjectClient();
+        if (isset($this->objectsClient) === true) {
+            $collection = $this->objectsClient->objects->json;
+        } else if ($objectEntity->getOrganization() !== null && $objectEntity->getOrganization()->getDatabase() !== null) {
+            $database      = $objectEntity->getOrganization()->getDatabase();
+            $objectsClient = new Client($database->getUri());
+            $collection    = $objectsClient->objects->json;
+        } else if (isset($this->client) === true) {
+            $collection = $this->client->objects->json;
+        } else {
             return $objectEntity;
         }
 
         if (isset($this->style) === true) {
-            $this->style->writeln('Start caching object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName());
+            $databaseRef = $this->parameters->get('cache_url');
+            if (isset($database) === true) {
+                $databaseRef = $database->getReference();
+            }
+
+            $this->style->writeln($databaseRef.' ===> Start caching object '.$objectEntity->getId()->toString().' of type '.$objectEntity->getEntity()->getName());
         }
 
         // todo: temp fix to make sure we have the latest version of this ObjectEntity before we cache it.
@@ -310,8 +457,6 @@ class CacheService
         } else if (isset($this->style) === true) {
             $this->style->writeln('Could not find an ObjectEntity with id: '.$objectEntity->getId()->toString());
         }
-
-        $collection = $this->client->objects->json;
 
         // Let's not cash the entire schema
         $array = $objectEntity->toArray(['embedded' => true, 'user' => $this->getObjectUser($objectEntity)]);
@@ -384,13 +529,20 @@ class CacheService
      */
     public function removeObject(ObjectEntity $object, bool $softDelete = false): void
     {
-        // Backwards compatablity.
-        if (isset($this->client) === false) {
+        $this->setObjectClient();
+        if (isset($this->objectsClient) === true) {
+            $collection = $this->objectsClient->objects->json;
+        } else if ($objectEntity->getOrganization() !== null && $objectEntity->getOrganization()->getDatabase() !== null) {
+            $objectsClient = new Client($objectEntity->getOrganization()->getDatabase()->getUri());
+            $collection    = $objectsClient->objects->json;
+        } else if (isset($this->client) === true) {
+            $collection = $this->client->objects->json;
+        } else {
             return;
         }
 
-        $identification = $object->getId()->toString();
-        $collection     = $this->client->objects->json;
+        // Todo: cascade remove subobjects (Check Attribute->getCascadeDelete() & Attribute->getMayBeOrphaned())
+        $identification = $objectEntity->getId()->toString();
 
         if ($softDelete === true) {
             $now                                 = new DateTime();
@@ -409,18 +561,44 @@ class CacheService
     /**
      * Get a single object from the cache.
      *
-     * @param string $identification
+     * @param string      $identification The ID of an Object.
+     * @param string|null $schema         Only look for an object with this schema.
      *
      * @return array|null
      */
-    public function getObject(string $identification): ?array
+    public function getObject(string $identification, string $schema = null): ?array
     {
-        // Backwards compatablity.
-        if (isset($this->client) === false) {
-            return null;
+        $this->setObjectClient();
+        if (isset($this->objectsClient) === true) {
+            $collection = $this->objectsClient->objects->json;
+        } else {
+            $objectEntity = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['id' => $identification]);
+            if ($objectEntity !== null && $objectEntity->getOrganization() !== null && $objectEntity->getOrganization()->getDatabase() !== null) {
+                $objectsClient = new Client($objectEntity->getOrganization()->getDatabase()->getUri());
+                $collection    = $objectsClient->objects->json;
+            } else if (isset($this->client) === true) {
+                $collection = $this->client->objects->json;
+            } else {
+                return null;
+            }
         }
 
-        $collection = $this->client->objects->json;
+        if ($schema !== null) {
+            if (Uuid::isValid($schema) === true) {
+                // $filter['_self.schema.id'] = 'b92a3a39-3639-4bf5-b2af-c404bc2cb005';
+                $filter['_self.schema.id'] = $schema;
+                $entityObject              = $this->entityManager->getRepository('App:Entity')->findOneBy(['id' => $schema]);
+            } else {
+                // $filter['_self.schema.ref'] = 'https://larping.nl/schema/example.schema.json';
+                $filter['_self.schema.ref'] = $schema;
+                $entityObject               = $this->entityManager->getRepository('App:Entity')->findOneBy(['reference' => $schema]);
+            }
+
+            if ($entityObject === null) {
+                $this->logger->warning("Could not find an Entity with id or reference = $schema during getObject($identification)");
+                return null;
+            }
+        }
 
         $user = $this->objectEntityService->findCurrentUser();
 
@@ -434,6 +612,8 @@ class CacheService
                 $filter['_self.owner.id'] = $user->getId()->toString();
             }
         }
+
+        $this->session->set('mongoDBFilter', $filter);
 
         // Check if object is in the cache?
         if ($object = $collection->findOne($filter)) {
@@ -831,16 +1011,25 @@ class CacheService
     }//end parseFilter()
 
     /**
-     * Retrieves objects from a cache collection.
+     * Adds owner and organization filters (multi tenancy) for searchObjects() or countObjects(). Or other MongoDB collection queries.
      *
-     * @param array $filter
-     * @param array $options
-     * @param array $completeFilter
+     * @param array $filter The filter to add owner and organization filters to.
      *
-     * @return array $this->handleResultPagination()
+     * @return array The updated filter (unless owner and organization filter was already present).
      */
-    public function retrieveObjectsFromCache(array $filter, array $options, array $completeFilter = []): array
+    private function addOwnerOrgFilter(array $filter): array
     {
+        if (isset($filter['$and']) === true) {
+            $andCount = (count($filter['$and']) - 1);
+            if (isset($filter['$and'][$andCount]['$or'][0]['_self.owner.id']) === true) {
+                return $filter;
+            }
+        }
+
+        if (isset($filter['_self.owner.id']) === true) {
+            return $filter;
+        }
+
         $user = $this->objectEntityService->findCurrentUser();
 
         if ($user !== null && $user->getOrganization() !== null) {
@@ -858,9 +1047,37 @@ class CacheService
             $filter['_self.owner.id'] = $user->getId()->toString();
         }
 
-        $collection = $this->client->objects->json;
-        $results    = $collection->find($filter, $options)->toArray();
-        $total      = $collection->count($filter);
+        return $filter;
+
+    }//end addOwnerOrgFilter()
+
+    /**
+     * Retrieves objects from a cache collection.
+     *
+     * @param array      $filter         The mongoDB query to filter with.
+     * @param array|null $options        Options like 'limit', 'skip' & 'sort' for the mongoDB->find query.
+     * @param array      $completeFilter The completeFilter query, unchanged, as used on the request.
+     *
+     * @return array|int $this->handleResultPagination() array with objects and pagination.
+     */
+    public function retrieveObjectsFromCache(array $filter, ?array $options = null, array $completeFilter = []): array
+    {
+        $filter = $this->addOwnerOrgFilter($filter);
+
+        $this->session->set('mongoDBFilter', $filter);
+
+        $this->setObjectClient();
+        if (isset($this->objectsClient) === true) {
+            $collection = $this->objectsClient->objects->json;
+        } else if (isset($this->client) === true) {
+            $collection = $this->client->objects->json;
+        } else {
+            return [];
+        }
+
+        $total = $this->countObjectsInCache($filter);
+
+        $results = $collection->find($filter, $options)->toArray();
 
         return $this->handleResultPagination($completeFilter, $results, $total);
 
@@ -870,12 +1087,12 @@ class CacheService
      * Searches the object store for objects containing the search string.
      *
      * @param string|null $search   a string to search for within the given context
-     * @param array       $filter   an array of dot.notation filters for wich to search with
+     * @param array       $filter   an array of dot.notation filters for which to search with
      * @param array       $entities schemas to limit te search to
      *
      * @throws Exception
      *
-     * @return array
+     * @return array The objects found
      */
     public function searchObjects(string $search = null, array $filter = [], array $entities = []): array
     {
@@ -897,13 +1114,79 @@ class CacheService
         $this->setPagination($limit, $start, $completeFilter);
 
         // Order.
-        $order                                                   = isset($completeFilter['_order']) === true ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
-        empty($order) === false && $order[array_keys($order)[0]] = (int) $order[array_keys($order)[0]];
+        $order = isset($completeFilter['_order']) === true ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
+        if (empty($order) === false) {
+            $order = array_map(
+                function ($value) {
+                    return (int) $value;
+                },
+                $order
+            );
+        }
 
         // Find / Search.
         return $this->retrieveObjectsFromCache($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order], $completeFilter);
 
     }//end searchObjects()
+
+    /**
+     * Counts objects in a cache collection.
+     *
+     * @param array $filter The mongoDB query to filter with.
+     *
+     * @return int The amount of objects counted.
+     */
+    public function countObjectsInCache(array $filter): int
+    {
+        $filter = $this->addOwnerOrgFilter($filter);
+
+        $this->session->set('mongoDBFilter', $filter);
+
+        $this->setObjectClient();
+        if (isset($this->objectsClient) === true) {
+            $collection = $this->objectsClient->objects->json;
+        } else if (isset($this->client) === true) {
+            $collection = $this->client->objects->json;
+        } else {
+            return 0;
+        }
+
+        return $collection->count($filter);
+
+    }//end countObjectsInCache()
+
+    /**
+     * Counts objects found with the given search/filter parameters.
+     *
+     * @param string|null $search   a string to search for within the given context
+     * @param array       $filter   an array of dot.notation filters for which to search with
+     * @param array       $entities schemas to limit te search to
+     *
+     * @throws Exception
+     *
+     * @return int
+     */
+    public function countObjects(string $search = null, array $filter = [], array $entities = []): int
+    {
+        // Backwards compatablity.
+        if (isset($this->client) === false) {
+            return 0;
+        }
+
+        $completeFilter = [];
+        $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
+        if ($filterParse !== null) {
+            $this->logger->error($filterParse);
+            return 0;
+        }
+
+        // Let's see if we need a search
+        $this->handleSearch($filter, $completeFilter, $search);
+
+        // Find / Search.
+        return $this->countObjectsInCache($filter);
+
+    }//end countObjects()
 
     /**
      * Creates an aggregation of results for possible query parameters
@@ -936,8 +1219,16 @@ class CacheService
         // Let's see if we need a search
         $this->handleSearch($filter, $completeFilter, null);
 
-        $collection = $this->client->objects->json;
-        $result     = [];
+        $result = [];
+        $this->setObjectClient();
+        if (isset($this->objectsClient) === true) {
+            $collection = $this->objectsClient->objects->json;
+        } else if (isset($this->client) === true) {
+            $collection = $this->client->objects->json;
+        } else {
+            return $result;
+        }
+
         foreach ($queries as $query) {
             $result[$query] = $collection->aggregate([['$match' => $filter], ['$unwind' => "\${$query}"], ['$group' => ['_id' => "\${$query}", 'count' => ['$sum' => 1]]]])->toArray();
         }
@@ -1015,9 +1306,9 @@ class CacheService
      * the _search query is present in $completeFilter query params, then we use that instead.
      * _search query param supports filtering on specific properties with ?_search[property1,property2]=value.
      *
-     * @param array       $filter
-     * @param array       $completeFilter
-     * @param string|null $search
+     * @param array       $filter         The filter array for mongoDB so far.
+     * @param array       $completeFilter All filters used with query params, will also contain properties like _order and _search.
+     * @param string|null $search         A string to search with, or null.
      *
      * @return void
      */
@@ -1031,9 +1322,9 @@ class CacheService
             return;
         }
 
-        // Normal search on every property with type text (includes strings).
+        // Normal search on every property with type text (includes strings), like this: ?_search=value.
         if (is_string($search) === true) {
-            $filter['$text'] = ['$search' => $search];
+            $filter = $this->handleSearchString($filter, $search);
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value.
         else if (is_array($search) === true) {
@@ -1043,8 +1334,8 @@ class CacheService
             }
 
             $searchRegex = [
-                '$regex'   => $searchRegex,
-                '$options' => 'i',
+                '$regex'   => ".*$searchRegex.*",
+                '$options' => 'im',
             ];
             $properties  = explode(',', array_key_first($search));
             foreach ($properties as $property) {
@@ -1054,6 +1345,54 @@ class CacheService
         }
 
     }//end handleSearch()
+
+    /**
+     * Uses given $search string to add a filter on all properties to the existing $filter array.
+     * Will try to do a wildcard search using $regex on all attributes of the entities in $filter['_self.schema.id']['$in'].
+     * Else uses the $text + $search mongoDB query in order to do a non wildcard search on all string type properties.
+     *
+     * @param array  $filter The filter array for mongoDB so far.
+     * @param string $search The search string to search all properties with.
+     *
+     * @return array The updated filter array.
+     */
+    private function handleSearchString(array $filter, string $search): array
+    {
+        // Non wildcard version, just in case we do not have '_self.schema.id'
+        if (isset($filter['_self.schema.id']['$in']) === false) {
+            $filter['$text'] = ['$search' => $search];
+            return $filter;
+        }
+
+        // Use regex in order to do wildcard search.
+        $searchRegex = [
+            '$regex'   => ".*$search.*",
+            '$options' => 'im',
+        ];
+
+        // Add regex wildcard search for each attribute of each entity we are filtering on.
+        $countEntities = 0;
+        foreach ($filter['_self.schema.id']['$in'] as $entityId) {
+            $entityObject = $this->entityManager->getRepository(Entity::class)->find($entityId);
+            if ($entityObject === null) {
+                $this->logger->error("Could not find an Entity with id = $entityId during handleSearch()");
+                continue;
+            }
+
+            $countEntities = ($countEntities + 1);
+            foreach ($entityObject->getAttributes() as $attribute) {
+                $filter['$or'][][$attribute->getName()] = $searchRegex;
+            }
+        }
+
+        // If we somehow did not find any entities we should just use non wildcard search instead of returning all objects without filtering.
+        if ($countEntities === 0) {
+            $filter['$text'] = ['$search' => $search];
+        }
+
+        return $filter;
+
+    }//end handleSearchString()
 
     /**
      * Decides the pagination values.

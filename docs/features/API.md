@@ -72,6 +72,9 @@ method less queries (e.g. `firstname=john`) are treated as exact methods `firstn
 - **[<] smaller than**
   Only usable on properties of the type `integer`, will automatically cast the searched value to an integer to make the comparison
 
+- **[ne] not equals**
+  Usable on all types of property. Differs from regex negation by also returning objects where the property is set to null, or in the case of endpoints where multiple schemas can be returned, objects that do not contain the property at all.
+
 - **[after] equal or greater than**
   Only usable on properties of the type `date` or `datetime`
 
@@ -152,7 +155,7 @@ The returned data can be limited using the _fields query parameter. This paramet
   "born":{
     "city":"Amsterdam",
     "country":"Netherlands",
-    "date":"1985-07-27"	
+    "date":"1985-07-27"
   }
 }
 ```
@@ -162,7 +165,7 @@ Of we then query using ` _fields[]=firstname&_fields[]=born.date` we would expec
 {
   "firstname":"John",
   "born":{
-    "date":"1985-07-27"	
+    "date":"1985-07-27"
   }
 }
 ```
@@ -184,4 +187,51 @@ Mappings can be passed through the gateway by url encoding the desired mapping a
 
 > **Note**
 > It is discouraged to use mappings in this context since it makes the API restFull.
+
+## Aggregations (progressive queries)
+The gateway provides a function to retrieve aggregations about the results of a search or list endpoint.
+These aggregations can be used to predict the number of results the endpoint will return when a query parameter is set to a certain value, which means that frontends can show how many results will be returned when a filter is set.
+
+These aggregations can be requested by setting the response type of the gateway to `application/json+aggregations`. This will by default return an array for the query parameters that are set with the `_queries[]=` query parameter. For example `/api/search?_queries[]=categories` will return all values the categories-property has in the data and the number of results setting the categories-property to that value will return when requesting the data.
+The aggregation endpoint will take into account the filters already set, including the _search filter. This means that when adding filters, the number of options for a certain query value will decrease, and eventually, the query value will disappear from the list once the combination of filters will return no results for that value.
+
+The response will have the following format:
+```json
+{
+  "platforms": [
+    {
+      "_id": "haven",
+      "count": 46
+    },
+    {
+      "_id": "gaia-x",
+      "count": 44
+    },
+    {
+      "_id": "mac",
+      "count": 12
+    },
+    {
+      "_id": "nlx",
+      "count": 46
+    },
+    {
+      "_id": "web",
+      "count": 96
+    },
+    {
+      "_id": "windows",
+      "count": 12
+    },
+    {
+      "_id": "linux",
+      "count": 12
+    }
+  ]
+}
+```
+Here we see that platforms is the query parameter set in `queries[]`, the values in `_id` are the values for this property in the database, and `count` is the number of occurrences of this value.
+
+> **Note**
+> Use the aggregations endpoint only on properties that can have a limited number of values. Using it on free fields may result in database overloading or bad performance for the aggregations.
 

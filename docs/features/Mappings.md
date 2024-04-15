@@ -413,24 +413,25 @@ In some cases, you might want to change the properties variable type or if you a
 
 We can cast values by including a cast property in our mapping, the following type casts are currently available:
 
-| Cast           | Function (php docs)                                                                              | Twig | Notes                                               |
-|----------------|--------------------------------------------------------------------------------------------------|------|-----------------------------------------------------|
-| string         | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   | x                                                   |
-| bool / boolean | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   | x                                                   |
-| int / integer  | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   | x                                                   |
-| float          | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   | x                                                   |
-| array          | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   | x                                                   |
-| date           | [php date function](https://www.php.net/manual/en/function.date)                                 | No   | x                                                   |
-| url            | [php urlencode function](https://www.php.net/manual/en/function.urlencode.php)                   | Yes  | x                                                   |
-| urlDecode      | [php urldecode function](https://www.php.net/manual/en/function.urldecode.php)                   | Yes  | x                                                   |
-| rawurl         | [php rawurlencode function](https://www.php.net/manual/en/function.rawurlencode.php)             | Yes  | x                                                   |
-| rawurlDecode   | [php rawurldecode function](https://www.php.net/manual/en/function.rawurldecode.php)             | Yes  | x                                                   |
-| html           | [php htmlentities function](https://www.php.net/manual/en/function.htmlentities.php)             | Yes  | x                                                   |
-| htmlDecode     | [php html_entity_decode function](https://www.php.net/manual/en/function.html-entity-decode.php) | Yes  | x                                                   |
-| base64         | [php base64-encode function](https://www.php.net/manual/en/function.base64-encode.php)           | Yes  | x                                                   |
-| base64Decode   | [php base64-decode function](https://www.php.net/manual/en/function.base64-decode.php)           | Yes  | x                                                   |
-| json           | [php json-encode function](https://www.php.net/manual/en/function.json-encode.php)               | Yes  | x                                                   |
-| jsonToArray    | [php json-decode function](https://www.php.net/manual/en/function.json-decode.php)               | Yes  | The htmlDecode cast is always done before this cast |
+| Cast           | Function (php docs)                                                                              | Twig | Notes                                                   |
+|----------------|--------------------------------------------------------------------------------------------------|------|---------------------------------------------------------|
+| string         | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   | x                                                       |
+| bool / boolean | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   | x                                                       |
+| int / integer  | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   | x                                                       |
+| float          | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   | x                                                       |
+| array          | [php Type Juggling](https://www.php.net/manual/en/language.types.type-juggling.php)              | No   | x                                                       |
+| date           | [php date function](https://www.php.net/manual/en/function.date)                                 | No   | x                                                       |
+| url            | [php urlencode function](https://www.php.net/manual/en/function.urlencode.php)                   | Yes  | x                                                       |
+| urlDecode      | [php urldecode function](https://www.php.net/manual/en/function.urldecode.php)                   | Yes  | x                                                       |
+| rawurl         | [php rawurlencode function](https://www.php.net/manual/en/function.rawurlencode.php)             | Yes  | x                                                       |
+| rawurlDecode   | [php rawurldecode function](https://www.php.net/manual/en/function.rawurldecode.php)             | Yes  | x                                                       |
+| html           | [php htmlentities function](https://www.php.net/manual/en/function.htmlentities.php)             | Yes  | x                                                       |
+| htmlDecode     | [php html_entity_decode function](https://www.php.net/manual/en/function.html-entity-decode.php) | Yes  | x                                                       |
+| base64         | [php base64-encode function](https://www.php.net/manual/en/function.base64-encode.php)           | Yes  | x                                                       |
+| base64Decode   | [php base64-decode function](https://www.php.net/manual/en/function.base64-decode.php)           | Yes  | x                                                       |
+| json           | [php json-encode function](https://www.php.net/manual/en/function.json-encode.php)               | Yes  | x                                                       |
+| jsonToArray    | [php json-decode function](https://www.php.net/manual/en/function.json-decode.php)               | Yes  | The htmlDecode cast is always done before this cast     |
+| utf8           | [php iconv function](https://www.php.net/manual/en/function.iconv.php)                           | Yes  | from_encoding = 'UTF-8' to_encoding = 'ASCII//TRANSLIT' |
 
 That means that we can write a mapping like
 
@@ -478,13 +479,16 @@ In some rarer cases you might want to not 'just cast to a different type' but ch
 
 We can change values by including a cast property in our mapping, the following special casts are currently available:
 
-| Cast                    | Description                                                                                                                                                                                                                                                                                                                                    |
-|-------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| nullStringToNull        | This cast checks if the value equals string = 'null' and casts it to actual null.                                                                                                                                                                                                                                                              |
-| coordinateStringToArray | This cast converts a coordinate string to an array of coordinates.                                                                                                                                                                                                                                                                             |
-| keyCantBeValue          | This cast checks if the value equals the property name and if so, unsets the property.                                                                                                                                                                                                                                                         |
-| unsetIfValue            | This cast checks if the value equals a specific value and if so, unsets the property. An example: `"unsetIfValue==example`. This can also be used to check if the value is empty with `"unsetIfValue=="`.                                                                                                                                      |
+| Cast                    | Description                                                                                                                                                                                                                                                                                                                                  |
+|-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| nullStringToNull        | This cast checks if the value equals string = 'null' and casts it to actual null.                                                                                                                                                                                                                                                            |
+| coordinateStringToArray | This cast converts a coordinate string to an array of coordinates.                                                                                                                                                                                                                                                                           |
+| keyCantBeValue          | This cast checks if the value equals the property name and if so, unsets the property.                                                                                                                                                                                                                                                       |
+| unsetIfValue            | This cast checks if the value equals a specific value and if so, unsets the property. An example: `"unsetIfValue==example`. This can also be used to check if the value is empty with `"unsetIfValue=="`.                                                                                                                                    |
+| setNullIfValue          | This cast checks if the value equals a specific value and if so, sets the property to null. An example: `"setNullIfValue==example`. This can also be used to check if the value is empty with `"setNullIfValue=="`.                                                                                                                          |
 | countValue              | This cast uses the php [count](https://www.php.net/manual/en/function.count.php) function to count another value, if that other value [is countable](https://www.php.net/manual/en/function.is-countable.php), sets the property to the count of that other value. An example: `"countValue:example`. This is equal to php `count(example)`. |
+| moneyStringToInt        | This cast removes all dots and commas from a String value and then casts it to an Integer.                                                                                                                                                                                                                                                   |
+| intToMoneyString        | This cast divides an Integer value by 100 and then uses php [number_format](https://www.php.net/manual/en/function.number-format.php) with decimals = 2 to cast this to a String.                                                                                                                                                            |
 
 That means that we can write a mapping like
 

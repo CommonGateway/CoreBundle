@@ -19,6 +19,15 @@ use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
+/**
+ * Handles connecting sub-objects for ValueMessages.
+ *
+ * @Author Robert Zondervan <rober@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Service
+ */
 class ValueService
 {
 
@@ -48,24 +57,34 @@ class ValueService
     private CacheService $cacheService;
 
     /**
-     * @param EntityManagerInterface $entityManager The entity manager.
-     * @param LoggerInterface        $objectLogger  The logger.
-     * @param SynchronizationService $syncService   The synchronization service.
-     * @param ParameterBagInterface  $parameterBag  The parameter bag.
-     * @param CacheService           $cacheService  The Cache Service
+     * The gateway resource service
+     *
+     * @var GatewayResourceService
+     */
+    private GatewayResourceService $resourceService;
+
+    /**
+     * @param EntityManagerInterface $entityManager   The entity manager.
+     * @param LoggerInterface        $objectLogger    The logger.
+     * @param SynchronizationService $syncService     The synchronization service.
+     * @param ParameterBagInterface  $parameterBag    The parameter bag.
+     * @param CacheService           $cacheService    The Cache Service
+     * @param GatewayResourceService $resourceService The gateway resource service.
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         LoggerInterface $objectLogger,
         SynchronizationService $syncService,
         ParameterBagInterface $parameterBag,
-        CacheService $cacheService
+        CacheService $cacheService,
+        GatewayResourceService $resourceService
     ) {
-        $this->entityManager = $entityManager;
-        $this->logger        = $objectLogger;
-        $this->syncService   = $syncService;
-        $this->parameterBag  = $parameterBag;
-        $this->cacheService  = $cacheService;
+        $this->entityManager   = $entityManager;
+        $this->logger          = $objectLogger;
+        $this->syncService     = $syncService;
+        $this->parameterBag    = $parameterBag;
+        $this->cacheService    = $cacheService;
+        $this->resourceService = $resourceService;
 
     }//end __construct()
 
@@ -83,6 +102,7 @@ class ValueService
         $subObject    = $this->entityManager->find(ObjectEntity::class, $uuid);
         if ($subObject === null) {
             try {
+                // Todo: maybe look for a synchronization instead of this;
                 $subObject = $this->entityManager->getRepository(ObjectEntity::class)->findByAnyId($uuid);
             } catch (NonUniqueResultException $exception) {
                 $this->logger->error("Found more than one ObjectEntity with uuid = '$uuid' or with a synchronization with sourceId = '$uuid'");
@@ -125,9 +145,16 @@ class ValueService
      */
     public function getSubObjectByUrl(string $url, Value $valueObject): ?ObjectEntity
     {
+        // Check if a synchronization with source->location/synchronization->endpoint/synchronization->sourceId exists.
+        $source   = $this->resourceService->findSourceForUrl($url, 'conduction-nl/commonground-gateway', $endpoint);
+        $sourceId = $this->syncService->getSourceId($endpoint, $url);
+
         // First check if the object is already being synced.
         foreach ($this->entityManager->getUnitOfWork()->getScheduledEntityInsertions() as $insertion) {
-            if ($insertion instanceof Synchronization === true && $insertion->getSourceId() === $url) {
+            if ($insertion instanceof Synchronization === true
+                && $insertion->getEndpoint() === $endpoint
+                && ($insertion->getSourceId() === $sourceId || $insertion->getSourceId() === $url)
+            ) {
                 return $insertion->getObject();
             }
         }
@@ -139,12 +166,25 @@ class ValueService
             return $objectEntity;
         }
 
-        // Finally, if we really don't have the object, get it from the source.
+        // Check if a synchronization with sourceId = url exists.
         $synchronization = $this->entityManager->getRepository('App:Synchronization')->findOneBy(['sourceId' => $url]);
-        if ($synchronization instanceof Synchronization === true) {
+        if ($synchronization !== null) {
             return $synchronization->getObject();
         }
 
+        $synchronization = $this->entityManager->getRepository('App:Synchronization')->findOneBy(
+            [
+                'gateway'  => $source,
+                'entity'   => $valueObject->getAttribute()->getObject(),
+                'endpoint' => $endpoint,
+                'sourceId' => $sourceId,
+            ]
+        );
+        if ($synchronization !== null) {
+            return $synchronization->getObject();
+        }
+
+        // Finally, if we really don't have the object, get it from the source.
         return $this->syncService->aquireObject($url, $valueObject->getAttribute()->getObject());
 
     }//end getSubObjectByUrl()
@@ -188,16 +228,17 @@ class ValueService
 
             $value->setArrayValue([]);
             $value->setStringValue(null);
-        } else if ((Uuid::isValid($value->getStringValue()) === false || filter_var($value->getStringValue(), FILTER_VALIDATE_URL)) === true && $identifier = $value->getStringValue()) {
+        } else if ((Uuid::isValid($value->getStringValue()) === true || filter_var($value->getStringValue(), FILTER_VALIDATE_URL) !== false) && empty($value->getStringValue()) === false) {
             foreach ($value->getObjects() as $object) {
                 $value->removeObject($object);
             }
 
-            $subobject = $this->findSubobject($identifier, $value);
+            $identifier = $value->getStringValue();
+            $subobject  = $this->findSubobject($identifier, $value);
             if ($subobject !== null) {
                 $value->addObject($subobject);
             }
-        }
+        }//end if
 
         if ($value->getObjectEntity() instanceof ObjectEntity) {
             $value->getObjectEntity()->setDateModified(new \DateTime());

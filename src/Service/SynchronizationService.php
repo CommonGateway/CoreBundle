@@ -57,16 +57,16 @@ class SynchronizationService
     /**
      * Setting up the base class with required services.
      *
-     * @param LoggerInterface           $actionLogger   .
+     * @param LoggerInterface           $callLogger     The Logger Interface.
      * @param OldSynchronizationService $oldSyncService Old one from the gateway.
-     * @param CallService               $callService    .
+     * @param CallService               $callService    The callService.
      */
     public function __construct(
-        LoggerInterface $actionLogger,
+        LoggerInterface $callLogger,
         OldSynchronizationService $oldSyncService,
         CallService $callService
     ) {
-        $this->logger         = $actionLogger;
+        $this->logger         = $callLogger;
         $this->oldSyncService = $oldSyncService;
         $this->callService    = $callService;
 
