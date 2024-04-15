@@ -183,9 +183,11 @@ class InstallationService
             $this->logger->debug('Running plugin installer for a single plugin: '.$config['plugin']);
             $this->install($config['plugin'], $config);
 
-            isset($this->style) === true && $this->style->section('Doing a cache warmup after installer is done...');
-            $this->logger->debug('Doing a cache warmup after installer is done...');
-            $this->cacheService->warmup();
+            if (isset($config['cache-warmup']) === true && $config['cache-warmup'] === true) {
+                isset($this->style) === true && $this->style->section('Doing a cache warmup after installer is done...');
+                $this->logger->debug('Doing a cache warmup after installer is done...');
+                $this->cacheService->warmup();
+            }
 
             return Command::SUCCESS;
         }//end if
@@ -199,9 +201,11 @@ class InstallationService
             $this->install($plugin['name'], $config);
         }
 
-        isset($this->style) === true && $this->style->section('Doing a cache warmup after installer is done...');
-        $this->logger->debug('Doing a cache warmup after installer is done...');
-        $this->cacheService->warmup();
+        if (isset($config['cache-warmup']) === true && $config['cache-warmup'] === true) {
+            isset($this->style) === true && $this->style->section('Doing a cache warmup after installer is done...');
+            $this->logger->debug('Doing a cache warmup after installer is done...');
+            $this->cacheService->warmup();
+        }
 
         return Command::SUCCESS;
 
@@ -224,20 +228,22 @@ class InstallationService
         isset($this->style) === true && $this->style->section('Installing plugin '.$bundle);
         $this->logger->debug('Installing plugin '.$bundle, ['plugin' => $bundle]);
 
-        // First we want to read all the files so that we have all the content we should install.
-        // Let's check the basic folders for legacy purposes. todo: remove these at some point.
-        $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Action');
-        // Entity.
-        $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Schema');
-        // Gateway.
-        $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Source');
-        $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Mapping');
-        $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Data');
-        // A function that translates old core schema references to the new ones. Only here for backwards compatibility.
-        $this->translateCoreReferences();
+        if (isset($config['skip-schema']) === false || $config['skip-schema'] !== true) {
+            // First we want to read all the files so that we have all the content we should install.
+            // Let's check the basic folders for legacy purposes. todo: remove these at some point.
+            $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Action');
+            // Entity.
+            $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Schema');
+            // Gateway.
+            $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Source');
+            $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Mapping');
+            $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Data');
+            // A function that translates old core schema references to the new ones. Only here for backwards compatibility.
+            $this->translateCoreReferences();
 
-        // Then the folder where everything should be.
-        $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Installation');
+            // Then the folder where everything should be.
+            $this->readDirectory($this->vendorFolder.'/'.$bundle.'/Installation');
+        }
 
         // Handling all the found files.
         $this->handlePluginFiles($bundle, $config);
@@ -314,7 +320,7 @@ class InstallationService
         $this->entityManager->flush();
 
         // Find and handle the installation.json file, if it exists.
-        $this->handleInstallationJson($bundle);
+        $this->handleInstallationJson($bundle, $config);
 
     }//end handlePluginFiles()
 
@@ -329,53 +335,61 @@ class InstallationService
     private function handleDataJson(string $bundle, array $config)
     {
         // Handle default / required testdata in data.json file if we are not loading in ALL testdata.
-        if (isset($config['data']) === false || $config['data'] === false) {
-            $finder = new Finder();
-            $files  = $finder->in($this->vendorFolder.'/'.$bundle.'/Installation')->files()->name('data.json');
-            if (isset($this->style) === true) {
-                $this->style->writeln('Found '.count($files).' data.json file(s)');
-                $this->style->newline();
-            }
+        // (this if prevents doing it twice, see handlePluginFiles function)
+        if (isset($config['data']) === true && $config['data'] !== false) {
+            return;
+        }
 
-            $this->logger->debug('Found '.count($files).' data.json file(s)', ['bundle' => $bundle]);
-            foreach ($files as $file) {
-                $this->readfile($file);
-            }
+        $finder = new Finder();
+        $files  = $finder->in($this->vendorFolder.'/'.$bundle.'/Installation')->files()->name('data.json');
+        if (isset($this->style) === true) {
+            $this->style->writeln('Found '.count($files).' data.json file(s)');
+            $this->style->newline();
+        }
 
-            foreach ($this->objects as $ref => $schemas) {
-                $this->handleObjectType($ref, $schemas);
-                unset($this->objects[$ref]);
-            }
+        $this->logger->debug('Found '.count($files).' data.json file(s)', ['bundle' => $bundle]);
+        foreach ($files as $file) {
+            $this->readfile($file);
+        }
+
+        foreach ($this->objects as $ref => $schemas) {
+            $this->handleObjectType($ref, $schemas);
+            unset($this->objects[$ref]);
         }
 
     }//end handleDataJson()
 
     /**
+     * Handles the installation.json file if it exists in the Installation folder.
+     *
      * @param string $bundle The bundle.
+     * @param array  $config Optional config.
      *
      * @throws Exception
      *
      * @return void
      */
-    private function handleInstallationJson(string $bundle)
+    private function handleInstallationJson(string $bundle, array $config)
     {
-        if ($this->filesystem->exists($this->vendorFolder.'/'.$bundle.'/Installation/installation.json') !== false) {
-            $finder = new Finder();
-            // todo: maybe only allow installation.json file in root of Installation folder?
-            // $finder->depth('== 0');
-            $files = $finder->in($this->vendorFolder.'/'.$bundle.'/Installation')->files()->name('installation.json');
-            if (count($files) === 1) {
-                $this->logger->debug('Found an installation.json file', ['bundle' => $bundle]);
-                foreach ($files as $file) {
-                    $this->handleInstaller($file);
-                }
-            } else {
-                $this->logger->error('Found '.count($files).' installation.json files', ['location' => $this->vendorFolder.'/'.$bundle.'/Installation']);
-            }
-
-            // Save the objects created during handling installation.json to the database.
-            $this->entityManager->flush();
+        if ($this->filesystem->exists($this->vendorFolder.'/'.$bundle.'/Installation/installation.json') === false) {
+            return;
         }
+
+        $finder = new Finder();
+        // todo: maybe only allow installation.json file in root of Installation folder?
+        // $finder->depth('== 0');
+        $files = $finder->in($this->vendorFolder.'/'.$bundle.'/Installation')->files()->name('installation.json');
+        if (count($files) === 1) {
+            $this->logger->debug('Found an installation.json file', ['bundle' => $bundle]);
+            foreach ($files as $file) {
+                $this->handleInstaller($file, $config);
+            }
+        } else {
+            $this->logger->error('Found '.count($files).' installation.json files', ['location' => $this->vendorFolder.'/'.$bundle.'/Installation']);
+        }
+
+        // Save the objects created during handling installation.json to the database.
+        $this->entityManager->flush();
 
     }//end handleInstallationJson()
 
@@ -417,8 +431,6 @@ class InstallationService
 
     /**
      * This function reads a folder to find other folders or json objects.
-     *
-     * @TODO: Split this function into 2, one function for reading files and one function for checking if a folder doesn't contain to many files.
      *
      * @param string $location The location of the folder
      *
@@ -789,15 +801,16 @@ class InstallationService
     }//end loadSchema()
 
     /**
-     * Specifically handles the installation file.
+     * Specifically handles the installation.json file.
      *
-     * @param SplFileInfo $file The installation file.
+     * @param SplFileInfo $file   The installation.json file.
+     * @param array       $config Optional config.
      *
      * @throws Exception
      *
      * @return bool
      */
-    private function handleInstaller(SplFileInfo $file): bool
+    private function handleInstaller(SplFileInfo $file, array $config): bool
     {
         $data = json_decode($file->getContents(), true);
 
@@ -807,38 +820,13 @@ class InstallationService
             return false;
         }
 
-        // Collection prefixes for schema's.
-        $this->updateSchemasCollection(($data['collections'] ?? []));
+        if (isset($config['skip-schema']) === false || $config['skip-schema'] !== true) {
+            $this->handleInstallerObjects($data);
+        }
 
-        // Set the default source for a schema.
-        $this->editSchemaProperties(($data['schemas'] ?? []));
-
-        // Endpoints for schema's and/or sources.
-        $this->createEndpoints(($data['endpoints'] ?? []));
-
-        // Actions for action handlers.
-        $this->createActions(($data['actions']['handlers'] ?? []));
-
-        // Fix references in configuration of these actions.
-        $this->fixConfigRef(($data['actions']['fixConfigRef'] ?? []));
-
-        // Cronjobs for actions.
-        $this->createCronjobs(($data['cronjobs']['actions'] ?? []));
-
-        // Create Applications and connect organization searching it by reference.
-        $this->createApplications(($data['applications'] ?? []));
-
-        // Create users with given Organization & SecurityGroups.
-        $this->createUsers(($data['users'] ?? []));
-
-        // Create templates with supportedSchemas (ref to uuid) and organization.
-        $this->createTemplates(($data['templates'] ?? []));
-
-        // TODO: when adding more createX functions here, use createApplications and createUsers as examples!
-        // TODO: And always keep createCards as the last function.
-        // Let's see if we have things that we want to create cards for stuff
-        // Since this might create cards for the stuff above this should always be last!!!
-        $this->createCards(($data['cards'] ?? []));
+        if (isset($config['skip-script']) === true && $config['skip-script'] === true) {
+            return true;
+        }
 
         if (isset($data['installationService']) === false || empty($data['installationService']) === true) {
             $this->logger->error($file->getFilename().' Doesn\'t contain an installation service');
@@ -881,6 +869,52 @@ class InstallationService
         }
 
     }//end handleInstaller()
+
+    /**
+     * Handles creating or updating Core objects using information from the installation.json file.
+     *
+     * @param array $data The installation.json file data.
+     *
+     * @throws Exception
+     *
+     * @return void
+     */
+    private function handleInstallerObjects(array $data)
+    {
+        // Collection prefixes for schema's.
+        $this->updateSchemasCollection(($data['collections'] ?? []));
+
+        // Set the default source for a schema.
+        $this->editSchemaProperties(($data['schemas'] ?? []));
+
+        // Endpoints for schema's and/or sources.
+        $this->createEndpoints(($data['endpoints'] ?? []));
+
+        // Actions for action handlers.
+        $this->createActions(($data['actions']['handlers'] ?? []));
+
+        // Fix references in configuration of these actions.
+        $this->fixConfigRef(($data['actions']['fixConfigRef'] ?? []));
+
+        // Cronjobs for actions.
+        $this->createCronjobs(($data['cronjobs']['actions'] ?? []));
+
+        // Create Applications and connect organization searching it by reference.
+        $this->createApplications(($data['applications'] ?? []));
+
+        // Create users with given Organization & SecurityGroups.
+        $this->createUsers(($data['users'] ?? []));
+
+        // Create templates with supportedSchemas (ref to uuid) and organization.
+        $this->createTemplates(($data['templates'] ?? []));
+
+        // TODO: when adding more createX functions here, use createApplications and createUsers as examples!
+        // TODO: And always keep createCards as the last function.
+        // Let's see if we have things that we want to create cards for stuff
+        // Since this might create cards for the stuff above this should always be last!!!
+        $this->createCards(($data['cards'] ?? []));
+
+    }//end handleInstallerObjects()
 
     /**
      * This function adds a given default source to the schema.
