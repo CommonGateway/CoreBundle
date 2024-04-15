@@ -527,7 +527,7 @@ class CacheService
      *
      * @return void
      */
-    public function removeObject(ObjectEntity $objectEntity): void
+    public function removeObject(ObjectEntity $object, bool $softDelete = false): void
     {
         $this->setObjectClient();
         if (isset($this->objectsClient) === true) {
@@ -543,6 +543,16 @@ class CacheService
 
         // Todo: cascade remove subobjects (Check Attribute->getCascadeDelete() & Attribute->getMayBeOrphaned())
         $identification = $objectEntity->getId()->toString();
+
+        if ($softDelete === true) {
+            $now                                 = new DateTime();
+            $objectArray                         = $object->toArray();
+            $objectArray['_self']['dateDeleted'] = $now->format('c');
+
+            $collection->findOneAndReplace(['_id' => $identification], ['_self' => $objectArray['_self']], ['upsert' => true]);
+
+            return;
+        }
 
         $collection->findOneAndDelete(['_id' => $identification]);
 
@@ -975,8 +985,13 @@ class CacheService
             $filter['_search'],
             $filter['_order'],
             $filter['_fields'],
-            $filter['_queries']
+            $filter['_queries'],
+            $filter['_showDeleted']
         );
+
+        if (key_exists('_showDeleted', $completeFilter) === false || $completeFilter['_showDeleted'] === 'false') {
+            $filter['_self.dateDeleted'] = 'IS NULL';
+        }
 
         // 'normal' Filters (not starting with _ ).
         foreach ($filter as $key => &$value) {
