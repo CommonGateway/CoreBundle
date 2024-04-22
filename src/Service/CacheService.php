@@ -524,10 +524,11 @@ class CacheService
      * Removes an object from the cache.
      *
      * @param ObjectEntity $objectEntity
+     * @param bool         $softDelete
      *
      * @return void
      */
-    public function removeObject(ObjectEntity $object, bool $softDelete = false): void
+    public function removeObject(ObjectEntity $objectEntity, bool $softDelete = false): void
     {
         $this->setObjectClient();
         if (isset($this->objectsClient) === true) {
@@ -546,7 +547,7 @@ class CacheService
 
         if ($softDelete === true) {
             $now                                 = new DateTime();
-            $objectArray                         = $object->toArray();
+            $objectArray                         = $objectEntity->toArray();
             $objectArray['_self']['dateDeleted'] = $now->format('c');
 
             $collection->findOneAndReplace(['_id' => $identification], ['_self' => $objectArray['_self']], ['upsert' => true]);
