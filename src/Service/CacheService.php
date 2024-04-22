@@ -519,12 +519,12 @@ class CacheService
         return $user;
 
     }//end getObjectUser()
-    
+
     /**
      * Removes an object from the cache.
      *
      * @param ObjectEntity $objectEntity
-     * @param bool $softDelete
+     * @param bool         $softDelete
      *
      * @return void
      */
