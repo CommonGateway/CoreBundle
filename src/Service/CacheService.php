@@ -8,6 +8,7 @@ use App\Entity\Entity;
 use App\Entity\ObjectEntity;
 use App\Entity\Organization;
 use App\Entity\User;
+use App\Service\ApplicationService;
 use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -115,7 +116,8 @@ class CacheService
         ParameterBagInterface $parameters,
         SerializerInterface $serializer,
         ObjectEntityService $objectEntityService,
-        SessionInterface $session
+        SessionInterface $session,
+        private readonly ApplicationService $applicationService
     ) {
         $this->entityManager       = $entityManager;
         $this->cache               = $cache;
@@ -139,12 +141,19 @@ class CacheService
      */
     private function setObjectClient()
     {
-        $user = $this->objectEntityService->findCurrentUser();
+        $organization = null;
+        $user         = $this->objectEntityService->findCurrentUser();
         if ($user !== null && $user->getOrganization() !== null) {
             $organization = $this->entityManager->getRepository(Organization::class)->find($user->getOrganization());
-            if ($organization !== null && $organization->getDatabase() !== null) {
-                $this->objectsClient = new Client($organization->getDatabase()->getUri());
-            }
+        }
+
+        if ($user === null && $this->applicationService->getApplication() !== null) {
+            $application  = $this->applicationService->getApplication();
+            $organization = $application->getOrganization();
+        }
+
+        if ($organization !== null && $organization->getDatabase() !== null) {
+            $this->objectsClient = new Client($organization->getDatabase()->getUri());
         }
 
     }//end setObjectClient()
