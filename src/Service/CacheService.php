@@ -143,15 +143,18 @@ class CacheService
     private function setObjectClient()
     {
         $organization = null;
-        $user = $this->objectEntityService->findCurrentUser();
+        $user         = $this->objectEntityService->findCurrentUser();
         if ($user !== null && $user->getOrganization() !== null) {
             $organization = $this->entityManager->getRepository(Organization::class)->find($user->getOrganization());
         }
-        if ($user === null && $this->applicationService->getApplication() !== null) {
 
-            $application = $this->applicationService->getApplication();
-            $organization = $application->getOrganization();
-
+        try {
+            if ($user === null && $this->applicationService->getApplication() !== null) {
+                $application  = $this->applicationService->getApplication();
+                $organization = $application->getOrganization();
+            }
+        } catch(Exception $e) {
+            $this->logger->warning('Cannot determine tennant from application: '.$e->getMessage());
         }
 
         if ($organization !== null && $organization->getDatabase() !== null) {
@@ -273,7 +276,7 @@ class CacheService
 
         // Backwards compatablity.
         if (((isset($config['schemas']) === false || $config['schemas'] !== true)
-            || (isset($config['endpoints']) === false || $config['endpoints'] !== true))
+                || (isset($config['endpoints']) === false || $config['endpoints'] !== true))
             && isset($this->client) === false
         ) {
             isset($this->style) === true && $this->style->writeln('No cache client found, halting warmup');
