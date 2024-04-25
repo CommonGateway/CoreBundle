@@ -132,7 +132,6 @@ class CacheService
 
         $this->filesystem = new Filesystem();
 
-
     }//end __construct()
 
     /**
@@ -143,15 +142,14 @@ class CacheService
     private function setObjectClient()
     {
         $organization = null;
-        $user = $this->objectEntityService->findCurrentUser();
+        $user         = $this->objectEntityService->findCurrentUser();
         if ($user !== null && $user->getOrganization() !== null) {
             $organization = $this->entityManager->getRepository(Organization::class)->find($user->getOrganization());
         }
+
         if ($user === null && $this->applicationService->getApplication() !== null) {
-
-            $application = $this->applicationService->getApplication();
+            $application  = $this->applicationService->getApplication();
             $organization = $application->getOrganization();
-
         }
 
         if ($organization !== null && $organization->getDatabase() !== null) {
