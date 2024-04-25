@@ -945,7 +945,7 @@ class RequestService
             if ($response['state'] === 'rejected' && ($response['reason'] instanceof ConnectException || $config['http_errors'] === false)) {
                 continue;
             } else if ($response['state'] === 'rejected' && ($response['reason'] instanceof ServerException || $response['reason'] instanceof ClientException)) {
-                $this->logger->error($reponse['reason']->getMessage());
+                $this->logger->error($response['reason']->getMessage());
                 return new Response(\Safe\json_encode(['message' => $response['reason']->getMessage()]), 523, ['content-type' => 'application/json']);
             }
 

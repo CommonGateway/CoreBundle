@@ -147,9 +147,13 @@ class CacheService
             $organization = $this->entityManager->getRepository(Organization::class)->find($user->getOrganization());
         }
 
-        if ($user === null && $this->applicationService->getApplication() !== null) {
-            $application  = $this->applicationService->getApplication();
-            $organization = $application->getOrganization();
+        try {
+            if ($user === null && $this->applicationService->getApplication() !== null) {
+                $application  = $this->applicationService->getApplication();
+                $organization = $application->getOrganization();
+            }
+        } catch (Exception $e) {
+            $this->logger->warning('Cannot determine tennant from application: '.$e->getMessage());
         }
 
         if ($organization !== null && $organization->getDatabase() !== null) {
