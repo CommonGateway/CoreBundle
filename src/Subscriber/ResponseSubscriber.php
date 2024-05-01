@@ -25,11 +25,9 @@ class ResponseSubscriber implements EventSubscriberInterface
         private readonly SessionInterface $session,
         private readonly ParameterBagInterface $parameterBag,
         LoggerInterface $applicationLogger
-
-    )
-    {
-//        $this->entityManager = $entityManager;
-//        $this->session       = $session;
+    ) {
+        // $this->entityManager = $entityManager;
+        // $this->session       = $session;
         $this->logger = $applicationLogger;
 
     }//end __construct()
@@ -60,16 +58,17 @@ class ResponseSubscriber implements EventSubscriberInterface
             ]
         );
 
-        if($this->session->has('application')) {
+        if ($this->session->has('application')) {
             $application = $this->entityManager->getRepository(Application::class)->find($this->session->get('application'));
 
             $origin = $event->getRequest()->headers->get('origin');
 
             $allowedOrigins = array_merge($application->getOrigins(), $this->parameterBag->get('cors_origins'));
-            if(in_array(needle: $origin, haystack: $allowedOrigins) || $application->getOrigins() === []) {
-                if($application->getOrigins() === []) {
+            if (in_array(needle: $origin, haystack: $allowedOrigins) || $application->getOrigins() === []) {
+                if ($application->getOrigins() === []) {
                     $this->logger->warning('Deprecated: No origins set for application, in the future, this will result in CORS blocking');
                 }
+
                 $response->headers->set('Access-Control-Allow-Origin', $origin);
             }
         }
