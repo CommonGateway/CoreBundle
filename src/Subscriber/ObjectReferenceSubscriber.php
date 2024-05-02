@@ -83,27 +83,6 @@ class ObjectReferenceSubscriber implements EventSubscriberInterface
             return;
         }//end if
 
-        if ($object instanceof Entity // Is it an entity.
-            && $object->getReference() // Does it have a reference.
-        ) {
-            $attributes = $this->entityManager->getRepository('App:Attribute')->findBy(['schema' => $object->getReference()]);
-            foreach ($attributes as $attribute) {
-                if ($attribute instanceof Attribute === false) {
-                    continue;
-                }
-
-                $attribute->setObject($object);
-                if ($attribute->getInversedByPropertyName() && !$attribute->getInversedBy()) {
-                    $attribute = $object->getAttributeByName($attribute->getInversedByPropertyName());
-                    if ($attribute !== false) {
-                        $attribute->setInversedBy($attribute);
-                    }
-                }
-            }//end foreach
-
-            return;
-        }//end if
-
     }//end postPersist()
 
     public function postUpdate(LifecycleEventArgs $args): void
