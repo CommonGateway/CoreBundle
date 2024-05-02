@@ -250,4 +250,27 @@ class ValueService
         $this->cacheService->cacheObject($value->getObjectEntity());
 
     }//end connectSubObjects()
+
+
+    /**
+     * Deletes sub objects from value.
+     *
+     * Only if the attribute of this value cascadeDelete is true.
+     *
+     * @param Value $value The value to delete sub objects for.
+     *
+     * @return void
+     */
+    public function cascadeDeleteSubObjects(Value $value): void
+    {
+        if ($value->getAttribute() !== null && $value->getAttribute()->getCascadeDelete() === true) {
+            foreach ($value->getObjects() as $subObject) {
+                // @TODO Fix remove inversedBy values
+                $value->removeObject($subObject);
+                $this->entityManager->remove($subObject);
+            }
+
+            $this->entityManager->flush();
+        }
+    }
 }//end class

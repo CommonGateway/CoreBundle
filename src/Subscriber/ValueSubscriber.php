@@ -5,7 +5,7 @@ namespace CommonGateway\CoreBundle\Subscriber;
 use App\Entity\ObjectEntity;
 use App\Entity\Synchronization;
 use App\Entity\Value;
-use App\Service\SynchronizationService;
+use CommonGateway\CoreBundle\Service\ValueService;
 use CommonGateway\CoreBundle\Message\ValueMessage;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,18 +37,26 @@ class ValueSubscriber implements EventSubscriberInterface
     private LoggerInterface $logger;
 
     /**
+     * @var ValueService The ValueService.
+     */
+    private ValueService $valueService;
+
+    /**
      * @param MessageBusInterface $messageBus   The message bus.
      * @param SessionInterface    $session      The current session.
      * @param LoggerInterface     $objectLogger The logger.
+     * @param ValueService        $valueService The ValueService.
      */
     public function __construct(
         MessageBusInterface $messageBus,
         SessionInterface $session,
-        LoggerInterface $objectLogger
+        LoggerInterface $objectLogger,
+        ValueService $valueService
     ) {
-        $this->messageBus = $messageBus;
-        $this->session    = $session;
-        $this->logger     = $objectLogger;
+        $this->messageBus   = $messageBus;
+        $this->session      = $session;
+        $this->logger       = $objectLogger;
+        $this->valueService = $valueService;
 
     }//end __construct()
 
@@ -109,6 +117,10 @@ class ValueSubscriber implements EventSubscriberInterface
 
     public function preRemove(LifecycleEventArgs $args): void
     {
+        $valueObject = $args->getObject();
 
+        if ($valueObject instanceof Value === true) {
+            $this->valueService->cascadeDeleteSubObjects($valueObject);
+        }
     }//end preRemove()
 }//end class
