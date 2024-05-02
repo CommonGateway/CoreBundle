@@ -9,6 +9,7 @@ use App\Entity\ObjectEntity;
 use App\Entity\Organization;
 use App\Entity\User;
 use App\Service\ApplicationService;
+use CommonGateway\CoreBundle\Service\Cache\ClientInterface;
 use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -46,7 +47,7 @@ class CacheService
     /**
      * @var Client
      */
-    private Client $client;
+    private ClientInterface $client;
 
     /**
      * @var Client
@@ -152,7 +153,7 @@ class CacheService
                 $application  = $this->applicationService->getApplication();
                 $organization = $application->getOrganization();
             }
-        } catch (Exception $e) {
+        } catch(Exception $e) {
             $this->logger->warning('Cannot determine tennant from application: '.$e->getMessage());
         }
 
@@ -275,7 +276,7 @@ class CacheService
 
         // Backwards compatablity.
         if (((isset($config['schemas']) === false || $config['schemas'] !== true)
-            || (isset($config['endpoints']) === false || $config['endpoints'] !== true))
+                || (isset($config['endpoints']) === false || $config['endpoints'] !== true))
             && isset($this->client) === false
         ) {
             isset($this->style) === true && $this->style->writeln('No cache client found, halting warmup');
