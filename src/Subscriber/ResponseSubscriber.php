@@ -62,7 +62,7 @@ class ResponseSubscriber implements EventSubscriberInterface
 
         $allowedOrigins = $this->parameterBag->get('cors_origins');
         if ($this->session->has('application')) {
-            $application = $this->entityManager->getRepository(Application::class)->find($this->session->get('application'));
+            $application    = $this->entityManager->getRepository(Application::class)->find($this->session->get('application'));
             $allowedOrigins = array_merge($application->getOrigins(), $allowedOrigins);
         }
 
@@ -76,6 +76,7 @@ class ResponseSubscriber implements EventSubscriberInterface
             } else if ($application->getOrigins() === []) {
                 $this->logger->warning('Deprecated: No origins set for application, in the future, this will result in CORS blocking');
             }
+
             $response->headers->set('Access-Control-Allow-Origin', $origin);
         }
 
