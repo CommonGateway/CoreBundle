@@ -58,19 +58,25 @@ class ResponseSubscriber implements EventSubscriberInterface
             ]
         );
 
+        $response->headers->remove('Access-Control-Allow-Origin');
+
+        $allowedOrigins = $this->parameterBag->get('cors_origins');
         if ($this->session->has('application')) {
             $application = $this->entityManager->getRepository(Application::class)->find($this->session->get('application'));
+            $allowedOrigins = array_merge($application->getOrigins(), $allowedOrigins);
+        }
 
-            $origin = $event->getRequest()->headers->get('origin');
+        $origin = $event->getRequest()->headers->get('origin');
 
-            $allowedOrigins = array_merge($application->getOrigins(), $this->parameterBag->get('cors_origins'));
-            if (in_array(needle: $origin, haystack: $allowedOrigins) || $application->getOrigins() === []) {
-                if ($application->getOrigins() === []) {
-                    $this->logger->warning('Deprecated: No origins set for application, in the future, this will result in CORS blocking');
-                }
-
-                $response->headers->set('Access-Control-Allow-Origin', $origin);
+        if (in_array(needle: $origin, haystack: $allowedOrigins)
+            || ((isset($application) === false || $application->getOrigins() === []) && in_array('*', $allowedOrigins))
+        ) {
+            if (isset($application) === false) {
+                $this->logger->info('Request without application, using default headers');
+            } else if ($application->getOrigins() === []) {
+                $this->logger->warning('Deprecated: No origins set for application, in the future, this will result in CORS blocking');
             }
+            $response->headers->set('Access-Control-Allow-Origin', $origin);
         }
 
     }//end request()
