@@ -251,7 +251,6 @@ class ValueService
 
     }//end connectSubObjects()
 
-
     /**
      * Deletes sub objects from value.
      *
@@ -272,5 +271,6 @@ class ValueService
 
             $this->entityManager->flush();
         }
-    }
+
+    }//end cascadeDeleteSubObjects()
 }//end class

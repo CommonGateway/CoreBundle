@@ -122,5 +122,6 @@ class ValueSubscriber implements EventSubscriberInterface
         if ($valueObject instanceof Value === true) {
             $this->valueService->cascadeDeleteSubObjects($valueObject);
         }
+
     }//end preRemove()
 }//end class
