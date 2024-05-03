@@ -30,6 +30,7 @@
     "ext-json": "*",
     "adbario/php-dot-notation": "^3",
     "alcaeus/mongo-php-adapter": "^1.2",
+    "aws/aws-sdk-php": "*",
     "api-platform/core": "^2.6",
     "composer/package-versions-deprecated": "1.11.99.3",
     "doctrine/annotations": "^1.14 | ^2.0",
