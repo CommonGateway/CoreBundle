@@ -10,6 +10,7 @@ use App\Entity\Organization;
 use App\Entity\User;
 use App\Service\ApplicationService;
 use CommonGateway\CoreBundle\Service\Cache\ClientInterface;
+use CommonGateway\CoreBundle\Service\Cache\MongoDbClient;
 use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -128,7 +129,7 @@ class CacheService
         $this->objectEntityService = $objectEntityService;
         $this->session             = $session;
         if ($this->parameters->get('cache_url', false)) {
-            $this->client = new Client($this->parameters->get('cache_url'));
+            $this->client = new MongoDbClient($this->parameters->get('cache_url'));
         }
 
         $this->filesystem = new Filesystem();
