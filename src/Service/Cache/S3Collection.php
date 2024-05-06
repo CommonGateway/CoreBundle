@@ -9,11 +9,13 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class S3Collection implements CollectionInterface
 {
+
     private LoggerInterface $logger;
 
     public function __construct(private readonly S3Database $database, private readonly string $name, LoggerInterface $cacheLogger)
     {
         $this->logger = $cacheLogger;
+
     }//end __construct()
 
     public function aggregate(array $pipeline, array $options = []): \Iterator
@@ -71,9 +73,11 @@ class S3Collection implements CollectionInterface
                     [
                         'Bucket' => $this->database->getClient()->getBucket(),
                         'Delete' => [
-                            'Objects' => [[
-                                'Key' => $filter['_id'],
-                            ]],
+                            'Objects' => [
+                                [
+                                    'Key' => $filter['_id'],
+                                ],
+                            ],
                         ],
                     ]
                 )->get('Body'),
@@ -82,6 +86,7 @@ class S3Collection implements CollectionInterface
         } catch (Exception $exception) {
             return null;
         }
+
         // TODO: Implement findOneAndDelete() method.
 
     }//end findOneAndDelete()
@@ -89,14 +94,17 @@ class S3Collection implements CollectionInterface
     public function findOneAndReplace(object|array $filter, object|array $replacement, array $options = []): array|null|object
     {
 
-        try{
+        try {
             return \Safe\json_decode(
                 json: $this->database->getClient()->getConnection()->putObject(
                     args: [
                         'Bucket'   => $this->database->getClient()->getBucket(),
                         'Key'      => $filter['_id'],
                         'Body'     => \Safe\json_encode(value: $replacement),
-                        'Metadata' => ['database' => $this->database->getName(), 'collection' => $this->name],
+                        'Metadata' => [
+                            'database'   => $this->database->getName(),
+                            'collection' => $this->name,
+                        ],
                     ]
                 ),
                 assoc: true
