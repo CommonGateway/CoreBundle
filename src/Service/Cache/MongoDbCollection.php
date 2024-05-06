@@ -3,6 +3,7 @@
 namespace CommonGateway\CoreBundle\Service\Cache;
 
 use CommonGateway\CoreBundle\Service\Cache\CollectionInterface;
+use MongoDB\Collection;
 
 class MongoDbCollection implements CollectionInterface
 {
@@ -45,9 +46,9 @@ class MongoDbCollection implements CollectionInterface
 
     }//end find()
 
-    public function findOne(array $filter = [], array $options = []): \Iterator
+    public function findOne(array $filter = [], array $options = []): array|null|object
     {
-        return $this->collection->findONe($filter, $options);
+        return $this->collection->findOne($filter, $options);
 
     }//end findOne()
 

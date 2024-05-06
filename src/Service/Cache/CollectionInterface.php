@@ -14,7 +14,7 @@ interface CollectionInterface
 
     public function find(array $filter = [], array $options = []): \Iterator;
 
-    public function findOne(array $filter = [], array $options = []): \Iterator;
+    public function findOne(array $filter = [], array $options = []): array|null|object
 
     public function findOneAndDelete(array $filter = [], array $options = []): array|null|object;
 
