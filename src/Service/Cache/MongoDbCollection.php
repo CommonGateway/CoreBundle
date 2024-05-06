@@ -27,7 +27,7 @@ class MongoDbCollection implements CollectionInterface
 
     }//end count()
 
-    public function createIndex(object|array $key, array $options = []): array|false
+    public function createIndex(object|array $key, array $options = []): string
     {
         return $this->collection->createIndex($key, $options);
 

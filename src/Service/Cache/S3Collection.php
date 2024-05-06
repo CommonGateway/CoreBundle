@@ -23,7 +23,7 @@ class S3Collection implements CollectionInterface
 
     }//end count()
 
-    public function createIndex(object|array $key, array $options = []): array|false
+    public function createIndex(object|array $key, array $options = []): string
     {
         // TODO: Implement createIndex() method.
 

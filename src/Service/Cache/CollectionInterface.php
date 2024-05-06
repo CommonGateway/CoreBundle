@@ -8,7 +8,7 @@ interface CollectionInterface
 
     public function count(array $filter = [], array $options = []): int;
 
-    public function createIndex(array|object $key, array $options = []): array|false;
+    public function createIndex(array|object $key, array $options = []): string;
 
     public function createSearchIndex(array|object $definition, array $options = []): string;
 
