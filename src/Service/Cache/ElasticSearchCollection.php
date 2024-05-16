@@ -20,14 +20,14 @@ class ElasticSearchCollection implements CollectionInterface
     {
         $connection = $this->database->getClient()->getConnection();
 
-//        $connection->
+        // $connection->
         // TODO: Implement aggregate() method.
     }//end aggregate()
 
     private function generateSearchBody(array $filter): array
     {
 
-    }
+    }//end generateSearchBody()
 
     public function count(array $filter = [], array $options = []): int
     {
@@ -48,11 +48,13 @@ class ElasticSearchCollection implements CollectionInterface
     public function createIndex(array|object $key, array $options = []): string
     {
         return 'index';
+
     }//end createIndex()
 
     public function createSearchIndex(array|object $definition, array $options = []): string
     {
         return 'searchIndex';
+
     }//end createSearchIndex()
 
     public function find(array $filter = [], array $options = []): \Iterator

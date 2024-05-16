@@ -10,6 +10,7 @@ class MongoDbDatabase implements DatabaseInterface
 {
 
     private Database $database;
+
     private string $name;
 
     private array $collections = [];
@@ -17,7 +18,7 @@ class MongoDbDatabase implements DatabaseInterface
     public function __construct(Database $database, string $name, private readonly EntityManagerInterface $entityManager, private readonly ObjectEntityService $objectEntityService)
     {
         $this->database = $database;
-        $this->name = $name;
+        $this->name     = $name;
 
     }//end __construct()
 
@@ -36,5 +37,6 @@ class MongoDbDatabase implements DatabaseInterface
     public function getName(): string
     {
         return $this->name;
-    }
+
+    }//end getName()
 }//end class

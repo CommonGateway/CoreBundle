@@ -18,7 +18,6 @@ class MongoDbCollection implements CollectionInterface
 
     private MongoDbDatabase $database;
 
-
     /**
      * Uses given $search string to add a filter on all properties to the existing $filter array.
      * Will try to do a wildcard search using $regex on all attributes of the entities in $filter['_self.schema.id']['$in'].
@@ -113,7 +112,6 @@ class MongoDbCollection implements CollectionInterface
 
     }//end handleSearch()
 
-
     /**
      * Parses the filter array and creates the filter and completeFilter arrays
      *
@@ -153,7 +151,6 @@ class MongoDbCollection implements CollectionInterface
         return null;
 
     }//end parseFilter()
-
 
     /**
      * Make sure we still support the old query params. By translating them to the new ones with _.
@@ -348,6 +345,7 @@ class MongoDbCollection implements CollectionInterface
             if (array_key_first($value) === '$in') {
                 return true;
             }
+
             // Handle filter value = array (example: ?property=a,b,c) also works if the property we are filtering on is an array.
             $value = ['$in' => $value];
 
@@ -416,7 +414,6 @@ class MongoDbCollection implements CollectionInterface
 
     }//end handleFilter()
 
-
     /**
      * Decides the pagination values.
      *
@@ -429,21 +426,22 @@ class MongoDbCollection implements CollectionInterface
     public function setPagination(&$limit, &$start, array $filters): array
     {
         if (isset($filters['_limit']) === true) {
-            $limit = (int)$filters['_limit'];
+            $limit = (int) $filters['_limit'];
         } else {
             $limit = 30;
         }
 
         if (isset($filters['_start']) === true || isset($filters['_offset']) === true) {
-            $start = isset($filters['_start']) === true ? (int)$filters['_start'] : (int)$filters['_offset'];
+            $start = isset($filters['_start']) === true ? (int) $filters['_start'] : (int) $filters['_offset'];
         } else if (isset($filters['_page']) === true) {
-            $start = (((int)$filters['_page'] - 1) * $limit);
+            $start = (((int) $filters['_page'] - 1) * $limit);
         } else {
             $start = 0;
         }
 
         return $filters;
-    }
+
+    }//end setPagination()
 
     /**
      * Adds pagination variables to an array with the results we found with searchObjects().
@@ -518,8 +516,8 @@ class MongoDbCollection implements CollectionInterface
     public function __construct(Collection $collection, MongoDbDatabase $database, string $name, private readonly EntityManagerInterface $entityManager, private readonly ObjectEntityService $objectEntityService)
     {
         $this->collection = $collection;
-        $this->name = $name;
-        $this->database = $database;
+        $this->name       = $name;
+        $this->database   = $database;
 
     }//end __construct()
 
@@ -549,7 +547,7 @@ class MongoDbCollection implements CollectionInterface
 
     public function find(array $filter = [], array $options = []): \Iterator
     {
-        if($this->database->getName() !== 'objects') {
+        if ($this->database->getName() !== 'objects') {
             return $this->collection->find($filter, $options);
         }
 
