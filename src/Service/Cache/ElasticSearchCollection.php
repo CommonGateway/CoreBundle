@@ -18,26 +18,46 @@ class ElasticSearchCollection implements CollectionInterface
 
     public function aggregate(array $pipeline, array $options = []): \Iterator
     {
+        $connection = $this->database->getClient()->getConnection();
+
+//        $connection->
         // TODO: Implement aggregate() method.
     }//end aggregate()
 
+    private function generateSearchBody(array $filter): array
+    {
+
+    }
+
     public function count(array $filter = [], array $options = []): int
     {
+        $connection = $this->database->getClient()->getConnection();
+
+        $body = $this->generateSearchBody($filter);
+
+        $parameters = [
+            'index' => $this->database->getName(),
+            'body'  => $body,
+        ];
+
+        $connection->count($parameters);
+
         // TODO: Implement count() method.
     }//end count()
 
-    public function createIndex(object $key, array $options = []): string
+    public function createIndex(array|object $key, array $options = []): string
     {
-        // TODO: Implement createIndex() method.
+        return 'index';
     }//end createIndex()
 
-    public function createSearchIndex(object $definition, array $options = []): string
+    public function createSearchIndex(array|object $definition, array $options = []): string
     {
-        // TODO: Implement createSearchIndex() method.
+        return 'searchIndex';
     }//end createSearchIndex()
 
     public function find(array $filter = [], array $options = []): \Iterator
     {
+        $connection = $this->database->getClient()->getConnection();
         // TODO: Implement find() method.
     }//end find()
 
@@ -69,7 +89,7 @@ class ElasticSearchCollection implements CollectionInterface
 
     }//end findOneAndDelete()
 
-    public function findOneAndReplace(object $filter, object $replacement, array $options = []): array|null|object
+    public function findOneAndReplace(object|array $filter, object|array $replacement, array $options = []): array|null|object
     {
         $connection = $this->database->getClient()->getConnection();
 
@@ -108,7 +128,7 @@ class ElasticSearchCollection implements CollectionInterface
 
     }//end findOneAndReplace()
 
-    public function insertOne(object $document, array $options = []): array|object
+    public function insertOne(array|object $document, array $options = []): array|object
     {
         // TODO: Implement insertOne() method.
     }//end insertOne()
