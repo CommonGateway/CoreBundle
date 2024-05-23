@@ -1250,7 +1250,7 @@ class CacheService
             return $result;
         }
 
-        if($collection instanceof MongoDbCollection === true) {
+        if ($collection instanceof MongoDbCollection === true) {
             foreach ($queries as $query) {
                 $result[$query] = $collection->aggregate([['$match' => $filter], ['$unwind' => "\${$query}"], ['$group' => ['_id' => "\${$query}", 'count' => ['$sum' => 1]]]])->toArray();
             }

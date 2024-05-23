@@ -41,10 +41,11 @@ class ElasticSearchCollection implements CollectionInterface
     private function renameBucketItems(array $bucketItem): array
     {
         return [
-            '_id' => $bucketItem['key'],
+            '_id'   => $bucketItem['key'],
             'count' => $bucketItem['doc_count'],
         ];
-    }
+
+    }//end renameBucketItems()
 
     private function mapAggregationResults(array $result): array
     {
@@ -53,7 +54,8 @@ class ElasticSearchCollection implements CollectionInterface
         $result = array_map([$this, 'renameBucketItems'], $buckets);
 
         return $result;
-    }
+
+    }//end mapAggregationResults()
 
     public function aggregate(array $pipeline, array $options = []): \Iterator
     {
@@ -63,8 +65,9 @@ class ElasticSearchCollection implements CollectionInterface
 
         foreach ($pipeline[1] as $query) {
             $body['runtime_mappings'][$query] = ['type' => 'keyword'];
-            $body['aggs'][$query] = ['terms' => ['field' => $query]];
+            $body['aggs'][$query]             = ['terms' => ['field' => $query]];
         }
+
         $body['size'] = 0;
 
         $parameters = [
@@ -74,9 +77,7 @@ class ElasticSearchCollection implements CollectionInterface
 
         $result = $connection->search(params: $parameters);
 
-
         $result = array_map([$this, 'mapAggregationResults'], $result['aggregations']);
-
 
         echo json_encode($result);
         die;
