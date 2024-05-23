@@ -9,6 +9,15 @@ use Doctrine\ORM\EntityManagerInterface;
 use MongoDB\Collection;
 use Ramsey\Uuid\Uuid;
 
+/**
+ * Collection for MongoDB data storages
+ *
+ * @Author Ruben van der Linde <ruben@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>, Robert Zondervan <robert@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category DataStore
+ */
 class MongoDbCollection implements CollectionInterface
 {
 
@@ -584,10 +593,4 @@ class MongoDbCollection implements CollectionInterface
         return $this->collection->findOneAndReplace($filter, $replacement, $options);
 
     }//end findOneAndReplace()
-
-    public function insertOne(object|array $document, array $options = []): array|object
-    {
-        return $this->collection->insertOne($document, $options);
-
-    }//end insertOne()
 }//end class

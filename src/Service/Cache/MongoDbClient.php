@@ -7,6 +7,15 @@ use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use Doctrine\ORM\EntityManagerInterface;
 use MongoDB\Client;
 
+/**
+ * Client for MongoDB data storages
+ *
+ * @Author Ruben van der Linde <ruben@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>, Robert Zondervan <robert@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category DataStore
+ */
 class MongoDbClient implements ClientInterface
 {
 

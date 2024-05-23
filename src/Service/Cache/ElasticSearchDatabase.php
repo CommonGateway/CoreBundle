@@ -2,6 +2,15 @@
 
 namespace CommonGateway\CoreBundle\Service\Cache;
 
+/**
+ * Database for ElasticSearch data storages
+ *
+ * @Author Ruben van der Linde <ruben@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>, Robert Zondervan <robert@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category DataStore
+ */
 class ElasticSearchDatabase implements DatabaseInterface
 {
 

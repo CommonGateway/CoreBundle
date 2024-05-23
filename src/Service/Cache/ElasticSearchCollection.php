@@ -2,6 +2,15 @@
 
 namespace CommonGateway\CoreBundle\Service\Cache;
 
+/**
+ * Collection for ElasticSearch data storages
+ *
+ * @Author Ruben van der Linde <ruben@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>, Robert Zondervan <robert@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category DataStore
+ */
 use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Common\Exceptions\Missing404Exception;
 
@@ -38,6 +47,12 @@ class ElasticSearchCollection implements CollectionInterface
 
     }//end __construct()
 
+    /**
+     * Rename the items in an aggregation bucket according to the response standard for aggregations.
+     *
+     * @param array $bucketItem
+     * @return array
+     */
     private function renameBucketItems(array $bucketItem): array
     {
         return [
@@ -47,6 +62,12 @@ class ElasticSearchCollection implements CollectionInterface
 
     }//end renameBucketItems()
 
+    /**
+     * Map aggregation results to comply to the existing standard for aggregation results.
+     *
+     * @param array $result
+     * @return array
+     */
     private function mapAggregationResults(array $result): array
     {
         $buckets = $result['buckets'];
@@ -86,6 +107,13 @@ class ElasticSearchCollection implements CollectionInterface
         // TODO: Implement aggregate() method.
     }//end aggregate()
 
+    /**
+     * Build filters that are analogue to the MongoDB $in filters.
+     *
+     * @param array $values
+     * @param string $field
+     * @return array
+     */
     private function buildIn(array $values, string $field)
     {
         $matches = [];
@@ -98,6 +126,14 @@ class ElasticSearchCollection implements CollectionInterface
 
     }//end buildIn()
 
+    /**
+     * Build the actual comparison (match, regex, range) for a filter.
+     *
+     * @param string $key
+     * @param mixed $value
+     * @param string|array|null $operator
+     * @return array[]|\array[][]|mixed[][]|\string[][]
+     */
     private function buildComparison(string $key, mixed $value, string|array|null $operator = null): array
     {
         if ($operator === 'like') {
@@ -120,6 +156,14 @@ class ElasticSearchCollection implements CollectionInterface
 
     }//end buildComparison()
 
+    /**
+     * Build comparisons for an array.
+     *
+     * @param string $key
+     * @param mixed $values
+     * @param array $operators
+     * @return array
+     */
     private function buildMultiComparison(string $key, mixed $values, array $operators): array
     {
         $result = [];
@@ -132,6 +176,13 @@ class ElasticSearchCollection implements CollectionInterface
 
     }//end buildMultiComparison()
 
+    /**
+     * Build query for given filter.
+     *
+     * @param array $filter
+     * @param bool $directReturn
+     * @return array|array[]|\array[][]|mixed|\mixed[][]|\string[][]
+     */
     private function buildQuery(array $filter, bool $directReturn = false)
     {
         $query = [];
@@ -192,6 +243,12 @@ class ElasticSearchCollection implements CollectionInterface
 
     }//end buildQuery()
 
+    /**
+     * Handle pagination for search results.
+     *
+     * @param array $filters
+     * @return array
+     */
     private function handlePagination(array &$filters): array
     {
         if (isset($filters['_limit']) === true) {
@@ -217,6 +274,12 @@ class ElasticSearchCollection implements CollectionInterface
 
     }//end handlePagination()
 
+    /**
+     * Generates a search body for given filter.
+     *
+     * @param array $filter
+     * @return array
+     */
     private function generateSearchBody(array $filter): array
     {
         $body = $this->handlePagination(filters: $filter);
@@ -273,6 +336,12 @@ class ElasticSearchCollection implements CollectionInterface
 
     }//end createSearchIndex()
 
+    /**
+     * Formats results to existing response standard.
+     *
+     * @param array $hit
+     * @return array
+     */
     private function formatResults(array $hit): array
     {
         $source = $hit['_source'];
@@ -374,9 +443,4 @@ class ElasticSearchCollection implements CollectionInterface
         }//end try
 
     }//end findOneAndReplace()
-
-    public function insertOne(array|object $document, array $options = []): array|object
-    {
-        // TODO: Implement insertOne() method.
-    }//end insertOne()
 }//end class
