@@ -9,6 +9,9 @@ use App\Entity\ObjectEntity;
 use App\Entity\Organization;
 use App\Entity\User;
 use App\Service\ApplicationService;
+use CommonGateway\CoreBundle\Service\Cache\ClientInterface;
+use CommonGateway\CoreBundle\Service\Cache\ElasticSearchClient;
+use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -53,7 +56,7 @@ class CacheService
     /**
      * @var Client
      */
-    private Client $objectsClient;
+    private ClientInterface $objectsClient;
 
     /**
      * @var EntityManagerInterface
@@ -158,8 +161,11 @@ class CacheService
             $this->logger->warning('Cannot determine tennant from application: '.$e->getMessage());
         }
 
-        if ($organization !== null && $organization->getDatabase() !== null) {
+        if ($organization !== null && $organization->getDatabase() !== null && $organization->getDatabase()->getType() === 'mongodb') {
             $this->objectsClient = new Client($organization->getDatabase()->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
+        }
+        if ($organization !== null && $organization->getDatabase() !== null && $organization->getDatabase()->getType() === 'elasticsearch') {
+            $this->objectsClient = new ElasticSearchClient($organization->getDatabase()->getUri(), $organization->getDatabase()->getAuth());
         }
 
     }//end setObjectClient()
@@ -277,7 +283,7 @@ class CacheService
 
         // Backwards compatablity.
         if (((isset($config['schemas']) === false || $config['schemas'] !== true)
-            || (isset($config['endpoints']) === false || $config['endpoints'] !== true))
+                || (isset($config['endpoints']) === false || $config['endpoints'] !== true))
             && isset($this->client) === false
         ) {
             isset($this->style) === true && $this->style->writeln('No cache client found, halting warmup');
@@ -1088,6 +1094,10 @@ class CacheService
             $collection = $this->client->objects->json;
         } else {
             return [];
+        }
+
+        if($completeFilter === []) {
+            $completeFilter = $filter;
         }
 
         $total = $this->countObjectsInCache($filter);

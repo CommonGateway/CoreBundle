@@ -8,6 +8,7 @@ class ElasticSearchDatabase implements DatabaseInterface
     private ElasticSearchClient $client;
 
     private string $name;
+    private array $collections = [];
 
     public function __construct(ElasticSearchClient $client, string $name)
     {
@@ -22,7 +23,7 @@ class ElasticSearchDatabase implements DatabaseInterface
             return $this->collections[$collectionName];
         }
 
-        $this->collections[$collectionName] = $collection = new ElasticSearchCollection($this, $databaseName);
+        $this->collections[$collectionName] = $collection = new ElasticSearchCollection($this, $collectionName);
 
         return $collection;
 
