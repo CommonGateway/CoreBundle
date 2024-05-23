@@ -16,7 +16,7 @@ interface DatabaseInterface
     /**
      * Get a collection for the given name.
      *
-     * @param string $collectionName
+     * @param  string $collectionName
      * @return CollectionInterface
      */
     public function __get(string $collectionName): CollectionInterface;

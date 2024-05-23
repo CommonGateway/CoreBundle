@@ -2,7 +2,7 @@
 
 namespace CommonGateway\CoreBundle\Service\Cache;
 
-/**
+/*
  * Collection for ElasticSearch data storages
  *
  * @Author Ruben van der Linde <ruben@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>, Robert Zondervan <robert@conduction.nl>
@@ -50,7 +50,7 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Rename the items in an aggregation bucket according to the response standard for aggregations.
      *
-     * @param array $bucketItem
+     * @param  array $bucketItem
      * @return array
      */
     private function renameBucketItems(array $bucketItem): array
@@ -65,7 +65,7 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Map aggregation results to comply to the existing standard for aggregation results.
      *
-     * @param array $result
+     * @param  array $result
      * @return array
      */
     private function mapAggregationResults(array $result): array
@@ -110,8 +110,8 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Build filters that are analogue to the MongoDB $in filters.
      *
-     * @param array $values
-     * @param string $field
+     * @param  array  $values
+     * @param  string $field
      * @return array
      */
     private function buildIn(array $values, string $field)
@@ -129,9 +129,9 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Build the actual comparison (match, regex, range) for a filter.
      *
-     * @param string $key
-     * @param mixed $value
-     * @param string|array|null $operator
+     * @param  string            $key
+     * @param  mixed             $value
+     * @param  string|array|null $operator
      * @return array[]|\array[][]|mixed[][]|\string[][]
      */
     private function buildComparison(string $key, mixed $value, string|array|null $operator = null): array
@@ -159,9 +159,9 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Build comparisons for an array.
      *
-     * @param string $key
-     * @param mixed $values
-     * @param array $operators
+     * @param  string $key
+     * @param  mixed  $values
+     * @param  array  $operators
      * @return array
      */
     private function buildMultiComparison(string $key, mixed $values, array $operators): array
@@ -179,8 +179,8 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Build query for given filter.
      *
-     * @param array $filter
-     * @param bool $directReturn
+     * @param  array $filter
+     * @param  bool  $directReturn
      * @return array|array[]|\array[][]|mixed|\mixed[][]|\string[][]
      */
     private function buildQuery(array $filter, bool $directReturn = false)
@@ -246,7 +246,7 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Handle pagination for search results.
      *
-     * @param array $filters
+     * @param  array $filters
      * @return array
      */
     private function handlePagination(array &$filters): array
@@ -277,7 +277,7 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Generates a search body for given filter.
      *
-     * @param array $filter
+     * @param  array $filter
      * @return array
      */
     private function generateSearchBody(array $filter): array
@@ -339,7 +339,7 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Formats results to existing response standard.
      *
-     * @param array $hit
+     * @param  array $hit
      * @return array
      */
     private function formatResults(array $hit): array
