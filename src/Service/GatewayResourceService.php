@@ -16,6 +16,7 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use App\Entity\Action;
+use App\Entity\Attribute;
 use App\Entity\Endpoint;
 use App\Entity\Entity;
 use App\Entity\Gateway as Source;
@@ -73,6 +74,30 @@ class GatewayResourceService
 
         return $entity;
 
+    }//end getSchema()
+    
+    /**
+     * Get a schema by reference.
+     *
+     * @param string $reference  The reference to look for.
+     * @param string $pluginName The name of the plugin that requests the resource.
+     *
+     * @return Attribute|null
+     */
+    public function getAttribute(string $reference, string $pluginName): ?Attribute
+    {
+        $attribute = $this->entityManager->getRepository('App:Attribute')->findOneBy(['reference' => $reference]);
+        
+        if (Uuid::isValid($reference) === true && $attribute === null) {
+            $attribute = $this->entityManager->find('App:Attribute', $reference);
+        }
+        
+        if ($attribute === null) {
+            $this->pluginLogger->error("No attribute found for $reference.", ['plugin' => $pluginName]);
+        }//end if
+        
+        return $attribute;
+        
     }//end getSchema()
 
     /**

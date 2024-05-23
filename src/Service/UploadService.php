@@ -11,9 +11,11 @@
 
 namespace CommonGateway\CoreBundle\Service;
 
+use App\Entity\Attribute;
 use App\Entity\Entity as Schema;
 use App\Entity\Mapping;
 use Exception;
+use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Serializer\Encoder\CsvEncoder;
@@ -25,6 +27,13 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use Symfony\Component\Serializer\Serializer;
 use function Safe\json_decode;
 
+/**
+ * @Author Robert Zondervan <robert@conduction.nl>, Barry Brands <barry@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>
+ *
+ * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
+ *
+ * @category Service
+ */
 class UploadService
 {
 
@@ -60,17 +69,31 @@ class UploadService
      * @var CacheService The cache service.
      */
     private CacheService $cacheService;
-
+    
+    /**
+     * @var CacheInterface The cache interface.
+     */
+    public CacheInterface $cache;
+    
+    /**
+     * @param GatewayResourceService $resourceService   The gateway resource service.
+     * @param ValidationService      $validationService The validation service.
+     * @param MappingService         $mappingService    The mapping service.
+     * @param CacheService           $cacheService      The cache service.
+     * @param CacheInterface         $cache             The cache interface.
+     */
     public function __construct(
         GatewayResourceService $resourceService,
         ValidationService $validationService,
         MappingService $mappingService,
-        CacheService $cacheService
+        CacheService $cacheService,
+        CacheInterface $cache
     ) {
         $this->resourceService   = $resourceService;
         $this->validationService = $validationService;
         $this->mappingService    = $mappingService;
         $this->cacheService      = $cacheService;
+        $this->cache             = $cache;
 
     }//end __construct()
 
@@ -180,17 +203,19 @@ class UploadService
         return $result;
 
     }//end getExistingObject()
-
+    
     /**
      * Processes the decoded objects to fit a schema.
      *
-     * @param array        $objects The objects that have been derived from the file.
-     * @param Schema       $schema  The schema the objects should be stored in.
+     * @param array $objects The objects that have been derived from the file.
+     * @param Schema $schema The schema the objects should be stored in.
      * @param Mapping|null $mapping The mapping to map the objects in.
+     * @param Attribute|null $idAttribute The id attribute to use as unique identifier field.
      *
      * @return array The array of results.
+     * @throws Exception
      */
-    public function processObjects(array $objects, Schema $schema, ?Mapping $mapping): array
+    public function processObjects(array $objects, Schema $schema, ?Mapping $mapping, ?Attribute $idAttribute): array
     {
         $results = [];
         foreach ($objects as $object) {
@@ -207,11 +232,20 @@ class UploadService
                 'id'          => null,
             ];
 
-            if (isset($object['_id']) === true) {
-                $field  = ($mapping->getMapping()['_id'] ?? '_id');
-                $result = $this->getExistingObject($object['_id'], $field, $result);
-                unset($result['object']['_id']);
+            if (isset($idAttribute) === true) {
+                $field  = $idAttribute->getName();
+                $result = $this->getExistingObject($object[$field], $field, $result);
             }
+            
+            $result['cacheName'] = 'upload_'.$schema->getId()->toString().'todo, more needs to be unique and contain timestamp';
+            $item = $this->cache->getItem($result['cacheName']);
+//            if ($item->isHit() === true) {
+//                return $item->get();
+//            }
+            $item->set($result);
+            $item->tag('fileUploadObject');
+            $item->tag('fileUploadObject_'.$schema->getId()->toString()); // todo add/use one unique tag for each new upload?
+            $this->cache->save($item);
 
             $results[] = $result;
         }//end foreach
@@ -219,13 +253,14 @@ class UploadService
         return $results;
 
     }//end processObjects()
-
+    
     /**
      * Handles a file upload.
      *
      * @param Request $request The request containing a file upload.
      *
      * @return array The result of the file upload.
+     * @throws Exception
      */
     public function upload(Request $request): array
     {
@@ -243,13 +278,18 @@ class UploadService
 
         $schema  = $this->resourceService->getSchema($request->request->get('schema'), 'commongateway/corebundle');
         $mapping = null;
+        $idAttribute = null;
 
         if ($request->request->has('mapping') === true) {
             $mapping = $this->resourceService->getMapping($request->request->get('mapping'), 'commongateway/corebundle');
         }
+        
+        if ($request->request->has('idAttribute') === true) {
+            $idAttribute = $this->resourceService->getAttribute($request->request->get('idAttribute'), 'commongateway/corebundle');
+        }
 
         $objects = $this->decodeFile($extension, $file, $request);
-        return $this->processObjects($objects, $schema, $mapping);
+        return $this->processObjects($objects, $schema, $mapping, $idAttribute);
 
     }//end upload()
 }//end class

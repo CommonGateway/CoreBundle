@@ -10,6 +10,7 @@
 namespace CommonGateway\CoreBundle\Controller;
 
 use CommonGateway\CoreBundle\Service\UploadService;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,13 +36,16 @@ class FileController extends AbstractController
         $this->uploadService = $uploadService;
 
     }//end __construct()
-
+    
     /**
      * Provides a files endpoint.
      *
      * @Route("/admin/file-upload", methods={"POST"})
      *
-     * @return Response
+     * @param Request $request
+     *
+     * @return Response A response
+     * @throws Exception
      */
     public function fileUpload(Request $request): Response
     {

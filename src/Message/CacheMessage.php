@@ -2,7 +2,7 @@
 /**
  * A message to run caches asynchrounous
  *
- * @author Robert Zondervan (robert@conduction.nl)
+ * @author Robert Zondervan <robert@conduction.nl>
  *
  * @license EUPL <https://github.com/ConductionNL/contactcatalogus/blob/master/LICENSE.md>
  */

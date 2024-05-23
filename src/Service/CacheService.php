@@ -153,7 +153,7 @@ class CacheService
                 $organization = $application->getOrganization();
             }
         } catch (Exception $e) {
-            $this->logger->warning('Cannot determine tennant from application: '.$e->getMessage());
+            $this->logger->warning('Cannot determine tenant from application: '.$e->getMessage());
         }
 
         if ($organization !== null && $organization->getDatabase() !== null) {

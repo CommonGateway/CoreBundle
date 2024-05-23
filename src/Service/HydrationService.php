@@ -6,6 +6,7 @@ use App\Entity\Entity;
 use App\Entity\Gateway as Source;
 use App\Entity\ObjectEntity;
 use App\Service\SynchronizationService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -87,6 +88,8 @@ class HydrationService
             }
 
             $synchronization->getObject()->hydrate($object, $unsafeHydrate);
+            $synchronization->setLastChecked(new DateTime());
+            $synchronization->setLastSynced(new DateTime());
             $this->entityManager->persist($synchronization->getObject());
             $this->entityManager->persist($synchronization);
 
