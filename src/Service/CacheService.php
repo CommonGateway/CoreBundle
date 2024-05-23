@@ -11,7 +11,8 @@ use App\Entity\User;
 use App\Service\ApplicationService;
 use CommonGateway\CoreBundle\Service\Cache\ClientInterface;
 use CommonGateway\CoreBundle\Service\Cache\ElasticSearchClient;
-use CommonGateway\CoreBundle\Service\ObjectEntityService;
+use CommonGateway\CoreBundle\Service\Cache\ElasticSearchCollection;
+use CommonGateway\CoreBundle\Service\Cache\MongoDbCollection;
 use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -1249,8 +1250,13 @@ class CacheService
             return $result;
         }
 
-        foreach ($queries as $query) {
-            $result[$query] = $collection->aggregate([['$match' => $filter], ['$unwind' => "\${$query}"], ['$group' => ['_id' => "\${$query}", 'count' => ['$sum' => 1]]]])->toArray();
+        if($collection instanceof MongoDbCollection === true) {
+            foreach ($queries as $query) {
+                $result[$query] = $collection->aggregate([['$match' => $filter], ['$unwind' => "\${$query}"], ['$group' => ['_id' => "\${$query}", 'count' => ['$sum' => 1]]]])->toArray();
+            }
+        } else if ($collection instanceof ElasticSearchCollection === true) {
+            unset($completeFilter['_queries']);
+            $result = $collection->aggregate([$completeFilter, $queries]);
         }
 
         return $result;

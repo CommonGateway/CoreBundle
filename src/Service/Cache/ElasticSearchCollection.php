@@ -38,9 +38,48 @@ class ElasticSearchCollection implements CollectionInterface
 
     }//end __construct()
 
+    private function renameBucketItems(array $bucketItem): array
+    {
+        return [
+            '_id' => $bucketItem['key'],
+            'count' => $bucketItem['doc_count'],
+        ];
+    }
+
+    private function mapAggregationResults(array $result): array
+    {
+        $buckets = $result['buckets'];
+
+        $result = array_map([$this, 'renameBucketItems'], $buckets);
+
+        return $result;
+    }
+
     public function aggregate(array $pipeline, array $options = []): \Iterator
     {
         $connection = $this->database->getClient()->getConnection();
+
+        $body = $this->generateSearchBody($pipeline[0]);
+
+        foreach ($pipeline[1] as $query) {
+            $body['runtime_mappings'][$query] = ['type' => 'keyword'];
+            $body['aggs'][$query] = ['terms' => ['field' => $query]];
+        }
+        $body['size'] = 0;
+
+        $parameters = [
+            'index' => $this->database->getName(),
+            'body'  => $body,
+        ];
+
+        $result = $connection->search(params: $parameters);
+
+
+        $result = array_map([$this, 'mapAggregationResults'], $result['aggregations']);
+
+
+        echo json_encode($result);
+        die;
 
         // $connection->
         // TODO: Implement aggregate() method.

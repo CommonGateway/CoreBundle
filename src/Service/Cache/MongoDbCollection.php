@@ -4,7 +4,6 @@ namespace CommonGateway\CoreBundle\Service\Cache;
 
 use App\Entity\Entity;
 use CommonGateway\CoreBundle\Service\Cache\CollectionInterface;
-use CommonGateway\CoreBundle\Service\Cache\CollectionInterface;
 use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use Doctrine\ORM\EntityManagerInterface;
 use MongoDB\Collection;
