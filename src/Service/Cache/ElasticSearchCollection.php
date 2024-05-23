@@ -24,7 +24,7 @@ class ElasticSearchCollection implements CollectionInterface
         'strictly_before',
         'regex',
         'int_compare',
-        'bool_compare'
+        'bool_compare',
     ];
 
     private string $name;
@@ -46,52 +46,58 @@ class ElasticSearchCollection implements CollectionInterface
         // TODO: Implement aggregate() method.
     }//end aggregate()
 
-    private function buildIn(array $values, string $field) {
+    private function buildIn(array $values, string $field)
+    {
         $matches = [];
 
-        foreach($values as $value) {
+        foreach ($values as $value) {
             $matches[] = ['match' => [$field => $value]];
         }
 
         return $matches;
-    }
+
+    }//end buildIn()
 
     private function buildComparison(string $key, mixed $value, string|array|null $operator = null): array
     {
-        if($operator === 'like') {
+        if ($operator === 'like') {
             $value = ".*$value.*";
         }
 
-        if (in_array($operator, ['like', 'regex']) && preg_match("/^\/.+\/[a-z]*$/i",$value) !== false) {
+        if (in_array($operator, ['like', 'regex']) && preg_match("/^\/.+\/[a-z]*$/i", $value) !== false) {
             return ['regexp' => [$key => strtolower($value)]];
         } else if ($operator === '>=' || $operator === 'after') {
             return ['range' => [$key => ['gte' => $value]]];
-        }else if ($operator === '<=' || $operator === 'before') {
+        } else if ($operator === '<=' || $operator === 'before') {
             return ['range' => [$key => ['lte' => $value]]];
-        }else if ($operator === '>' || $operator === 'strictly_after') {
+        } else if ($operator === '>' || $operator === 'strictly_after') {
             return ['range' => [$key => ['gt' => $value]]];
-        }else if ($operator === '<' || $operator === 'strictly_before') {
+        } else if ($operator === '<' || $operator === 'strictly_before') {
             return ['range' => [$key => ['lt' => $value]]];
         }
+
         return ['match' => [$key => $value]];
-    }
+
+    }//end buildComparison()
 
     private function buildMultiComparison(string $key, mixed $values, array $operators): array
     {
         $result = [];
 
-        foreach($operators as $operator) {
+        foreach ($operators as $operator) {
             $result = array_merge_recursive($this->buildComparison($key, $values[$operator], $operator), $result);
         }
 
         return $result;
-    }
 
-    private function buildQuery(array $filter, bool $directReturn = false) {
+    }//end buildMultiComparison()
+
+    private function buildQuery(array $filter, bool $directReturn = false)
+    {
         $query = [];
 
-        foreach($filter as $key => $value) {
-            if($key === '$and') {
+        foreach ($filter as $key => $value) {
+            if ($key === '$and') {
                 $query['bool']['must'] = $this->buildQuery(filter: $value, directReturn: true);
             } else if ($key === '$or') {
                 $query['bool']['should'] = $this->buildQuery(filter: $value, directReturn: true);
@@ -110,10 +116,11 @@ class ElasticSearchCollection implements CollectionInterface
                     value: $value[array_key_first(array: $value)],
                     operator: array_key_first(array: $value)
                 );
-                if($directReturn === true) {
+                if ($directReturn === true) {
                     return $query[0];
                 }
-//                return $query;
+
+                // return $query;
             } else if (is_array(value: $value) === true
                 && array_diff(array_keys($value), self::FILTER_OPERATORS) === []
             ) {
@@ -122,26 +129,28 @@ class ElasticSearchCollection implements CollectionInterface
                     values: $value,
                     operators: array_keys($value)
                 );
-                if($directReturn === true) {
+                if ($directReturn === true) {
                     return $query[0];
                 }
             } else if (is_array(value: $value) === false && $value !== null) {
                 $query[] = $this->buildComparison(key: $key, value: $value);
 
-                if($directReturn === true) {
+                if ($directReturn === true) {
                     return $query[0];
                 }
             } else if ($value === null) {
                 $query[] = ['bool' => ['must_not' => ['exists' => ['field' => $key]]]];
-                if($directReturn === true) {
+                if ($directReturn === true) {
                     return $query[0];
                 }
             } else {
                 $query[] = $this->buildQuery(filter: $value, directReturn: $directReturn);
-            }
-        }
+            }//end if
+        }//end foreach
+
         return $query;
-    }
+
+    }//end buildQuery()
 
     private function handlePagination(array &$filters): array
     {
@@ -158,10 +167,15 @@ class ElasticSearchCollection implements CollectionInterface
         } else {
             $start = 0;
         }
+
         unset($filters['_limit'], $filters['_start'], $filters['_offset'], $filters['_page']);
 
-        return ['size' => $limit, 'from' => $start];
-    }
+        return [
+            'size' => $limit,
+            'from' => $start,
+        ];
+
+    }//end handlePagination()
 
     private function generateSearchBody(array $filter): array
     {
@@ -169,8 +183,8 @@ class ElasticSearchCollection implements CollectionInterface
 
         $query = $this->buildQuery(filter: $filter);
 
-        foreach($query as $key => $value) {
-            if($key === 'match' || $key === 'query_string') {
+        foreach ($query as $key => $value) {
+            if ($key === 'match' || $key === 'query_string') {
                 $query['bool']['must'][][$key] = $value;
                 unset($query[$key]);
             } else if ($key === 'must' || $key === 'should') {
@@ -185,6 +199,7 @@ class ElasticSearchCollection implements CollectionInterface
         $body['query'] = $query;
 
         return $body;
+
     }//end generateSearchBody()
 
     public function count(array $filter = [], array $options = []): int
@@ -226,7 +241,8 @@ class ElasticSearchCollection implements CollectionInterface
         $hit = array_merge($hit, $source);
 
         return $hit;
-    }
+
+    }//end formatResults()
 
     public function find(array $filter = [], array $options = []): \Iterator
     {
@@ -246,6 +262,7 @@ class ElasticSearchCollection implements CollectionInterface
         $iterator = new ArrayIterator(array: $hits);
 
         return $iterator;
+
     }//end find()
 
     public function findOne(array $filter = [], array $options = []): array|null|object
@@ -284,7 +301,7 @@ class ElasticSearchCollection implements CollectionInterface
 
         $id = $filter['_id'];
 
-        try{
+        try {
             $document = $connection->get(
                 params: [
                     'index' => $this->database->getName(),
@@ -304,7 +321,7 @@ class ElasticSearchCollection implements CollectionInterface
 
                 return $result;
             }
-        } catch(Missing404Exception $exception) {
+        } catch (Missing404Exception $exception) {
             $parameters = [
                 'index' => $this->database->getName(),
                 'id'    => $id,
@@ -314,7 +331,7 @@ class ElasticSearchCollection implements CollectionInterface
             $result = $connection->index(params: $parameters);
 
             return $result;
-        }
+        }//end try
 
     }//end findOneAndReplace()
 

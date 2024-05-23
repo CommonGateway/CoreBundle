@@ -164,6 +164,7 @@ class CacheService
         if ($organization !== null && $organization->getDatabase() !== null && $organization->getDatabase()->getType() === 'mongodb') {
             $this->objectsClient = new Client($organization->getDatabase()->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
         }
+
         if ($organization !== null && $organization->getDatabase() !== null && $organization->getDatabase()->getType() === 'elasticsearch') {
             $this->objectsClient = new ElasticSearchClient($organization->getDatabase()->getUri(), $organization->getDatabase()->getAuth());
         }
@@ -283,7 +284,7 @@ class CacheService
 
         // Backwards compatablity.
         if (((isset($config['schemas']) === false || $config['schemas'] !== true)
-                || (isset($config['endpoints']) === false || $config['endpoints'] !== true))
+            || (isset($config['endpoints']) === false || $config['endpoints'] !== true))
             && isset($this->client) === false
         ) {
             isset($this->style) === true && $this->style->writeln('No cache client found, halting warmup');
@@ -1096,7 +1097,7 @@ class CacheService
             return [];
         }
 
-        if($completeFilter === []) {
+        if ($completeFilter === []) {
             $completeFilter = $filter;
         }
 

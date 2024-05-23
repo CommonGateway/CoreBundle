@@ -563,8 +563,7 @@ class MongoDbCollection implements CollectionInterface
 
         $filter = $this->addOwnerOrgFilter($filter);
 
-//        var_dump($filter);
-
+        // var_dump($filter);
         return $this->collection->find($filter, $options);
 
     }//end find()
