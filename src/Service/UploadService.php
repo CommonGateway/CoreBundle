@@ -14,7 +14,9 @@ namespace CommonGateway\CoreBundle\Service;
 use App\Entity\Attribute;
 use App\Entity\Entity as Schema;
 use App\Entity\Mapping;
+use DateTime;
 use Exception;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -23,6 +25,7 @@ use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use Psr\Log\LoggerInterface;
 
 use Symfony\Component\Serializer\Serializer;
 use function Safe\json_decode;
@@ -76,24 +79,32 @@ class UploadService
     public CacheInterface $cache;
     
     /**
+     * @var LoggerInterface
+     */
+    private LoggerInterface $logger;
+    
+    /**
      * @param GatewayResourceService $resourceService   The gateway resource service.
      * @param ValidationService      $validationService The validation service.
      * @param MappingService         $mappingService    The mapping service.
      * @param CacheService           $cacheService      The cache service.
      * @param CacheInterface         $cache             The cache interface.
+     * @param LoggerInterface        $uploadLogger      The upload logger.
      */
     public function __construct(
         GatewayResourceService $resourceService,
         ValidationService $validationService,
         MappingService $mappingService,
         CacheService $cacheService,
-        CacheInterface $cache
+        CacheInterface $cache,
+        LoggerInterface $uploadLogger
     ) {
         $this->resourceService   = $resourceService;
         $this->validationService = $validationService;
         $this->mappingService    = $mappingService;
         $this->cacheService      = $cacheService;
         $this->cache             = $cache;
+        $this->logger            = $uploadLogger;
 
     }//end __construct()
 
@@ -231,20 +242,28 @@ class UploadService
                 'validations' => $this->validationService->validateData($object, $schema, 'POST'),
                 'id'          => null,
             ];
-
+            
+            // We need a unique id for the cacheName to be able to find it later, default to a random uuid4.
+            $id = Uuid::uuid4()->toString();
             if (isset($idAttribute) === true) {
-                $field  = $idAttribute->getName();
-                $result = $this->getExistingObject($object[$field], $field, $result);
+                $field = $idAttribute->getName();
+                if (isset($object[$field]) === true) {
+                    $result = $this->getExistingObject($object[$field], $field, $result);
+                    // Use id of the existing object for cacheName.
+                    $id = $result['id'];
+                } else {
+                    $this->logger->error("The id field $field does not exist in object extracted from the uploaded file.");
+                }
             }
             
-            $result['cacheName'] = 'upload_'.$schema->getId()->toString().'todo, more needs to be unique and contain timestamp';
+            $now = new DateTime();
+            $result['cacheName'] = "fileUploadObject_{$id}_{$now->format('c')}";
+            
             $item = $this->cache->getItem($result['cacheName']);
-//            if ($item->isHit() === true) {
-//                return $item->get();
-//            }
             $item->set($result);
-            $item->tag('fileUploadObject');
-            $item->tag('fileUploadObject_'.$schema->getId()->toString()); // todo add/use one unique tag for each new upload?
+            $item->tag('fileUploadObjects');
+            $item->tag('fileUploadObjects_'.$schema->getId()->toString());
+            // todo add/use one unique tag for each new upload?
             $this->cache->save($item);
 
             $results[] = $result;
