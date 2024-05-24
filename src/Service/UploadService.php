@@ -72,17 +72,17 @@ class UploadService
      * @var CacheService The cache service.
      */
     private CacheService $cacheService;
-    
+
     /**
      * @var CacheInterface The cache interface.
      */
     public CacheInterface $cache;
-    
+
     /**
      * @var LoggerInterface
      */
     private LoggerInterface $logger;
-    
+
     /**
      * @param GatewayResourceService $resourceService   The gateway resource service.
      * @param ValidationService      $validationService The validation service.
@@ -214,13 +214,13 @@ class UploadService
         return $result;
 
     }//end getExistingObject()
-    
+
     /**
      * Processes the decoded objects to fit a schema.
      *
-     * @param array $objects The objects that have been derived from the file.
-     * @param Schema $schema The schema the objects should be stored in.
-     * @param Mapping|null $mapping The mapping to map the objects in.
+     * @param array          $objects     The objects that have been derived from the file.
+     * @param Schema         $schema      The schema the objects should be stored in.
+     * @param Mapping|null   $mapping     The mapping to map the objects in.
      * @param Attribute|null $idAttribute The id attribute to use as unique identifier field.
      *
      * @return array The array of results.
@@ -242,7 +242,7 @@ class UploadService
                 'validations' => $this->validationService->validateData($object, $schema, 'POST'),
                 'id'          => null,
             ];
-            
+
             // We need a unique id for the cacheName to be able to find it later, default to a random uuid4.
             $id = Uuid::uuid4()->toString();
             if (isset($idAttribute) === true) {
@@ -255,10 +255,10 @@ class UploadService
                     $this->logger->error("The id field $field does not exist in object extracted from the uploaded file.");
                 }
             }
-            
-            $now = new DateTime();
+
+            $now                 = new DateTime();
             $result['cacheName'] = "fileUploadObject_{$id}_{$now->format('c')}";
-            
+
             $item = $this->cache->getItem($result['cacheName']);
             $item->set($result);
             $item->tag('fileUploadObjects');
@@ -272,7 +272,7 @@ class UploadService
         return $results;
 
     }//end processObjects()
-    
+
     /**
      * Handles a file upload.
      *
@@ -295,14 +295,14 @@ class UploadService
             throw new Exception("File extension: $extension not supported.");
         }
 
-        $schema  = $this->resourceService->getSchema($request->request->get('schema'), 'commongateway/corebundle');
-        $mapping = null;
+        $schema      = $this->resourceService->getSchema($request->request->get('schema'), 'commongateway/corebundle');
+        $mapping     = null;
         $idAttribute = null;
 
         if ($request->request->has('mapping') === true) {
             $mapping = $this->resourceService->getMapping($request->request->get('mapping'), 'commongateway/corebundle');
         }
-        
+
         if ($request->request->has('idAttribute') === true) {
             $idAttribute = $this->resourceService->getAttribute($request->request->get('idAttribute'), 'commongateway/corebundle');
         }

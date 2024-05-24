@@ -36,7 +36,7 @@ class FileController extends AbstractController
         $this->uploadService = $uploadService;
 
     }//end __construct()
-    
+
     /**
      * Provides a files endpoint.
      *

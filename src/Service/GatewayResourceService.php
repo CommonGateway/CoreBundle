@@ -75,7 +75,7 @@ class GatewayResourceService
         return $entity;
 
     }//end getSchema()
-    
+
     /**
      * Get a schema by reference.
      *
@@ -87,18 +87,18 @@ class GatewayResourceService
     public function getAttribute(string $reference, string $pluginName): ?Attribute
     {
         $attribute = $this->entityManager->getRepository('App:Attribute')->findOneBy(['reference' => $reference]);
-        
+
         if (Uuid::isValid($reference) === true && $attribute === null) {
             $attribute = $this->entityManager->find('App:Attribute', $reference);
         }
-        
+
         if ($attribute === null) {
             $this->pluginLogger->error("No attribute found for $reference.", ['plugin' => $pluginName]);
         }//end if
-        
+
         return $attribute;
-        
-    }//end getSchema()
+
+    }//end getAttribute()
 
     /**
      * Get a object by identifier.
