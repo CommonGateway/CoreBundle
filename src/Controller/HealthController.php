@@ -74,8 +74,7 @@ class HealthController extends AbstractController
         $mongoDBCacheStatus = 'pass';
 
         try {
-            $client = new Client(' ');
-            // Is this best way to check connection?
+            $client = new Client($this->parameters->get('cache_url'));
             $client->listDatabases();
         } catch (Exception | MongoDBException $e) {
             $mongoDBCacheStatus = 'fail';
