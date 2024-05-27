@@ -1,8 +1,8 @@
 <?php
-
 namespace CommonGateway\CoreBundle\Service\Cache;
+
 /**
- * Interface to unify datastore clients
+ * Extension of the standard Array Iterator with an toArray function.
  *
  * @Author Ruben van der Linde <ruben@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>, Robert Zondervan <robert@conduction.nl>
  *
@@ -10,13 +10,16 @@ namespace CommonGateway\CoreBundle\Service\Cache;
  *
  * @category DataStore
  */
-interface ClientInterface
+class ArrayIterator extends \ArrayIterator
 {
     /**
-     * Get a database for given name.
+     * Returns the array value of the iterator.
      *
-     * @param  string $databaseName
-     * @return DatabaseInterface
+     * @return array
      */
-    public function __get(string $databaseName): DatabaseInterface;
-}//end interface
+    public function toArray(): array
+    {
+        return iterator_to_array($this);
+
+    }//end toArray()
+}//end class

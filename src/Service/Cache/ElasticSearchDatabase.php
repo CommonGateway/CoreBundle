@@ -2,12 +2,8 @@
 
 namespace CommonGateway\CoreBundle\Service\Cache;
 
-use CommonGateway\CoreBundle\Service\ObjectEntityService;
-use Doctrine\ORM\EntityManagerInterface;
-use MongoDB\Database;
-
 /**
- * Database for MongoDB data storages
+ * Database for ElasticSearch data storages
  *
  * @Author Ruben van der Linde <ruben@conduction.nl>, Wilco Louwerse <wilco@conduction.nl>, Robert Zondervan <robert@conduction.nl>
  *
@@ -15,19 +11,19 @@ use MongoDB\Database;
  *
  * @category DataStore
  */
-class MongoDbDatabase implements DatabaseInterface
+class ElasticSearchDatabase implements DatabaseInterface
 {
 
-    private Database $database;
+    private ElasticSearchClient $client;
 
     private string $name;
 
     private array $collections = [];
 
-    public function __construct(Database $database, string $name, private readonly EntityManagerInterface $entityManager, private readonly ObjectEntityService $objectEntityService)
+    public function __construct(ElasticSearchClient $client, string $name)
     {
-        $this->database = $database;
-        $this->name     = $name;
+        $this->client = $client;
+        $this->name   = $name;
 
     }//end __construct()
 
@@ -37,11 +33,17 @@ class MongoDbDatabase implements DatabaseInterface
             return $this->collections[$collectionName];
         }
 
-        $this->collections[$collectionName] = $collection = new MongoDbCollection($this->database->__get($collectionName), $this, $collectionName, $this->entityManager, $this->objectEntityService);
+        $this->collections[$collectionName] = $collection = new ElasticSearchCollection($this, $collectionName);
 
         return $collection;
 
     }//end __get()
+
+    public function getClient(): ElasticSearchClient
+    {
+        return $this->client;
+
+    }//end getClient()
 
     public function getName(): string
     {

@@ -621,7 +621,9 @@ class RequestService
 
     private function proxyConfigBuilder(): array
     {
-        if (strpos($this->data['headers']['content-type'][0],  'multipart/form-data') !== false) {
+        if (isset($this->data['headers']['content-type']) === true
+            && strpos($this->data['headers']['content-type'][0],  'multipart/form-data') !== false
+        ) {
             $post = $this->data['post'];
             array_walk(
                 $post,
@@ -646,7 +648,9 @@ class RequestService
                 'headers'   => $this->data['headers'],
                 'multipart' => array_values($post),
             ];
-        } else if (strpos($this->data['headers']['content-type'][0], 'application/x-www-form-urlencoded') !== false) {
+        } else if (isset($this->data['headers']['content-type']) === true
+            && strpos($this->data['headers']['content-type'][0], 'application/x-www-form-urlencoded') !== false
+        ) {
             return [
                 'query'     => $this->data['query'],
                 'headers'   => $this->data['headers'],
@@ -722,7 +726,7 @@ class RequestService
             $this->data['path'] = '';
         }
 
-        if (count($data['endpoint']->getFederationProxies()) > 1) {
+        if (isset($data['endpoint']) === true && count($data['endpoint']->getFederationProxies()) > 1) {
             return $this->federationProxyHandler($data['endpoint']->getFederationProxies(), $this->data['path'], $this->proxyConfigBuilder());
         }
 
@@ -801,7 +805,7 @@ class RequestService
             $content  = $this->serializeData(
                 [
                     'message' => $exception->getMessage(),
-                    'body'    => ($body ?? "Can\'t get a response & body for this type of Exception: ").get_class($exception),
+                    'body'    => ($body ?? "Can't get a response & body for this type of Exception: ").get_class($exception),
                 ],
                 $contentType
             );
