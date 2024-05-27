@@ -33,7 +33,7 @@ class HealthController extends AbstractController
     private MetricsService $metricsService;
 
     /**
-     * @var ParameterBagInterface The parameterbaginterface 
+     * @var ParameterBagInterface The parameterbaginterface
      */
     private ParameterBagInterface $parameterBagInterface;
 
@@ -45,9 +45,9 @@ class HealthController extends AbstractController
     /**
      * The constructor sets al needed variables.
      *
-     * @param MetricsService $metricsService The metrics service
-     * @param ParameterBagInterface $parameters The Parameter bag
-     * @param EntityManagerInterface $entityManager The Parameter bag
+     * @param MetricsService         $metricsService The metrics service
+     * @param ParameterBagInterface  $parameters     The Parameter bag
+     * @param EntityManagerInterface $entityManager  The Parameter bag
      */
     public function __construct(MetricsService $metricsService, ParameterBagInterface $parameters, EntityManagerInterface $entityManager)
     {
@@ -66,10 +66,10 @@ class HealthController extends AbstractController
      */
     public function healthCheck(Request $request): Response
     {
-        $acceptHeader = $request->headers->get('Accept') ?? 'application/json';
+        $acceptHeader = ($request->headers->get('Accept') ?? 'application/json');
 
-        $status = 'pass';
-        $outputMessage = null;
+        $status             = 'pass';
+        $outputMessage      = null;
         $responseStatusCode = 200;
         $mongoDBCacheStatus = 'pass';
 
@@ -77,15 +77,15 @@ class HealthController extends AbstractController
             $client = new Client(' ');
             // Is this best way to check connection?
             $client->listDatabases();
-        } catch (Exception|MongoDBException $e) {
+        } catch (Exception | MongoDBException $e) {
             $mongoDBCacheStatus = 'fail';
-            $status = 'fail';
-            $outputMessage = 'The cache MongoDB connection failed: ' . $e->getMessage();
+            $status             = 'fail';
+            $outputMessage      = 'The cache MongoDB connection failed: '.$e->getMessage();
             $responseStatusCode = 400;
         }
 
-        $objectDatabases = $this->entityManager->getRepository(Database::class)->findAll();
-        $mongoDBCount = count($objectDatabases);
+        $objectDatabases  = $this->entityManager->getRepository(Database::class)->findAll();
+        $mongoDBCount     = count($objectDatabases);
         $mongoDBPassCount = 0;
         $mongoDBFailCount = 0;
 
@@ -94,8 +94,8 @@ class HealthController extends AbstractController
                 $client = new Client($database->getUri());
                 $client->listDatabases();
                 $mongoDBPassCount++;
-            } catch (Exception|MongoDBException $e) {
-                $mongoDBFailCount++;   
+            } catch (Exception | MongoDBException $e) {
+                $mongoDBFailCount++;
             }
         }
 
@@ -103,20 +103,21 @@ class HealthController extends AbstractController
             if ($status !== 'fail') {
                 $status = 'warn';
             }
+
             $responseStatusCode = 400;
-            $message = 'ome database connections failed: ' . (string) $mongoDBFailCount . ' out of ' . (string) $mongoDBCount . ' connections';
-            $outputMessage = $outputMessage ? $outputMessage .= ' and s'.$message : $outputMessage = 'S' . $message;
+            $message            = 'ome database connections failed: '.(string) $mongoDBFailCount.' out of '.(string) $mongoDBCount.' connections';
+            $outputMessage      = $outputMessage ? $outputMessage .= ' and s'.$message : $outputMessage = 'S'.$message;
         }
 
         try {
             $errors = $this->metricsService->getErrors();
         } catch (Exception $e) {
-            $status = 'fail';
-            $errors = null;
-            $outputMessage = $outputMessage ? $outputMessage .= ' and could not fetch error logs: ' . $e->getMessage() : $outputMessage = 'Could not fetch error logs: ' . $e->getMessage();
+            $status             = 'fail';
+            $errors             = null;
+            $outputMessage      = $outputMessage ? $outputMessage .= ' and could not fetch error logs: '.$e->getMessage() : $outputMessage = 'Could not fetch error logs: '.$e->getMessage();
             $responseStatusCode = 400;
         }
-        
+
         $responseArray = [
             'status'      => $status,
             'version'     => '0.1.0',
@@ -124,20 +125,20 @@ class HealthController extends AbstractController
             'notes'       => [],
             'output'      => $outputMessage,
             'checks'      => [
-                'errors' => $errors,
+                'errors'  => $errors,
                 'mongodb' => [
-                    'cache' => $mongoDBCacheStatus,
+                    'cache'            => $mongoDBCacheStatus,
                     'otherConnections' => [
                         'total' => $mongoDBCount,
-                        'pass' => $mongoDBPassCount,
-                        'fail' => $mongoDBFailCount
-                    ]
-                ]
+                        'pass'  => $mongoDBPassCount,
+                        'fail'  => $mongoDBFailCount,
+                    ],
+                ],
 
-            ]
+            ],
         ];
 
         return new Response(json_encode($responseArray), $responseStatusCode, ['Content-Type' => $acceptHeader]);
 
-    }//end metrics()
+    }//end healthCheck()
 }//end class
