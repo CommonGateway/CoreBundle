@@ -17,32 +17,47 @@ use MongoDB\Database;
  */
 class MongoDbDatabase implements DatabaseInterface
 {
-
-    private Database $database;
-
-    private string $name;
-
+    /**
+     * @var array collections known by the database.
+     */
     private array $collections = [];
 
-    public function __construct(Database $database, string $name, private readonly EntityManagerInterface $entityManager, private readonly ObjectEntityService $objectEntityService)
+    /**
+     * @param Database $database The MongoDB Database.
+     * @param string $name The name of the database.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param ObjectEntityService $objectEntityService The object entity service.
+     */
+    public function __construct(private readonly Database $database, private readonly string $name, private readonly EntityManagerInterface $entityManager, private readonly ObjectEntityService $objectEntityService)
     {
-        $this->database = $database;
-        $this->name     = $name;
-
     }//end __construct()
 
+    /**
+     * @inheritDoc
+     */
     public function __get(string $collectionName): CollectionInterface
     {
         if (isset($this->collections[$collectionName]) === true) {
             return $this->collections[$collectionName];
         }
 
-        $this->collections[$collectionName] = $collection = new MongoDbCollection($this->database->__get($collectionName), $this, $collectionName, $this->entityManager, $this->objectEntityService);
+        $this->collections[$collectionName] = $collection = new MongoDbCollection(
+            collection: $this->database->__get($collectionName),
+            database: $this,
+            name: $collectionName,
+            entityManager: $this->entityManager,
+            objectEntityService: $this->objectEntityService
+        );
 
         return $collection;
 
     }//end __get()
 
+    /**
+     * Gets the name of the database.
+     *
+     * @return string
+     */
     public function getName(): string
     {
         return $this->name;

@@ -15,8 +15,8 @@ interface ClientInterface
     /**
      * Get a database for given name.
      *
-     * @param  string $databaseName
-     * @return DatabaseInterface
+     * @param  string $databaseName The name of the database.
+     * @return DatabaseInterface The resulting database.
      */
     public function __get(string $databaseName): DatabaseInterface;
 }//end interface

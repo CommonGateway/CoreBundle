@@ -21,12 +21,19 @@ class ElasticSearchClient implements ClientInterface
 
     private array $databases = [];
 
+    /**
+     * @param string $uri    The uri of the elastic database.
+     * @param string $apiKey The apikey of the elastic database.
+     */
     public function __construct(string $uri, string $apiKey)
     {
         $this->connection = ClientBuilder::create()->setHosts([$uri])->setApiKey($apiKey)->build();
 
     }//end __construct()
 
+    /**
+     * @inheritDoc
+     */
     public function __get(string $databaseName): DatabaseInterface
     {
         if (isset($this->databases[$databaseName]) === true) {
@@ -39,6 +46,11 @@ class ElasticSearchClient implements ClientInterface
 
     }//end __get()
 
+    /**
+     * Gets the elastic client.
+     *
+     * @return Client
+     */
     public function getConnection(): Client
     {
         return $this->connection;

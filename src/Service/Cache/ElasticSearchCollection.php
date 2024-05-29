@@ -36,22 +36,20 @@ class ElasticSearchCollection implements CollectionInterface
         'bool_compare',
     ];
 
-    private string $name;
-
-    private DatabaseInterface $database;
-
-    public function __construct(ElasticSearchDatabase $database, string $name)
+    /**
+     * @param ElasticSearchDatabase $database The elasticSearch Database used.
+     * @param string $name The name of the collection.
+     */
+    public function __construct(private readonly ElasticSearchDatabase $database, private readonly string $name)
     {
-        $this->database = $database;
-        $this->name     = $name;
-
     }//end __construct()
 
     /**
      * Rename the items in an aggregation bucket according to the response standard for aggregations.
      *
-     * @param  array $bucketItem
-     * @return array
+     * @param  array $bucketItem The item to rewrite
+     *
+     * @return array The rewritten array.
      */
     private function renameBucketItems(array $bucketItem): array
     {
@@ -65,8 +63,9 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Map aggregation results to comply to the existing standard for aggregation results.
      *
-     * @param  array $result
-     * @return array
+     * @param  array $result The result to map.
+     *
+     * @return array The mapped result.
      */
     private function mapAggregationResults(array $result): array
     {
@@ -78,6 +77,9 @@ class ElasticSearchCollection implements CollectionInterface
 
     }//end mapAggregationResults()
 
+    /**
+     * @inheritDoc
+     */
     public function aggregate(array $pipeline, array $options = []): \Iterator
     {
         $connection = $this->database->getClient()->getConnection();
@@ -100,19 +102,16 @@ class ElasticSearchCollection implements CollectionInterface
 
         $result = array_map([$this, 'mapAggregationResults'], $result['aggregations']);
 
-        echo json_encode($result);
-        die;
-
-        // $connection->
-        // TODO: Implement aggregate() method.
+        return new ArrayIterator($result);
     }//end aggregate()
 
     /**
      * Build filters that are analogue to the MongoDB $in filters.
      *
-     * @param  array  $values
-     * @param  string $field
-     * @return array
+     * @param  array  $values The values to put in the comparison.
+     * @param  string $field  The field that should have one of the values.
+     *
+     * @return array The resulting filter.
      */
     private function buildIn(array $values, string $field)
     {
@@ -129,9 +128,10 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Build the actual comparison (match, regex, range) for a filter.
      *
-     * @param  string            $key
-     * @param  mixed             $value
-     * @param  string|array|null $operator
+     * @param  string            $key      The field for which the filter holds.
+     * @param  mixed             $value    The value that should be tested.
+     * @param  string|array|null $operator The operator that should be used to test the value.
+     *
      * @return array[]|\array[][]|mixed[][]|\string[][]
      */
     private function buildComparison(string $key, mixed $value, string|array|null $operator = null): array
@@ -159,9 +159,9 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Build comparisons for an array.
      *
-     * @param  string $key
-     * @param  mixed  $values
-     * @param  array  $operators
+     * @param  string $key       The field of which the values should be tested
+     * @param  mixed  $values    The values to test against.
+     * @param  array  $operators The operators that should be used to test the values.
      * @return array
      */
     private function buildMultiComparison(string $key, mixed $values, array $operators): array
@@ -179,9 +179,10 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Build query for given filter.
      *
-     * @param  array $filter
-     * @param  bool  $directReturn
-     * @return array|array[]|\array[][]|mixed|\mixed[][]|\string[][]
+     * @param  array $filter       The filter given.
+     * @param  bool  $directReturn Whether the function should return immediately after building the filter (instead of adding it to an array).
+     *
+     * @return array|array[]|\array[][]|mixed|\mixed[][]|\string[][] The resulting query.
      */
     private function buildQuery(array $filter, bool $directReturn = false)
     {
@@ -246,8 +247,9 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Handle pagination for search results.
      *
-     * @param  array $filters
-     * @return array
+     * @param  array $filters The raw filter array.
+     *
+     * @return array The processed pagination parameters.
      */
     private function handlePagination(array &$filters): array
     {
@@ -277,8 +279,8 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Generates a search body for given filter.
      *
-     * @param  array $filter
-     * @return array
+     * @param  array $filter The filter to generate the search body with.
+     * @return array The resulting search body.
      */
     private function generateSearchBody(array $filter): array
     {
@@ -305,6 +307,9 @@ class ElasticSearchCollection implements CollectionInterface
 
     }//end generateSearchBody()
 
+    /**
+     * @inheritDoc
+     */
     public function count(array $filter = [], array $options = []): int
     {
         $connection = $this->database->getClient()->getConnection();
@@ -324,12 +329,18 @@ class ElasticSearchCollection implements CollectionInterface
         // TODO: Implement count() method.
     }//end count()
 
+    /**
+     * @inheritDoc
+     */
     public function createIndex(array|object $key, array $options = []): string
     {
         return 'index';
 
     }//end createIndex()
 
+    /**
+     * @inheritDoc
+     */
     public function createSearchIndex(array|object $definition, array $options = []): string
     {
         return 'searchIndex';
@@ -339,8 +350,9 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Formats results to existing response standard.
      *
-     * @param  array $hit
-     * @return array
+     * @param  array $hit The hit to format.
+     *
+     * @return array The reformatted hit.
      */
     private function formatResults(array $hit): array
     {
@@ -353,6 +365,9 @@ class ElasticSearchCollection implements CollectionInterface
 
     }//end formatResults()
 
+    /**
+     * @inheritDoc
+     */
     public function find(array $filter = [], array $options = []): \Iterator
     {
         $connection = $this->database->getClient()->getConnection();
@@ -374,6 +389,9 @@ class ElasticSearchCollection implements CollectionInterface
 
     }//end find()
 
+    /**
+     * @inheritDoc
+     */
     public function findOne(array $filter = [], array $options = []): array|null|object
     {
         $id = $filter['_id'];
@@ -389,6 +407,9 @@ class ElasticSearchCollection implements CollectionInterface
 
     }//end findOne()
 
+    /**
+     * @inheritDoc
+     */
     public function findOneAndDelete(array $filter = [], array $options = []): array|null|object
     {
         $connection = $this->database->getClient()->getConnection();
@@ -404,6 +425,9 @@ class ElasticSearchCollection implements CollectionInterface
 
     }//end findOneAndDelete()
 
+    /**
+     * @inheritDoc
+     */
     public function findOneAndReplace(object|array $filter, object|array $replacement, array $options = []): array|null|object
     {
         $connection = $this->database->getClient()->getConnection();
@@ -427,8 +451,8 @@ class ElasticSearchCollection implements CollectionInterface
                 ];
 
                 $result = $connection->update(params: $parameters);
-
-                return $result;
+            } else {
+                $result =[];
             }
         } catch (Missing404Exception $exception) {
             $parameters = [
@@ -438,9 +462,9 @@ class ElasticSearchCollection implements CollectionInterface
             ];
 
             $result = $connection->index(params: $parameters);
-
-            return $result;
         }//end try
+
+        return $result;
 
     }//end findOneAndReplace()
 }//end class
