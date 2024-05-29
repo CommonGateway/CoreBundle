@@ -27,7 +27,9 @@ class ElasticSearchClient implements ClientInterface
      */
     public function __construct(string $uri, string $apiKey)
     {
-        $this->connection = ClientBuilder::create()->setHosts([$uri])->setApiKey($apiKey)->build();
+        $explodedApiKey = explode(':', \Safe\base64_decode($apiKey));
+
+        $this->connection = ClientBuilder::create()->setHosts([$uri])->setApiKey($explodedApiKey[0], $explodedApiKey[1])->build();
 
     }//end __construct()
 
