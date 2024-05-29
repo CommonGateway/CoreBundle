@@ -29,6 +29,9 @@ class MongoDbClient implements ClientInterface
 
     }//end __construct()
 
+    /**
+     * @inheritDoc
+     */
     public function __get(string $databaseName): DatabaseInterface
     {
         if (isset($this->databases[$databaseName]) === true) {

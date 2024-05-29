@@ -20,12 +20,17 @@ use Ramsey\Uuid\Uuid;
  */
 class MongoDbCollection implements CollectionInterface
 {
+    /**
+     * @param Collection             $collection          The MongoDB Collection.
+     * @param MongoDbDatabase        $database            The database above the collection.
+     * @param string                 $name                The name of the collection.
+     * @param EntityManagerInterface $entityManager       The entity manager.
+     * @param ObjectEntityService    $objectEntityService The object entity service.
+     */
+    public function __construct(private readonly Collection $collection, private readonly MongoDbDatabase $database, private readonly string $name, private readonly EntityManagerInterface $entityManager, private readonly ObjectEntityService $objectEntityService)
+    {
 
-    private Collection $collection;
-
-    private string $name;
-
-    private MongoDbDatabase $database;
+    }//end __construct()
 
     /**
      * Uses given $search string to add a filter on all properties to the existing $filter array.
@@ -522,38 +527,45 @@ class MongoDbCollection implements CollectionInterface
 
     }//end addOwnerOrgFilter()
 
-    public function __construct(Collection $collection, MongoDbDatabase $database, string $name, private readonly EntityManagerInterface $entityManager, private readonly ObjectEntityService $objectEntityService)
-    {
-        $this->collection = $collection;
-        $this->name       = $name;
-        $this->database   = $database;
-
-    }//end __construct()
-
+    /**
+     * @inheritDoc
+     */
     public function aggregate(array $pipeline, array $options = []): \Iterator
     {
         return $this->collection->aggegrate($pipeline, $options);
 
     }//end aggregate()
 
+    /**
+     * @inheritDoc
+     */
     public function count(array $filter = [], array $options = []): int
     {
         return $this->collection->count($filter, $options);
 
     }//end count()
 
+    /**
+     * @inheritDoc
+     */
     public function createIndex(object|array $key, array $options = []): string
     {
         return $this->collection->createIndex($key, $options);
 
     }//end createIndex()
 
+    /**
+     * @inheritDoc
+     */
     public function createSearchIndex(object|array $definition, array $options = []): string
     {
         return $this->collection->createSearchIndex($definition, $options);
 
     }//end createSearchIndex()
 
+    /**
+     * @inheritDoc
+     */
     public function find(array $filter = [], array $options = []): \Iterator
     {
         if ($this->database->getName() !== 'objects') {
@@ -576,18 +588,27 @@ class MongoDbCollection implements CollectionInterface
 
     }//end find()
 
+    /**
+     * @inheritDoc
+     */
     public function findOne(array $filter = [], array $options = []): array|null|object
     {
         return $this->collection->findOne($filter, $options);
 
     }//end findOne()
 
+    /**
+     * @inheritDoc
+     */
     public function findOneAndDelete(array $filter = [], array $options = []): array|null|object
     {
         return $this->collection->findOneAndDelete($filter, $options);
 
     }//end findOneAndDelete()
 
+    /**
+     * @inheritDoc
+     */
     public function findOneAndReplace(object|array $filter, object|array $replacement, array $options = []): array|null|object
     {
         return $this->collection->findOneAndReplace($filter, $replacement, $options);
