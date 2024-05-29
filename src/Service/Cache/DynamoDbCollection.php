@@ -12,14 +12,14 @@ class DynamoDbCollection implements CollectionInterface
     private function createInFilter(array $values, string $key, array &$expressionAttributeNames = [], array &$expressionAttributeValues = []): string
     {
         $expressionAttributeNames["#$key"] = $key;
-        $value = $this->toDynamoDbArray($values);
+        $value                             = $this->toDynamoDbArray($values);
 
         $expressionString = "#$key IN (";
 
         $i = 0;
         foreach ($values as $k => $value) {
             $expressionAttributeValues[":$key$i"] = $value;
-            $expressionString .= ":$key$i";
+            $expressionString                    .= ":$key$i";
             if (array_key_last($values) !== $k) {
                 $expressionString .= ',';
                 $i++;
@@ -29,7 +29,8 @@ class DynamoDbCollection implements CollectionInterface
         }
 
         return $expressionString;
-    }
+
+    }//end createInFilter()
 
     private function convertFilters(array $filter, string $append = 'AND', array &$expressionAttributeNames = [], array &$expressionAttributeValues = []): string
     {
@@ -37,19 +38,18 @@ class DynamoDbCollection implements CollectionInterface
 
         foreach ($filter as $key => $value) {
             if ($key === '$or') {
-                $expressionString .= '(' .
-                    $this->convertFilters(
-                        filter: $value,
-                        append: 'OR',
-                        expressionAttributeNames: $expressionAttributeNames,
-                        expressionAttributeValues: $expressionAttributeValues)
-                    . ')';
+                $expressionString .= '('.$this->convertFilters(
+                    filter: $value,
+                    append: 'OR',
+                    expressionAttributeNames: $expressionAttributeNames,
+                    expressionAttributeValues: $expressionAttributeValues
+                ).')';
             } else if ($key === '$and') {
-                $expressionString .= '(' . $this->convertFilters(
-                        filter: $value,
-                        expressionAttributeNames: $expressionAttributeNames,
-                        expressionAttributeValues: $expressionAttributeValues)
-                    . ')';
+                $expressionString .= '('.$this->convertFilters(
+                    filter: $value,
+                    expressionAttributeNames: $expressionAttributeNames,
+                    expressionAttributeValues: $expressionAttributeValues
+                ).')';
             } else if (is_array($value) && isset($value['$in'])) {
                 $expressionString .= $this->createInFilter(
                     values: $value['$in'],
@@ -58,17 +58,17 @@ class DynamoDbCollection implements CollectionInterface
                     expressionAttributeValues: $expressionAttributeValues
                 );
             } else if (is_array($value)) {
-                $expressionString .= '(' . $this->convertFilters(
-                        filter: $value,
-                        append: $append,
-                        expressionAttributeNames: $expressionAttributeNames,
-                        expressionAttributeValues: $expressionAttributeValues)
-                    . ')';
+                $expressionString .= '('.$this->convertFilters(
+                    filter: $value,
+                    append: $append,
+                    expressionAttributeNames: $expressionAttributeNames,
+                    expressionAttributeValues: $expressionAttributeValues
+                ).')';
             } else {
-                
-            }
-        }
-    }
+            }//end if
+        }//end foreach
+
+    }//end convertFilters()
 
     /**
      * @inheritDoc
@@ -76,6 +76,7 @@ class DynamoDbCollection implements CollectionInterface
     public function aggregate(array $pipeline, array $options = []): \Iterator
     {
         // TODO: Implement aggregate() method.
+
     }//end aggregate()
 
     /**
@@ -84,6 +85,7 @@ class DynamoDbCollection implements CollectionInterface
     public function count(array $filter = [], array $options = []): int
     {
         // TODO: Implement count() method.
+
     }//end count()
 
     /**
@@ -92,6 +94,7 @@ class DynamoDbCollection implements CollectionInterface
     public function createIndex(object $key, array $options = []): string
     {
         // TODO: Implement createIndex() method.
+
     }//end createIndex()
 
     /**
@@ -100,6 +103,7 @@ class DynamoDbCollection implements CollectionInterface
     public function createSearchIndex(object|array $definition, array $options = []): string
     {
         // TODO: Implement createSearchIndex() method.
+
     }//end createSearchIndex()
 
     /**
@@ -108,6 +112,7 @@ class DynamoDbCollection implements CollectionInterface
     public function find(array $filter = [], array $options = []): \Iterator
     {
         // TODO: Implement find() method.
+
     }//end find()
 
     /**
@@ -117,9 +122,9 @@ class DynamoDbCollection implements CollectionInterface
     {
         $result = $this->database->getClient()->getConnection()->getItem(
             [
-                'TableName' => $this->database->getName(),
+                'TableName'      => $this->database->getName(),
                 'ConsistentRead' => true,
-                'Key' => ['_id' => ['S' => $filter['_id']]],
+                'Key'            => ['_id' => ['S' => $filter['_id']]],
             ]
         );
 
@@ -135,7 +140,7 @@ class DynamoDbCollection implements CollectionInterface
         $result = $this->database->getClient()->getConnection()->deleteItem(
             [
                 'TableName' => $this->database->getName(),
-                'Key' => ['_id' => ['S' => $filter['_id']]],
+                'Key'       => ['_id' => ['S' => $filter['_id']]],
             ]
         );
 
@@ -144,7 +149,7 @@ class DynamoDbCollection implements CollectionInterface
     }//end findOneAndDelete()
 
     /**
-     * @param array $array
+     * @param  array $array
      * @return array
      */
     private function toDynamoDbArray(array $array): array
@@ -178,7 +183,7 @@ class DynamoDbCollection implements CollectionInterface
         $result = $this->database->getClient()->getConnection()->putItem(
             [
                 'TableName' => $this->database->getName(),
-                'Item' => $replacement,
+                'Item'      => $replacement,
             ]
         );
 
