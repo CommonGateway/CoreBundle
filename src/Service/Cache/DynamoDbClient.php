@@ -9,6 +9,7 @@ class DynamoDbClient implements ClientInterface
 {
 
     private \Aws\DynamoDb\DynamoDbClient $connection;
+
     private array $databases = [];
 
     public function __construct(Database $database)
@@ -17,15 +18,19 @@ class DynamoDbClient implements ClientInterface
         $key         = $explodedUri[0];
         $region      = $explodedUri[1];
 
-        $dynamoDbConnection = new \Aws\DynamoDb\DynamoDbClient([[
-            'key'    => $key,
-            'secret' => $database->getAuth(),
-            'region' => $region,
-        ]]);
+        $dynamoDbConnection = new \Aws\DynamoDb\DynamoDbClient(
+            [
+                [
+                    'key'    => $key,
+                    'secret' => $database->getAuth(),
+                    'region' => $region,
+                ],
+            ]
+        );
 
         $this->connection = $dynamoDbConnection;
-    }
 
+    }//end __construct()
 
     public function __get(string $databaseName): DatabaseInterface
     {
@@ -35,22 +40,24 @@ class DynamoDbClient implements ClientInterface
 
         $tables = $this->connection->listTables()['TableNames'];
 
-        if(in_array(needle: $databaseName, array: $tables) === false) {
-            $this->connection->createTable([
-                'TableName'            => $databaseName,
-                'AttributeDefinitions' => [
-                    [
-                        'AttributeName' => '_id',
-                        'AttributeType' => 'S'
-                    ]
-                ],
-                'KeySchema'             => [
-                    [
-                        'AttributeName' => '_id',
-                        'KeyType'       => 'HASH'
-                    ]
+        if (in_array(needle: $databaseName, array: $tables) === false) {
+            $this->connection->createTable(
+                [
+                    'TableName'            => $databaseName,
+                    'AttributeDefinitions' => [
+                        [
+                            'AttributeName' => '_id',
+                            'AttributeType' => 'S',
+                        ],
+                    ],
+                    'KeySchema'            => [
+                        [
+                            'AttributeName' => '_id',
+                            'KeyType'       => 'HASH',
+                        ],
+                    ],
                 ]
-            ]);
+            );
         }
 
         $this->databases[$databaseName] = $database = new DynamoDbDatabase($this, $databaseName);
@@ -64,5 +71,4 @@ class DynamoDbClient implements ClientInterface
         return $this->connection;
 
     }//end getConnection()
-
-}
+}//end class

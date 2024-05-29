@@ -14,14 +14,13 @@ class DynamoDbDatabase implements DatabaseInterface
     public function __construct(DynamoDbClient $client, string $name)
     {
         $this->client = $client;
-        $this->name = $name;
+        $this->name   = $name;
 
     }//end __construct()
 
     /**
      * @inheritDoc
      */
-
     public function __get(string $collectionName): CollectionInterface
     {
         if (isset($this->collections[$collectionName]) === true) {
@@ -33,14 +32,16 @@ class DynamoDbDatabase implements DatabaseInterface
         return $collection;
 
     }//end __get()
-    
+
     public function getClient(): DynamoDbClient
     {
         return $this->client;
-    }
-    
+
+    }//end getClient()
+
     public function getName(): string
     {
         return $this->name;
-    }
-}
+
+    }//end getName()
+}//end class
