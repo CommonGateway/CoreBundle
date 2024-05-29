@@ -1256,7 +1256,7 @@ class CacheService
             }
         } else if ($collection instanceof ElasticSearchCollection === true) {
             unset($completeFilter['_queries']);
-            $result = $collection->aggregate([$completeFilter, $queries]);
+            $result = $collection->aggregate([$completeFilter, $queries])->toArray();
         }
 
         return $result;
