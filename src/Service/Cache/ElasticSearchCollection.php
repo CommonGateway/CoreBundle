@@ -38,16 +38,17 @@ class ElasticSearchCollection implements CollectionInterface
 
     /**
      * @param ElasticSearchDatabase $database The elasticSearch Database used.
-     * @param string $name The name of the collection.
+     * @param string                $name     The name of the collection.
      */
     public function __construct(private readonly ElasticSearchDatabase $database, private readonly string $name)
     {
+
     }//end __construct()
 
     /**
      * Rename the items in an aggregation bucket according to the response standard for aggregations.
      *
-     * @param  array $bucketItem The item to rewrite
+     * @param array $bucketItem The item to rewrite
      *
      * @return array The rewritten array.
      */
@@ -63,7 +64,7 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Map aggregation results to comply to the existing standard for aggregation results.
      *
-     * @param  array $result The result to map.
+     * @param array $result The result to map.
      *
      * @return array The mapped result.
      */
@@ -103,13 +104,14 @@ class ElasticSearchCollection implements CollectionInterface
         $result = array_map([$this, 'mapAggregationResults'], $result['aggregations']);
 
         return new ArrayIterator($result);
+
     }//end aggregate()
 
     /**
      * Build filters that are analogue to the MongoDB $in filters.
      *
-     * @param  array  $values The values to put in the comparison.
-     * @param  string $field  The field that should have one of the values.
+     * @param array  $values The values to put in the comparison.
+     * @param string $field  The field that should have one of the values.
      *
      * @return array The resulting filter.
      */
@@ -128,9 +130,9 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Build the actual comparison (match, regex, range) for a filter.
      *
-     * @param  string            $key      The field for which the filter holds.
-     * @param  mixed             $value    The value that should be tested.
-     * @param  string|array|null $operator The operator that should be used to test the value.
+     * @param string            $key      The field for which the filter holds.
+     * @param mixed             $value    The value that should be tested.
+     * @param string|array|null $operator The operator that should be used to test the value.
      *
      * @return array[]|\array[][]|mixed[][]|\string[][]
      */
@@ -179,8 +181,8 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Build query for given filter.
      *
-     * @param  array $filter       The filter given.
-     * @param  bool  $directReturn Whether the function should return immediately after building the filter (instead of adding it to an array).
+     * @param array $filter       The filter given.
+     * @param bool  $directReturn Whether the function should return immediately after building the filter (instead of adding it to an array).
      *
      * @return array|array[]|\array[][]|mixed|\mixed[][]|\string[][] The resulting query.
      */
@@ -247,7 +249,7 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Handle pagination for search results.
      *
-     * @param  array $filters The raw filter array.
+     * @param array $filters The raw filter array.
      *
      * @return array The processed pagination parameters.
      */
@@ -350,7 +352,7 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Formats results to existing response standard.
      *
-     * @param  array $hit The hit to format.
+     * @param array $hit The hit to format.
      *
      * @return array The reformatted hit.
      */
@@ -452,7 +454,7 @@ class ElasticSearchCollection implements CollectionInterface
 
                 $result = $connection->update(params: $parameters);
             } else {
-                $result =[];
+                $result = [];
             }
         } catch (Missing404Exception $exception) {
             $parameters = [

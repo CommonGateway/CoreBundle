@@ -20,13 +20,12 @@ use Ramsey\Uuid\Uuid;
  */
 class MongoDbCollection implements CollectionInterface
 {
-
     /**
-     * @param Collection $collection The MongoDB Collection.
-     * @param MongoDbDatabase $database The database above the collection.
-     * @param string $name The name of the collection.
-     * @param EntityManagerInterface $entityManager The entity manager.
-     * @param ObjectEntityService $objectEntityService The object entity service.
+     * @param Collection             $collection          The MongoDB Collection.
+     * @param MongoDbDatabase        $database            The database above the collection.
+     * @param string                 $name                The name of the collection.
+     * @param EntityManagerInterface $entityManager       The entity manager.
+     * @param ObjectEntityService    $objectEntityService The object entity service.
      */
     public function __construct(private readonly Collection $collection, private readonly MongoDbDatabase $database, private readonly string $name, private readonly EntityManagerInterface $entityManager, private readonly ObjectEntityService $objectEntityService)
     {
