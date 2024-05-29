@@ -17,19 +17,21 @@ use MongoDB\Database;
  */
 class MongoDbDatabase implements DatabaseInterface
 {
+
     /**
      * @var array collections known by the database.
      */
     private array $collections = [];
 
     /**
-     * @param Database $database The MongoDB Database.
-     * @param string $name The name of the database.
-     * @param EntityManagerInterface $entityManager The entity manager.
-     * @param ObjectEntityService $objectEntityService The object entity service.
+     * @param Database               $database            The MongoDB Database.
+     * @param string                 $name                The name of the database.
+     * @param EntityManagerInterface $entityManager       The entity manager.
+     * @param ObjectEntityService    $objectEntityService The object entity service.
      */
     public function __construct(private readonly Database $database, private readonly string $name, private readonly EntityManagerInterface $entityManager, private readonly ObjectEntityService $objectEntityService)
     {
+
     }//end __construct()
 
     /**

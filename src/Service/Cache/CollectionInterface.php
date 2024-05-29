@@ -42,8 +42,8 @@ interface CollectionInterface
     /**
      * Create a search index.
      *
-     * @param array|object $definition The definition of the search index.
-     * @param array        $options    Options to run in building the index.
+     * @param  array|object $definition The definition of the search index.
+     * @param  array        $options    Options to run in building the index.
      * @return string
      */
     public function createSearchIndex(array|object $definition, array $options = []): string;
@@ -60,8 +60,8 @@ interface CollectionInterface
     /**
      * Finds one object matching filter (usually _id)
      *
-     * @param array $filter The filters used in filtering results.
-     * @param array $options Options for calculating the results.
+     * @param  array $filter  The filters used in filtering results.
+     * @param  array $options Options for calculating the results.
      * @return array|object|null
      */
     public function findOne(array $filter = [], array $options = []): array | null | object;
@@ -69,8 +69,8 @@ interface CollectionInterface
     /**
      * Finds one object (by _id) and delete it.
      *
-     * @param array $filter The filters used in filtering results.
-     * @param array $options Options for calculating the results.
+     * @param  array $filter  The filters used in filtering results.
+     * @param  array $options Options for calculating the results.
      * @return array|object|null
      */
     public function findOneAndDelete(array $filter = [], array $options = []): array|null|object;
