@@ -9,14 +9,18 @@ use App\Entity\ObjectEntity;
 use App\Entity\Organization;
 use App\Entity\User;
 use App\Service\ApplicationService;
+use CommonGateway\CoreBundle\Service\Cache\ClientInterface;
+use CommonGateway\CoreBundle\Service\Cache\ElasticSearchClient;
+use CommonGateway\CoreBundle\Service\Cache\ElasticSearchCollection;
+use CommonGateway\CoreBundle\Service\Cache\MongoDbCollection;
 use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use MongoDB\BSON\UTCDateTime;
-use MongoDB\Client;
-use MongoDB\Collection;
+use CommonGateway\CoreBundle\Service\Cache\MongoDbClient as Client;
+use CommonGateway\CoreBundle\Service\Cache\CollectionInterface as Collection;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
@@ -51,7 +55,7 @@ class CacheService
     /**
      * @var Client
      */
-    private Client $objectsClient;
+    private ClientInterface $objectsClient;
 
     /**
      * @var EntityManagerInterface
@@ -127,7 +131,7 @@ class CacheService
         $this->objectEntityService = $objectEntityService;
         $this->session             = $session;
         if ($this->parameters->get('cache_url', false)) {
-            $this->client = new Client($this->parameters->get('cache_url'));
+            $this->client = new Client($this->parameters->get('cache_url'), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
         }
 
         $this->filesystem = new Filesystem();
@@ -156,8 +160,12 @@ class CacheService
             $this->logger->warning('Cannot determine tennant from application: '.$e->getMessage());
         }
 
-        if ($organization !== null && $organization->getDatabase() !== null) {
-            $this->objectsClient = new Client($organization->getDatabase()->getUri());
+        if ($organization !== null && $organization->getDatabase() !== null && $organization->getDatabase()->getType() === 'mongodb') {
+            $this->objectsClient = new Client($organization->getDatabase()->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
+        }
+
+        if ($organization !== null && $organization->getDatabase() !== null && $organization->getDatabase()->getType() === 'elasticsearch') {
+            $this->objectsClient = new ElasticSearchClient($organization->getDatabase()->getUri(), $organization->getDatabase()->getAuth());
         }
 
     }//end setObjectClient()
@@ -195,7 +203,7 @@ class CacheService
         isset($this->style) === true && $this->style->section('Cleaning Object\'s');
         $objectDatabases = $this->entityManager->getRepository(Database::class)->findAll();
         foreach ($objectDatabases as $database) {
-            $objectsClient = new Client($database->getUri());
+            $objectsClient = new Client($database->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
             $collection    = $objectsClient->objects->json;
 
             $filter  = [];
@@ -354,7 +362,7 @@ class CacheService
         $objectDatabases = $this->entityManager->getRepository(Database::class)->findAll();
         if (isset($config['objects']) === false || $config['objects'] !== true) {
             foreach ($objectDatabases as $database) {
-                $objectsClient = new Client($database->getUri());
+                $objectsClient = new Client($database->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
 
                 $objectsClient->objects->json->createIndex(['$**' => 'text']);
 
@@ -446,7 +454,7 @@ class CacheService
             $collection = $this->objectsClient->objects->json;
         } else if ($objectEntity->getOrganization() !== null && $objectEntity->getOrganization()->getDatabase() !== null) {
             $database      = $objectEntity->getOrganization()->getDatabase();
-            $objectsClient = new Client($database->getUri());
+            $objectsClient = new Client($database->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
             $collection    = $objectsClient->objects->json;
         } else if (isset($this->client) === true) {
             $collection = $this->client->objects->json;
@@ -547,7 +555,7 @@ class CacheService
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
         } else if ($objectEntity->getOrganization() !== null && $objectEntity->getOrganization()->getDatabase() !== null) {
-            $objectsClient = new Client($objectEntity->getOrganization()->getDatabase()->getUri());
+            $objectsClient = new Client($objectEntity->getOrganization()->getDatabase()->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
             $collection    = $objectsClient->objects->json;
         } else if (isset($this->client) === true) {
             $collection = $this->client->objects->json;
@@ -588,7 +596,7 @@ class CacheService
         } else {
             $objectEntity = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['id' => $identification]);
             if ($objectEntity !== null && $objectEntity->getOrganization() !== null && $objectEntity->getOrganization()->getDatabase() !== null) {
-                $objectsClient = new Client($objectEntity->getOrganization()->getDatabase()->getUri());
+                $objectsClient = new Client($objectEntity->getOrganization()->getDatabase()->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
                 $collection    = $objectsClient->objects->json;
             } else if (isset($this->client) === true) {
                 $collection = $this->client->objects->json;
@@ -1076,7 +1084,6 @@ class CacheService
      */
     public function retrieveObjectsFromCache(array $filter, ?array $options = null, array $completeFilter = []): array
     {
-        $filter = $this->addOwnerOrgFilter($filter);
 
         $this->session->set('mongoDBFilter', $filter);
 
@@ -1087,6 +1094,10 @@ class CacheService
             $collection = $this->client->objects->json;
         } else {
             return [];
+        }
+
+        if ($completeFilter === []) {
+            $completeFilter = $filter;
         }
 
         $total = $this->countObjectsInCache($filter);
@@ -1116,13 +1127,7 @@ class CacheService
         }
 
         $completeFilter = [];
-        $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
-        if ($filterParse !== null) {
-            return $filterParse;
-        }
-
-        // Let's see if we need a search
-        $this->handleSearch($filter, $completeFilter, $search);
+        $this->handleEntities($filter, $completeFilter, $entities);
 
         // Limit & Start for pagination.
         $this->setPagination($limit, $start, $completeFilter);
@@ -1243,8 +1248,13 @@ class CacheService
             return $result;
         }
 
-        foreach ($queries as $query) {
-            $result[$query] = $collection->aggregate([['$match' => $filter], ['$unwind' => "\${$query}"], ['$group' => ['_id' => "\${$query}", 'count' => ['$sum' => 1]]]])->toArray();
+        if ($collection instanceof MongoDbCollection === true) {
+            foreach ($queries as $query) {
+                $result[$query] = $collection->aggregate([['$match' => $filter], ['$unwind' => "\${$query}"], ['$group' => ['_id' => "\${$query}", 'count' => ['$sum' => 1]]]])->toArray();
+            }
+        } else if ($collection instanceof ElasticSearchCollection === true) {
+            unset($completeFilter['_queries']);
+            $result = $collection->aggregate([$completeFilter, $queries])->toArray();
         }
 
         return $result;

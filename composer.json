@@ -22,7 +22,7 @@
     }
   ],
   "require": {
-    "php": "^7.4.0 || ^8.0.0 || ^8.1.0 || ^8.2.0",
+    "php": "^8.2.0",
     "symfony/monolog-bundle": "^3.8",
     "ext-ctype": "*",
     "ext-fileinfo": "*",
@@ -38,6 +38,7 @@
     "doctrine/doctrine-fixtures-bundle": "^3.2",
     "doctrine/orm": "^2.14",
     "dompdf/dompdf": "^2",
+    "elasticsearch/elasticsearch": "*",
     "endroid/qr-code-bundle": "^3.4",
     "guzzlehttp/guzzle": "^6.5.8 | ^7.5",
     "guzzlehttp/psr7": "1.9 | ^2.4",
