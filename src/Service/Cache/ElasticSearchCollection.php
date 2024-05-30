@@ -249,25 +249,26 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Sets the correct sort-parameters by reading _order filters.
      *
-     * @param array $filters The given filter array for the request
-     * @param array $body    The request body before adding sorts.
+     * @param  array $filters The given filter array for the request
+     * @param  array $body    The request body before adding sorts.
      * @return array The request body after adding sorts.
      */
     private function handleOrder(array &$filters, array $body): array
     {
-        if(isset($filters['_order']) === false) {
+        if (isset($filters['_order']) === false) {
             return $body;
         }
 
         $order = $filters['_order'];
         unset($filters['_order']);
 
-        foreach($order as $key => $value) {
+        foreach ($order as $key => $value) {
             $body['sort'][$key] = ['order' => $value];
         }
 
         return $body;
-    }
+
+    }//end handleOrder()
 
     /**
      * Handle pagination for search results.
