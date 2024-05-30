@@ -247,6 +247,30 @@ class ElasticSearchCollection implements CollectionInterface
     }//end buildQuery()
 
     /**
+     * Sets the correct sort-parameters by reading _order filters.
+     *
+     * @param  array $filters The given filter array for the request
+     * @param  array $body    The request body before adding sorts.
+     * @return array The request body after adding sorts.
+     */
+    private function handleOrder(array &$filters, array $body): array
+    {
+        if (isset($filters['_order']) === false) {
+            return $body;
+        }
+
+        $order = $filters['_order'];
+        unset($filters['_order']);
+
+        foreach ($order as $key => $value) {
+            $body['sort'][$key] = ['order' => $value];
+        }
+
+        return $body;
+
+    }//end handleOrder()
+
+    /**
      * Handle pagination for search results.
      *
      * @param array $filters The raw filter array.
@@ -287,6 +311,7 @@ class ElasticSearchCollection implements CollectionInterface
     private function generateSearchBody(array $filter): array
     {
         $body = $this->handlePagination(filters: $filter);
+        $body = $this->handleOrder(filters: $filter, body: $body);
 
         $query = $this->buildQuery(filter: $filter);
 
@@ -318,7 +343,7 @@ class ElasticSearchCollection implements CollectionInterface
 
         $body = $this->generateSearchBody(filter: $filter);
 
-        unset($body['size'], $body['from']);
+        unset($body['size'], $body['from'], $body['sort']);
 
         $parameters = [
             'index' => $this->database->getName(),

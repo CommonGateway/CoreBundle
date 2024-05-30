@@ -1100,6 +1100,8 @@ class CacheService
             $completeFilter = $filter;
         }
 
+        $filter = $this->addOwnerOrgFilter($filter);
+
         $total = $this->countObjectsInCache($filter);
 
         $results = $collection->find($filter, $options)->toArray();
@@ -1157,7 +1159,6 @@ class CacheService
      */
     public function countObjectsInCache(array $filter): int
     {
-        $filter = $this->addOwnerOrgFilter($filter);
 
         $this->session->set('mongoDBFilter', $filter);
 
