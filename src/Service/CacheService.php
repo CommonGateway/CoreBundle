@@ -21,8 +21,6 @@ use Exception;
 use MongoDB\BSON\UTCDateTime;
 use CommonGateway\CoreBundle\Service\Cache\MongoDbClient as Client;
 use CommonGateway\CoreBundle\Service\Cache\CollectionInterface as Collection;
-// use MongoDB\Client;
-// use MongoDB\Collection;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;

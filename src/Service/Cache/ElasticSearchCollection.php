@@ -328,7 +328,6 @@ class ElasticSearchCollection implements CollectionInterface
         $result = $connection->count(params: $parameters);
 
         return $result['count'];
-        // TODO: Implement count() method.
     }//end count()
 
     /**
