@@ -283,7 +283,7 @@ class CacheService
 
         // Backwards compatablity.
         if (((isset($config['schemas']) === false || $config['schemas'] !== true)
-            || (isset($config['endpoints']) === false || $config['endpoints'] !== true))
+                || (isset($config['endpoints']) === false || $config['endpoints'] !== true))
             && isset($this->client) === false
         ) {
             isset($this->style) === true && $this->style->writeln('No cache client found, halting warmup');
@@ -1100,6 +1100,8 @@ class CacheService
             $completeFilter = $filter;
         }
 
+        $filter = $this->addOwnerOrgFilter($filter);
+
         $total = $this->countObjectsInCache($filter);
 
         $results = $collection->find($filter, $options)->toArray();
@@ -1157,7 +1159,6 @@ class CacheService
      */
     public function countObjectsInCache(array $filter): int
     {
-        $filter = $this->addOwnerOrgFilter($filter);
 
         $this->session->set('mongoDBFilter', $filter);
 
