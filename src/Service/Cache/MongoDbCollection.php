@@ -382,6 +382,10 @@ class MongoDbCollection implements CollectionInterface
      */
     private function handleFilter($key, &$value)
     {
+        if ($key === '$and') {
+            return;
+        }
+
         if (substr($key, 0, 1) == '_') {
             // @Todo: deal with filters starting with _ like: _dateCreated.
         }
@@ -580,8 +584,6 @@ class MongoDbCollection implements CollectionInterface
 
         // Let's see if we need a search
         $this->handleSearch($filter, $completeFilter);
-
-        $filter = $this->addOwnerOrgFilter($filter);
 
         // var_dump($filter);
         return $this->collection->find($filter, $options);
