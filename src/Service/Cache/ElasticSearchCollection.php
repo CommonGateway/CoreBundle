@@ -320,7 +320,7 @@ class ElasticSearchCollection implements CollectionInterface
                 $query['bool']['must'][][$key] = $value;
                 unset($query[$key]);
             } else if ($key === 'must' || $key === 'should') {
-                $query['bool']['must'][0]['bool']['must'][0]['bool'][$key] = $value;
+                $query['bool'][$key] = $value;
                 unset($query[$key]);
             } else if (is_array(value: $value) === true && is_int(value: $key)) {
                 $query['bool']['must'][] = $value;
