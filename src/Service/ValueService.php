@@ -268,8 +268,6 @@ class ValueService
                 $value->removeObject($subObject);
                 $this->entityManager->remove($subObject);
             }
-
-            $this->entityManager->flush();
         }
 
     }//end cascadeDeleteSubObjects()

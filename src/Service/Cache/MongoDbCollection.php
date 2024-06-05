@@ -536,7 +536,7 @@ class MongoDbCollection implements CollectionInterface
      */
     public function aggregate(array $pipeline, array $options = []): \Iterator
     {
-        return $this->collection->aggegrate($pipeline, $options);
+        return $this->collection->aggregate($pipeline, $options);
 
     }//end aggregate()
 
