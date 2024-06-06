@@ -170,7 +170,7 @@ class CacheService
 
         return null;
 
-    }//end setObjectClient()
+    }//end getObjectClient()
 
     /**
      * Set symfony style in order to output to the console.
@@ -453,7 +453,7 @@ class CacheService
 
         $objectsClient = $this->getObjectClient();
         if ($objectsClient !== null) {
-            $collection    = $objectsClient->objects->json;
+            $collection = $objectsClient->objects->json;
         } else if ($objectEntity->getOrganization() !== null && $objectEntity->getOrganization()->getDatabase() !== null) {
             $objectsClient = $this->getObjectClient($objectEntity->getOrganization()->getDatabase());
             $collection    = $objectsClient->objects->json;
@@ -554,7 +554,7 @@ class CacheService
     {
         $objectsClient = $this->getObjectClient();
         if ($objectsClient !== null) {
-            $collection    = $objectsClient->objects->json;
+            $collection = $objectsClient->objects->json;
         } else if ($objectEntity->getOrganization() !== null && $objectEntity->getOrganization()->getDatabase() !== null) {
             $objectsClient = $this->getObjectClient($objectEntity->getOrganization()->getDatabase());
             $collection    = $objectsClient->objects->json;
@@ -594,7 +594,7 @@ class CacheService
 
         $objectsClient = $this->getObjectClient();
         if ($objectsClient !== null) {
-            $collection    = $objectsClient->objects->json;
+            $collection = $objectsClient->objects->json;
         } else {
             $objectEntity = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['id' => $identification]);
             if ($objectEntity !== null && $objectEntity->getOrganization() !== null && $objectEntity->getOrganization()->getDatabase() !== null) {
@@ -1090,7 +1090,7 @@ class CacheService
         $this->session->set('mongoDBFilter', $filter);
         $objectsClient = $this->getObjectClient();
         if ($objectsClient !== null) {
-            $collection    = $objectsClient->objects->json;
+            $collection = $objectsClient->objects->json;
         } else if (isset($this->client) === true) {
             $collection = $this->client->objects->json;
         } else {
@@ -1164,7 +1164,7 @@ class CacheService
         $this->session->set('mongoDBFilter', $filter);
         $objectsClient = $this->getObjectClient();
         if ($objectsClient !== null) {
-            $collection    = $objectsClient->objects->json;
+            $collection = $objectsClient->objects->json;
         } else if (isset($this->client) === true) {
             $collection = $this->client->objects->json;
         } else {
@@ -1243,7 +1243,7 @@ class CacheService
 
         $objectsClient = $this->getObjectClient();
         if ($objectsClient !== null) {
-            $collection    = $objectsClient->objects->json;
+            $collection = $objectsClient->objects->json;
         } else if (isset($this->client) === true) {
             $collection = $this->client->objects->json;
         } else {
