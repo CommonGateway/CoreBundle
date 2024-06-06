@@ -19,7 +19,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use MongoDB\BSON\UTCDateTime;
-use CommonGateway\CoreBundle\Service\Cache\MongoDbClient as Client;
+use CommonGateway\CoreBundle\Service\Cache\MongoDbClient;
 use CommonGateway\CoreBundle\Service\Cache\CollectionInterface as Collection;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
@@ -48,14 +48,9 @@ class CacheService
 {
 
     /**
-     * @var Client
+     * @var MongoDbClient
      */
-    private Client $client;
-
-    /**
-     * @var Client
-     */
-    private ClientInterface $objectsClient;
+    private MongoDbClient $client;
 
     /**
      * @var EntityManagerInterface
@@ -131,7 +126,7 @@ class CacheService
         $this->objectEntityService = $objectEntityService;
         $this->session             = $session;
         if ($this->parameters->get('cache_url', false)) {
-            $this->client = new Client($this->parameters->get('cache_url'), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
+            $this->client = new MongoDbClient($this->parameters->get('cache_url'), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
         }
 
         $this->filesystem = new Filesystem();
@@ -143,10 +138,11 @@ class CacheService
      *
      * @return void
      */
-    private function setObjectClient()
+    private function getObjectClient(?Database $database = null): ?ClientInterface
     {
         $organization = null;
         $user         = $this->objectEntityService->findCurrentUser();
+
         if ($user !== null && $user->getOrganization() !== null) {
             $organization = $this->entityManager->getRepository(Organization::class)->find($user->getOrganization());
         }
@@ -160,13 +156,19 @@ class CacheService
             $this->logger->warning('Cannot determine tennant from application: '.$e->getMessage());
         }
 
-        if ($organization !== null && $organization->getDatabase() !== null && $organization->getDatabase()->getType() === 'mongodb') {
-            $this->objectsClient = new Client($organization->getDatabase()->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
+        if ($database === null && $organization !== null && $organization->getDatabase !== null) {
+            $database = $organization->getDatabase();
         }
 
-        if ($organization !== null && $organization->getDatabase() !== null && $organization->getDatabase()->getType() === 'elasticsearch') {
-            $this->objectsClient = new ElasticSearchClient($organization->getDatabase()->getUri(), $organization->getDatabase()->getAuth());
+        if ($database->getType() === 'mongodb') {
+            return new MongoDbClient($organization->getDatabase()->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
         }
+
+        if ($database->getType() === 'elasticsearch') {
+            return new ElasticSearchClient($organization->getDatabase()->getUri(), $organization->getDatabase()->getAuth());
+        }
+
+        return null;
 
     }//end setObjectClient()
 
@@ -203,7 +205,7 @@ class CacheService
         isset($this->style) === true && $this->style->section('Cleaning Object\'s');
         $objectDatabases = $this->entityManager->getRepository(Database::class)->findAll();
         foreach ($objectDatabases as $database) {
-            $objectsClient = new Client($database->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
+            $objectsClient = new MongoDbClient($database->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
             $collection    = $objectsClient->objects->json;
 
             $filter  = [];
@@ -362,7 +364,7 @@ class CacheService
         $objectDatabases = $this->entityManager->getRepository(Database::class)->findAll();
         if (isset($config['objects']) === false || $config['objects'] !== true) {
             foreach ($objectDatabases as $database) {
-                $objectsClient = new Client($database->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
+                $objectsClient = new MongoDbClient($database->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
 
                 $objectsClient->objects->json->createIndex(['$**' => 'text']);
 
@@ -449,12 +451,11 @@ class CacheService
             return $objectEntity;
         }
 
-        $this->setObjectClient();
-        if (isset($this->objectsClient) === true) {
-            $collection = $this->objectsClient->objects->json;
+        $objectsClient = $this->getObjectClient();
+        if ($objectsClient !== null) {
+            $collection    = $objectsClient->objects->json;
         } else if ($objectEntity->getOrganization() !== null && $objectEntity->getOrganization()->getDatabase() !== null) {
-            $database      = $objectEntity->getOrganization()->getDatabase();
-            $objectsClient = new Client($database->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
+            $objectsClient = $this->getObjectClient($objectEntity->getOrganization()->getDatabase());
             $collection    = $objectsClient->objects->json;
         } else if (isset($this->client) === true) {
             $collection = $this->client->objects->json;
@@ -551,11 +552,11 @@ class CacheService
      */
     public function removeObject(ObjectEntity $objectEntity, bool $softDelete = false): void
     {
-        $this->setObjectClient();
-        if (isset($this->objectsClient) === true) {
-            $collection = $this->objectsClient->objects->json;
+        $objectsClient = $this->getObjectClient();
+        if ($objectsClient !== null) {
+            $collection    = $objectsClient->objects->json;
         } else if ($objectEntity->getOrganization() !== null && $objectEntity->getOrganization()->getDatabase() !== null) {
-            $objectsClient = new Client($objectEntity->getOrganization()->getDatabase()->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
+            $objectsClient = $this->getObjectClient($objectEntity->getOrganization()->getDatabase());
             $collection    = $objectsClient->objects->json;
         } else if (isset($this->client) === true) {
             $collection = $this->client->objects->json;
@@ -590,13 +591,14 @@ class CacheService
      */
     public function getObject(string $identification, string $schema = null): ?array
     {
-        $this->setObjectClient();
-        if (isset($this->objectsClient) === true) {
-            $collection = $this->objectsClient->objects->json;
+
+        $objectsClient = $this->getObjectClient();
+        if ($objectsClient !== null) {
+            $collection    = $objectsClient->objects->json;
         } else {
             $objectEntity = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['id' => $identification]);
             if ($objectEntity !== null && $objectEntity->getOrganization() !== null && $objectEntity->getOrganization()->getDatabase() !== null) {
-                $objectsClient = new Client($objectEntity->getOrganization()->getDatabase()->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
+                $objectsClient = $this->getObjectClient($objectEntity->getOrganization()->getDatabase());
                 $collection    = $objectsClient->objects->json;
             } else if (isset($this->client) === true) {
                 $collection = $this->client->objects->json;
@@ -1086,10 +1088,9 @@ class CacheService
     {
 
         $this->session->set('mongoDBFilter', $filter);
-
-        $this->setObjectClient();
-        if (isset($this->objectsClient) === true) {
-            $collection = $this->objectsClient->objects->json;
+        $objectsClient = $this->getObjectClient();
+        if ($objectsClient !== null) {
+            $collection    = $objectsClient->objects->json;
         } else if (isset($this->client) === true) {
             $collection = $this->client->objects->json;
         } else {
@@ -1161,10 +1162,9 @@ class CacheService
     {
 
         $this->session->set('mongoDBFilter', $filter);
-
-        $this->setObjectClient();
-        if (isset($this->objectsClient) === true) {
-            $collection = $this->objectsClient->objects->json;
+        $objectsClient = $this->getObjectClient();
+        if ($objectsClient !== null) {
+            $collection    = $objectsClient->objects->json;
         } else if (isset($this->client) === true) {
             $collection = $this->client->objects->json;
         } else {
@@ -1240,9 +1240,10 @@ class CacheService
         $this->handleSearch($filter, $completeFilter, null);
 
         $result = [];
-        $this->setObjectClient();
-        if (isset($this->objectsClient) === true) {
-            $collection = $this->objectsClient->objects->json;
+
+        $objectsClient = $this->getObjectClient();
+        if ($objectsClient !== null) {
+            $collection    = $objectsClient->objects->json;
         } else if (isset($this->client) === true) {
             $collection = $this->client->objects->json;
         } else {
