@@ -29,15 +29,14 @@ class ElasticSearchClient implements ClientInterface
     {
         $parsedUri = parse_url(url: $uri);
 
-        $uri = "{$parsedUri['scheme']}://{$parsedUri['host']}". (isset($parsedUri['port']) ? ":{$parsedUri['port']}" : "");
-
+        $uri = "{$parsedUri['scheme']}://{$parsedUri['host']}".(isset($parsedUri['port']) ? ":{$parsedUri['port']}" : "");
 
         $explodedApiKey = explode(':', \Safe\base64_decode($apiKey));
 
         $this->connection = ClientBuilder::create()->setHosts([$uri])->setApiKey($explodedApiKey[0], $explodedApiKey[1])->build();
 
-        if(isset($parsedUri['path']) === true) {
-            $databaseName = ltrim(string: $parsedUri['path'], characters: '/');
+        if (isset($parsedUri['path']) === true) {
+            $databaseName               = ltrim(string: $parsedUri['path'], characters: '/');
             $this->databases['objects'] = new ElasticSearchDatabase($this, $databaseName);
         }
 
