@@ -29,7 +29,7 @@ class ElasticSearchClient implements ClientInterface
     {
         $parsedUri = parse_url(url: $uri);
 
-        $uri = "{$parsedUri['scheme']}://{$parsedUri['host']}";
+        $uri = "{$parsedUri['scheme']}://{$parsedUri['host']}". (isset($parsedUri['port']) ? ":{$parsedUri['port']}" : "");
 
 
         $explodedApiKey = explode(':', \Safe\base64_decode($apiKey));
@@ -38,7 +38,7 @@ class ElasticSearchClient implements ClientInterface
 
         if(isset($parsedUri['path']) === true) {
             $databaseName = ltrim(string: $parsedUri['path'], characters: '/');
-            $this->databases[$databaseName] = new ElasticSearchDatabase($this, $databaseName);
+            $this->databases['objects'] = new ElasticSearchDatabase($this, $databaseName);
         }
 
     }//end __construct()

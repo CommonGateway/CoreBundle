@@ -1135,7 +1135,7 @@ class CacheService
         $this->setPagination($limit, $start, $completeFilter);
 
         // Order.
-        $order = isset($completeFilter['_order']) === true ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
+        $order = isset($filter['_order']) === true ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $filter['_order']) : [];
         if (empty($order) === false) {
             $order = array_map(
                 function ($value) {
