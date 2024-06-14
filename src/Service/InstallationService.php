@@ -1186,7 +1186,7 @@ class InstallationService
                 return null;
             }
         }
-        
+
         if (isset($endpointData['federationProxies']) === true) {
             $endpointData['federationProxies'] = $this->handleFederationProxies(federationProxyRefs: $endpointData['federationProxies']);
         }
@@ -1225,7 +1225,7 @@ class InstallationService
         return $endpoint;
 
     }//end createEndpoint()
-    
+
     /**
      * Will turn an array of source references into an array of the actual source objects.
      * This is needed in order to set the federationProxies of any federation endpoint.
@@ -1236,7 +1236,7 @@ class InstallationService
      */
     private function handleFederationProxies(array $federationProxyRefs): array
     {
-        $proxies = [];
+        $proxies           = [];
         $gatewayRepository = $this->entityManager->getRepository('App:Gateway');
         foreach ($federationProxyRefs as $sourceRef) {
             $source = $gatewayRepository->findOneBy(['reference' => $sourceRef]);
@@ -1244,9 +1244,10 @@ class InstallationService
                 $proxies[] = $source;
             }
         }
-        
+
         return $proxies;
-    }
+
+    }//end handleFederationProxies()
 
     /**
      * Constructs an Endpoint using the Endpoint constructor, but how the constructor is called depends on the $type.
