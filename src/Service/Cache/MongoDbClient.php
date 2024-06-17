@@ -6,6 +6,7 @@ use CommonGateway\CoreBundle\Service\Cache\ClientInterface;
 use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use Doctrine\ORM\EntityManagerInterface;
 use MongoDB\Client;
+use Psr\Log\LoggerInterface;
 
 /**
  * Client for MongoDB data storages
@@ -23,8 +24,14 @@ class MongoDbClient implements ClientInterface
 
     private array $databases = [];
 
-    public function __construct(string $uri, private readonly EntityManagerInterface $entityManager, private readonly ObjectEntityService $objectEntityService, array $uriOptions = [], array $driverOptions = [])
-    {
+    public function __construct(
+        string $uri,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly ObjectEntityService $objectEntityService,
+        private readonly LoggerInterface $cacheLogger,
+        array $uriOptions = [],
+        array $driverOptions = []
+    ) {
         $this->client = new Client(uri: $uri, uriOptions: $uriOptions, driverOptions: $driverOptions);
 
     }//end __construct()
@@ -42,7 +49,8 @@ class MongoDbClient implements ClientInterface
             database: $this->client->__get($databaseName),
             name: $databaseName,
             entityManager: $this->entityManager,
-            objectEntityService: $this->objectEntityService
+            objectEntityService: $this->objectEntityService,
+            cacheLogger: $this->cacheLogger
         );
 
         return $database;

@@ -8,6 +8,7 @@ use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use MongoDB\Collection;
+use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 
 /**
@@ -27,9 +28,16 @@ class MongoDbCollection implements CollectionInterface
      * @param string                 $name                The name of the collection.
      * @param EntityManagerInterface $entityManager       The entity manager.
      * @param ObjectEntityService    $objectEntityService The object entity service.
+     * @param LoggerInterface        $cacheLogger         The logger.
      */
-    public function __construct(private readonly Collection $collection, private readonly MongoDbDatabase $database, private readonly string $name, private readonly EntityManagerInterface $entityManager, private readonly ObjectEntityService $objectEntityService)
-    {
+    public function __construct(
+        private readonly Collection $collection,
+        private readonly MongoDbDatabase $database,
+        private readonly string $name,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly ObjectEntityService $objectEntityService,
+        private readonly LoggerInterface $cacheLogger
+    ) {
 
     }//end __construct()
 
@@ -63,7 +71,7 @@ class MongoDbCollection implements CollectionInterface
         foreach ($filter['_self.schema.id']['$in'] as $entityId) {
             $entityObject = $this->entityManager->getRepository(Entity::class)->find($entityId);
             if ($entityObject === null) {
-                $this->logger->error("Could not find an Entity with id = $entityId during handleSearch()");
+                $this->cacheLogger->error("Could not find an Entity with id = $entityId during handleSearch()");
                 continue;
             }
 
@@ -577,15 +585,13 @@ class MongoDbCollection implements CollectionInterface
             return $this->collection->find($filter, $options);
         }
 
-        $completeFilter = [];
-        $filterParse    = $this->parseFilter($filter, $completeFilter);
-        if ($filterParse !== null) {
-            return $filterParse;
-        }
-
+        // $completeFilter = [];
+        // $filterParse    = $this->parseFilter($filter, $completeFilter);
+        // if ($filterParse !== null) {
+        // return $filterParse;
+        // }
         // Let's see if we need a search
-        $this->handleSearch($filter, $completeFilter);
-
+        // $this->handleSearch($filter, $completeFilter);
         // var_dump($filter);
         return $this->collection->find($filter, $options);
 
