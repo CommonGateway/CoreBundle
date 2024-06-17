@@ -5,6 +5,7 @@ namespace CommonGateway\CoreBundle\Service\Cache;
 use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use Doctrine\ORM\EntityManagerInterface;
 use MongoDB\Database;
+use Psr\Log\LoggerInterface;
 
 /**
  * Database for MongoDB data storages
@@ -28,9 +29,15 @@ class MongoDbDatabase implements DatabaseInterface
      * @param string                 $name                The name of the database.
      * @param EntityManagerInterface $entityManager       The entity manager.
      * @param ObjectEntityService    $objectEntityService The object entity service.
+     * @param LoggerInterface        $cacheLogger              The logger.
      */
-    public function __construct(private readonly Database $database, private readonly string $name, private readonly EntityManagerInterface $entityManager, private readonly ObjectEntityService $objectEntityService)
-    {
+    public function __construct(
+        private readonly Database $database,
+        private readonly string $name,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly ObjectEntityService $objectEntityService,
+        private readonly LoggerInterface $cacheLogger
+    ) {
 
     }//end __construct()
 
@@ -48,7 +55,8 @@ class MongoDbDatabase implements DatabaseInterface
             database: $this,
             name: $collectionName,
             entityManager: $this->entityManager,
-            objectEntityService: $this->objectEntityService
+            objectEntityService: $this->objectEntityService,
+            cacheLogger: $this->cacheLogger
         );
 
         return $collection;

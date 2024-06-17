@@ -131,7 +131,7 @@ class CacheService
         $this->objectEntityService = $objectEntityService;
         $this->session             = $session;
         if ($this->parameters->get('cache_url', false)) {
-            $this->client = new Client($this->parameters->get('cache_url'), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
+            $this->client = new Client($this->parameters->get('cache_url'), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService, cacheLogger: $this->logger);
         }
 
         $this->filesystem = new Filesystem();
@@ -161,7 +161,7 @@ class CacheService
         }
 
         if ($organization !== null && $organization->getDatabase() !== null && $organization->getDatabase()->getType() === 'mongodb') {
-            $this->objectsClient = new Client($organization->getDatabase()->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
+            $this->objectsClient = new Client($organization->getDatabase()->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService, cacheLogger: $this->logger);
         }
 
         if ($organization !== null && $organization->getDatabase() !== null && $organization->getDatabase()->getType() === 'elasticsearch') {
@@ -203,7 +203,7 @@ class CacheService
         isset($this->style) === true && $this->style->section('Cleaning Object\'s');
         $objectDatabases = $this->entityManager->getRepository(Database::class)->findAll();
         foreach ($objectDatabases as $database) {
-            $objectsClient = new Client($database->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
+            $objectsClient = new Client($database->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService, cacheLogger: $this->logger);
             $collection    = $objectsClient->objects->json;
 
             $filter  = [];
@@ -362,7 +362,7 @@ class CacheService
         $objectDatabases = $this->entityManager->getRepository(Database::class)->findAll();
         if (isset($config['objects']) === false || $config['objects'] !== true) {
             foreach ($objectDatabases as $database) {
-                $objectsClient = new Client($database->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
+                $objectsClient = new Client($database->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService, cacheLogger: $this->logger);
 
                 $objectsClient->objects->json->createIndex(['$**' => 'text']);
 
@@ -454,7 +454,7 @@ class CacheService
             $collection = $this->objectsClient->objects->json;
         } else if ($objectEntity->getOrganization() !== null && $objectEntity->getOrganization()->getDatabase() !== null) {
             $database      = $objectEntity->getOrganization()->getDatabase();
-            $objectsClient = new Client($database->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
+            $objectsClient = new Client($database->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService, cacheLogger: $this->logger);
             $collection    = $objectsClient->objects->json;
         } else if (isset($this->client) === true) {
             $collection = $this->client->objects->json;
@@ -555,7 +555,7 @@ class CacheService
         if (isset($this->objectsClient) === true) {
             $collection = $this->objectsClient->objects->json;
         } else if ($objectEntity->getOrganization() !== null && $objectEntity->getOrganization()->getDatabase() !== null) {
-            $objectsClient = new Client($objectEntity->getOrganization()->getDatabase()->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
+            $objectsClient = new Client($objectEntity->getOrganization()->getDatabase()->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService, cacheLogger: $this->logger);
             $collection    = $objectsClient->objects->json;
         } else if (isset($this->client) === true) {
             $collection = $this->client->objects->json;
@@ -596,7 +596,7 @@ class CacheService
         } else {
             $objectEntity = $this->entityManager->getRepository(ObjectEntity::class)->findOneBy(['id' => $identification]);
             if ($objectEntity !== null && $objectEntity->getOrganization() !== null && $objectEntity->getOrganization()->getDatabase() !== null) {
-                $objectsClient = new Client($objectEntity->getOrganization()->getDatabase()->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService);
+                $objectsClient = new Client($objectEntity->getOrganization()->getDatabase()->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService, cacheLogger: $this->logger);
                 $collection    = $objectsClient->objects->json;
             } else if (isset($this->client) === true) {
                 $collection = $this->client->objects->json;
@@ -1072,18 +1072,19 @@ class CacheService
         return $filter;
 
     }//end addOwnerOrgFilter()
-
+    
     /**
      * Retrieves objects from a cache collection.
      *
-     * @param array      $filter         The mongoDB query to filter with.
-     * @param array|null $options        Options like 'limit', 'skip' & 'sort' for the mongoDB->find query.
-     * @param array      $completeFilter The completeFilter query, unchanged, as used on the request.
+     * @param array $filter The mongoDB query to filter with.
+     * @param array|null $options Options like 'limit', 'skip' & 'sort' for the mongoDB->find query.
+     * @param array $completeFilter The completeFilter query, unchanged, as used on the request.
      *
-     * @return array|int $this->handleResultPagination() array with objects and pagination.
+     * @return array $this->handleResultPagination() array with objects and pagination.
      */
-    public function retrieveObjectsFromCache(array $filter, ?array $options = null, array $completeFilter = []): array
+    public function retrieveObjectsFromCache(array $filter, ?array $options, array $completeFilter): array
     {
+        $filter = $this->addOwnerOrgFilter($filter);
 
         $this->session->set('mongoDBFilter', $filter);
 
@@ -1095,12 +1096,6 @@ class CacheService
         } else {
             return [];
         }
-
-        if ($completeFilter === []) {
-            $completeFilter = $filter;
-        }
-
-        $filter = $this->addOwnerOrgFilter($filter);
 
         $total = $this->countObjectsInCache($filter);
 
@@ -1128,14 +1123,20 @@ class CacheService
             return [];
         }
 
-        $completeFilter = [];
-        $this->handleEntities($filter, $completeFilter, $entities);
+        $completeFilter = $filter;
+        $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
+        if ($filterParse !== null) {
+            return $filterParse;
+        }
+        
+        // Let's see if we need ta search
+        $this->handleSearch($filter, $completeFilter, $search);
 
         // Limit & Start for pagination.
         $this->setPagination($limit, $start, $completeFilter);
 
         // Order.
-        $order = isset($filter['_order']) === true ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $filter['_order']) : [];
+        $order = isset($completeFilter['_order']) === true ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
         if (empty($order) === false) {
             $order = array_map(
                 function ($value) {
