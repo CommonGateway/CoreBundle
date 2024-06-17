@@ -1072,13 +1072,13 @@ class CacheService
         return $filter;
 
     }//end addOwnerOrgFilter()
-    
+
     /**
      * Retrieves objects from a cache collection.
      *
-     * @param array $filter The mongoDB query to filter with.
-     * @param array|null $options Options like 'limit', 'skip' & 'sort' for the mongoDB->find query.
-     * @param array $completeFilter The completeFilter query, unchanged, as used on the request.
+     * @param array      $filter         The mongoDB query to filter with.
+     * @param array|null $options        Options like 'limit', 'skip' & 'sort' for the mongoDB->find query.
+     * @param array      $completeFilter The completeFilter query, unchanged, as used on the request.
      *
      * @return array $this->handleResultPagination() array with objects and pagination.
      */
@@ -1128,7 +1128,7 @@ class CacheService
         if ($filterParse !== null) {
             return $filterParse;
         }
-        
+
         // Let's see if we need ta search
         $this->handleSearch($filter, $completeFilter, $search);
 

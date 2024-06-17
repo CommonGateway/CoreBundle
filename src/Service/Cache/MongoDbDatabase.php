@@ -29,7 +29,7 @@ class MongoDbDatabase implements DatabaseInterface
      * @param string                 $name                The name of the database.
      * @param EntityManagerInterface $entityManager       The entity manager.
      * @param ObjectEntityService    $objectEntityService The object entity service.
-     * @param LoggerInterface        $cacheLogger              The logger.
+     * @param LoggerInterface        $cacheLogger         The logger.
      */
     public function __construct(
         private readonly Database $database,

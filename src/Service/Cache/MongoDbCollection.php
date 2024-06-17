@@ -28,7 +28,7 @@ class MongoDbCollection implements CollectionInterface
      * @param string                 $name                The name of the collection.
      * @param EntityManagerInterface $entityManager       The entity manager.
      * @param ObjectEntityService    $objectEntityService The object entity service.
-     * @param LoggerInterface        $cacheLogger              The logger.
+     * @param LoggerInterface        $cacheLogger         The logger.
      */
     public function __construct(
         private readonly Collection $collection,
@@ -585,15 +585,13 @@ class MongoDbCollection implements CollectionInterface
             return $this->collection->find($filter, $options);
         }
 
-//        $completeFilter = [];
-//        $filterParse    = $this->parseFilter($filter, $completeFilter);
-//        if ($filterParse !== null) {
-//            return $filterParse;
-//        }
-
+        // $completeFilter = [];
+        // $filterParse    = $this->parseFilter($filter, $completeFilter);
+        // if ($filterParse !== null) {
+        // return $filterParse;
+        // }
         // Let's see if we need a search
-//        $this->handleSearch($filter, $completeFilter);
-
+        // $this->handleSearch($filter, $completeFilter);
         // var_dump($filter);
         return $this->collection->find($filter, $options);
 
