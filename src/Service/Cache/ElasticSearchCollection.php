@@ -461,20 +461,32 @@ class ElasticSearchCollection implements CollectionInterface
 
         $id = $filter['_id'];
 
+        $replacement = (array) $replacement;
+
         try {
             $document = $connection->get(
                 params: [
-                    'index' => $this->database->getName(),
-                    'id'    => $id,
+                    'index'            => $this->database->getName(),
+                    'id'               => $id,
+                    'doctype'          => 'OpenWOO',
+                    'title'            => $replacement['_self']['name'],
+                    'excerpt'          => $replacement['_self']['schema']['description'],
+                    'date'             => $replacement['_self']['dateModified'],
+                    'link'             => $replacement['_self']['self'],
+                    'content_filtered' => $replacement,
                 ]
             );
             if ($document !== null) {
                 $parameters = [
-                    'index' => $this->database->getName(),
-                    'id'    => $id,
-                    'body'  => [
-                        'doc' => (array) $replacement,
-                    ],
+                    'index'            => $this->database->getName(),
+                    'id'               => $id,
+                    'body'             => ['doc' => $replacement],
+                    'doctype'          => 'OpenWOO',
+                    'title'            => $replacement['_self']['name'],
+                    'excerpt'          => $replacement['_self']['schema']['description'],
+                    'date'             => $replacement['_self']['dateModified'],
+                    'link'             => $replacement['_self']['self'],
+                    'content_filtered' => $replacement,
                 ];
 
                 $result = $connection->update(params: $parameters);
@@ -483,9 +495,15 @@ class ElasticSearchCollection implements CollectionInterface
             }
         } catch (Missing404Exception $exception) {
             $parameters = [
-                'index' => $this->database->getName(),
-                'id'    => $id,
-                'body'  => (array) $replacement,
+                'index'            => $this->database->getName(),
+                'id'               => $id,
+                'body'             => $replacement,
+                'doctype'          => 'OpenWOO',
+                'title'            => $replacement['_self']['name'],
+                'excerpt'          => $replacement['_self']['schema']['description'],
+                'date'             => $replacement['_self']['dateModified'],
+                'link'             => $replacement['_self']['self'],
+                'content_filtered' => $replacement,
             ];
 
             $result = $connection->index(params: $parameters);
