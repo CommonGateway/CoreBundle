@@ -461,14 +461,17 @@ class ElasticSearchCollection implements CollectionInterface
 
         $id = $filter['_id'];
 
-        $replacement = array_merge((array) $replacement, [
-            'doctype'          => 'OpenWOO',
-            'title'            => $replacement['titel'] ?? null,
-            'excerpt'          => $replacement['samenvatting'] ?? null,
-            'date'             => $replacement['publicatiedatum'] ?? null,
-            'link'             => $replacement['portalUrl'] ?? null,
-            'content_filtered' => $replacement['beschrijving'] ?? null
-        ]);
+        $replacement = array_merge(
+            (array) $replacement,
+            [
+                'doctype'          => 'OpenWOO',
+                'title'            => $replacement['titel'] ?? null,
+                'excerpt'          => $replacement['samenvatting'] ?? null,
+                'date'             => $replacement['publicatiedatum'] ?? null,
+                'link'             => $replacement['portalUrl'] ?? null,
+                'content_filtered' => $replacement['beschrijving'] ?? null,
+            ]
+        );
 
         try {
             $document = $connection->get(
