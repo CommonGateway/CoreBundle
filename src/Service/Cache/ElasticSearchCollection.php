@@ -461,6 +461,18 @@ class ElasticSearchCollection implements CollectionInterface
 
         $id = $filter['_id'];
 
+        $replacement = array_merge(
+            (array) $replacement,
+            [
+                'doctype'          => 'OpenWOO',
+                'title'            => $replacement['titel'] ?? null,
+                'excerpt'          => $replacement['samenvatting'] ?? null,
+                'date'             => $replacement['publicatiedatum'] ?? null,
+                'link'             => $replacement['portalUrl'] ?? null,
+                'content_filtered' => $replacement['beschrijving'] ?? null,
+            ]
+        );
+
         try {
             $document = $connection->get(
                 params: [
@@ -472,9 +484,7 @@ class ElasticSearchCollection implements CollectionInterface
                 $parameters = [
                     'index' => $this->database->getName(),
                     'id'    => $id,
-                    'body'  => [
-                        'doc' => (array) $replacement,
-                    ],
+                    'body'  => ['doc' => $replacement],
                 ];
 
                 $result = $connection->update(params: $parameters);
@@ -485,7 +495,7 @@ class ElasticSearchCollection implements CollectionInterface
             $parameters = [
                 'index' => $this->database->getName(),
                 'id'    => $id,
-                'body'  => (array) $replacement,
+                'body'  => $replacement,
             ];
 
             $result = $connection->index(params: $parameters);
