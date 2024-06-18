@@ -461,27 +461,30 @@ class ElasticSearchCollection implements CollectionInterface
 
         $id = $filter['_id'];
 
-        $replacement = array_merge((array) $replacement, [
-            'doctype'          => 'OpenWOO',
-            'title'            => $replacement['_self']['name'],
-            'excerpt'          => $replacement['_self']['schema']['description'],
-            'date'             => $replacement['_self']['dateModified'],
-            'link'             => $replacement['_self']['self'],
-            'content_filtered' => $replacement
-        ]);
+        $replacement = array_merge(
+            (array) $replacement,
+            [
+                'doctype'          => 'OpenWOO',
+                'title'            => $replacement['_self']['name'],
+                'excerpt'          => $replacement['_self']['schema']['description'],
+                'date'             => $replacement['_self']['dateModified'],
+                'link'             => $replacement['_self']['self'],
+                'content_filtered' => $replacement,
+            ]
+        );
 
         try {
             $document = $connection->get(
                 params: [
-                    'index'            => $this->database->getName(),
-                    'id'               => $id
+                    'index' => $this->database->getName(),
+                    'id'    => $id,
                 ]
             );
             if ($document !== null) {
                 $parameters = [
-                    'index'            => $this->database->getName(),
-                    'id'               => $id,
-                    'body'             => ['doc' => $replacement],
+                    'index' => $this->database->getName(),
+                    'id'    => $id,
+                    'body'  => ['doc' => $replacement],
                 ];
 
                 $result = $connection->update(params: $parameters);
@@ -490,9 +493,9 @@ class ElasticSearchCollection implements CollectionInterface
             }
         } catch (Missing404Exception $exception) {
             $parameters = [
-                'index'            => $this->database->getName(),
-                'id'               => $id,
-                'body'             => $replacement
+                'index' => $this->database->getName(),
+                'id'    => $id,
+                'body'  => $replacement,
             ];
 
             $result = $connection->index(params: $parameters);
