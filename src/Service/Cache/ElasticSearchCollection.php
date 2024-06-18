@@ -461,19 +461,20 @@ class ElasticSearchCollection implements CollectionInterface
 
         $id = $filter['_id'];
 
-        $replacement = (array) $replacement;
+        $replacement = array_merge((array) $replacement, [
+            'doctype'          => 'OpenWOO',
+            'title'            => $replacement['_self']['name'],
+            'excerpt'          => $replacement['_self']['schema']['description'],
+            'date'             => $replacement['_self']['dateModified'],
+            'link'             => $replacement['_self']['self'],
+            'content_filtered' => $replacement
+        ]);
 
         try {
             $document = $connection->get(
                 params: [
                     'index'            => $this->database->getName(),
-                    'id'               => $id,
-                    'doctype'          => 'OpenWOO',
-                    'title'            => $replacement['_self']['name'],
-                    'excerpt'          => $replacement['_self']['schema']['description'],
-                    'date'             => $replacement['_self']['dateModified'],
-                    'link'             => $replacement['_self']['self'],
-                    'content_filtered' => $replacement,
+                    'id'               => $id
                 ]
             );
             if ($document !== null) {
@@ -481,12 +482,6 @@ class ElasticSearchCollection implements CollectionInterface
                     'index'            => $this->database->getName(),
                     'id'               => $id,
                     'body'             => ['doc' => $replacement],
-                    'doctype'          => 'OpenWOO',
-                    'title'            => $replacement['_self']['name'],
-                    'excerpt'          => $replacement['_self']['schema']['description'],
-                    'date'             => $replacement['_self']['dateModified'],
-                    'link'             => $replacement['_self']['self'],
-                    'content_filtered' => $replacement,
                 ];
 
                 $result = $connection->update(params: $parameters);
@@ -497,13 +492,7 @@ class ElasticSearchCollection implements CollectionInterface
             $parameters = [
                 'index'            => $this->database->getName(),
                 'id'               => $id,
-                'body'             => $replacement,
-                'doctype'          => 'OpenWOO',
-                'title'            => $replacement['_self']['name'],
-                'excerpt'          => $replacement['_self']['schema']['description'],
-                'date'             => $replacement['_self']['dateModified'],
-                'link'             => $replacement['_self']['self'],
-                'content_filtered' => $replacement,
+                'body'             => $replacement
             ];
 
             $result = $connection->index(params: $parameters);
