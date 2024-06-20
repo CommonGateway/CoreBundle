@@ -585,14 +585,16 @@ class MongoDbCollection implements CollectionInterface
             return $this->collection->find($filter, $options);
         }
 
-        // $completeFilter = [];
-        // $filterParse    = $this->parseFilter($filter, $completeFilter);
-        // if ($filterParse !== null) {
-        // return $filterParse;
-        // }
+        $completeFilter = [];
+        $filterParse    = $this->parseFilter($filter, $completeFilter);
+        if ($filterParse !== null) {
+            return $filterParse;
+        }
+        
         // Let's see if we need a search
-        // $this->handleSearch($filter, $completeFilter);
+        $this->handleSearch($filter, $completeFilter);
         // var_dump($filter);
+        
         return $this->collection->find($filter, $options);
 
     }//end find()
