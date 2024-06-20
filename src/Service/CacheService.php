@@ -1124,14 +1124,13 @@ class CacheService
         }
 
         $completeFilter = $filter;
-//        $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
-//        if ($filterParse !== null) {
-//            return $filterParse;
-//        }
-//
-//        // Let's see if we need ta search
-//        $this->handleSearch($filter, $completeFilter, $search);
-
+        // $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
+        // if ($filterParse !== null) {
+        // return $filterParse;
+        // }
+        //
+        // Let's see if we need ta search
+        // $this->handleSearch($filter, $completeFilter, $search);
         // Limit & Start for pagination.
         $this->setPagination($limit, $start, $completeFilter);
 
