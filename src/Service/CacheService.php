@@ -146,7 +146,7 @@ class CacheService
     private function setObjectClient(): void
     {
         $this->objectsClient = null;
-        
+
         $organization = null;
         $user         = $this->objectEntityService->findCurrentUser();
         if ($user !== null && $user->getOrganization() !== null) {
@@ -167,8 +167,7 @@ class CacheService
         }
 
     }//end setObjectClient()
-    
-    
+
     /**
      * Create a ClientInterface based on the given $database configuration.
      *
@@ -182,13 +181,14 @@ class CacheService
         if ($database->getType() === 'mongodb') {
             $objectsClient = new Client($database->getUri(), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService, cacheLogger: $this->logger);
         }
-        
+
         if ($database->getType() === 'elasticsearch') {
             $objectsClient = new ElasticSearchClient($database->getUri(), $database->getAuth());
         }
-        
+
         return $objectsClient;
-    }
+
+    }//end createObjectClient()
 
     /**
      * Set symfony style in order to output to the console.
@@ -224,11 +224,11 @@ class CacheService
         $objectDatabases = $this->entityManager->getRepository(Database::class)->findAll();
         foreach ($objectDatabases as $database) {
             $objectsClient = $this->createObjectClient(database: $database);
-            
+
             if ($objectsClient === null) {
                 continue;
             }
-            
+
             $collection = $objectsClient->objects->json;
 
             $filter  = [];
@@ -388,7 +388,7 @@ class CacheService
         if (isset($config['objects']) === false || $config['objects'] !== true) {
             foreach ($objectDatabases as $database) {
                 $objectsClient = $this->createObjectClient(database: $database);
-                
+
                 if ($objectsClient === null) {
                     continue;
                 }
