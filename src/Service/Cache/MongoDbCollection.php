@@ -162,7 +162,7 @@ class MongoDbCollection implements CollectionInterface
             $filter['_queries'],
             $filter['_showDeleted']
         );
-        
+
         if (key_exists('_showDeleted', $completeFilter) === false || $completeFilter['_showDeleted'] === 'false') {
             $filter['_self.dateDeleted'] = 'IS NULL';
         }
@@ -515,16 +515,14 @@ class MongoDbCollection implements CollectionInterface
      */
     public function aggregate(array $pipeline, array $options = []): \Iterator
     {
-//        if ($this->database->getName() !== 'objects') {
-//            return $this->collection->aggregate($pipeline, $options);
-//        }
-//
-//        $completeFilter = [];
-//        $this->parseFilter($pipeline[0], $completeFilter);
-
-//        // Let's see if we need a search
-//        $this->handleSearch($filter, $completeFilter);
-        
+        // if ($this->database->getName() !== 'objects') {
+        // return $this->collection->aggregate($pipeline, $options);
+        // }
+        //
+        // $completeFilter = [];
+        // $this->parseFilter($pipeline[0], $completeFilter);
+        // Let's see if we need a search
+        // $this->handleSearch($filter, $completeFilter);
         return $this->collection->aggregate($pipeline, $options);
 
     }//end aggregate()
@@ -537,13 +535,12 @@ class MongoDbCollection implements CollectionInterface
         if ($this->database->getName() !== 'objects') {
             return $this->collection->count($filter, $options);
         }
-        
+
         $completeFilter = [];
         $this->parseFilter($filter, $completeFilter);
 
-//        // Let's see if we need a search
-//        $this->handleSearch($filter, $completeFilter);
-        
+        // Let's see if we need a search
+        // $this->handleSearch($filter, $completeFilter);
         return $this->collection->count($filter, $options);
 
     }//end count()
@@ -574,13 +571,12 @@ class MongoDbCollection implements CollectionInterface
         if ($this->database->getName() !== 'objects') {
             return $this->collection->find($filter, $options);
         }
-        
+
         $completeFilter = [];
         $this->parseFilter($filter, $completeFilter);
-        
-//        // Let's see if we need a search
-//        $this->handleSearch($filter, $completeFilter);
-        
+
+        // Let's see if we need a search
+        // $this->handleSearch($filter, $completeFilter);
         return $this->collection->find($filter, $options);
 
     }//end find()

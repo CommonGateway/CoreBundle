@@ -297,7 +297,7 @@ class ElasticSearchCollection implements CollectionInterface
         return $body;
 
     }//end generateSearchBody()
-    
+
     /**
      * Parses the filter array and creates the filter and completeFilter arrays
      *
@@ -312,7 +312,7 @@ class ElasticSearchCollection implements CollectionInterface
     {
         // Make sure we also have all filters stored in $completeFilter before unsetting.
         $completeFilter = $filter;
-        
+
         unset(
             $filter['_start'],
             $filter['_offset'],
@@ -325,14 +325,13 @@ class ElasticSearchCollection implements CollectionInterface
             $filter['_queries'],
             $filter['_showDeleted']
         );
-        
+
         // todo:
-//        if (key_exists('_showDeleted', $completeFilter) === false || $completeFilter['_showDeleted'] === 'false') {
-//            $filter['_self.dateDeleted'] = 'IS NULL';
-//        }
-        
+        // if (key_exists('_showDeleted', $completeFilter) === false || $completeFilter['_showDeleted'] === 'false') {
+        // $filter['_self.dateDeleted'] = 'IS NULL';
+        // }
         return null;
-        
+
     }//end parseFilter()
 
     /**
@@ -342,7 +341,7 @@ class ElasticSearchCollection implements CollectionInterface
     {
         $completeFilter = [];
         $this->parseFilter($filter, $completeFilter);
-        
+
         $connection = $this->database->getClient()->getConnection();
 
         $body = $this->generateSearchBody(filter: $filter);
@@ -401,7 +400,7 @@ class ElasticSearchCollection implements CollectionInterface
     {
         $completeFilter = [];
         $this->parseFilter($filter, $completeFilter);
-        
+
         $connection = $this->database->getClient()->getConnection();
 
         $body = $this->generateSearchBody(filter: $filter, options: $options);

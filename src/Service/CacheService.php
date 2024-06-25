@@ -1165,14 +1165,14 @@ class CacheService
         if (isset($this->client) === false) {
             return [];
         }
-        
-//        $completeFilter = $filter;
-//        $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
-//        if ($filterParse !== null) {
-//            return $filterParse;
-//        }
+
+        // $completeFilter = $filter;
+        // $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
+        // if ($filterParse !== null) {
+        // return $filterParse;
+        // }
         $this->queryBackwardsCompatibility($filter);
-        
+
         // Search for the correct entity / entities.
         if (empty($entities) === false) {
             $queryError = $this->handleEntities($filter, $filter, $entities);
@@ -1245,15 +1245,14 @@ class CacheService
             return 0;
         }
 
-//        $completeFilter = [];
-//        $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
-//        if ($filterParse !== null) {
-//            $this->logger->error($filterParse);
-//            return 0;
-//        }
-        
+        // $completeFilter = [];
+        // $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
+        // if ($filterParse !== null) {
+        // $this->logger->error($filterParse);
+        // return 0;
+        // }
         $this->queryBackwardsCompatibility($filter);
-        
+
         // Search for the correct entity / entities.
         if (empty($entities) === false) {
             $queryError = $this->handleEntities($filter, $filter, $entities);
@@ -1293,14 +1292,13 @@ class CacheService
             $queries = explode(',', $queries);
         }
 
-//        $completeFilter = [];
-//        $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
-//        if ($filterParse !== null) {
-//            return $filterParse;
-//        }
-        
+        // $completeFilter = [];
+        // $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
+        // if ($filterParse !== null) {
+        // return $filterParse;
+        // }
         $this->queryBackwardsCompatibility($filter);
-        
+
         // Search for the correct entity / entities.
         if (empty($entities) === false) {
             $queryError = $this->handleEntities($filter, $filter, $entities);
