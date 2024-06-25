@@ -262,8 +262,8 @@ class ElasticSearchCollection implements CollectionInterface
             $body['size'] = $options['limit'];
         }
 
-        if (isset($options['start'])) {
-            $body['from'] = $options['start'];
+        if (isset($options['skip'])) {
+            $body['from'] = $options['skip'];
         }
 
         if (isset($options['sort'])) {
