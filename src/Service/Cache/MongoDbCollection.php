@@ -581,19 +581,6 @@ class MongoDbCollection implements CollectionInterface
      */
     public function find(array $filter = [], array $options = []): \Iterator
     {
-        if ($this->database->getName() !== 'objects') {
-            return $this->collection->find($filter, $options);
-        }
-
-        $completeFilter = [];
-        $filterParse    = $this->parseFilter($filter, $completeFilter);
-        if ($filterParse !== null) {
-            return $filterParse;
-        }
-
-        // Let's see if we need a search
-        $this->handleSearch($filter, $completeFilter);
-        // var_dump($filter);
         return $this->collection->find($filter, $options);
 
     }//end find()

@@ -247,71 +247,34 @@ class ElasticSearchCollection implements CollectionInterface
     }//end buildQuery()
 
     /**
-     * Sets the correct sort-parameters by reading _order filters.
-     *
-     * @param  array $filters The given filter array for the request
-     * @param  array $body    The request body before adding sorts.
-     * @return array The request body after adding sorts.
-     */
-    private function handleOrder(array &$filters, array $body): array
-    {
-        if (isset($filters['_order']) === false) {
-            return $body;
-        }
-
-        $order = $filters['_order'];
-        unset($filters['_order']);
-
-        foreach ($order as $key => $value) {
-            $body['sort'][$key] = ['order' => $value];
-        }
-
-        return $body;
-
-    }//end handleOrder()
-
-    /**
-     * Handle pagination for search results.
-     *
-     * @param array $filters The raw filter array.
-     *
-     * @return array The processed pagination parameters.
-     */
-    private function handlePagination(array &$filters): array
-    {
-        if (isset($filters['_limit']) === true) {
-            $limit = (int) $filters['_limit'];
-        } else {
-            $limit = 30;
-        }
-
-        if (isset($filters['_start']) === true || isset($filters['_offset']) === true) {
-            $start = isset($filters['_start']) === true ? (int) $filters['_start'] : (int) $filters['_offset'];
-        } else if (isset($filters['_page']) === true) {
-            $start = (((int) $filters['_page'] - 1) * $limit);
-        } else {
-            $start = 0;
-        }
-
-        unset($filters['_limit'], $filters['_start'], $filters['_offset'], $filters['_page']);
-
-        return [
-            'size' => $limit,
-            'from' => $start,
-        ];
-
-    }//end handlePagination()
-
-    /**
      * Generates a search body for given filter.
      *
      * @param  array $filter The filter to generate the search body with.
+     * @param  array $options The options used for pagination and ordering.
+     *
      * @return array The resulting search body.
      */
-    private function generateSearchBody(array $filter): array
+    private function generateSearchBody(array $filter, array $options = []): array
     {
-        $body = $this->handlePagination(filters: $filter);
-        $body = $this->handleOrder(filters: $filter, body: $body);
+        // Handle pagination and ordering
+        $body = [];
+        if (isset($options['limit'])) {
+            $body['size'] = $options['limit'];
+        }
+        
+        if (isset($options['start'])) {
+            $body['from'] = $options['start'];
+        }
+        
+        if (isset($options['sort'])) {
+            foreach ($options['sort'] as $key => $value) {
+                $sort = 'desc';
+                if ($value === 1) {
+                    $sort = 'asc';
+                }
+                $body['sort'][] = [$key => $sort];
+            }
+        }
 
         $query = $this->buildQuery(filter: $filter);
 
@@ -342,8 +305,6 @@ class ElasticSearchCollection implements CollectionInterface
         $connection = $this->database->getClient()->getConnection();
 
         $body = $this->generateSearchBody(filter: $filter);
-
-        unset($body['size'], $body['from'], $body['sort']);
 
         $parameters = [
             'index' => $this->database->getName(),
@@ -399,7 +360,7 @@ class ElasticSearchCollection implements CollectionInterface
     {
         $connection = $this->database->getClient()->getConnection();
 
-        $body = $this->generateSearchBody(filter: $filter);
+        $body = $this->generateSearchBody(filter: $filter, options: $options);
 
         $parameters = [
             'index' => $this->database->getName(),
