@@ -249,8 +249,8 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Generates a search body for given filter.
      *
-     * @param  array $filter The filter to generate the search body with.
-     * @param  array $options The options used for pagination and ordering.
+     * @param array $filter  The filter to generate the search body with.
+     * @param array $options The options used for pagination and ordering.
      *
      * @return array The resulting search body.
      */
@@ -261,17 +261,18 @@ class ElasticSearchCollection implements CollectionInterface
         if (isset($options['limit'])) {
             $body['size'] = $options['limit'];
         }
-        
+
         if (isset($options['start'])) {
             $body['from'] = $options['start'];
         }
-        
+
         if (isset($options['sort'])) {
             foreach ($options['sort'] as $key => $value) {
                 $sort = 'desc';
                 if ($value === 1) {
                     $sort = 'asc';
                 }
+
                 $body['sort'][] = [$key => $sort];
             }
         }
