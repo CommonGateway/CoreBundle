@@ -297,12 +297,52 @@ class ElasticSearchCollection implements CollectionInterface
         return $body;
 
     }//end generateSearchBody()
+    
+    /**
+     * Parses the filter array and creates the filter and completeFilter arrays
+     *
+     * @param array $filter         The filters to parse
+     * @param array $completeFilter The complete filter (can be empty, will be updated)
+     *
+     * @return array|null The result of the parse, contains an error on failure, contains null on success.
+     *
+     * @throws Exception
+     */
+    private function parseFilter(array &$filter, array &$completeFilter): ?array
+    {
+        // Make sure we also have all filters stored in $completeFilter before unsetting.
+        $completeFilter = $filter;
+        
+        unset(
+            $filter['_start'],
+            $filter['_offset'],
+            $filter['_limit'],
+            $filter['_page'],
+            $filter['_extend'],
+            $filter['_search'],
+            $filter['_order'],
+            $filter['_fields'],
+            $filter['_queries'],
+            $filter['_showDeleted']
+        );
+        
+        // todo:
+//        if (key_exists('_showDeleted', $completeFilter) === false || $completeFilter['_showDeleted'] === 'false') {
+//            $filter['_self.dateDeleted'] = 'IS NULL';
+//        }
+        
+        return null;
+        
+    }//end parseFilter()
 
     /**
      * @inheritDoc
      */
     public function count(array $filter = [], array $options = []): int
     {
+        $completeFilter = [];
+        $this->parseFilter($filter, $completeFilter);
+        
         $connection = $this->database->getClient()->getConnection();
 
         $body = $this->generateSearchBody(filter: $filter);
@@ -359,6 +399,9 @@ class ElasticSearchCollection implements CollectionInterface
      */
     public function find(array $filter = [], array $options = []): \Iterator
     {
+        $completeFilter = [];
+        $this->parseFilter($filter, $completeFilter);
+        
         $connection = $this->database->getClient()->getConnection();
 
         $body = $this->generateSearchBody(filter: $filter, options: $options);

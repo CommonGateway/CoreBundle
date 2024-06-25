@@ -1144,7 +1144,7 @@ class CacheService
 
         $results = $collection->find($filter, $options)->toArray();
 
-        return $this->handleResultPagination($completeFilter, $results, $total);
+        return $this->handleResultPagination($filter, $results, $total);
 
     }//end retrieveObjectsFromCache()
 
@@ -1165,20 +1165,29 @@ class CacheService
         if (isset($this->client) === false) {
             return [];
         }
-
-        $completeFilter = $filter;
-        $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
-        if ($filterParse !== null) {
-            return $filterParse;
+        
+//        $completeFilter = $filter;
+//        $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
+//        if ($filterParse !== null) {
+//            return $filterParse;
+//        }
+        $this->queryBackwardsCompatibility($filter);
+        
+        // Search for the correct entity / entities.
+        if (empty($entities) === false) {
+            $queryError = $this->handleEntities($filter, $filter, $entities);
+            if ($queryError !== null) {
+                return $queryError;
+            }
         }
 
         // Let's see if we need ta search
-        $this->handleSearch($filter, $completeFilter, $search);
+        $this->handleSearch($filter, $filter, $search);
         // Limit & Start for pagination.
-        $this->setPagination($limit, $start, $completeFilter);
+        $this->setPagination($limit, $start, $filter);
 
         // Order.
-        $order = isset($completeFilter['_order']) === true ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $completeFilter['_order']) : [];
+        $order = isset($filter['_order']) === true ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $filter['_order']) : [];
         if (empty($order) === false) {
             $order = array_map(
                 function ($value) {
@@ -1189,7 +1198,7 @@ class CacheService
         }
 
         // Find / Search.
-        return $this->retrieveObjectsFromCache($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order], $completeFilter);
+        return $this->retrieveObjectsFromCache($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order], $filter);
 
     }//end searchObjects()
 
@@ -1236,15 +1245,26 @@ class CacheService
             return 0;
         }
 
-        $completeFilter = [];
-        $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
-        if ($filterParse !== null) {
-            $this->logger->error($filterParse);
-            return 0;
+//        $completeFilter = [];
+//        $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
+//        if ($filterParse !== null) {
+//            $this->logger->error($filterParse);
+//            return 0;
+//        }
+        
+        $this->queryBackwardsCompatibility($filter);
+        
+        // Search for the correct entity / entities.
+        if (empty($entities) === false) {
+            $queryError = $this->handleEntities($filter, $filter, $entities);
+            if ($queryError !== null) {
+                $this->logger->error($queryError);
+                return 0;
+            }
         }
 
         // Let's see if we need a search
-        $this->handleSearch($filter, $completeFilter, $search);
+        $this->handleSearch($filter, $filter, $search);
 
         // Find / Search.
         return $this->countObjectsInCache($filter);
@@ -1273,14 +1293,24 @@ class CacheService
             $queries = explode(',', $queries);
         }
 
-        $completeFilter = [];
-        $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
-        if ($filterParse !== null) {
-            return $filterParse;
+//        $completeFilter = [];
+//        $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
+//        if ($filterParse !== null) {
+//            return $filterParse;
+//        }
+        
+        $this->queryBackwardsCompatibility($filter);
+        
+        // Search for the correct entity / entities.
+        if (empty($entities) === false) {
+            $queryError = $this->handleEntities($filter, $filter, $entities);
+            if ($queryError !== null) {
+                return $queryError;
+            }
         }
 
         // Let's see if we need a search
-        $this->handleSearch($filter, $completeFilter, null);
+        $this->handleSearch($filter, $filter, null);
 
         $result = [];
         $this->setObjectClient();
@@ -1297,8 +1327,8 @@ class CacheService
                 $result[$query] = $collection->aggregate([['$match' => $filter], ['$unwind' => "\${$query}"], ['$group' => ['_id' => "\${$query}", 'count' => ['$sum' => 1]]]])->toArray();
             }
         } else if ($collection instanceof ElasticSearchCollection === true) {
-            unset($completeFilter['_queries']);
-            $result = $collection->aggregate([$completeFilter, $queries])->toArray();
+            unset($filter['_queries']);
+            $result = $collection->aggregate([$filter, $queries])->toArray();
         }
 
         return $result;

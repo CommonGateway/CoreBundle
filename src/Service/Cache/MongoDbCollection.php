@@ -147,9 +147,6 @@ class MongoDbCollection implements CollectionInterface
      */
     private function parseFilter(array &$filter, array &$completeFilter): ?array
     {
-        // Backwards compatibility.
-        $this->queryBackwardsCompatibility($filter);
-
         // Make sure we also have all filters stored in $completeFilter before unsetting.
         $completeFilter = $filter;
 
@@ -165,6 +162,10 @@ class MongoDbCollection implements CollectionInterface
             $filter['_queries'],
             $filter['_showDeleted']
         );
+        
+        if (key_exists('_showDeleted', $completeFilter) === false || $completeFilter['_showDeleted'] === 'false') {
+            $filter['_self.dateDeleted'] = 'IS NULL';
+        }
 
         // 'normal' Filters (not starting with _ ).
         foreach ($filter as $key => &$value) {
@@ -174,37 +175,6 @@ class MongoDbCollection implements CollectionInterface
         return null;
 
     }//end parseFilter()
-
-    /**
-     * Make sure we still support the old query params. By translating them to the new ones with _.
-     *
-     * @param array $filter
-     *
-     * @return void
-     */
-    private function queryBackwardsCompatibility(array &$filter)
-    {
-        isset($filter['_limit']) === false && isset($filter['limit']) === true && $filter['_limit']    = $filter['limit'];
-        isset($filter['_start']) === false && isset($filter['start']) === true && $filter['_start']    = $filter['start'];
-        isset($filter['_offset']) === false && isset($filter['offset']) === true && $filter['_offset'] = $filter['offset'];
-        isset($filter['_page']) === false && isset($filter['page']) === true && $filter['_page']       = $filter['page'];
-        isset($filter['_extend']) === false && isset($filter['extend']) === true && $filter['_extend'] = $filter['extend'];
-        isset($filter['_search']) === false && isset($filter['search']) === true && $filter['_search'] = $filter['search'];
-        isset($filter['_order']) === false && isset($filter['order']) === true && $filter['_order']    = $filter['order'];
-        isset($filter['_fields']) === false && isset($filter['fields']) === true && $filter['_fields'] = $filter['fields'];
-
-        unset(
-            $filter['start'],
-            $filter['offset'],
-            $filter['limit'],
-            $filter['page'],
-            $filter['extend'],
-            $filter['search'],
-            $filter['order'],
-            $filter['fields']
-        );
-
-    }//end queryBackwardsCompatibility()
 
     /**
      * Handles a single filter used on a get collection api call. Specifically an filter where the value is an array.
@@ -545,6 +515,16 @@ class MongoDbCollection implements CollectionInterface
      */
     public function aggregate(array $pipeline, array $options = []): \Iterator
     {
+//        if ($this->database->getName() !== 'objects') {
+//            return $this->collection->aggregate($pipeline, $options);
+//        }
+//
+//        $completeFilter = [];
+//        $this->parseFilter($pipeline[0], $completeFilter);
+
+//        // Let's see if we need a search
+//        $this->handleSearch($filter, $completeFilter);
+        
         return $this->collection->aggregate($pipeline, $options);
 
     }//end aggregate()
@@ -554,6 +534,16 @@ class MongoDbCollection implements CollectionInterface
      */
     public function count(array $filter = [], array $options = []): int
     {
+        if ($this->database->getName() !== 'objects') {
+            return $this->collection->count($filter, $options);
+        }
+        
+        $completeFilter = [];
+        $this->parseFilter($filter, $completeFilter);
+
+//        // Let's see if we need a search
+//        $this->handleSearch($filter, $completeFilter);
+        
         return $this->collection->count($filter, $options);
 
     }//end count()
@@ -581,6 +571,16 @@ class MongoDbCollection implements CollectionInterface
      */
     public function find(array $filter = [], array $options = []): \Iterator
     {
+        if ($this->database->getName() !== 'objects') {
+            return $this->collection->find($filter, $options);
+        }
+        
+        $completeFilter = [];
+        $this->parseFilter($filter, $completeFilter);
+        
+//        // Let's see if we need a search
+//        $this->handleSearch($filter, $completeFilter);
+        
         return $this->collection->find($filter, $options);
 
     }//end find()
