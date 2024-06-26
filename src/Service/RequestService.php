@@ -795,6 +795,14 @@ class RequestService
                 $body       = $exception->getResponse()->getBody()->getContents();
                 $statusCode = $exception->getResponse()->getStatusCode();
                 $headers    = $exception->getResponse()->getHeaders();
+
+                if(isset($headers['content-length']) === true) {
+                    unset($headers['content-length']);
+                }
+
+                if(isset($headers['Content-Length']) === true) {
+                    unset($headers['Content-Length']);
+                }
             }
 
             // Catch weird statuscodes (like 0).
