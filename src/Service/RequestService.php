@@ -796,11 +796,11 @@ class RequestService
                 $statusCode = $exception->getResponse()->getStatusCode();
                 $headers    = $exception->getResponse()->getHeaders();
 
-                if(isset($headers['content-length']) === true) {
+                if (isset($headers['content-length']) === true) {
                     unset($headers['content-length']);
                 }
 
-                if(isset($headers['Content-Length']) === true) {
+                if (isset($headers['Content-Length']) === true) {
                     unset($headers['Content-Length']);
                 }
             }
