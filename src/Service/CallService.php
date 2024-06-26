@@ -246,6 +246,10 @@ class CallService
             $overwriteContentType = $config['headers']['Content-Type'];
         }
 
+        if (isset($config['headers']['content-type']) === true) {
+            $overwriteContentType = $config['headers']['content-type'];
+        }
+
         if (empty($this->source->getConfiguration()) === false) {
             $config = array_merge_recursive($config, $this->source->getConfiguration());
         }
