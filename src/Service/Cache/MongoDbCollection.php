@@ -541,7 +541,7 @@ class MongoDbCollection implements CollectionInterface
 
         // Let's see if we need a search
         $this->handleSearch($filter, $completeFilter);
-        
+
         return $this->collection->count($filter, $options);
 
     }//end count()
@@ -578,7 +578,7 @@ class MongoDbCollection implements CollectionInterface
 
         // Let's see if we need a search
         $this->handleSearch($filter, $completeFilter);
-        
+
         return $this->collection->find($filter, $options);
 
     }//end find()

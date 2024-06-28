@@ -198,10 +198,10 @@ class ElasticSearchCollection implements CollectionInterface
             } else if ($key === '_search') {
                 // todo: Partial search doesn't work yet...
                 if (is_array($value) === true) {
-                    $properties  = explode(',', array_key_first($value));
+                    $properties            = explode(',', array_key_first($value));
                     $query['query_string'] = [
-                        'query' => $value[array_key_first($value)],
-                        'fields' => $properties
+                        'query'  => $value[array_key_first($value)],
+                        'fields' => $properties,
                     ];
                 } else {
                     $query['query_string']['query'] = $value;
@@ -328,8 +328,8 @@ class ElasticSearchCollection implements CollectionInterface
             $filter['_limit'],
             $filter['_page'],
             $filter['_extend'],
-//          Do not unset _search
-//            $filter['_search'],
+            // Do not unset _search
+            // $filter['_search'],
             $filter['_order'],
             $filter['_fields'],
             $filter['_queries'],
