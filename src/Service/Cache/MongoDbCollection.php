@@ -202,7 +202,11 @@ class MongoDbCollection implements CollectionInterface
             if (array_key_exists('bool_compare', $value) === true && is_array($value['bool_compare']) === true) {
                 $value = array_map('boolval', $value['bool_compare']);
             } else if (array_key_exists('bool_compare', $value) === true) {
-                $value = (bool) $value['bool_compare'];
+                if (strtolower($value['bool_compare']) === 'false') {
+                    $value = false;
+                } else {
+                    $value = true;
+                }
 
                 return true;
             }
