@@ -1181,8 +1181,6 @@ class CacheService
             }
         }
 
-        // Let's see if we need ta search
-        $this->handleSearch($filter, $filter, $search);
         // Limit & Start for pagination.
         $this->setPagination($limit, $start, $filter);
 
@@ -1262,9 +1260,6 @@ class CacheService
             }
         }
 
-        // Let's see if we need a search
-        $this->handleSearch($filter, $filter, $search);
-
         // Find / Search.
         return $this->countObjectsInCache($filter);
 
@@ -1306,9 +1301,6 @@ class CacheService
                 return $queryError;
             }
         }
-
-        // Let's see if we need a search
-        $this->handleSearch($filter, $filter, null);
 
         $result = [];
         $this->setObjectClient();

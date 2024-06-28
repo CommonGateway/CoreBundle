@@ -540,7 +540,8 @@ class MongoDbCollection implements CollectionInterface
         $this->parseFilter($filter, $completeFilter);
 
         // Let's see if we need a search
-        // $this->handleSearch($filter, $completeFilter);
+        $this->handleSearch($filter, $completeFilter);
+        
         return $this->collection->count($filter, $options);
 
     }//end count()
@@ -576,7 +577,8 @@ class MongoDbCollection implements CollectionInterface
         $this->parseFilter($filter, $completeFilter);
 
         // Let's see if we need a search
-        // $this->handleSearch($filter, $completeFilter);
+        $this->handleSearch($filter, $completeFilter);
+        
         return $this->collection->find($filter, $options);
 
     }//end find()

@@ -196,7 +196,16 @@ class ElasticSearchCollection implements CollectionInterface
             } else if ($key === '$or') {
                 $query['bool']['should'] = $this->buildQuery(filter: $value, directReturn: true);
             } else if ($key === '_search') {
-                $query['query_string']['query'] = $value;
+                // todo: Partial search doesn't work yet...
+                if (is_array($value) === true) {
+                    $properties  = explode(',', array_key_first($value));
+                    $query['query_string'] = [
+                        'query' => $value[array_key_first($value)],
+                        'fields' => $properties
+                    ];
+                } else {
+                    $query['query_string']['query'] = $value;
+                }
             } else if (is_array(value: $value) === true && array_is_list(array: $value) === true) {
                 $query[] = $this->buildQuery(filter: $value, directReturn: $directReturn);
             } else if (is_array(value: $value) === true && isset($value['$in'])) {
@@ -319,7 +328,8 @@ class ElasticSearchCollection implements CollectionInterface
             $filter['_limit'],
             $filter['_page'],
             $filter['_extend'],
-            $filter['_search'],
+//          Do not unset _search
+//            $filter['_search'],
             $filter['_order'],
             $filter['_fields'],
             $filter['_queries'],
