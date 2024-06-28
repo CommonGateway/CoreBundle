@@ -206,6 +206,16 @@ class ElasticSearchCollection implements CollectionInterface
                 } else {
                     $query['query_string']['query'] = $value;
                 }
+            } else if ($value === null || $value === 'null' || $value === 'IS NULL') {
+                $query[] = ['bool' => ['must_not' => ['exists' => ['field' => $key]]]];
+                if ($directReturn === true) {
+                    return $query[0];
+                }
+            } else if ($value === 'IS NOT NULL') {
+                $query[] = ['bool' => ['must' => ['exists' => ['field' => $key]]]];
+                if ($directReturn === true) {
+                    return $query[0];
+                }
             } else if (is_array(value: $value) === true && array_is_list(array: $value) === true) {
                 $query[] = $this->buildQuery(filter: $value, directReturn: $directReturn);
             } else if (is_array(value: $value) === true && isset($value['$in'])) {
@@ -238,11 +248,6 @@ class ElasticSearchCollection implements CollectionInterface
             } else if (is_array(value: $value) === false && $value !== null) {
                 $query[] = $this->buildComparison(key: $key, value: $value);
 
-                if ($directReturn === true) {
-                    return $query[0];
-                }
-            } else if ($value === null) {
-                $query[] = ['bool' => ['must_not' => ['exists' => ['field' => $key]]]];
                 if ($directReturn === true) {
                     return $query[0];
                 }
