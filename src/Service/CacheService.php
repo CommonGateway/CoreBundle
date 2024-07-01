@@ -966,8 +966,8 @@ class CacheService
      * Will add entity filters to the filters array.
      * Will also check if we are allowed to filter & order with the given filters and order query params.
      *
-     * @param array $filter         The filter array
-     * @param array $entities       An array with one or more entities we are searching objects for.
+     * @param array $filter   The filter array
+     * @param array $entities An array with one or more entities we are searching objects for.
      *
      * @return array|null Will return an array if any query parameters are used that are not allowed.
      */
@@ -1066,8 +1066,8 @@ class CacheService
     /**
      * Retrieves objects from a cache collection.
      *
-     * @param array      $filter         The mongoDB query to filter with.
-     * @param array|null $options        Options like 'limit', 'skip' & 'sort' for the mongoDB->find query.
+     * @param array      $filter  The mongoDB query to filter with.
+     * @param array|null $options Options like 'limit', 'skip' & 'sort' for the mongoDB->find query.
      *
      * @return array $this->handleResultPagination() array with objects and pagination.
      */
@@ -1097,8 +1097,8 @@ class CacheService
     /**
      * Searches the object store for objects containing the search string.
      *
-     * @param array       $filter   an array of dot.notation filters for which to search with
-     * @param array       $entities schemas to limit te search to
+     * @param array $filter   an array of dot.notation filters for which to search with
+     * @param array $entities schemas to limit te search to
      *
      * @throws Exception
      *
@@ -1110,7 +1110,7 @@ class CacheService
         if (isset($this->client) === false) {
             return [];
         }
-        
+
         $this->queryBackwardsCompatibility($filter);
 
         // Search for the correct entity / entities.
@@ -1167,8 +1167,8 @@ class CacheService
     /**
      * Counts objects found with the given search/filter parameters.
      *
-     * @param array       $filter   an array of dot.notation filters for which to search with
-     * @param array       $entities schemas to limit te search to
+     * @param array $filter   an array of dot.notation filters for which to search with
+     * @param array $entities schemas to limit te search to
      *
      * @throws Exception
      *
@@ -1180,7 +1180,7 @@ class CacheService
         if (isset($this->client) === false) {
             return 0;
         }
-        
+
         $this->queryBackwardsCompatibility($filter);
 
         // Search for the correct entity / entities.

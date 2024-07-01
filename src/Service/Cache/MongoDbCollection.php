@@ -146,7 +146,7 @@ class MongoDbCollection implements CollectionInterface
         if (key_exists('_showDeleted', $filter) === false || $filter['_showDeleted'] === 'false') {
             $filter['_self.dateDeleted'] = 'IS NULL';
         }
-        
+
         unset(
             $filter['_start'],
             $filter['_offset'],
@@ -164,7 +164,7 @@ class MongoDbCollection implements CollectionInterface
         foreach ($filter as $key => &$value) {
             $this->handleFilter($key, $value);
         }
-        
+
     }//end parseFilter()
 
     /**
@@ -414,14 +414,14 @@ class MongoDbCollection implements CollectionInterface
         if ($this->database->getName() !== 'objects' || isset($pipeline[0]['$match']) === false) {
             return $this->collection->aggregate($pipeline, $options);
         }
-        
+
         $filter = $pipeline[0]['$match'];
-        
+
         // Let's see if we need a search
         $this->handleSearch($filter);
-        
+
         $this->parseFilter($filter);
-        
+
         $pipeline[0]['$match'] = $filter;
         return $this->collection->aggregate($pipeline, $options);
 
@@ -435,10 +435,10 @@ class MongoDbCollection implements CollectionInterface
         if ($this->database->getName() !== 'objects') {
             return $this->collection->count($filter, $options);
         }
-        
+
         // Let's see if we need a search
         $this->handleSearch($filter);
-        
+
         $this->parseFilter($filter);
 
         return $this->collection->count($filter, $options);
@@ -471,10 +471,10 @@ class MongoDbCollection implements CollectionInterface
         if ($this->database->getName() !== 'objects') {
             return $this->collection->find($filter, $options);
         }
-        
+
         // Let's see if we need a search
         $this->handleSearch($filter);
-        
+
         $this->parseFilter($filter);
 
         return $this->collection->find($filter, $options);

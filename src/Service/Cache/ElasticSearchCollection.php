@@ -87,7 +87,7 @@ class ElasticSearchCollection implements CollectionInterface
 
         $filter = $pipeline[0];
         $this->parseFilter($filter);
-        
+
         $body = $this->generateSearchBody($filter);
 
         foreach ($pipeline[1] as $query) {
@@ -318,7 +318,7 @@ class ElasticSearchCollection implements CollectionInterface
     /**
      * Parses the filter array and creates the filter array
      *
-     * @param array $filter         The filters to parse
+     * @param array $filter The filters to parse
      *
      * @return void The result of the parse, contains an error on failure, contains null on success.
      *
@@ -329,7 +329,7 @@ class ElasticSearchCollection implements CollectionInterface
         if (key_exists('_showDeleted', $filter) === false || $filter['_showDeleted'] === 'false') {
             $filter['_self.dateDeleted'] = 'IS NULL';
         }
-        
+
         unset(
             $filter['_start'],
             $filter['_offset'],
@@ -343,7 +343,7 @@ class ElasticSearchCollection implements CollectionInterface
             $filter['_queries'],
             $filter['_showDeleted']
         );
-        
+
     }//end parseFilter()
 
     /**
@@ -352,7 +352,7 @@ class ElasticSearchCollection implements CollectionInterface
     public function count(array $filter = [], array $options = []): int
     {
         $connection = $this->database->getClient()->getConnection();
-        
+
         $this->parseFilter($filter);
 
         $body = $this->generateSearchBody(filter: $filter);
@@ -410,7 +410,7 @@ class ElasticSearchCollection implements CollectionInterface
     public function find(array $filter = [], array $options = []): \Iterator
     {
         $connection = $this->database->getClient()->getConnection();
-        
+
         $this->parseFilter($filter);
 
         $body = $this->generateSearchBody(filter: $filter, options: $options);
