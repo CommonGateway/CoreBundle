@@ -69,7 +69,7 @@ class CacheWarmupCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->cacheService->setStyle(new SymfonyStyle($input, $output));
+        $this->cacheService->setStyle(style: new SymfonyStyle($input, $output));
 
         $bundleToCache = null;
         $config        = [];
@@ -93,7 +93,7 @@ class CacheWarmupCommand extends Command
             $bundleToCache = $input->getOption('cacheBundle');
         }
 
-        return $this->cacheService->warmup($config, $bundleToCache);
+        return $this->cacheService->warmup(config: $config, bundleToCache: $bundleToCache);
 
     }//end execute()
 }//end class

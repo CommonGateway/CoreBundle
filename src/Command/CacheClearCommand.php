@@ -63,7 +63,7 @@ class CacheClearCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->cacheService->setStyle(new SymfonyStyle($input, $output));
+        $this->cacheService->setStyle(style: new SymfonyStyle($input, $output));
 
         return $this->cacheService->clear();
 

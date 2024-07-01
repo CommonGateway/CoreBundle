@@ -1162,7 +1162,7 @@ class RequestService
             } else {
                 // $this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
                 if ($data['headers']['accept'][0] === 'application/json+aggregations') {
-                    return $this->createResponse($this->cacheService->aggregateQueries($filters, $allowedSchemas['id']));
+                    return $this->createResponse($this->cacheService->aggregateQueries(filter: $filters, entities: $allowedSchemas['id']));
                 }
 
                 $result = $this->cacheService->searchObjects($filters, $allowedSchemas['id']);

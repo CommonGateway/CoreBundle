@@ -86,9 +86,9 @@ class ElasticSearchCollection implements CollectionInterface
         $connection = $this->database->getClient()->getConnection();
 
         $filter = $pipeline[0];
-        $this->parseFilter($filter);
+        $this->parseFilter(filter: $filter);
 
-        $body = $this->generateSearchBody($filter);
+        $body = $this->generateSearchBody(filter: $filter);
 
         foreach ($pipeline[1] as $query) {
             $body['runtime_mappings'][$query] = ['type' => 'keyword'];
@@ -174,7 +174,7 @@ class ElasticSearchCollection implements CollectionInterface
         $result = [];
 
         foreach ($operators as $operator) {
-            $result = array_merge_recursive($this->buildComparison($key, $values[$operator], $operator), $result);
+            $result = array_merge_recursive($this->buildComparison(key: $key, value: $values[$operator], operator: $operator), $result);
         }
 
         return $result;
@@ -353,7 +353,7 @@ class ElasticSearchCollection implements CollectionInterface
     {
         $connection = $this->database->getClient()->getConnection();
 
-        $this->parseFilter($filter);
+        $this->parseFilter(filter: $filter);
 
         $body = $this->generateSearchBody(filter: $filter);
 
@@ -411,7 +411,7 @@ class ElasticSearchCollection implements CollectionInterface
     {
         $connection = $this->database->getClient()->getConnection();
 
-        $this->parseFilter($filter);
+        $this->parseFilter(filter: $filter);
 
         $body = $this->generateSearchBody(filter: $filter, options: $options);
 

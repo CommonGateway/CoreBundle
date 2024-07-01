@@ -258,7 +258,7 @@ class CacheService
             if (empty($schema) === true) {
                 $this->logger->error($file->getFilename().' is not a valid json object');
 
-                return false;
+                return [];
             }
 
             if (isset($schema['$id']) === true) {
@@ -279,7 +279,7 @@ class CacheService
      *
      * @return mixed|bool ObjectEntities or false.
      */
-    private function getObjectEntitiesFromBundle(array $schemaRefs)
+    private function getObjectEntitiesFromBundle(array $schemaRefs): mixed
     {
 
         return $this->entityManager->getRepository(ObjectEntity::class)->findByReferences($schemaRefs);
@@ -324,8 +324,8 @@ class CacheService
         ) {
             isset($this->style) === true && $this->style->section('Caching Objects');
             if ($bundleToCache !== null) {
-                $schemaRefs     = $this->getSchemaReferencesFromBundle($bundleToCache);
-                $objectEntities = $this->getObjectEntitiesFromBundle($schemaRefs);
+                $schemaRefs     = $this->getSchemaReferencesFromBundle(bundleToCache: $bundleToCache);
+                $objectEntities = $this->getObjectEntitiesFromBundle(schemaRefs: $schemaRefs);
                 if ($objectEntities === false) {
                     return Command::FAILURE;
                 }
@@ -339,7 +339,7 @@ class CacheService
                 try {
                     $this->cacheObject($objectEntity);
                 } catch (Exception $exception) {
-                    $this->styleCatchException($exception);
+                    $this->styleCatchException(exception: $exception);
                     continue;
                 }
             }
@@ -356,9 +356,9 @@ class CacheService
 
             foreach ($schemas as $schema) {
                 try {
-                    $this->cacheShema($schema);
+                    $this->cacheShema(entity: $schema);
                 } catch (Exception $exception) {
-                    $this->styleCatchException($exception);
+                    $this->styleCatchException(exception: $exception);
                     continue;
                 }
             }
@@ -375,9 +375,9 @@ class CacheService
 
             foreach ($endpoints as $endpoint) {
                 try {
-                    $this->cacheEndpoint($endpoint);
+                    $this->cacheEndpoint(endpoint: $endpoint);
                 } catch (Exception $exception) {
-                    $this->styleCatchException($exception);
+                    $this->styleCatchException(exception: $exception);
                     continue;
                 }
             }
@@ -395,11 +395,20 @@ class CacheService
 
                 $objectsClient->objects->json->createIndex(['$**' => 'text']);
 
-                $this->removeDataFromCache($objectsClient->objects->json, 'App:ObjectEntity', $schemaRefs, $database);
+                $this->removeDataFromCache(
+                    collection: $objectsClient->objects->json,
+                    type: 'App:ObjectEntity',
+                    schemaRefs: $schemaRefs,
+                    database: $database
+                );
             }
 
             $this->client->objects->json->createIndex(['$**' => 'text']);
-            $this->removeDataFromCache($this->client->objects->json, 'App:ObjectEntity', $schemaRefs);
+            $this->removeDataFromCache(
+                collection: $this->client->objects->json,
+                type: 'App:ObjectEntity',
+                schemaRefs: $schemaRefs
+            );
         }
 
         if ((isset($config['schemas']) === false || $config['schemas'] !== true) && $bundleToCache === null) {
@@ -409,7 +418,7 @@ class CacheService
         if ((isset($config['endpoints']) === false || $config['endpoints'] !== true) && $bundleToCache === null) {
             $this->client->endpoints->json->createIndex(['$**' => 'text']);
 
-            $this->removeDataFromCache($this->client->endpoints->json, 'App:Endpoint');
+            $this->removeDataFromCache(collection: $this->client->endpoints->json, type:  'App:Endpoint');
         }
 
         return Command::SUCCESS;
@@ -453,7 +462,7 @@ class CacheService
      *
      * @return void
      */
-    private function styleCatchException(Exception $exception)
+    private function styleCatchException(Exception $exception): void
     {
         $this->logger->error($exception->getMessage());
         if (isset($this->style) === true) {
@@ -513,7 +522,7 @@ class CacheService
         }
 
         // Let's not cash the entire schema
-        $array = $objectEntity->toArray(['embedded' => true, 'user' => $this->getObjectUser($objectEntity)]);
+        $array = $objectEntity->toArray(['embedded' => true, 'user' => $this->getObjectUser(objectEntity: $objectEntity)]);
 
         // (isset($array['_schema']['$id'])?$array['_schema'] = $array['_schema']['$id']:'');
         $identification = $objectEntity->getId()->toString();
@@ -711,7 +720,7 @@ class CacheService
      *
      * @return void
      */
-    private function queryBackwardsCompatibility(array &$filter)
+    private function queryBackwardsCompatibility(array &$filter): void
     {
         isset($filter['_limit']) === false && isset($filter['limit']) === true && $filter['_limit']    = $filter['limit'];
         isset($filter['_start']) === false && isset($filter['start']) === true && $filter['_start']    = $filter['start'];
@@ -734,233 +743,6 @@ class CacheService
         );
 
     }//end queryBackwardsCompatibility()
-
-    /**
-     * Handles a single filter used on a get collection api call. Specifically an filter where the value is an array.
-     *
-     * @param $value
-     *
-     * @throws Exception
-     *
-     * @return bool
-     */
-    private function handleFilterArray(&$value): bool
-    {
-        // Let's check for the methods like in
-        if (is_array($value) === true) {
-            // Type: int_compare.
-            if (array_key_exists('int_compare', $value) === true && is_array($value['int_compare']) === true) {
-                $value = array_map('intval', $value['int_compare']);
-            } else if (array_key_exists('int_compare', $value) === true) {
-                $value = (int) $value['int_compare'];
-
-                return true;
-            }
-
-            // Type: bool_compare.
-            if (array_key_exists('bool_compare', $value) === true && is_array($value['bool_compare']) === true) {
-                $value = array_map('boolval', $value['bool_compare']);
-            } else if (array_key_exists('bool_compare', $value) === true) {
-                $value = (bool) $value['bool_compare'];
-
-                return true;
-            }
-
-            // After, before, strictly_after,strictly_before.
-            if (empty(array_intersect_key($value, array_flip(['after', 'before', 'strictly_after', 'strictly_before']))) === false) {
-                $newValue = null;
-                // Compare datetime.
-                if (empty(array_intersect_key($value, array_flip(['after', 'strictly_after']))) === false) {
-                    $after       = array_key_exists('strictly_after', $value) ? 'strictly_after' : 'after';
-                    $compareDate = new DateTime($value[$after]);
-                    $compareKey  = $after === 'strictly_after' ? '$gt' : '$gte';
-
-                    // Todo: add in someway an option for comparing string datetime or mongoDB datetime.
-                    // $newValue["$compareKey"] = new UTCDateTime($compareDate);
-                    $newValue["$compareKey"] = "{$compareDate->format('c')}";
-                }
-
-                if (empty(array_intersect_key($value, array_flip(['before', 'strictly_before']))) === false) {
-                    $before      = array_key_exists('strictly_before', $value) ? 'strictly_before' : 'before';
-                    $compareDate = new DateTime($value[$before]);
-                    $compareKey  = $before === 'strictly_before' ? '$lt' : '$lte';
-
-                    // Todo: add in someway an option for comparing string datetime or mongoDB datetime.
-                    // $newValue["$compareKey"] = new UTCDateTime($compareDate);
-                    $newValue["$compareKey"] = "{$compareDate->format('c')}";
-                }
-
-                $value = $newValue;
-
-                return true;
-            }//end if
-
-            // Type: like.
-            if (array_key_exists('like', $value) === true && is_array($value['like']) === true) {
-                // $value = array_map('like', $value['like']);
-            } else if (array_key_exists('like', $value) === true) {
-                $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value['like']);
-                $value = [
-                    '$regex'   => ".*$value.*",
-                    '$options' => 'im',
-                ];
-
-                return true;
-            }
-
-            // Type: regex.
-            if (array_key_exists('regex', $value) === true && is_array($value['regex']) === true) {
-                // $value = array_map('like', $value['like']); @todo.
-            } else if (array_key_exists('regex', $value) === true) {
-                $value = ['$regex' => $value['regex']];
-
-                return true;
-            }
-
-            // Type: >= .
-            if (array_key_exists('>=', $value) === true && is_array($value['>=']) === true) {
-                // $value = array_map('like', $value['like']); @todo.
-            } else if (array_key_exists('>=', $value) === true) {
-                $value = ['$gte' => (int) $value['>=']];
-
-                return true;
-            }
-
-            // Type: > .
-            if (array_key_exists('>', $value) === true && is_array($value['>']) === true) {
-                // $value = array_map('like', $value['like']); @todo.
-            } else if (array_key_exists('>', $value) === true) {
-                $value = ['$gt' => (int) $value['>']];
-
-                return true;
-            }
-
-            // Type: <= .
-            if (array_key_exists('<=', $value) === true && is_array($value['<=']) === true) {
-                // $value = array_map('like', $value['like']); @todo.
-            } else if (array_key_exists('<=', $value) === true) {
-                $value = ['$lte' => (int) $value['<=']];
-
-                return true;
-            }
-
-            // Type: < .
-            if (array_key_exists('<', $value) === true && is_array($value['<']) === true) {
-                // $value = array_map('like', $value['like']); @todo.
-            } else if (array_key_exists('<', $value) === true) {
-                $value = ['$lt' => (int) $value['<']];
-
-                return true;
-            }
-
-            // Type: Exact .
-            if (array_key_exists('exact', $value) === true && is_array($value['exact']) === true) {
-                // $value = array_map('like', $value['like']); @todo.
-            } else if (array_key_exists('exact', $value) === true) {
-                $value = $value;
-
-                return true;
-            }
-
-            // Type: case_insensitive.
-            if (array_key_exists('case_insensitive', $value) === true && is_array($value['case_insensitive']) === true) {
-                // $value = array_map('like', $value['like']); @todo.
-            } else if (array_key_exists('case_insensitive', $value) === true) {
-                $value = [
-                    '$regex'   => $value['case_insensitive'],
-                    '$options' => 'i',
-                ];
-
-                return true;
-            }
-
-            // case_sensitive.
-            if (array_key_exists('case_sensitive', $value) === true && is_array($value['case_sensitive']) === true) {
-                // $value = array_map('like', $value['like']); @todo.
-            } else if (array_key_exists('case_sensitive', $value)) {
-                $value = ['$regex' => $value['case_sensitive']];
-
-                return true;
-            }
-
-            // not equals
-            if (array_key_exists('ne', $value) === true) {
-                $value = ['$ne' => $value['ne']];
-
-                return true;
-            }
-
-            if (array_key_first($value) === '$elemMatch') {
-                return true;
-            }
-
-            // Handle filter value = array (example: ?property=a,b,c) also works if the property we are filtering on is an array.
-            $value = ['$in' => $value];
-
-            return true;
-        }//end if
-
-        return false;
-
-    }//end handleFilterArray()
-
-    /**
-     * Handles a single filter used on a get collection api call. This function makes sure special filters work correctly.
-     *
-     * @param $key
-     * @param $value
-     *
-     * @throws Exception
-     *
-     * @return void
-     */
-    private function handleFilter($key, &$value)
-    {
-        if (substr($key, 0, 1) == '_') {
-            // @Todo: deal with filters starting with _ like: _dateCreated.
-        }
-
-        // Handle filters that expect $value to be an array.
-        if ($this->handleFilterArray($value) === true) {
-            return;
-        }
-
-        // If the value is a boolean we need a other format.
-        if (is_bool($value) === true || is_int($value) === true) {
-            // Set as key '$eq' with the value.
-            $value = ['$eq' => $value];
-
-            return;
-        }
-
-        if (str_contains($value, '%') === true) {
-            $regex = str_replace('%', '', $value);
-            $regex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $regex);
-            $value = ['$regex' => $regex];
-
-            return;
-        }
-
-        if ($value === 'IS NOT NULL') {
-            $value = ['$ne' => null];
-
-            return;
-        }
-
-        if ($value === 'IS NULL' || $value === 'null') {
-            $value = null;
-
-            return;
-        }
-
-        // @Todo: exact match is default, make case insensitive optional:
-        $value = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $value);
-        $value = [
-            '$regex'   => "^$value$",
-            '$options' => 'im',
-        ];
-
-    }//end handleFilter()
 
     /**
      * Will add entity filters to the filters array.
@@ -1073,7 +855,7 @@ class CacheService
      */
     public function retrieveObjectsFromCache(array $filter, ?array $options): array
     {
-        $filter = $this->addOwnerOrgFilter($filter);
+        $filter = $this->addOwnerOrgFilter(filter: $filter);
 
         $this->session->set('mongoDBFilter', $filter);
 
@@ -1086,11 +868,11 @@ class CacheService
             return [];
         }
 
-        $total = $this->countObjectsInCache($filter);
+        $total = $this->countObjectsInCache(filter: $filter);
 
         $results = $collection->find($filter, $options)->toArray();
 
-        return $this->handleResultPagination($filter, $results, $total);
+        return $this->handleResultPagination(filter: $filter, results: $results, total: $total);
 
     }//end retrieveObjectsFromCache()
 
@@ -1111,18 +893,20 @@ class CacheService
             return [];
         }
 
-        $this->queryBackwardsCompatibility($filter);
+        $this->queryBackwardsCompatibility(filter: $filter);
 
         // Search for the correct entity / entities.
         if (empty($entities) === false) {
-            $queryError = $this->handleEntities($filter, $entities);
+            $queryError = $this->handleEntities(filter: $filter, entities: $entities);
             if ($queryError !== null) {
                 return $queryError;
             }
         }
 
         // Limit & Start for pagination.
-        $this->setPagination($limit, $start, $filter);
+        $limit = 30;
+        $start = 0;
+        $this->setPagination(limit: $limit, start: $start, filter: $filter);
 
         // Order.
         $order = isset($filter['_order']) === true ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $filter['_order']) : [];
@@ -1136,7 +920,7 @@ class CacheService
         }
 
         // Find / Search.
-        return $this->retrieveObjectsFromCache($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order]);
+        return $this->retrieveObjectsFromCache(filter: $filter, options: ['limit' => $limit, 'skip' => $start, 'sort' => $order]);
 
     }//end searchObjects()
 
@@ -1181,11 +965,11 @@ class CacheService
             return 0;
         }
 
-        $this->queryBackwardsCompatibility($filter);
+        $this->queryBackwardsCompatibility(filter: $filter);
 
         // Search for the correct entity / entities.
         if (empty($entities) === false) {
-            $queryError = $this->handleEntities($filter, $entities);
+            $queryError = $this->handleEntities(filter: $filter, entities: $entities);
             if ($queryError !== null) {
                 $this->logger->error($queryError);
                 return 0;
@@ -1193,7 +977,7 @@ class CacheService
         }
 
         // Find / Search.
-        return $this->countObjectsInCache($filter);
+        return $this->countObjectsInCache(filter: $filter);
 
     }//end countObjects()
 
@@ -1207,7 +991,7 @@ class CacheService
      *
      * @throws Exception
      */
-    public function aggregateQueries(array $filter, array $entities)
+    public function aggregateQueries(array $filter, array $entities): array
     {
         if (isset($filter['_queries']) === false) {
             return [];
@@ -1219,11 +1003,11 @@ class CacheService
             $queries = explode(',', $queries);
         }
 
-        $this->queryBackwardsCompatibility($filter);
+        $this->queryBackwardsCompatibility(filter: $filter);
 
         // Search for the correct entity / entities.
         if (empty($entities) === false) {
-            $queryError = $this->handleEntities($filter, $entities);
+            $queryError = $this->handleEntities(filter: $filter, entities: $entities);
             if ($queryError !== null) {
                 return $queryError;
             }
@@ -1319,29 +1103,25 @@ class CacheService
     /**
      * Decides the pagination values.
      *
-     * @param int   $limit   The resulting limit
-     * @param int   $start   The resulting start value
-     * @param array $filters The filters
+     * @param int $limit   The resulting limit
+     * @param int $start   The resulting start value
+     * @param array $filter The filters
      *
      * @return array
      */
-    public function setPagination(&$limit, &$start, array $filters): array
+    public function setPagination(int &$limit, int &$start, array $filter): array
     {
-        if (isset($filters['_limit']) === true) {
-            $limit = (int) $filters['_limit'];
-        } else {
-            $limit = 30;
+        if (isset($filter['_limit']) === true) {
+            $limit = (int) $filter['_limit'];
         }
 
-        if (isset($filters['_start']) === true || isset($filters['_offset']) === true) {
-            $start = isset($filters['_start']) === true ? (int) $filters['_start'] : (int) $filters['_offset'];
-        } else if (isset($filters['_page']) === true) {
-            $start = (((int) $filters['_page'] - 1) * $limit);
-        } else {
-            $start = 0;
+        if (isset($filter['_start']) === true || isset($filter['_offset']) === true) {
+            $start = isset($filter['_start']) === true ? (int) $filter['_start'] : (int) $filter['_offset'];
+        } else if (isset($filter['_page']) === true) {
+            $start = (((int) $filter['_page'] - 1) * $limit);
         }
 
-        return $filters;
+        return $filter;
 
     }//end setPagination()
 

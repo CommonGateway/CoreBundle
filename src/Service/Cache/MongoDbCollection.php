@@ -7,6 +7,7 @@ use CommonGateway\CoreBundle\Service\Cache\CollectionInterface;
 use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use MongoDB\Collection;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
@@ -110,7 +111,7 @@ class MongoDbCollection implements CollectionInterface
 
         // Normal search on every property with type text (includes strings), like this: ?_search=value.
         if (is_string($search) === true) {
-            $filter = $this->handleSearchString($filter, $search);
+            $filter = $this->handleSearchString(filter: $filter, search:  $search);
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value.
         else if (is_array($search) === true) {
@@ -162,7 +163,7 @@ class MongoDbCollection implements CollectionInterface
 
         // 'normal' Filters (not starting with _ ).
         foreach ($filter as $key => &$value) {
-            $this->handleFilter($key, $value);
+            $this->handleFilter(key: $key, value: $value);
         }
 
     }//end parseFilter()
@@ -354,7 +355,7 @@ class MongoDbCollection implements CollectionInterface
      *
      * @return void
      */
-    private function handleFilter($key, &$value)
+    private function handleFilter($key, &$value): void
     {
         if ($key === '$and') {
             return;
@@ -365,7 +366,7 @@ class MongoDbCollection implements CollectionInterface
         }
 
         // Handle filters that expect $value to be an array.
-        if ($this->handleFilterArray($value) === true) {
+        if ($this->handleFilterArray(value: $value) === true) {
             return;
         }
 
@@ -418,9 +419,9 @@ class MongoDbCollection implements CollectionInterface
         $filter = $pipeline[0]['$match'];
 
         // Let's see if we need a search
-        $this->handleSearch($filter);
+        $this->handleSearch(filter: $filter);
 
-        $this->parseFilter($filter);
+        $this->parseFilter(filter: $filter);
 
         $pipeline[0]['$match'] = $filter;
         return $this->collection->aggregate($pipeline, $options);
@@ -437,9 +438,9 @@ class MongoDbCollection implements CollectionInterface
         }
 
         // Let's see if we need a search
-        $this->handleSearch($filter);
+        $this->handleSearch(filter: $filter);
 
-        $this->parseFilter($filter);
+        $this->parseFilter(filter: $filter);
 
         return $this->collection->count($filter, $options);
 
@@ -473,9 +474,9 @@ class MongoDbCollection implements CollectionInterface
         }
 
         // Let's see if we need a search
-        $this->handleSearch($filter);
+        $this->handleSearch(filter: $filter);
 
-        $this->parseFilter($filter);
+        $this->parseFilter(filter: $filter);
 
         return $this->collection->find($filter, $options);
 
