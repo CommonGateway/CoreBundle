@@ -163,6 +163,10 @@ class MongoDbCollection implements CollectionInterface
 
         // 'normal' Filters (not starting with _ ).
         foreach ($filter as $key => &$value) {
+            // Skip $or (in case a _search query is used)
+            if ($key === '$or') {
+                continue;
+            }
             $this->handleFilter(key: $key, value: $value);
         }
 
