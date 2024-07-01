@@ -409,7 +409,7 @@ class CacheService
                 type: 'App:ObjectEntity',
                 schemaRefs: $schemaRefs
             );
-        }
+        }//end if
 
         if ((isset($config['schemas']) === false || $config['schemas'] !== true) && $bundleToCache === null) {
             $this->client->schemas->json->createIndex(['$**' => 'text']);
@@ -1103,8 +1103,8 @@ class CacheService
     /**
      * Decides the pagination values.
      *
-     * @param int $limit   The resulting limit
-     * @param int $start   The resulting start value
+     * @param int   $limit  The resulting limit
+     * @param int   $start  The resulting start value
      * @param array $filter The filters
      *
      * @return array

@@ -167,6 +167,7 @@ class MongoDbCollection implements CollectionInterface
             if ($key === '$or') {
                 continue;
             }
+
             $this->handleFilter(key: $key, value: $value);
         }
 
