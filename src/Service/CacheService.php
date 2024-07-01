@@ -1108,7 +1108,7 @@ class CacheService
         }
 
         if (isset($filter['_start']) === true) {
-            $start = (int)$filter['_start'];
+            $start = (int) $filter['_start'];
         } else if (isset($filter['_offset']) === true) {
             $start = (int) $filter['_offset'];
         } else if (isset($filter['_page']) === true) {
@@ -1118,7 +1118,7 @@ class CacheService
         return $filter;
 
     }//end setPagination()
-    
+
     /**
      * Decides the order value.
      *
@@ -1129,14 +1129,20 @@ class CacheService
     private function setOrder(array $filter): array
     {
         $order = [];
-        
+
         if (isset($filter['_order']) === true) {
             $order = str_replace(
-                ['asc', 'desc'],
-                [1, -1],
+                [
+                    'asc',
+                    'desc',
+                ],
+                [
+                    1,
+                    -1,
+                ],
                 array_map('strtolower', $filter['_order'])
             );
-            
+
             $order = array_map(
                 function ($value) {
                     return (int) $value;
@@ -1144,9 +1150,10 @@ class CacheService
                 $order
             );
         }
-        
+
         return $order;
-    }
+
+    }//end setOrder()
 
     /**
      * Adds pagination variables to an array with the results we found with searchObjects().

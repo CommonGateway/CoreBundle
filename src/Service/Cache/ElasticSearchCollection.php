@@ -262,7 +262,7 @@ class ElasticSearchCollection implements CollectionInterface
         return $query;
 
     }//end buildQuery()
-    
+
     /**
      * Handles pagination and ordering based on the given options array.
      * Adds parameters to the return '$body' array accordingly.
@@ -278,24 +278,25 @@ class ElasticSearchCollection implements CollectionInterface
         if (isset($options['limit']) === true) {
             $body['size'] = $options['limit'];
         }
-        
+
         if (isset($options['skip']) === true) {
             $body['from'] = $options['skip'];
         }
-        
+
         if (isset($options['sort']) === true) {
             foreach ($options['sort'] as $key => $value) {
                 $sort = 'desc';
                 if ($value === 1) {
                     $sort = 'asc';
                 }
-                
+
                 $body['sort'][] = [$key => $sort];
             }
         }
-        
+
         return $body;
-    }
+
+    }//end handleOptions()
 
     /**
      * Generates a search body for given filter.
