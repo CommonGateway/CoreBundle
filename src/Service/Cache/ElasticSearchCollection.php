@@ -85,7 +85,11 @@ class ElasticSearchCollection implements CollectionInterface
     {
         $connection = $this->database->getClient()->getConnection();
 
-        $body = $this->generateSearchBody($pipeline[0]);
+        $filter = $pipeline[0];
+        $completeFilter = [];
+        $this->parseFilter($filter, $completeFilter);
+        
+        $body = $this->generateSearchBody($filter);
 
         foreach ($pipeline[1] as $query) {
             $body['runtime_mappings'][$query] = ['type' => 'keyword'];
@@ -354,10 +358,10 @@ class ElasticSearchCollection implements CollectionInterface
      */
     public function count(array $filter = [], array $options = []): int
     {
+        $connection = $this->database->getClient()->getConnection();
+        
         $completeFilter = [];
         $this->parseFilter($filter, $completeFilter);
-
-        $connection = $this->database->getClient()->getConnection();
 
         $body = $this->generateSearchBody(filter: $filter);
 
@@ -413,10 +417,10 @@ class ElasticSearchCollection implements CollectionInterface
      */
     public function find(array $filter = [], array $options = []): \Iterator
     {
+        $connection = $this->database->getClient()->getConnection();
+        
         $completeFilter = [];
         $this->parseFilter($filter, $completeFilter);
-
-        $connection = $this->database->getClient()->getConnection();
 
         $body = $this->generateSearchBody(filter: $filter, options: $options);
 

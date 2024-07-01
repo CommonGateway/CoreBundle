@@ -519,14 +519,18 @@ class MongoDbCollection implements CollectionInterface
      */
     public function aggregate(array $pipeline, array $options = []): \Iterator
     {
-        // if ($this->database->getName() !== 'objects') {
-        // return $this->collection->aggregate($pipeline, $options);
-        // }
-        //
-        // $completeFilter = [];
-        // $this->parseFilter($pipeline[0], $completeFilter);
+        if ($this->database->getName() !== 'objects' || isset($pipeline[0]['$match']) === false) {
+            return $this->collection->aggregate($pipeline, $options);
+        }
+        
+        $filter = $pipeline[0]['$match'];
+        $completeFilter = [];
+        $this->parseFilter($filter, $completeFilter);
+        
         // Let's see if we need a search
-        // $this->handleSearch($filter, $completeFilter);
+        $this->handleSearch($filter, $completeFilter);
+        
+        $pipeline[0]['$match'] = $filter;
         return $this->collection->aggregate($pipeline, $options);
 
     }//end aggregate()
