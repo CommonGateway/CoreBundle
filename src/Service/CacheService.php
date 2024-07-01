@@ -967,12 +967,11 @@ class CacheService
      * Will also check if we are allowed to filter & order with the given filters and order query params.
      *
      * @param array $filter         The filter array
-     * @param array $completeFilter The complete filter array, contains order & pagination queries/filters as well.
      * @param array $entities       An array with one or more entities we are searching objects for.
      *
      * @return array|null Will return an array if any query parameters are used that are not allowed.
      */
-    private function handleEntities(array &$filter, array $completeFilter, array $entities): ?array
+    private function handleEntities(array &$filter, array $entities): ?array
     {
         // @todo: reenable this when checking for allowed filters and ordering is reenabled.
         // $filterCheck = $filter;
@@ -995,7 +994,7 @@ class CacheService
 
             // @todo: for now we do not check for allowed filters and ordering, because this breaks things.
             // Only allow ordering & filtering on attributes with sortable = true & searchable = true (respectively).
-            // $orderError = $this->handleOrderCheck($entityObject, $completeFilter['_order'] ?? null);
+            // $orderError = $this->handleOrderCheck($entityObject, $filter['_order'] ?? null);
             // $filterError = $this->handleFilterCheck($entityObject, $filterCheck ?? null);
             $orderError  = null;
             $filterError = null;
@@ -1022,58 +1021,6 @@ class CacheService
         return null;
 
     }//end handleEntities()
-
-    /**
-     * Parses the filter array and creates the filter and completeFilter arrays
-     *
-     * @param array $filter         The filters to parse
-     * @param array $completeFilter The complete filter (can be empty, will be updated)
-     *
-     * @return array|null The result of the parse, contains an error on failure, contains null on success.
-     *
-     * @throws Exception
-     */
-    private function parseFilter(array &$filter, array &$completeFilter, $entities): ?array
-    {
-        // Backwards compatibility.
-        $this->queryBackwardsCompatibility($filter);
-
-        // Make sure we also have all filters stored in $completeFilter before unsetting.
-        $completeFilter = $filter;
-
-        unset(
-            $filter['_start'],
-            $filter['_offset'],
-            $filter['_limit'],
-            $filter['_page'],
-            $filter['_extend'],
-            $filter['_search'],
-            $filter['_order'],
-            $filter['_fields'],
-            $filter['_queries'],
-            $filter['_showDeleted']
-        );
-
-        if (key_exists('_showDeleted', $completeFilter) === false || $completeFilter['_showDeleted'] === 'false') {
-            $filter['_self.dateDeleted'] = 'IS NULL';
-        }
-
-        // 'normal' Filters (not starting with _ ).
-        foreach ($filter as $key => &$value) {
-            $this->handleFilter($key, $value);
-        }
-
-        // Search for the correct entity / entities.
-        if (empty($entities) === false) {
-            $queryError = $this->handleEntities($filter, $completeFilter, $entities);
-            if ($queryError !== null) {
-                return $queryError;
-            }
-        }
-
-        return null;
-
-    }//end parseFilter()
 
     /**
      * Adds owner and organization filters (multi tenancy) for searchObjects() or countObjects(). Or other MongoDB collection queries.
@@ -1121,11 +1068,10 @@ class CacheService
      *
      * @param array      $filter         The mongoDB query to filter with.
      * @param array|null $options        Options like 'limit', 'skip' & 'sort' for the mongoDB->find query.
-     * @param array      $completeFilter The completeFilter query, unchanged, as used on the request.
      *
      * @return array $this->handleResultPagination() array with objects and pagination.
      */
-    public function retrieveObjectsFromCache(array $filter, ?array $options, array $completeFilter): array
+    public function retrieveObjectsFromCache(array $filter, ?array $options): array
     {
         $filter = $this->addOwnerOrgFilter($filter);
 
@@ -1151,7 +1097,6 @@ class CacheService
     /**
      * Searches the object store for objects containing the search string.
      *
-     * @param string|null $search   a string to search for within the given context
      * @param array       $filter   an array of dot.notation filters for which to search with
      * @param array       $entities schemas to limit te search to
      *
@@ -1159,23 +1104,18 @@ class CacheService
      *
      * @return array The objects found
      */
-    public function searchObjects(string $search = null, array $filter = [], array $entities = []): array
+    public function searchObjects(array $filter = [], array $entities = []): array
     {
         // Backwards compatablity.
         if (isset($this->client) === false) {
             return [];
         }
-
-        // $completeFilter = $filter;
-        // $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
-        // if ($filterParse !== null) {
-        // return $filterParse;
-        // }
+        
         $this->queryBackwardsCompatibility($filter);
 
         // Search for the correct entity / entities.
         if (empty($entities) === false) {
-            $queryError = $this->handleEntities($filter, $filter, $entities);
+            $queryError = $this->handleEntities($filter, $entities);
             if ($queryError !== null) {
                 return $queryError;
             }
@@ -1196,7 +1136,7 @@ class CacheService
         }
 
         // Find / Search.
-        return $this->retrieveObjectsFromCache($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order], $filter);
+        return $this->retrieveObjectsFromCache($filter, ['limit' => $limit, 'skip' => $start, 'sort' => $order]);
 
     }//end searchObjects()
 
@@ -1209,7 +1149,6 @@ class CacheService
      */
     public function countObjectsInCache(array $filter): int
     {
-
         $this->session->set('mongoDBFilter', $filter);
 
         $this->setObjectClient();
@@ -1228,7 +1167,6 @@ class CacheService
     /**
      * Counts objects found with the given search/filter parameters.
      *
-     * @param string|null $search   a string to search for within the given context
      * @param array       $filter   an array of dot.notation filters for which to search with
      * @param array       $entities schemas to limit te search to
      *
@@ -1236,24 +1174,18 @@ class CacheService
      *
      * @return int
      */
-    public function countObjects(string $search = null, array $filter = [], array $entities = []): int
+    public function countObjects(array $filter = [], array $entities = []): int
     {
         // Backwards compatablity.
         if (isset($this->client) === false) {
             return 0;
         }
-
-        // $completeFilter = [];
-        // $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
-        // if ($filterParse !== null) {
-        // $this->logger->error($filterParse);
-        // return 0;
-        // }
+        
         $this->queryBackwardsCompatibility($filter);
 
         // Search for the correct entity / entities.
         if (empty($entities) === false) {
-            $queryError = $this->handleEntities($filter, $filter, $entities);
+            $queryError = $this->handleEntities($filter, $entities);
             if ($queryError !== null) {
                 $this->logger->error($queryError);
                 return 0;
@@ -1287,16 +1219,11 @@ class CacheService
             $queries = explode(',', $queries);
         }
 
-        // $completeFilter = [];
-        // $filterParse    = $this->parseFilter($filter, $completeFilter, $entities);
-        // if ($filterParse !== null) {
-        // return $filterParse;
-        // }
         $this->queryBackwardsCompatibility($filter);
 
         // Search for the correct entity / entities.
         if (empty($entities) === false) {
-            $queryError = $this->handleEntities($filter, $filter, $entities);
+            $queryError = $this->handleEntities($filter, $entities);
             if ($queryError !== null) {
                 return $queryError;
             }
@@ -1388,99 +1315,6 @@ class CacheService
     // }
     // return null;
     // }//end handleFilterCheck()
-
-    /**
-     * Adds search filter to the query on MongoDB. Will use given $search string to search on entire object, unless
-     * the _search query is present in $completeFilter query params, then we use that instead.
-     * _search query param supports filtering on specific properties with ?_search[property1,property2]=value.
-     *
-     * @param array       $filter         The filter array for mongoDB so far.
-     * @param array       $completeFilter All filters used with query params, will also contain properties like _order and _search.
-     * @param string|null $search         A string to search with, or null.
-     *
-     * @return void
-     */
-    private function handleSearch(array &$filter, array $completeFilter, ?string $search)
-    {
-        if (isset($completeFilter['_search']) === true && empty($completeFilter['_search']) === false) {
-            $search = $completeFilter['_search'];
-        }
-
-        if (empty($search) === true) {
-            return;
-        }
-
-        // Normal search on every property with type text (includes strings), like this: ?_search=value.
-        if (is_string($search) === true) {
-            $filter = $this->handleSearchString($filter, $search);
-        }
-        // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value.
-        else if (is_array($search) === true) {
-            $searchRegex = preg_replace('/([^A-Za-z0-9\s])/', '\\\\$1', $search[array_key_first($search)]);
-            if (empty($searchRegex) === true) {
-                return;
-            }
-
-            $searchRegex = [
-                '$regex'   => ".*$searchRegex.*",
-                '$options' => 'im',
-            ];
-            $properties  = explode(',', array_key_first($search));
-            foreach ($properties as $property) {
-                // todo: we might want to check if we are allowed to filter on this property? with $this->handleFilterCheck;
-                $filter['$or'][][$property] = $searchRegex;
-            }
-        }
-
-    }//end handleSearch()
-
-    /**
-     * Uses given $search string to add a filter on all properties to the existing $filter array.
-     * Will try to do a wildcard search using $regex on all attributes of the entities in $filter['_self.schema.id']['$in'].
-     * Else uses the $text + $search mongoDB query in order to do a non wildcard search on all string type properties.
-     *
-     * @param array  $filter The filter array for mongoDB so far.
-     * @param string $search The search string to search all properties with.
-     *
-     * @return array The updated filter array.
-     */
-    private function handleSearchString(array $filter, string $search): array
-    {
-        // Non wildcard version, just in case we do not have '_self.schema.id'
-        if (isset($filter['_self.schema.id']['$in']) === false) {
-            $filter['$text'] = ['$search' => $search];
-            return $filter;
-        }
-
-        // Use regex in order to do wildcard search.
-        $searchRegex = [
-            '$regex'   => ".*$search.*",
-            '$options' => 'im',
-        ];
-
-        // Add regex wildcard search for each attribute of each entity we are filtering on.
-        $countEntities = 0;
-        foreach ($filter['_self.schema.id']['$in'] as $entityId) {
-            $entityObject = $this->entityManager->getRepository(Entity::class)->find($entityId);
-            if ($entityObject === null) {
-                $this->logger->error("Could not find an Entity with id = $entityId during handleSearch()");
-                continue;
-            }
-
-            $countEntities = ($countEntities + 1);
-            foreach ($entityObject->getAttributes() as $attribute) {
-                $filter['$or'][][$attribute->getName()] = $searchRegex;
-            }
-        }
-
-        // If we somehow did not find any entities we should just use non wildcard search instead of returning all objects without filtering.
-        if ($countEntities === 0) {
-            $filter['$text'] = ['$search' => $search];
-        }
-
-        return $filter;
-
-    }//end handleSearchString()
 
     /**
      * Decides the pagination values.

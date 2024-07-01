@@ -1165,7 +1165,7 @@ class RequestService
                     return $this->createResponse($this->cacheService->aggregateQueries($filters, $allowedSchemas['id']));
                 }
 
-                $result = $this->cacheService->searchObjects(null, $filters, $allowedSchemas['id']);
+                $result = $this->cacheService->searchObjects($filters, $allowedSchemas['id']);
             }//end if
             break;
         case 'POST':
