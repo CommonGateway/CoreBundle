@@ -163,11 +163,6 @@ class MongoDbCollection implements CollectionInterface
 
         // 'normal' Filters (not starting with _ ).
         foreach ($filter as $key => &$value) {
-            // Skip $or (in case a _search query is used)
-            if ($key === '$or') {
-                continue;
-            }
-
             $this->handleFilter(key: $key, value: $value);
         }
 
@@ -353,16 +348,17 @@ class MongoDbCollection implements CollectionInterface
     /**
      * Handles a single filter used on a get collection api call. This function makes sure special filters work correctly.
      *
-     * @param $key
-     * @param $value
+     * @param mixed $key
+     * @param mixed $value
      *
      * @throws Exception
      *
      * @return void
      */
-    private function handleFilter($key, &$value): void
+    private function handleFilter(mixed $key, mixed &$value): void
     {
-        if ($key === '$and') {
+        // Skip $and & $or (in case a _search query is used and already added to filter for example).
+        if ($key === '$and' || $key === '$or') {
             return;
         }
 
@@ -423,7 +419,7 @@ class MongoDbCollection implements CollectionInterface
 
         $filter = $pipeline[0]['$match'];
 
-        // Let's see if we need a search
+        // Let's see if we need a search.
         $this->handleSearch(filter: $filter);
 
         $this->parseFilter(filter: $filter);
@@ -442,7 +438,7 @@ class MongoDbCollection implements CollectionInterface
             return $this->collection->count($filter, $options);
         }
 
-        // Let's see if we need a search
+        // Let's see if we need a search.
         $this->handleSearch(filter: $filter);
 
         $this->parseFilter(filter: $filter);
@@ -478,7 +474,7 @@ class MongoDbCollection implements CollectionInterface
             return $this->collection->find($filter, $options);
         }
 
-        // Let's see if we need a search
+        // Let's see if we need a search.
         $this->handleSearch(filter: $filter);
 
         $this->parseFilter(filter: $filter);

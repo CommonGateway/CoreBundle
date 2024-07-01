@@ -199,7 +199,7 @@ class ElasticSearchCollection implements CollectionInterface
             } else if ($key === '$or') {
                 $query['bool']['should'] = $this->buildQuery(filter: $value, directReturn: true);
             } else if ($key === '_search') {
-                // todo: Partial search doesn't work yet...
+                // Todo: Partial search doesn't work yet...
                 if (is_array($value) === true) {
                     $properties            = explode(',', array_key_first($value));
                     $query['query_string'] = [
@@ -262,6 +262,40 @@ class ElasticSearchCollection implements CollectionInterface
         return $query;
 
     }//end buildQuery()
+    
+    /**
+     * Handles pagination and ordering based on the given options array.
+     * Adds parameters to the return '$body' array accordingly.
+     *
+     * @param array $options The options used for pagination and ordering.
+     *
+     * @return array The $body array for pagination and ordering on ElasticSearch.
+     */
+    private function handleOptions(array $options): array
+    {
+        // Handle pagination and ordering.
+        $body = [];
+        if (isset($options['limit']) === true) {
+            $body['size'] = $options['limit'];
+        }
+        
+        if (isset($options['skip']) === true) {
+            $body['from'] = $options['skip'];
+        }
+        
+        if (isset($options['sort']) === true) {
+            foreach ($options['sort'] as $key => $value) {
+                $sort = 'desc';
+                if ($value === 1) {
+                    $sort = 'asc';
+                }
+                
+                $body['sort'][] = [$key => $sort];
+            }
+        }
+        
+        return $body;
+    }
 
     /**
      * Generates a search body for given filter.
@@ -273,26 +307,7 @@ class ElasticSearchCollection implements CollectionInterface
      */
     private function generateSearchBody(array $filter, array $options = []): array
     {
-        // Handle pagination and ordering
-        $body = [];
-        if (isset($options['limit'])) {
-            $body['size'] = $options['limit'];
-        }
-
-        if (isset($options['skip'])) {
-            $body['from'] = $options['skip'];
-        }
-
-        if (isset($options['sort'])) {
-            foreach ($options['sort'] as $key => $value) {
-                $sort = 'desc';
-                if ($value === 1) {
-                    $sort = 'asc';
-                }
-
-                $body['sort'][] = [$key => $sort];
-            }
-        }
+        $body = $this->handleOptions(options: $options);
 
         $query = $this->buildQuery(filter: $filter);
 

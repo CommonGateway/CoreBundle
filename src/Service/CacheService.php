@@ -909,15 +909,7 @@ class CacheService
         $this->setPagination(limit: $limit, start: $start, filter: $filter);
 
         // Order.
-        $order = isset($filter['_order']) === true ? str_replace(['ASC', 'asc', 'DESC', 'desc'], [1, 1, -1, -1], $filter['_order']) : [];
-        if (empty($order) === false) {
-            $order = array_map(
-                function ($value) {
-                    return (int) $value;
-                },
-                $order
-            );
-        }
+        $order = $this->setOrder(filter: $filter);
 
         // Find / Search.
         return $this->retrieveObjectsFromCache(filter: $filter, options: ['limit' => $limit, 'skip' => $start, 'sort' => $order]);
@@ -1115,8 +1107,10 @@ class CacheService
             $limit = (int) $filter['_limit'];
         }
 
-        if (isset($filter['_start']) === true || isset($filter['_offset']) === true) {
-            $start = isset($filter['_start']) === true ? (int) $filter['_start'] : (int) $filter['_offset'];
+        if (isset($filter['_start']) === true) {
+            $start = (int)$filter['_start'];
+        } else if (isset($filter['_offset']) === true) {
+            $start = (int) $filter['_offset'];
         } else if (isset($filter['_page']) === true) {
             $start = (((int) $filter['_page'] - 1) * $limit);
         }
@@ -1124,6 +1118,35 @@ class CacheService
         return $filter;
 
     }//end setPagination()
+    
+    /**
+     * Decides the order value.
+     *
+     * @param array $filter The filters
+     *
+     * @return array
+     */
+    private function setOrder(array $filter): array
+    {
+        $order = [];
+        
+        if (isset($filter['_order']) === true) {
+            $order = str_replace(
+                ['asc', 'desc'],
+                [1, -1],
+                array_map('strtolower', $filter['_order'])
+            );
+            
+            $order = array_map(
+                function ($value) {
+                    return (int) $value;
+                },
+                $order
+            );
+        }
+        
+        return $order;
+    }
 
     /**
      * Adds pagination variables to an array with the results we found with searchObjects().
