@@ -85,10 +85,10 @@ class ElasticSearchCollection implements CollectionInterface
     {
         $connection = $this->database->getClient()->getConnection();
 
-        $filter = $pipeline[0];
+        $filter         = $pipeline[0];
         $completeFilter = [];
         $this->parseFilter($filter, $completeFilter);
-        
+
         $body = $this->generateSearchBody($filter);
 
         foreach ($pipeline[1] as $query) {
@@ -359,7 +359,7 @@ class ElasticSearchCollection implements CollectionInterface
     public function count(array $filter = [], array $options = []): int
     {
         $connection = $this->database->getClient()->getConnection();
-        
+
         $completeFilter = [];
         $this->parseFilter($filter, $completeFilter);
 
@@ -418,7 +418,7 @@ class ElasticSearchCollection implements CollectionInterface
     public function find(array $filter = [], array $options = []): \Iterator
     {
         $connection = $this->database->getClient()->getConnection();
-        
+
         $completeFilter = [];
         $this->parseFilter($filter, $completeFilter);
 
