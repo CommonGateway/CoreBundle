@@ -168,7 +168,7 @@ class UploadService
      */
     public function getExistingObject($id, string $field, array $result): array
     {
-        $objects = $this->cacheService->searchObjects([$field => $id], [$result['object']['_self']['schema']['id']]);
+        $objects = $this->cacheService->searchObjectsNew([$field => $id], [$result['object']['_self']['schema']['id']]);
 
         if (count($objects['results']) === 0) {
             return $result;

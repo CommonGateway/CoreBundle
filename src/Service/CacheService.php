@@ -306,7 +306,7 @@ class CacheService
 
         isset($this->style) === true && $this->style->writeln('Connecting to '.$this->parameters->get('cache_url'));
 
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (((isset($config['schemas']) === false || $config['schemas'] !== true)
             || (isset($config['endpoints']) === false || $config['endpoints'] !== true))
             && isset($this->client) === false
@@ -875,9 +875,36 @@ class CacheService
         return $this->handleResultPagination(filter: $filter, results: $results, total: $total);
 
     }//end retrieveObjectsFromCache()
-
+    
+    /**
+     * Backwards compatibility for the searchObjects function with 3 arguments.
+     * 
+     * @param $function_name
+     * @param $arguments
+     * 
+     * @return array|void
+     * 
+     * @throws Exception
+     */
+    function __call($function_name, $arguments)
+    {
+        $count = count($arguments);
+        
+        // Check function name
+        if ($function_name == 'searchObjects') {
+            if ($count == 3) {
+                if (empty($arguments[0]) === false && isset($arguments[1]['_search']) === false) {
+                    $arguments[1]['_search'] = $arguments[0];
+                }
+                array_shift($arguments);
+            }
+            return $this->searchObjectsNew($arguments);
+        }
+    }
+    
     /**
      * Searches the object store for objects containing the search string.
+     * TODO: Rename this function back to searchObjects
      *
      * @param array $filter   an array of dot.notation filters for which to search with
      * @param array $entities schemas to limit te search to
@@ -886,9 +913,9 @@ class CacheService
      *
      * @return array The objects found
      */
-    public function searchObjects(array $filter = [], array $entities = []): array
+    public function searchObjectsNew(array $filter = [], array $entities = []): array
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return [];
         }
@@ -952,7 +979,7 @@ class CacheService
      */
     public function countObjects(array $filter = [], array $entities = []): int
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return 0;
         }
@@ -1200,7 +1227,7 @@ class CacheService
      */
     public function cacheEndpoint(Endpoint $endpoint): Endpoint
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return $endpoint;
         }
@@ -1245,7 +1272,7 @@ class CacheService
      */
     public function removeEndpoint(Endpoint $endpoint): void
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return;
         }
@@ -1265,7 +1292,7 @@ class CacheService
      */
     public function getEndpoint(string $identification): ?array
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return [];
         }
@@ -1286,7 +1313,7 @@ class CacheService
 
     public function getEndpoints(array $filter): ?Endpoint
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return [];
         }
@@ -1330,7 +1357,7 @@ class CacheService
      */
     public function cacheShema(Entity $entity): Entity
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return $entity;
         }
@@ -1367,7 +1394,7 @@ class CacheService
     // public function removeSchema(Entity $entity): void
     // {
     // @TODO remove entity from cache.
-    // Backwards compatablity
+    // Backwards compatibility
     // if (isset($this->client) === false) {
     // return;
     // }
@@ -1382,7 +1409,7 @@ class CacheService
     // public function getSchema(Uuid $identification): ?array
     // {
     // @TODO get entity from cache.
-    // Backwards compatablity
+    // Backwards compatibility
     // if (isset($this->client) === false) {
     // return [];
     // }
