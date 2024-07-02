@@ -875,33 +875,36 @@ class CacheService
         return $this->handleResultPagination(filter: $filter, results: $results, total: $total);
 
     }//end retrieveObjectsFromCache()
-    
+
     /**
      * Backwards compatibility for the searchObjects function with 3 arguments.
-     * 
+     *
      * @param $function_name
      * @param $arguments
-     * 
+     *
      * @return array|void
-     * 
+     *
      * @throws Exception
      */
     function __call($function_name, $arguments)
     {
         $count = count($arguments);
-        
+
         // Check function name
         if ($function_name == 'searchObjects') {
             if ($count == 3) {
                 if (empty($arguments[0]) === false && isset($arguments[1]['_search']) === false) {
                     $arguments[1]['_search'] = $arguments[0];
                 }
+
                 array_shift($arguments);
             }
+
             return $this->searchObjectsNew($arguments);
         }
-    }
-    
+
+    }//end __call()
+
     /**
      * Searches the object store for objects containing the search string.
      * TODO: Rename this function back to searchObjects
@@ -941,7 +944,7 @@ class CacheService
         // Find / Search.
         return $this->retrieveObjectsFromCache(filter: $filter, options: ['limit' => $limit, 'skip' => $start, 'sort' => $order]);
 
-    }//end searchObjects()
+    }//end searchObjectsNew()
 
     /**
      * Counts objects in a cache collection.
