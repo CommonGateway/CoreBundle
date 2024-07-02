@@ -85,7 +85,10 @@ class ElasticSearchCollection implements CollectionInterface
     {
         $connection = $this->database->getClient()->getConnection();
 
-        $body = $this->generateSearchBody($pipeline[0]);
+        $filter = $pipeline[0];
+        $this->parseFilter(filter: $filter);
+
+        $body = $this->generateSearchBody(filter: $filter);
 
         foreach ($pipeline[1] as $query) {
             $body['runtime_mappings'][$query] = ['type' => 'keyword'];
@@ -171,7 +174,7 @@ class ElasticSearchCollection implements CollectionInterface
         $result = [];
 
         foreach ($operators as $operator) {
-            $result = array_merge_recursive($this->buildComparison($key, $values[$operator], $operator), $result);
+            $result = array_merge_recursive($this->buildComparison(key: $key, value: $values[$operator], operator: $operator), $result);
         }
 
         return $result;
@@ -196,7 +199,26 @@ class ElasticSearchCollection implements CollectionInterface
             } else if ($key === '$or') {
                 $query['bool']['should'] = $this->buildQuery(filter: $value, directReturn: true);
             } else if ($key === '_search') {
-                $query['query_string']['query'] = $value;
+                // Todo: Partial search doesn't work yet...
+                if (is_array($value) === true) {
+                    $properties            = explode(',', array_key_first($value));
+                    $query['query_string'] = [
+                        'query'  => $value[array_key_first($value)],
+                        'fields' => $properties,
+                    ];
+                } else {
+                    $query['query_string']['query'] = $value;
+                }
+            } else if ($value === null || $value === 'null' || $value === 'IS NULL') {
+                $query[] = ['bool' => ['must_not' => ['exists' => ['field' => $key]]]];
+                if ($directReturn === true) {
+                    return $query[0];
+                }
+            } else if ($value === 'IS NOT NULL') {
+                $query[] = ['bool' => ['must' => ['exists' => ['field' => $key]]]];
+                if ($directReturn === true) {
+                    return $query[0];
+                }
             } else if (is_array(value: $value) === true && array_is_list(array: $value) === true) {
                 $query[] = $this->buildQuery(filter: $value, directReturn: $directReturn);
             } else if (is_array(value: $value) === true && isset($value['$in'])) {
@@ -232,11 +254,6 @@ class ElasticSearchCollection implements CollectionInterface
                 if ($directReturn === true) {
                     return $query[0];
                 }
-            } else if ($value === null) {
-                $query[] = ['bool' => ['must_not' => ['exists' => ['field' => $key]]]];
-                if ($directReturn === true) {
-                    return $query[0];
-                }
             } else {
                 $query[] = $this->buildQuery(filter: $value, directReturn: $directReturn);
             }//end if
@@ -247,71 +264,51 @@ class ElasticSearchCollection implements CollectionInterface
     }//end buildQuery()
 
     /**
-     * Sets the correct sort-parameters by reading _order filters.
+     * Handles pagination and ordering based on the given options array.
+     * Adds parameters to the return '$body' array accordingly.
      *
-     * @param  array $filters The given filter array for the request
-     * @param  array $body    The request body before adding sorts.
-     * @return array The request body after adding sorts.
+     * @param array $options The options used for pagination and ordering.
+     *
+     * @return array The $body array for pagination and ordering on ElasticSearch.
      */
-    private function handleOrder(array &$filters, array $body): array
+    private function handleOptions(array $options): array
     {
-        if (isset($filters['_order']) === false) {
-            return $body;
+        // Handle pagination and ordering.
+        $body = [];
+        if (isset($options['limit']) === true) {
+            $body['size'] = $options['limit'];
         }
 
-        $order = $filters['_order'];
-        unset($filters['_order']);
+        if (isset($options['skip']) === true) {
+            $body['from'] = $options['skip'];
+        }
 
-        foreach ($order as $key => $value) {
-            $body['sort'][$key] = ['order' => $value];
+        if (isset($options['sort']) === true) {
+            foreach ($options['sort'] as $key => $value) {
+                $sort = 'desc';
+                if ($value === 1) {
+                    $sort = 'asc';
+                }
+
+                $body['sort'][] = [$key => $sort];
+            }
         }
 
         return $body;
 
-    }//end handleOrder()
-
-    /**
-     * Handle pagination for search results.
-     *
-     * @param array $filters The raw filter array.
-     *
-     * @return array The processed pagination parameters.
-     */
-    private function handlePagination(array &$filters): array
-    {
-        if (isset($filters['_limit']) === true) {
-            $limit = (int) $filters['_limit'];
-        } else {
-            $limit = 30;
-        }
-
-        if (isset($filters['_start']) === true || isset($filters['_offset']) === true) {
-            $start = isset($filters['_start']) === true ? (int) $filters['_start'] : (int) $filters['_offset'];
-        } else if (isset($filters['_page']) === true) {
-            $start = (((int) $filters['_page'] - 1) * $limit);
-        } else {
-            $start = 0;
-        }
-
-        unset($filters['_limit'], $filters['_start'], $filters['_offset'], $filters['_page']);
-
-        return [
-            'size' => $limit,
-            'from' => $start,
-        ];
-
-    }//end handlePagination()
+    }//end handleOptions()
 
     /**
      * Generates a search body for given filter.
      *
-     * @param  array $filter The filter to generate the search body with.
+     * @param array $filter  The filter to generate the search body with.
+     * @param array $options The options used for pagination and ordering.
+     *
      * @return array The resulting search body.
      */
-    private function generateSearchBody(array $filter): array
+    private function generateSearchBody(array $filter, array $options = []): array
     {
-        $body = $this->handlePagination(filters: $filter);
-        $body = $this->handleOrder(filters: $filter, body: $body);
+        $body = $this->handleOptions(options: $options);
 
         $query = $this->buildQuery(filter: $filter);
 
@@ -335,15 +332,46 @@ class ElasticSearchCollection implements CollectionInterface
     }//end generateSearchBody()
 
     /**
+     * Parses the filter array and creates the filter array
+     *
+     * @param array $filter The filters to parse
+     *
+     * @return void The result of the parse, contains an error on failure, contains null on success.
+     *
+     * @throws Exception
+     */
+    private function parseFilter(array &$filter): void
+    {
+        if (key_exists('_showDeleted', $filter) === false || $filter['_showDeleted'] === 'false') {
+            $filter['_self.dateDeleted'] = 'IS NULL';
+        }
+
+        unset(
+            $filter['_start'],
+            $filter['_offset'],
+            $filter['_limit'],
+            $filter['_page'],
+            $filter['_extend'],
+            // Do not unset _search here!
+            // $filter['_search'],
+            $filter['_order'],
+            $filter['_fields'],
+            $filter['_queries'],
+            $filter['_showDeleted']
+        );
+
+    }//end parseFilter()
+
+    /**
      * @inheritDoc
      */
     public function count(array $filter = [], array $options = []): int
     {
         $connection = $this->database->getClient()->getConnection();
 
-        $body = $this->generateSearchBody(filter: $filter);
+        $this->parseFilter(filter: $filter);
 
-        unset($body['size'], $body['from'], $body['sort']);
+        $body = $this->generateSearchBody(filter: $filter);
 
         $parameters = [
             'index' => $this->database->getName(),
@@ -399,7 +427,9 @@ class ElasticSearchCollection implements CollectionInterface
     {
         $connection = $this->database->getClient()->getConnection();
 
-        $body = $this->generateSearchBody(filter: $filter);
+        $this->parseFilter(filter: $filter);
+
+        $body = $this->generateSearchBody(filter: $filter, options: $options);
 
         $parameters = [
             'index' => $this->database->getName(),

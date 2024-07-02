@@ -7,6 +7,7 @@ use CommonGateway\CoreBundle\Service\Cache\CollectionInterface;
 use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use MongoDB\Collection;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
@@ -91,20 +92,17 @@ class MongoDbCollection implements CollectionInterface
     }//end handleSearchString()
 
     /**
-     * Adds search filter to the query on MongoDB. Will use given $search string to search on entire object, unless
-     * the _search query is present in $completeFilter query params, then we use that instead.
+     * Adds search filter to the query on MongoDB. Will use _search query if present in $filter query params.
      * _search query param supports filtering on specific properties with ?_search[property1,property2]=value.
      *
-     * @param array       $filter         The filter array for mongoDB so far.
-     * @param array       $completeFilter All filters used with query params, will also contain properties like _order and _search.
-     * @param string|null $search         A string to search with, or null.
+     * @param array $filter The filter array for mongoDB so far.
      *
      * @return void
      */
-    private function handleSearch(array &$filter, array $completeFilter)
+    private function handleSearch(array &$filter): void
     {
-        if (isset($completeFilter['_search']) === true && empty($completeFilter['_search']) === false) {
-            $search = $completeFilter['_search'];
+        if (isset($filter['_search']) === true && empty($filter['_search']) === false) {
+            $search = $filter['_search'];
         }
 
         if (empty($search) === true) {
@@ -113,7 +111,7 @@ class MongoDbCollection implements CollectionInterface
 
         // Normal search on every property with type text (includes strings), like this: ?_search=value.
         if (is_string($search) === true) {
-            $filter = $this->handleSearchString($filter, $search);
+            $filter = $this->handleSearchString(filter: $filter, search:  $search);
         }
         // _search query with specific properties in the [method] like this: ?_search[property1,property2]=value.
         else if (is_array($search) === true) {
@@ -136,22 +134,19 @@ class MongoDbCollection implements CollectionInterface
     }//end handleSearch()
 
     /**
-     * Parses the filter array and creates the filter and completeFilter arrays
+     * Parses the filter array and creates the filter array
      *
-     * @param array $filter         The filters to parse
-     * @param array $completeFilter The complete filter (can be empty, will be updated)
+     * @param array $filter The filters to parse
      *
-     * @return array|null The result of the parse, contains an error on failure, contains null on success.
+     * @return void The result of the parse, contains an error on failure, contains null on success.
      *
      * @throws Exception
      */
-    private function parseFilter(array &$filter, array &$completeFilter): ?array
+    private function parseFilter(array &$filter): void
     {
-        // Backwards compatibility.
-        $this->queryBackwardsCompatibility($filter);
-
-        // Make sure we also have all filters stored in $completeFilter before unsetting.
-        $completeFilter = $filter;
+        if (key_exists('_showDeleted', $filter) === false || $filter['_showDeleted'] === 'false') {
+            $filter['_self.dateDeleted'] = 'IS NULL';
+        }
 
         unset(
             $filter['_start'],
@@ -168,43 +163,10 @@ class MongoDbCollection implements CollectionInterface
 
         // 'normal' Filters (not starting with _ ).
         foreach ($filter as $key => &$value) {
-            $this->handleFilter($key, $value);
+            $this->handleFilter(key: $key, value: $value);
         }
 
-        return null;
-
     }//end parseFilter()
-
-    /**
-     * Make sure we still support the old query params. By translating them to the new ones with _.
-     *
-     * @param array $filter
-     *
-     * @return void
-     */
-    private function queryBackwardsCompatibility(array &$filter)
-    {
-        isset($filter['_limit']) === false && isset($filter['limit']) === true && $filter['_limit']    = $filter['limit'];
-        isset($filter['_start']) === false && isset($filter['start']) === true && $filter['_start']    = $filter['start'];
-        isset($filter['_offset']) === false && isset($filter['offset']) === true && $filter['_offset'] = $filter['offset'];
-        isset($filter['_page']) === false && isset($filter['page']) === true && $filter['_page']       = $filter['page'];
-        isset($filter['_extend']) === false && isset($filter['extend']) === true && $filter['_extend'] = $filter['extend'];
-        isset($filter['_search']) === false && isset($filter['search']) === true && $filter['_search'] = $filter['search'];
-        isset($filter['_order']) === false && isset($filter['order']) === true && $filter['_order']    = $filter['order'];
-        isset($filter['_fields']) === false && isset($filter['fields']) === true && $filter['_fields'] = $filter['fields'];
-
-        unset(
-            $filter['start'],
-            $filter['offset'],
-            $filter['limit'],
-            $filter['page'],
-            $filter['extend'],
-            $filter['search'],
-            $filter['order'],
-            $filter['fields']
-        );
-
-    }//end queryBackwardsCompatibility()
 
     /**
      * Handles a single filter used on a get collection api call. Specifically an filter where the value is an array.
@@ -232,7 +194,11 @@ class MongoDbCollection implements CollectionInterface
             if (array_key_exists('bool_compare', $value) === true && is_array($value['bool_compare']) === true) {
                 $value = array_map('boolval', $value['bool_compare']);
             } else if (array_key_exists('bool_compare', $value) === true) {
-                $value = (bool) $value['bool_compare'];
+                if (strtolower($value['bool_compare']) === 'false') {
+                    $value = false;
+                } else {
+                    $value = true;
+                }
 
                 return true;
             }
@@ -382,16 +348,17 @@ class MongoDbCollection implements CollectionInterface
     /**
      * Handles a single filter used on a get collection api call. This function makes sure special filters work correctly.
      *
-     * @param $key
-     * @param $value
+     * @param mixed $key
+     * @param mixed $value
      *
      * @throws Exception
      *
      * @return void
      */
-    private function handleFilter($key, &$value)
+    private function handleFilter(mixed $key, mixed &$value): void
     {
-        if ($key === '$and') {
+        // Skip $and & $or (in case a _search query is used and already added to filter for example).
+        if ($key === '$and' || $key === '$or') {
             return;
         }
 
@@ -400,7 +367,7 @@ class MongoDbCollection implements CollectionInterface
         }
 
         // Handle filters that expect $value to be an array.
-        if ($this->handleFilterArray($value) === true) {
+        if ($this->handleFilterArray(value: $value) === true) {
             return;
         }
 
@@ -442,109 +409,22 @@ class MongoDbCollection implements CollectionInterface
     }//end handleFilter()
 
     /**
-     * Decides the pagination values.
-     *
-     * @param int   $limit   The resulting limit
-     * @param int   $start   The resulting start value
-     * @param array $filters The filters
-     *
-     * @return array
-     */
-    public function setPagination(&$limit, &$start, array $filters): array
-    {
-        if (isset($filters['_limit']) === true) {
-            $limit = (int) $filters['_limit'];
-        } else {
-            $limit = 30;
-        }
-
-        if (isset($filters['_start']) === true || isset($filters['_offset']) === true) {
-            $start = isset($filters['_start']) === true ? (int) $filters['_start'] : (int) $filters['_offset'];
-        } else if (isset($filters['_page']) === true) {
-            $start = (((int) $filters['_page'] - 1) * $limit);
-        } else {
-            $start = 0;
-        }
-
-        return $filters;
-
-    }//end setPagination()
-
-    /**
-     * Adds pagination variables to an array with the results we found with searchObjects().
-     *
-     * @param array $filter
-     * @param array $results
-     * @param int   $total
-     *
-     * @return array the result with pagination.
-     */
-    public function handleResultPagination(array $filter, array $results, int $total = 0): array
-    {
-        $start = isset($filter['_start']) === true && is_numeric($filter['_start']) === true ? (int) $filter['_start'] : 0;
-        $limit = isset($filter['_limit']) === true && is_numeric($filter['_limit']) === true ? (int) $filter['_limit'] : 30;
-        $page  = isset($filter['_page']) === true && is_numeric($filter['_page']) === true ? (int) $filter['_page'] : 1;
-
-        // Let's build the page & pagination
-        if ($start > 1) {
-            $offset = ($start - 1);
-        } else {
-            $offset = (($page - 1) * $limit);
-        }
-
-        $pages = ceil($total / $limit);
-
-        return [
-            'results' => $results,
-            'count'   => count($results),
-            'limit'   => $limit,
-            'total'   => $total,
-            'offset'  => $offset,
-            'page'    => (floor($offset / $limit) + 1),
-            'pages'   => $pages == 0 ? 1 : $pages,
-        ];
-
-    }//end handleResultPagination()
-
-    private function addOwnerOrgFilter(array $filter): array
-    {
-        if (isset($filter['$and']) === true) {
-            $andCount = (count($filter['$and']) - 1);
-            if (isset($filter['$and'][$andCount]['$or'][0]['_self.owner.id']) === true) {
-                return $filter;
-            }
-        }
-
-        if (isset($filter['_self.owner.id']) === true) {
-            return $filter;
-        }
-
-        $user = $this->objectEntityService->findCurrentUser();
-
-        if ($user !== null && $user->getOrganization() !== null) {
-            if (isset($filter['$or']) === true) {
-                $filter['$and'][] = ['$or' => $filter['$or']];
-                unset($filter['$or']);
-            }
-
-            $orFilter          = [];
-            $orFilter['$or'][] = ['_self.owner.id' => $user->getId()->toString()];
-            $orFilter['$or'][] = ['_self.organization.id' => $user->getOrganization()->getId()->toString()];
-            $orFilter['$or'][] = ['_self.organization.id' => null];
-            $filter['$and'][]  = ['$or' => $orFilter['$or']];
-        } else if ($user !== null) {
-            $filter['_self.owner.id'] = $user->getId()->toString();
-        }
-
-        return $filter;
-
-    }//end addOwnerOrgFilter()
-
-    /**
      * @inheritDoc
      */
     public function aggregate(array $pipeline, array $options = []): \Iterator
     {
+        if ($this->database->getName() !== 'objects' || isset($pipeline[0]['$match']) === false) {
+            return $this->collection->aggregate($pipeline, $options);
+        }
+
+        $filter = $pipeline[0]['$match'];
+
+        // Let's see if we need a search.
+        $this->handleSearch(filter: $filter);
+
+        $this->parseFilter(filter: $filter);
+
+        $pipeline[0]['$match'] = $filter;
         return $this->collection->aggregate($pipeline, $options);
 
     }//end aggregate()
@@ -554,6 +434,15 @@ class MongoDbCollection implements CollectionInterface
      */
     public function count(array $filter = [], array $options = []): int
     {
+        if ($this->database->getName() !== 'objects') {
+            return $this->collection->count($filter, $options);
+        }
+
+        // Let's see if we need a search.
+        $this->handleSearch(filter: $filter);
+
+        $this->parseFilter(filter: $filter);
+
         return $this->collection->count($filter, $options);
 
     }//end count()
@@ -585,14 +474,11 @@ class MongoDbCollection implements CollectionInterface
             return $this->collection->find($filter, $options);
         }
 
-        // $completeFilter = [];
-        // $filterParse    = $this->parseFilter($filter, $completeFilter);
-        // if ($filterParse !== null) {
-        // return $filterParse;
-        // }
-        // Let's see if we need a search
-        // $this->handleSearch($filter, $completeFilter);
-        // var_dump($filter);
+        // Let's see if we need a search.
+        $this->handleSearch(filter: $filter);
+
+        $this->parseFilter(filter: $filter);
+
         return $this->collection->find($filter, $options);
 
     }//end find()

@@ -101,7 +101,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
         }
 
         if ($object instanceof Endpoint === true) {
-            $this->cacheService->cacheEndpoint($object);
+            $this->cacheService->cacheEndpoint(endpoint: $object);
 
             return;
         }
@@ -128,7 +128,7 @@ class CacheDatabaseSubscriber implements EventSubscriberInterface
 
         if ($object instanceof Endpoint) {
             // @todo finish this function.
-            $this->cacheService->removeEndpoint($object);
+            $this->cacheService->removeEndpoint(endpoint: $object);
 
             return;
         }

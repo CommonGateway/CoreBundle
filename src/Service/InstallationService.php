@@ -176,7 +176,7 @@ class InstallationService
     public function update(array $config = [], SymfonyStyle $style = null): int
     {
         $this->setStyle($style);
-        $this->cacheService->setStyle($style);
+        $this->cacheService->setStyle(style: $style);
 
         // Let's see if we are trying to update a single plugin.
         if (isset($config['plugin']) === true) {
