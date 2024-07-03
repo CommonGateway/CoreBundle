@@ -491,6 +491,8 @@ class ElasticSearchCollection implements CollectionInterface
 
         $id = $filter['_id'];
 
+        $link = '/openwoo/' . trim(preg_replace('/[\s-]+/', '-', preg_replace('/[^a-z0-9\s-]/', '', strip_tags(strtolower($replacement['titel'])))), '-');
+
         $replacement = array_merge(
             (array) $replacement,
             [
@@ -498,7 +500,7 @@ class ElasticSearchCollection implements CollectionInterface
                 'title'            => $replacement['titel'] ?? null,
                 'excerpt'          => $replacement['samenvatting'] ?? null,
                 'date'             => $replacement['publicatiedatum'] ?? null,
-                'link'             => $replacement['portalUrl'] ?? null,
+                'link'             => $link,
                 'content_filtered' => $replacement['beschrijving'] ?? null,
             ]
         );
