@@ -491,7 +491,7 @@ class ElasticSearchCollection implements CollectionInterface
 
         $id = $filter['_id'];
 
-        $link = '/openwoo/' . trim(preg_replace('/[\s-]+/', '-', preg_replace('/[^a-z0-9\s-]/', '', strip_tags(strtolower($replacement['titel'])))), '-');
+        $link = '/openwoo/'.trim(preg_replace('/[\s-]+/', '-', preg_replace('/[^a-z0-9\s-]/', '', strip_tags(strtolower($replacement['titel'])))), '-');
 
         $replacement = array_merge(
             (array) $replacement,
