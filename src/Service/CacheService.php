@@ -898,7 +898,7 @@ class CacheService
                 }
                 array_shift($arguments);
             }
-            return $this->searchObjectsNew($arguments);
+            return $this->searchObjectsNew($arguments[0], $arguments[1]);
         }
     }
     
