@@ -502,6 +502,7 @@ class ElasticSearchCollection implements CollectionInterface
                 'date'             => $replacement['publicatiedatum'] ?? null,
                 'link'             => $link,
                 'content_filtered' => $replacement['beschrijving'] ?? null,
+                'modified'         => $replacement['_self']['dateModified'] ?? null,
             ]
         );
 
