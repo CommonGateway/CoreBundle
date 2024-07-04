@@ -877,7 +877,8 @@ class CacheService
     }//end retrieveObjectsFromCache()
 
     /**
-     * Backwards compatibility for the searchObjects function with 3 arguments.
+     * Backwards compatibility for the searchObjects & countObjects function with 3 arguments.
+     * Todo: we should remove this as soon as all other Bundles use the new versions of these functions with just 2 parameters
      *
      * @param $function_name
      * @param $arguments
@@ -985,6 +986,7 @@ class CacheService
 
     /**
      * Counts objects found with the given search/filter parameters.
+     * TODO: Rename this function back to countObjects
      *
      * @param array $filter   an array of dot.notation filters for which to search with
      * @param array $entities schemas to limit te search to
