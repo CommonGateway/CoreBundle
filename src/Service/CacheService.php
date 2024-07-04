@@ -306,7 +306,7 @@ class CacheService
 
         isset($this->style) === true && $this->style->writeln('Connecting to '.$this->parameters->get('cache_url'));
 
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (((isset($config['schemas']) === false || $config['schemas'] !== true)
             || (isset($config['endpoints']) === false || $config['endpoints'] !== true))
             && isset($this->client) === false
@@ -877,7 +877,51 @@ class CacheService
     }//end retrieveObjectsFromCache()
 
     /**
+     * Backwards compatibility for the searchObjects & countObjects function with 3 arguments.
+     * Todo: we should remove this as soon as all other Bundles use the new versions of these functions with just 2 parameters
+     *
+     * @param $function_name
+     * @param $arguments
+     *
+     * @return array|int|void
+     *
+     * @throws Exception
+     */
+    function __call($function_name, $arguments)
+    {
+        $count = count($arguments);
+
+        // Check function name for searchObjects.
+        if ($function_name == 'searchObjects') {
+            if ($count == 3) {
+                if (empty($arguments[0]) === false && isset($arguments[1]['_search']) === false) {
+                    $arguments[1]['_search'] = $arguments[0];
+                }
+
+                array_shift($arguments);
+            }
+
+            return $this->searchObjectsNew($arguments[0], $arguments[1]);
+        }
+
+        // Check function name for countObjects.
+        if ($function_name == 'countObjects') {
+            if ($count == 3) {
+                if (empty($arguments[0]) === false && isset($arguments[1]['_search']) === false) {
+                    $arguments[1]['_search'] = $arguments[0];
+                }
+
+                array_shift($arguments);
+            }
+
+            return $this->countObjectsNew($arguments[0], $arguments[1]);
+        }
+
+    }//end __call()
+
+    /**
      * Searches the object store for objects containing the search string.
+     * TODO: Rename this function back to searchObjects
      *
      * @param array $filter   an array of dot.notation filters for which to search with
      * @param array $entities schemas to limit te search to
@@ -886,9 +930,9 @@ class CacheService
      *
      * @return array The objects found
      */
-    public function searchObjects(array $filter = [], array $entities = []): array
+    public function searchObjectsNew(array $filter = [], array $entities = []): array
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return [];
         }
@@ -914,7 +958,7 @@ class CacheService
         // Find / Search.
         return $this->retrieveObjectsFromCache(filter: $filter, options: ['limit' => $limit, 'skip' => $start, 'sort' => $order]);
 
-    }//end searchObjects()
+    }//end searchObjectsNew()
 
     /**
      * Counts objects in a cache collection.
@@ -942,6 +986,7 @@ class CacheService
 
     /**
      * Counts objects found with the given search/filter parameters.
+     * TODO: Rename this function back to countObjects
      *
      * @param array $filter   an array of dot.notation filters for which to search with
      * @param array $entities schemas to limit te search to
@@ -950,9 +995,9 @@ class CacheService
      *
      * @return int
      */
-    public function countObjects(array $filter = [], array $entities = []): int
+    public function countObjectsNew(array $filter = [], array $entities = []): int
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return 0;
         }
@@ -971,7 +1016,7 @@ class CacheService
         // Find / Search.
         return $this->countObjectsInCache(filter: $filter);
 
-    }//end countObjects()
+    }//end countObjectsNew()
 
     /**
      * Creates an aggregation of results for possible query parameters
@@ -1200,7 +1245,7 @@ class CacheService
      */
     public function cacheEndpoint(Endpoint $endpoint): Endpoint
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return $endpoint;
         }
@@ -1245,7 +1290,7 @@ class CacheService
      */
     public function removeEndpoint(Endpoint $endpoint): void
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return;
         }
@@ -1265,7 +1310,7 @@ class CacheService
      */
     public function getEndpoint(string $identification): ?array
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return [];
         }
@@ -1286,7 +1331,7 @@ class CacheService
 
     public function getEndpoints(array $filter): ?Endpoint
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return [];
         }
@@ -1330,7 +1375,7 @@ class CacheService
      */
     public function cacheShema(Entity $entity): Entity
     {
-        // Backwards compatablity.
+        // Backwards compatibility.
         if (isset($this->client) === false) {
             return $entity;
         }
@@ -1367,7 +1412,7 @@ class CacheService
     // public function removeSchema(Entity $entity): void
     // {
     // @TODO remove entity from cache.
-    // Backwards compatablity
+    // Backwards compatibility
     // if (isset($this->client) === false) {
     // return;
     // }
@@ -1382,7 +1427,7 @@ class CacheService
     // public function getSchema(Uuid $identification): ?array
     // {
     // @TODO get entity from cache.
-    // Backwards compatablity
+    // Backwards compatibility
     // if (isset($this->client) === false) {
     // return [];
     // }
