@@ -902,17 +902,17 @@ class CacheService
 
             return $this->searchObjectsNew($arguments[0], $arguments[1]);
         }
-        
+
         // Check function name for countObjects.
         if ($function_name == 'countObjects') {
             if ($count == 3) {
                 if (empty($arguments[0]) === false && isset($arguments[1]['_search']) === false) {
                     $arguments[1]['_search'] = $arguments[0];
                 }
-                
+
                 array_shift($arguments);
             }
-            
+
             return $this->countObjectsNew($arguments[0], $arguments[1]);
         }
 
@@ -1014,7 +1014,7 @@ class CacheService
         // Find / Search.
         return $this->countObjectsInCache(filter: $filter);
 
-    }//end countObjects()
+    }//end countObjectsNew()
 
     /**
      * Creates an aggregation of results for possible query parameters
