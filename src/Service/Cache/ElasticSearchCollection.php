@@ -493,10 +493,15 @@ class ElasticSearchCollection implements CollectionInterface
 
         $link = '/openwoo/'.trim(preg_replace('/[\s-]+/', '-', preg_replace('/[^a-z0-9\s-]/', '', strip_tags(strtolower($replacement['titel'])))), '-');
 
+        $doctype = null;
+        if ($replacement['_self']['schema']['ref'] === 'https://commongateway.nl/woo.publicatie.schema.json') {
+            $doctype = 'OpenWOO';
+        }
+
         $replacement = array_merge(
             (array) $replacement,
             [
-                'doctype'          => 'OpenWOO',
+                'doctype'          => $doctype,
                 'title'            => $replacement['titel'] ?? null,
                 'excerpt'          => $replacement['samenvatting'] ?? null,
                 'date'             => $replacement['publicatiedatum'] ?? null,
