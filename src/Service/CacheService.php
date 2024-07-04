@@ -882,7 +882,7 @@ class CacheService
      * @param $function_name
      * @param $arguments
      *
-     * @return array|void
+     * @return array|int|void
      *
      * @throws Exception
      */
@@ -890,7 +890,7 @@ class CacheService
     {
         $count = count($arguments);
 
-        // Check function name
+        // Check function name for searchObjects.
         if ($function_name == 'searchObjects') {
             if ($count == 3) {
                 if (empty($arguments[0]) === false && isset($arguments[1]['_search']) === false) {
@@ -901,6 +901,19 @@ class CacheService
             }
 
             return $this->searchObjectsNew($arguments[0], $arguments[1]);
+        }
+        
+        // Check function name for countObjects.
+        if ($function_name == 'countObjects') {
+            if ($count == 3) {
+                if (empty($arguments[0]) === false && isset($arguments[1]['_search']) === false) {
+                    $arguments[1]['_search'] = $arguments[0];
+                }
+                
+                array_shift($arguments);
+            }
+            
+            return $this->countObjectsNew($arguments[0], $arguments[1]);
         }
 
     }//end __call()
@@ -980,7 +993,7 @@ class CacheService
      *
      * @return int
      */
-    public function countObjects(array $filter = [], array $entities = []): int
+    public function countObjectsNew(array $filter = [], array $entities = []): int
     {
         // Backwards compatibility.
         if (isset($this->client) === false) {
