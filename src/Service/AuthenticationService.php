@@ -372,6 +372,12 @@ class AuthenticationService
         }
 
         switch ($source->getAuthorizationPassthroughMethod()) {
+        case 'base_auth':
+            $config['auth'] = [
+                $source->getUsername(),
+                $source->getPassword(),
+            ];
+            break;
         case 'query':
             $config['query'] = $credentials;
             break;
@@ -390,7 +396,11 @@ class AuthenticationService
 
         $guzzleConfig = $source->getConfiguration();
         $client       = new Client($guzzleConfig);
-        $response     = $client->post($authenticationConfig['tokenUrl'], $config);
+        if ($source->getAuthorizationPassthroughMethod() !== 'base_auth') {
+            $response = $client->post($authenticationConfig['tokenUrl'], $config);
+        } else {
+            $response = $client->get($authenticationConfig['tokenUrl'], $config);
+        }
 
         $result = \Safe\json_decode($response->getBody()->getContents(), true);
 
