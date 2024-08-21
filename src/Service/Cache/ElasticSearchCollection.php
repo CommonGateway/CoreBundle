@@ -493,10 +493,15 @@ class ElasticSearchCollection implements CollectionInterface
 
         $link = '/openwoo/'.trim(preg_replace('/[\s-]+/', '-', preg_replace('/[^a-z0-9\s-]/', '', strip_tags(strtolower($replacement['titel'])))), '-');
 
+        $doctype = 'OpenWOO';
+        if (isset($replacement['categorie']) === true && $replacement['categorie'] === 'Convenanten') {
+            $doctype = $replacement['categorie'];
+        }
+
         $replacement = array_merge(
             (array) $replacement,
             [
-                'doctype'          => 'OpenWOO',
+                'doctype'          => $doctype,
                 'title'            => $replacement['titel'] ?? null,
                 'excerpt'          => $replacement['samenvatting'] ?? null,
                 'date'             => $replacement['publicatiedatum'] ?? null,
