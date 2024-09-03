@@ -13,12 +13,10 @@ use CommonGateway\CoreBundle\Service\Cache\ClientInterface;
 use CommonGateway\CoreBundle\Service\Cache\ElasticSearchClient;
 use CommonGateway\CoreBundle\Service\Cache\ElasticSearchCollection;
 use CommonGateway\CoreBundle\Service\Cache\MongoDbCollection;
-use CommonGateway\CoreBundle\Service\ObjectEntityService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
-use MongoDB\BSON\UTCDateTime;
 use CommonGateway\CoreBundle\Service\Cache\MongoDbClient as Client;
 use CommonGateway\CoreBundle\Service\Cache\CollectionInterface as Collection;
 use Psr\Log\LoggerInterface;
@@ -901,6 +899,10 @@ class CacheService
                 array_shift($arguments);
             }
 
+            if (isset($arguments['filter']) === true) {
+                return $this->searchObjectsNew($arguments['filter'], $arguments['entities']);
+            }
+
             return $this->searchObjectsNew($arguments[0], $arguments[1]);
         }
 
@@ -912,6 +914,10 @@ class CacheService
                 }
 
                 array_shift($arguments);
+            }
+
+            if (isset($arguments['filter']) === true) {
+                return $this->countObjectsNew($arguments['filter'], $arguments['entities']);
             }
 
             return $this->countObjectsNew($arguments[0], $arguments[1]);
@@ -950,7 +956,11 @@ class CacheService
         // Limit & Start for pagination.
         $limit = 30;
         $start = 0;
-        $this->setPagination(limit: $limit, start: $start, filter: $filter);
+        if (isset($filter['_enablePagination']) === true && $filter['_enablePagination'] === false) {
+            $limit = 500;
+        } else {
+            $this->setPagination(limit: $limit, start: $start, filter: $filter);
+        }
 
         // Order.
         $order = $this->setOrder(filter: $filter);
@@ -1211,6 +1221,10 @@ class CacheService
      */
     public function handleResultPagination(array $filter, array $results, int $total = 0): array
     {
+        if (isset($filter['_enablePagination']) === true && $filter['_enablePagination'] === false) {
+            return $results;
+        }
+
         $start = isset($filter['_start']) === true && is_numeric($filter['_start']) === true ? (int) $filter['_start'] : 0;
         $limit = isset($filter['_limit']) === true && is_numeric($filter['_limit']) === true ? (int) $filter['_limit'] : 30;
         $page  = isset($filter['_page']) === true && is_numeric($filter['_page']) === true ? (int) $filter['_page'] : 1;

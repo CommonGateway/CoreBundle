@@ -357,7 +357,8 @@ class ElasticSearchCollection implements CollectionInterface
             $filter['_order'],
             $filter['_fields'],
             $filter['_queries'],
-            $filter['_showDeleted']
+            $filter['_showDeleted'],
+            $filter['_enablePagination']
         );
 
     }//end parseFilter()
