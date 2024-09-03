@@ -1172,11 +1172,11 @@ class RequestService
                 if ($data['headers']['accept'][0] === 'application/json+aggregations') {
                     return $this->createResponse($this->cacheService->aggregateQueries(filter: $filters, entities: $allowedSchemas['id']));
                 }
-                
+
                 if ($this->data['endpoint']->getEnablePagination() === false) {
                     $filters['_enablePagination'] = false;
                 }
-                
+
                 $result = $this->cacheService->searchObjectsNew($filters, $allowedSchemas['id']);
             }//end if
             break;

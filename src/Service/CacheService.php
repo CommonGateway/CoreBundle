@@ -898,7 +898,7 @@ class CacheService
 
                 array_shift($arguments);
             }
-            
+
             if (isset($arguments['filter']) === true) {
                 return $this->searchObjectsNew($arguments['filter'], $arguments['entities']);
             }
@@ -915,7 +915,7 @@ class CacheService
 
                 array_shift($arguments);
             }
-            
+
             if (isset($arguments['filter']) === true) {
                 return $this->countObjectsNew($arguments['filter'], $arguments['entities']);
             }
@@ -1224,7 +1224,7 @@ class CacheService
         if (isset($filter['_enablePagination']) === true && $filter['_enablePagination'] === false) {
             return $results;
         }
-        
+
         $start = isset($filter['_start']) === true && is_numeric($filter['_start']) === true ? (int) $filter['_start'] : 0;
         $limit = isset($filter['_limit']) === true && is_numeric($filter['_limit']) === true ? (int) $filter['_limit'] : 30;
         $page  = isset($filter['_page']) === true && is_numeric($filter['_page']) === true ? (int) $filter['_page'] : 1;
