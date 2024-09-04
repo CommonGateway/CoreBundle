@@ -1173,7 +1173,7 @@ class RequestService
                     return $this->createResponse($this->cacheService->aggregateQueries(filter: $filters, entities: $allowedSchemas['id']));
                 }
 
-                if ($this->data['endpoint']->getEnablePagination() === false) {
+                if (isset($this->data['endpoint']) === true && $this->data['endpoint']->getEnablePagination() === false) {
                     $filters['_enablePagination'] = false;
                 }
 
