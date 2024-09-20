@@ -39,12 +39,12 @@ class SynchronizationService
      * @var LoggerInterface $logger.
      */
     private LoggerInterface $logger;
-    
+
     /**
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
-    
+
     /**
      * @var CacheService
      */
@@ -83,8 +83,8 @@ class SynchronizationService
         $this->logger         = $callLogger;
         $this->oldSyncService = $oldSyncService;
         $this->callService    = $callService;
-        $this->entityManager = $entityManager;
-        $this->cacheService = $cacheService;
+        $this->entityManager  = $entityManager;
+        $this->cacheService   = $cacheService;
 
     }//end __construct()
 
@@ -111,12 +111,12 @@ class SynchronizationService
      * NOTE: Before calling this function a Synchronization object must exist or be created, please use the
      * $commonGateway->synchronizationService->findSyncBySource() or findSyncByObject() function for this.
      *
-     * @param Synchronization      $synchronization The synchronization we are going to synchronize.
-     * @param array                $objectArray     The object data we are going to synchronize.
-     * @param ObjectEntity         $objectEntity    The objectEntity which data we are going to synchronize.
-     * @param string               $location        The path/endpoint we send the request to.
-     * @param string|null          $idLocation      The location of the id in the response body.
-     * @param string|null          $method          The request method PUT or POST.
+     * @param Synchronization $synchronization The synchronization we are going to synchronize.
+     * @param array           $objectArray     The object data we are going to synchronize.
+     * @param ObjectEntity    $objectEntity    The objectEntity which data we are going to synchronize.
+     * @param string          $location        The path/endpoint we send the request to.
+     * @param string|null     $idLocation      The location of the id in the response body.
+     * @param string|null     $method          The request method PUT or POST.
      *
      * @return array The response body of the outgoing call, or an empty array on error.
      *
@@ -186,7 +186,7 @@ class SynchronizationService
         $synchronization->setSourceLastChanged($now);
         $synchronization->setLastChecked($now);
         $synchronization->setHash(hash('sha384', serialize($bodyDot->jsonSerialize())));
-        
+
         $this->entityManager->persist($synchronization);
         $this->entityManager->flush();
         $this->cacheService->cacheObject($synchronization->getObject());
