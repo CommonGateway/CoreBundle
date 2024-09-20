@@ -122,7 +122,7 @@ class SynchronizationService
      *
      * @throws Exception
      */
-    public function synchronizeTemp(Synchronization $synchronization, array $objectArray, ObjectEntity $objectEntity, string $location, ?string $idLocation = null, ?string $method = 'POST'): array
+    public function synchronizeTemp(Synchronization &$synchronization, array $objectArray, ObjectEntity $objectEntity, string $location, ?string $idLocation = null, ?string $method = 'POST'): array
     {
         $objectString = $this->oldSyncService->getObjectString($objectArray);
 
