@@ -635,6 +635,7 @@ class ValidationService
         case 'date':
         case 'date-time':
         case 'datetime':
+        case 'ISO-8601':
             // For now...
         case 'duration':
             // For now...
