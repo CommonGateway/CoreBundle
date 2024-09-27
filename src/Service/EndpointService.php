@@ -539,7 +539,7 @@ class EndpointService
         try {
             $combinedArray = array_combine($path, explode('/', $pathRaw));
         } catch (ValueError $exception) {
-            $this->logger->error('EndpointService->getNormalPath(): $exception');
+            $this->logger->debug('EndpointService->getNormalPath(): '.$exception->getMessage());
 
             // Todo: When an id is not given the last element of the path array should be removed to ensure the arrays are of the same length.
             array_pop($path);

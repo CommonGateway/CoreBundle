@@ -9,7 +9,7 @@ use App\Entity\Entity as Schema;
 use App\Entity\ObjectEntity;
 use App\Entity\Synchronization;
 use App\Service\SynchronizationService as OldSynchronizationService;
-use CommonGateway\CoreBundle\Service\CallService;
+use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\RequestException;
@@ -41,6 +41,16 @@ class SynchronizationService
     private LoggerInterface $logger;
 
     /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
+
+    /**
+     * @var CacheService
+     */
+    private CacheService $cacheService;
+
+    /**
      * Old one from the gateway.
      *
      * @todo Remove once all code is moved to this new class.
@@ -60,15 +70,21 @@ class SynchronizationService
      * @param LoggerInterface           $callLogger     The Logger Interface.
      * @param OldSynchronizationService $oldSyncService Old one from the gateway.
      * @param CallService               $callService    The callService.
+     * @param EntityManagerInterface    $entityManager  EntityManagerInterface.
+     * @param CacheService              $cacheService   CacheService.
      */
     public function __construct(
         LoggerInterface $callLogger,
         OldSynchronizationService $oldSyncService,
-        CallService $callService
+        CallService $callService,
+        EntityManagerInterface $entityManager,
+        CacheService $cacheService
     ) {
         $this->logger         = $callLogger;
         $this->oldSyncService = $oldSyncService;
         $this->callService    = $callService;
+        $this->entityManager  = $entityManager;
+        $this->cacheService   = $cacheService;
 
     }//end __construct()
 
@@ -88,24 +104,25 @@ class SynchronizationService
     }//end setStyle()
 
     /**
-     * Temporary function as replacement of the $this->oldSyncService->synchronize() function.
-     * Because currently synchronize function can only pull from a source and not push to a source.
+     * This function was created because currently $commonGateway->synchronizationService->synchronize() function
+     * can only pull from a source and not push to a source.
+     * This function can be used as 'temporary' replacement of the synchronize function.
      *
-     * @todo: Temp way of doing this without updating the oldSyncService->synchronize() function...
+     * NOTE: Before calling this function a Synchronization object must exist or be created, please use the
+     * $commonGateway->synchronizationService->findSyncBySource() or findSyncByObject() function for this.
      *
-     * @param Synchronization|null $synchronization The synchronization we are going to synchronize.
-     * @param array                $objectArray     The object data we are going to synchronize.
-     * @param ObjectEntity         $objectEntity    The objectEntity which data we are going to synchronize.
-     * @param Schema               $schema          The schema the object we are going to send belongs to.
-     * @param string               $location        The path/endpoint we send the request to.
-     * @param string|null          $idLocation      The location of the id in the response body.
-     * @param string|null          $method          The request method PUT or POST.
+     * @param Synchronization $synchronization The synchronization we are going to synchronize.
+     * @param array           $objectArray     The object data we are going to synchronize.
+     * @param ObjectEntity    $objectEntity    The objectEntity which data we are going to synchronize.
+     * @param string          $location        The path/endpoint we send the request to.
+     * @param string|null     $idLocation      The location of the id in the response body.
+     * @param string|null     $method          The request method PUT or POST.
      *
      * @return array The response body of the outgoing call, or an empty array on error.
      *
      * @throws Exception
      */
-    public function synchronizeTemp(?Synchronization &$synchronization = null, array $objectArray, ObjectEntity $objectEntity, Schema $schema, string $location, ?string $idLocation = null, ?string $method = 'POST'): array
+    public function synchronizeTemp(Synchronization &$synchronization, array $objectArray, ObjectEntity $objectEntity, string $location, ?string $idLocation = null, ?string $method = 'POST'): array
     {
         $objectString = $this->oldSyncService->getObjectString($objectArray);
 
@@ -145,11 +162,6 @@ class SynchronizationService
 
         $body = $this->callService->decodeResponse($synchronization->getSource(), $result);
 
-        if (isset($synchronization) === false) {
-            $synchronization = new Synchronization();
-            $synchronization->setEntity($schema);
-        }
-
         $bodyDot = new Dot($body);
 
         if ($idLocation !== null) {
@@ -174,6 +186,10 @@ class SynchronizationService
         $synchronization->setSourceLastChanged($now);
         $synchronization->setLastChecked($now);
         $synchronization->setHash(hash('sha384', serialize($bodyDot->jsonSerialize())));
+
+        $this->entityManager->persist($synchronization);
+        $this->entityManager->flush();
+        $this->cacheService->cacheObject($synchronization->getObject());
 
         $this->logger->info('Synchronize '.$method.' succesfull with response body '.json_encode($body));
 

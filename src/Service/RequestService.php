@@ -652,9 +652,9 @@ class RequestService
             && strpos($this->data['headers']['content-type'][0], 'application/x-www-form-urlencoded') !== false
         ) {
             return [
-                'query'     => $this->data['query'],
-                'headers'   => $this->data['headers'],
-                'form_data' => $this->data['post'],
+                'query'       => $this->data['query'],
+                'headers'     => $this->data['headers'],
+                'form_params' => $this->data['post'],
             ];
         }//end if
 
@@ -1158,7 +1158,7 @@ class RequestService
                 }
 
                 // Let's see if the found result is allowed for this endpoint.
-                if (isset($this->data['endpoint']) && in_array($result['_self']['schema']['id'], $allowedSchemas['id']) === false) {
+                if (isset($this->data['endpoint']) === true && in_array($result['_self']['schema']['id'], $allowedSchemas['id']) === false) {
                     return new Response('Object is not supported by this endpoint', '406', ['Content-type' => $this->data['endpoint']->getDefaultContentType()]);
                 }
 
@@ -1171,6 +1171,10 @@ class RequestService
                 // $this->data['query']['_schema'] = $this->data['endpoint']->getEntities()->first()->getReference();
                 if ($data['headers']['accept'][0] === 'application/json+aggregations') {
                     return $this->createResponse($this->cacheService->aggregateQueries(filter: $filters, entities: $allowedSchemas['id']));
+                }
+
+                if (isset($this->data['endpoint']) === true && $this->data['endpoint']->getEnablePagination() === false) {
+                    $filters['_enablePagination'] = false;
                 }
 
                 $result = $this->cacheService->searchObjectsNew($filters, $allowedSchemas['id']);
