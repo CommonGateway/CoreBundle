@@ -472,6 +472,10 @@ class ElasticSearchCollection implements CollectionInterface
     {
         $connection = $this->database->getClient()->getConnection();
 
+        if (isset($filter['_schema']) === false || $filter['_schema'] !== 'https://commongateway.nl/woo.publicatie.schema.json') {
+            return null;
+        }
+
         $id = $filter['_id'];
 
         $parameters = [
@@ -495,6 +499,11 @@ class ElasticSearchCollection implements CollectionInterface
         $link = '/openwoo/'.trim(preg_replace('/[\s-]+/', '-', preg_replace('/[^a-z0-9\s-]/', '', strip_tags(strtolower($replacement['titel'])))), '-');
 
         $doctype = 'OpenWOO';
+
+        if ($replacement['_self']['schema']['ref'] !== 'https://commongateway.nl/woo.publicatie.schema.json') {
+            return $replacement;
+        }
+
         if (isset($replacement['categorie']) === true && $replacement['categorie'] === 'Convenanten') {
             $doctype = $replacement['categorie'];
         }
