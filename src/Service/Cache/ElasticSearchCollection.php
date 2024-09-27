@@ -471,6 +471,10 @@ class ElasticSearchCollection implements CollectionInterface
     {
         $connection = $this->database->getClient()->getConnection();
 
+        if (isset($filter['_schema']) === false || $filter['_schema'] !== 'https://commongateway.nl/woo.publicatie.schema.json') {
+            return null;
+        }
+
         $id = $filter['_id'];
 
         $parameters = [

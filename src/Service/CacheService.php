@@ -623,7 +623,12 @@ class CacheService
             return;
         }
 
-        $collection->findOneAndDelete(['_id' => $identification]);
+        $schemaReference = null;
+        if ($objectEntity->getEntity()->getReference() !== null) {
+            $schemaReference = $objectEntity->getEntity()->getReference();
+        }
+
+        $collection->findOneAndDelete(['_id' => $identification, '_schema' => $schemaReference]);
 
     }//end removeObject()
 
