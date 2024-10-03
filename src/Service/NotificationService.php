@@ -3,13 +3,10 @@
 namespace CommonGateway\CoreBundle\Service;
 
 use Adbar\Dot;
-use App\Entity\Gateway as Source;
-use App\Entity\Synchronization;
 use App\Service\SynchronizationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -50,11 +47,6 @@ class NotificationService
     private SynchronizationService $syncService;
 
     /**
-     * @var CallService
-     */
-    private CallService $callService;
-
-    /**
      * @var GatewayResourceService
      */
     private GatewayResourceService $resourceService;
@@ -72,13 +64,11 @@ class NotificationService
         EntityManagerInterface $entityManager,
         LoggerInterface $notificationLogger,
         SynchronizationService $syncService,
-        CallService $callService,
         GatewayResourceService $resourceService
     ) {
         $this->entityManager   = $entityManager;
         $this->logger          = $notificationLogger;
         $this->syncService     = $syncService;
-        $this->callService     = $callService;
         $this->resourceService = $resourceService;
 
     }//end __construct()
@@ -94,35 +84,76 @@ class NotificationService
      */
     public function notificationHandler(array $data, array $configuration): array
     {
-        if ($data['method'] !== 'POST') {
-            return $data;
-        }
+        $this->logger->debug('NotificationService -> notificationHandler()');
+
+        // Check if we have a method and is POST or GET.
+        if (isset($data['method']) === false || in_array($data['method'],  ['POST', 'GET']) === false) {
+            $message = 'Notification method is not GET or POST';
+            $response = json_encode(value: ['message' => $message]);
+            $this->logger->error($message);
+
+            return ['response' => new Response($response, 500, ['Content-type' => 'application/json'])];
+        }//end if
 
         $this->data          = $data;
         $this->configuration = $configuration;
-
-        $this->logger->debug('NotificationService -> notificationHandler()');
+        $pluginName = $this->configuration['pluginName'] ?? 'commongateway/corebundle';
 
         $dot = new Dot($this->data);
-        $url = $dot->get($this->configuration['urlLocation']);
 
-        // Get the correct Entity.
-        $entity = $this->resourceService->getSchema($this->configuration['entity'], 'commongateway/corebundle');
-        if ($entity === null) {
-            $response = json_encode(['Message' => "Could not find an Entity with this reference: {$this->configuration['entity']}"]);
+        // Get or generate url to fetch object from.
+        if (isset($this->configuration['urlLocation']) === true) {
+            $url = $dot->get($this->configuration['urlLocation']);
+        } elseif (isset($this->configuration['source']) === true && isset($this->configuration['endpoint']) === true && isset($this->configuration['sourceIdField']) === true) {
+            $source = $this->resourceService->getSource(reference: $this->configuration['source'], pluginName: $pluginName);
+            $url = $source->getLocation() . $this->configuration['endpoint'] . '/' . $dot->get($this->configuration['sourceIdField']);
+        }//end if
+
+        // Throw error if url not found or generated.
+        if (isset($url) === false) {
+            $message ="Could not find find or generate the url to fetch the source object from";
+            $response = json_encode(['message' => $message]);
+            $this->logger->error($message);
+
             return ['response' => new Response($response, 500, ['Content-type' => 'application/json'])];
-        }
+        }//end if
 
+        // Get schema the fetched object will belong to.
+        $schema = $this->resourceService->getSchema(reference: $this->configuration['schema'], pluginName: $pluginName);
+        if ($schema === null) {
+            $message ="Could not find an Schema with this reference: {$this->configuration['schema']}";
+            $response = json_encode(['message' => $message]);
+            $this->logger->error($message);
+
+            return ['response' => new Response($response, 500, ['Content-type' => 'application/json'])];
+        }//end if
+
+        // Get mapping which is optional.
+        $mapping = null;
+        if (isset($this->configuration['mapping']) === true) {
+            $mapping = $this->resourceService->getMapping(reference: $this->configuration['mapping'], pluginName: $pluginName);
+            if ($mapping === null) {
+                $message ="Could not find an Mapping with this reference: {$this->configuration['mapping']}";
+                $response = json_encode(['message' => $message]);
+                $this->logger->error($message);
+
+                return ['response' => new Response($response, 500, ['Content-type' => 'application/json'])];
+            }
+        }//end if
+
+        // Fetch and synchronise the source object we are notified about.
         try {
-            $this->syncService->aquireObject($url, $entity);
-        } catch (\Exception $exception) {
+            $this->syncService->aquireObject(url: $url, schema: $schema, mapping: $mapping);
+        } catch (Exception $exception) {
             $response = json_encode(['Message' => "Notification call before sync returned an Exception: {$exception->getMessage()}"]);
             return ['response' => new Response($response, 500, ['Content-type' => 'application/json'])];
         }//end try
 
+        // Flush anything managed by the EntityManager.
         $this->entityManager->flush();
 
-        $response         = ['Message' => 'Notification received, object synchronized'];
+        // Let the notifier know the notification has been handled Successfully.
+        $response         = ['message' => 'Notification received, object synchronized'];
         $data['response'] = new Response(json_encode($response), 200, ['Content-type' => 'application/json']);
 
         return $data;
