@@ -88,7 +88,7 @@ class NotificationService
 
         // Check if we have a method and is POST or GET.
         if (isset($data['method']) === false || in_array($data['method'],  ['POST', 'GET']) === false) {
-            $message = 'Notification method is not GET or POST';
+            $message  = 'Notification method is not GET or POST';
             $response = json_encode(value: ['message' => $message]);
             $this->logger->error($message);
 
@@ -97,21 +97,21 @@ class NotificationService
 
         $this->data          = $data;
         $this->configuration = $configuration;
-        $pluginName = $this->configuration['pluginName'] ?? 'commongateway/corebundle';
+        $pluginName          = ($this->configuration['pluginName'] ?? 'commongateway/corebundle');
 
         $dot = new Dot($this->data);
 
         // Get or generate url to fetch object from.
         if (isset($this->configuration['urlLocation']) === true) {
             $url = $dot->get($this->configuration['urlLocation']);
-        } elseif (isset($this->configuration['source']) === true && isset($this->configuration['endpoint']) === true && isset($this->configuration['sourceIdField']) === true) {
+        } else if (isset($this->configuration['source']) === true && isset($this->configuration['endpoint']) === true && isset($this->configuration['sourceIdField']) === true) {
             $source = $this->resourceService->getSource(reference: $this->configuration['source'], pluginName: $pluginName);
-            $url = $source->getLocation() . $this->configuration['endpoint'] . '/' . $dot->get($this->configuration['sourceIdField']);
+            $url    = $source->getLocation().$this->configuration['endpoint'].'/'.$dot->get($this->configuration['sourceIdField']);
         }//end if
 
         // Throw error if url not found or generated.
         if (isset($url) === false) {
-            $message ="Could not find find or generate the url to fetch the source object from";
+            $message  = "Could not find find or generate the url to fetch the source object from";
             $response = json_encode(['message' => $message]);
             $this->logger->error($message);
 
@@ -121,7 +121,7 @@ class NotificationService
         // Get schema the fetched object will belong to.
         $schema = $this->resourceService->getSchema(reference: $this->configuration['schema'], pluginName: $pluginName);
         if ($schema === null) {
-            $message ="Could not find an Schema with this reference: {$this->configuration['schema']}";
+            $message  = "Could not find an Schema with this reference: {$this->configuration['schema']}";
             $response = json_encode(['message' => $message]);
             $this->logger->error($message);
 
@@ -133,7 +133,7 @@ class NotificationService
         if (isset($this->configuration['mapping']) === true) {
             $mapping = $this->resourceService->getMapping(reference: $this->configuration['mapping'], pluginName: $pluginName);
             if ($mapping === null) {
-                $message ="Could not find an Mapping with this reference: {$this->configuration['mapping']}";
+                $message  = "Could not find an Mapping with this reference: {$this->configuration['mapping']}";
                 $response = json_encode(['message' => $message]);
                 $this->logger->error($message);
 
