@@ -86,9 +86,11 @@ class NotificationService
     {
         $this->logger->debug('NotificationService -> notificationHandler()');
 
+
         // Check if we have a method and is POST or GET.
-        if (isset($data['method']) === false || in_array($data['method'],  ['POST', 'GET']) === false) {
-            $message  = 'Notification method is not GET or POST';
+        $allowedMethods = $this->configuration['allowedMethods'] ?? ['POST'];
+        if (isset($data['method']) === false || in_array($data['method'], $allowedMethods) === false) {
+            $message  = 'Notification request method is not one of ' . implode(', ', $allowedMethods);
             $response = json_encode(value: ['message' => $message]);
             $this->logger->error($message);
 
@@ -106,6 +108,13 @@ class NotificationService
             $url = $dot->get($this->configuration['urlLocation']);
         } else if (isset($this->configuration['source']) === true && isset($this->configuration['endpoint']) === true && isset($this->configuration['sourceIdField']) === true) {
             $source = $this->resourceService->getSource(reference: $this->configuration['source'], pluginName: $pluginName);
+
+            if ($source === null) {
+                $message  = "Could not find an Source with this reference: {$this->configuration['source']}";
+                $response = json_encode(['message' => $message]);
+                return ['response' => new Response($response, 500, ['Content-type' => 'application/json'])];
+            }
+
             $url    = $source->getLocation().$this->configuration['endpoint'].'/'.$dot->get($this->configuration['sourceIdField']);
         }//end if
 
@@ -123,7 +132,6 @@ class NotificationService
         if ($schema === null) {
             $message  = "Could not find an Schema with this reference: {$this->configuration['schema']}";
             $response = json_encode(['message' => $message]);
-            $this->logger->error($message);
 
             return ['response' => new Response($response, 500, ['Content-type' => 'application/json'])];
         }//end if
@@ -135,7 +143,6 @@ class NotificationService
             if ($mapping === null) {
                 $message  = "Could not find an Mapping with this reference: {$this->configuration['mapping']}";
                 $response = json_encode(['message' => $message]);
-                $this->logger->error($message);
 
                 return ['response' => new Response($response, 500, ['Content-type' => 'application/json'])];
             }
