@@ -86,11 +86,10 @@ class NotificationService
     {
         $this->logger->debug('NotificationService -> notificationHandler()');
 
-
         // Check if we have a method and is POST or GET.
-        $allowedMethods = $this->configuration['allowedMethods'] ?? ['POST'];
+        $allowedMethods = ($this->configuration['allowedMethods'] ?? ['POST']);
         if (isset($data['method']) === false || in_array($data['method'], $allowedMethods) === false) {
-            $message  = 'Notification request method is not one of ' . implode(', ', $allowedMethods);
+            $message  = 'Notification request method is not one of '.implode(', ', $allowedMethods);
             $response = json_encode(value: ['message' => $message]);
             $this->logger->error($message);
 
@@ -115,7 +114,7 @@ class NotificationService
                 return ['response' => new Response($response, 500, ['Content-type' => 'application/json'])];
             }
 
-            $url    = $source->getLocation().$this->configuration['endpoint'].'/'.$dot->get($this->configuration['sourceIdField']);
+            $url = $source->getLocation().$this->configuration['endpoint'].'/'.$dot->get($this->configuration['sourceIdField']);
         }//end if
 
         // Throw error if url not found or generated.
