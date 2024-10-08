@@ -155,19 +155,28 @@ class EndpointService
             foreach ($endpoint->getThrows() as $throw) {
                 $event = new ActionEvent('commongateway.action.event', $parameters, $throw);
                 $this->eventDispatcher->dispatch($event, 'commongateway.action.event');
-                $parameters['response'] = $event->getData()['response'];
+
+                // If the response is set by the event, we assign it.
+                if (isset($event->getData()['response']) === true) {
+                    $response = $event->getData()['response'];
+                }
             }
 
-            $parameters['response'] = $event->getData()['response'];
+
+            // If the response is set by any earlier event, we return it.
+            if (isset($response) ===  true) {
+                return $response;
+            }
         }
 
+        // If the response is set by any way else than an event, we return it.
         if (isset($parameters['response']) === true) {
-            return $parameters['response'];
+            return$parameters['response'];
         }
 
-        $this->logger->error('No proxy, schema or events could be established for this endpoint');
+        $this->logger->error('No proxy, schema or events could be established for this endpoint. Actions might have been triggered but no response could be generated.');
 
-        throw new Exception('No proxy, schema or events could be established for this endpoint');
+        throw new Exception('No proxy, schema or events could be established for this endpoint. Actions might have been triggered but no response could be generated.');
 
     }//end handleRequest()
 
