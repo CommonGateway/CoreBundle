@@ -162,12 +162,11 @@ class EndpointService
                 }
             }
 
-
             // If the response is set by any earlier event, we return it.
-            if (isset($response) ===  true) {
+            if (isset($response) === true) {
                 return $response;
             }
-        }
+        }//end if
 
         // If the response is set by any way else than an event, we return it.
         if (isset($parameters['response']) === true) {
