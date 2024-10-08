@@ -173,7 +173,7 @@ class EndpointService
             return$parameters['response'];
         }
 
-        $errorMessage = 'No proxy, schema or events could be established for this endpoint. Actions might have been triggered but if so, no response could be generated.';
+        $errorMessage = 'No proxy or schema could be established for this endpoint. Events might have been triggered but if so, no response has been returned.';
 
         $this->logger->error($errorMessage);
         throw new Exception($errorMessage);
