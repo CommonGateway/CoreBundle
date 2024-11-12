@@ -1,0 +1,50 @@
+<?php
+
+namespace CommonGateway\CoreBundle\Service\Cache;
+
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Driver\AbstractPostgreSQLDriver;
+use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Tools\DsnParser;
+use Doctrine\ORM\EntityManager;
+
+class PostgresqlClient implements ClientInterface
+{
+
+    public function __construct(
+        string $uri,
+    )
+    {
+        $dsnParser = new DsnParser($uri);
+        $parameters = $dsnParser->parse(dsn: $uri);
+        $connection = DriverManager::getConnection($parameters);
+
+        $this->client = $connection;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __get(string $databaseName): DatabaseInterface
+    {
+        if (isset($this->databases[$databaseName]) === true) {
+            return $this->databases[$databaseName];
+        }
+
+        if(
+            in_array(
+                needle: strtolower($databaseName),
+                haystack: $this->client->executeQuery(sql: 'SELECT tablename FROM pg_catalog.pg_tables;')->fetchFirstColumn()
+            ) === true
+        ) {
+            $this->databases[$databaseName] = $database = new PostgresqlDatabase(name: strtolower($databaseName), client: $this->client);
+
+            return $database;
+        }
+
+        $this->client->executeQuery("CREATE TABLE ".strtolower($databaseName)." (id uuid, json json);");
+        $this->databases[$databaseName] = $database = new PostgresqlDatabase(name: $databaseName, client: $this->client);
+
+        return $database;
+    }
+}
