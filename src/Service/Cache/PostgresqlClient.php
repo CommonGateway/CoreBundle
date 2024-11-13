@@ -35,13 +35,12 @@ class PostgresqlClient implements ClientInterface
         }
 
         if (in_array(
-                needle: strtolower($databaseName),
-                haystack: $this->client->executeQuery(sql: 'SELECT tablename FROM pg_catalog.pg_tables;')->fetchFirstColumn()
-            ) === false
+            needle: strtolower($databaseName),
+            haystack: $this->client->executeQuery(sql: 'SELECT tablename FROM pg_catalog.pg_tables;')->fetchFirstColumn()
+        ) === false
         ) {
             $this->client->executeQuery("CREATE TABLE ".strtolower($databaseName)." (_id uuid);");
         }
-
 
         $this->databases[$databaseName] = $database = new PostgresqlDatabase(name: $databaseName, client: $this->client);
 
