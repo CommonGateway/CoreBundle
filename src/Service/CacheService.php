@@ -13,6 +13,7 @@ use CommonGateway\CoreBundle\Service\Cache\ClientInterface;
 use CommonGateway\CoreBundle\Service\Cache\ElasticSearchClient;
 use CommonGateway\CoreBundle\Service\Cache\ElasticSearchCollection;
 use CommonGateway\CoreBundle\Service\Cache\MongoDbCollection;
+use CommonGateway\CoreBundle\Service\Cache\PostgresqlClient;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
@@ -48,7 +49,7 @@ class CacheService
     /**
      * @var Client
      */
-    private Client $client;
+    private ClientInterface $client;
 
     /**
      * @var Client|null
@@ -128,8 +129,12 @@ class CacheService
         $this->serializer          = $serializer;
         $this->objectEntityService = $objectEntityService;
         $this->session             = $session;
-        if ($this->parameters->get('cache_url', false)) {
+
+        if (substr($this->parameters->get('cache_url', false), offset: 0, length: 5) === 'mongo') {
             $this->client = new Client($this->parameters->get('cache_url'), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService, cacheLogger: $this->logger);
+        }
+        if (substr($this->parameters->get('cache_url', false), offset: 4, length: 5) === 'pgsql' || substr($this->parameters->get('cache_url', false), offset: 4, length: 4) === 'psql') {
+            $this->client = new PostgresqlClient($this->parameters->get('cache_url'), $entityManager);
         }
 
         $this->filesystem = new Filesystem();
