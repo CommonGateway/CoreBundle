@@ -496,7 +496,8 @@ class ElasticSearchCollection implements CollectionInterface
 
         $id = $filter['_id'];
 
-        $link = '/openwoo/'.trim(preg_replace('/[\s-]+/', '-', preg_replace('/[^a-z0-9\s-]/', '', strip_tags(strtolower($replacement['titel'])))), '-');
+        $slug = trim(preg_replace('/[\s-]+/', '-', preg_replace('/[^a-z0-9\s-]/', '', strip_tags(strtolower($replacement['titel'])))), '-');
+        $link = "/openwoo/$slug";
 
         $doctype = 'OpenWOO';
 
@@ -516,6 +517,7 @@ class ElasticSearchCollection implements CollectionInterface
                 'excerpt'          => $replacement['samenvatting'] ?? null,
                 'date'             => $replacement['publicatiedatum'] ?? null,
                 'link'             => $link,
+                'slug'             => $slug,
                 'content_filtered' => $replacement['beschrijving'] ?? null,
             ]
         );
