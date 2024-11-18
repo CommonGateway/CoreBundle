@@ -1292,7 +1292,7 @@ class CacheService
         $endpointArray['_id'] = $endpointArray['id'];
 
         if ($collection->findOneAndReplace(
-            ['id' => $endpoint->getId()->toString()],
+            ['_id' => $endpoint->getId()->toString()],
             $endpointArray,
             ['upsert' => true]
         )
