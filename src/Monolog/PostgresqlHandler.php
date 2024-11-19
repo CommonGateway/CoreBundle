@@ -14,16 +14,17 @@ use Ramsey\Uuid\Uuid;
 
 class PostgresqlHandler extends AbstractProcessingHandler
 {
+
     private bool $initialized = false;
 
     public function __construct(
         private readonly Connection $connection,
         int|string $level = Logger::DEBUG,
         bool $bubble = true
-    )
-    {
+    ) {
         parent::__construct($level, $bubble);
-    }
+
+    }//end __construct()
 
     protected function write(array $record): void
     {
@@ -31,33 +32,37 @@ class PostgresqlHandler extends AbstractProcessingHandler
             $this->initialize();
         }
 
-
         if (!isset($record['formatted']) || 'string' !== gettype($record['formatted'])) {
-            throw new \InvalidArgumentException('PostgresqlHandler accepts only formatted records as a string' . Utils::getRecordMessageForException($record));
+            throw new \InvalidArgumentException('PostgresqlHandler accepts only formatted records as a string'.Utils::getRecordMessageForException($record));
         }
+
         $id = Uuid::uuid4();
 
-        $formatted = json_decode(json: $record['formatted'], associative: true);
-        $formatted['_id'] = $id;
+        $formatted           = json_decode(json: $record['formatted'], associative: true);
+        $formatted['_id']    = $id;
         $record['formatted'] = json_encode(value: $formatted);
 
-        $this->connection->insert(table: 'logs',data: [
-            '_id' => $id,
-            'channel' => $record['channel'],
-            'logs' => $record['formatted'],
-            'time' => (new \DateTime($record['datetime']))->format('U'),
-        ]);
-    }
+        $this->connection->insert(
+            table: 'logs',
+            data: [
+                '_id'     => $id,
+                'channel' => $record['channel'],
+                'logs'    => $record['formatted'],
+                'time'    => (new \DateTime($record['datetime']))->format('U'),
+            ]
+        );
+
+    }//end write()
 
     private function initialize()
     {
         $this->connection->executeQuery(
-            'CREATE TABLE IF NOT EXISTS logs '
-            .'(_id uuid, channel VARCHAR(255), logs jsonb, time INTEGER)'
+            'CREATE TABLE IF NOT EXISTS logs '.'(_id uuid, channel VARCHAR(255), logs jsonb, time INTEGER)'
         );
 
         $this->initialized = true;
-    }
+
+    }//end initialize()
 
     /**
      * {@inheritDoc}
@@ -65,5 +70,6 @@ class PostgresqlHandler extends AbstractProcessingHandler
     protected function getDefaultFormatter(): FormatterInterface
     {
         return new JsonFormatter();
-    }
-}
+
+    }//end getDefaultFormatter()
+}//end class
