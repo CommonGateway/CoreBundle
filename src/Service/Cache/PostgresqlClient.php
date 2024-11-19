@@ -42,6 +42,7 @@ class PostgresqlClient implements ClientInterface
             $this->client->executeQuery("CREATE TABLE ".strtolower($databaseName)." (_id uuid);");
         }
 
+
         $this->databases[$databaseName] = $database = new PostgresqlDatabase(name: $databaseName, client: $this->client);
 
         return $database;
