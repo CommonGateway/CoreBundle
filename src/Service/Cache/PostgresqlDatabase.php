@@ -25,9 +25,11 @@ class PostgresqlDatabase implements DatabaseInterface
             return $this->collections[$collectionName];
         }
 
+        $columns = $this->client->executeQuery("select column_name from information_schema.columns where table_name = '{$this->name}'")->fetchFirstColumn();
+
         if (in_array(
             needle: strtolower($collectionName),
-            haystack: $this->client->executeQuery("select column_name from information_schema.columns where table_name = '{$this->name}'")->fetchFirstColumn()
+            haystack: $columns
         ) === false
         ) {
             $this->client->executeQuery("ALTER TABLE {$this->name} ADD {$collectionName} json");

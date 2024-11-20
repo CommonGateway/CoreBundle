@@ -2,7 +2,9 @@
 
 namespace CommonGateway\CoreBundle\Monolog;
 
+use DateTime;
 use Doctrine\DBAL\Connection;
+use InvalidArgumentException;
 use Monolog\Formatter\FormatterInterface;
 use Monolog\Formatter\JsonFormatter;
 use Monolog\Formatter\MongoDBFormatter;
@@ -32,8 +34,8 @@ class PostgresqlHandler extends AbstractProcessingHandler
             $this->initialize();
         }
 
-        if (!isset($record['formatted']) || 'string' !== gettype($record['formatted'])) {
-            throw new \InvalidArgumentException('PostgresqlHandler accepts only formatted records as a string'.Utils::getRecordMessageForException($record));
+        if (!isset($record['formatted']) === true || 'string' !== gettype($record['formatted'])) {
+            throw new InvalidArgumentException('PostgresqlHandler accepts only formatted records as a string'.Utils::getRecordMessageForException($record));
         }
 
         $id = Uuid::uuid4();
@@ -48,7 +50,7 @@ class PostgresqlHandler extends AbstractProcessingHandler
                 '_id'     => $id,
                 'channel' => $record['channel'],
                 'logs'    => $record['formatted'],
-                'time'    => (new \DateTime($record['datetime']))->format('U'),
+                'time'    => (new DateTime($record['datetime']))->format('U'),
             ]
         );
 

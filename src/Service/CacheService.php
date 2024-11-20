@@ -1290,8 +1290,6 @@ class CacheService
 
         $collection = $this->client->endpoints->json;
 
-        echo get_class($collection);
-
         $endpointArray        = $this->serializer->normalize($endpoint, null, [AbstractNormalizer::IGNORED_ATTRIBUTES => ['object', 'inversedBy']]);
         $endpointArray['_id'] = $endpointArray['id'];
 
