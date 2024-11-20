@@ -312,7 +312,7 @@ class CacheService
 
         // Backwards compatibility.
         if (((isset($config['schemas']) === false || $config['schemas'] !== true)
-            || (isset($config['endpoints']) === false || $config['endpoints'] !== true))
+                || (isset($config['endpoints']) === false || $config['endpoints'] !== true))
             && isset($this->client) === false
         ) {
             isset($this->style) === true && $this->style->writeln('No cache client found, halting warmup');
@@ -443,6 +443,7 @@ class CacheService
             foreach ($schemaRefs as $schemaRef) {
                 $filter['_self.schema.id']['$in'][] = $schemaRef;
             }
+            $filter['_limit'] = $collection->count($filter);
 
             $objects = $collection->find($filter, [])->toArray();
         } else {
