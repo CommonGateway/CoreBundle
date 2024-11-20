@@ -13,6 +13,8 @@ use CommonGateway\CoreBundle\Service\Cache\ClientInterface;
 use CommonGateway\CoreBundle\Service\Cache\ElasticSearchClient;
 use CommonGateway\CoreBundle\Service\Cache\ElasticSearchCollection;
 use CommonGateway\CoreBundle\Service\Cache\MongoDbCollection;
+use CommonGateway\CoreBundle\Service\Cache\PostgresqlClient;
+use CommonGateway\CoreBundle\Service\Cache\PostgresqlCollection;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
@@ -48,7 +50,7 @@ class CacheService
     /**
      * @var Client
      */
-    private Client $client;
+    private ClientInterface $client;
 
     /**
      * @var Client|null
@@ -128,8 +130,12 @@ class CacheService
         $this->serializer          = $serializer;
         $this->objectEntityService = $objectEntityService;
         $this->session             = $session;
-        if ($this->parameters->get('cache_url', false)) {
+        if (substr($this->parameters->get('cache_url', false), offset: 0, length: 5) === 'mongo') {
             $this->client = new Client($this->parameters->get('cache_url'), entityManager: $this->entityManager, objectEntityService: $this->objectEntityService, cacheLogger: $this->logger);
+        }
+
+        if (substr($this->parameters->get('cache_url', false), offset: 4, length: 5) === 'pgsql' || substr($this->parameters->get('cache_url', false), offset: 4, length: 4) === 'psql') {
+            $this->client = new PostgresqlClient($this->parameters->get('cache_url'));
         }
 
         $this->filesystem = new Filesystem();
@@ -375,6 +381,8 @@ class CacheService
                 try {
                     $this->cacheEndpoint(endpoint: $endpoint);
                 } catch (Exception $exception) {
+                    echo $exception->getMessage();
+
                     $this->styleCatchException(exception: $exception);
                     continue;
                 }
@@ -447,7 +455,7 @@ class CacheService
                     $this->style->writeln("removing {$object['_id']} from cache");
                 }
 
-                $collection->findOneAndDelete(['id' => $object['_id']]);
+                $collection->findOneAndDelete(['_id' => $object['_id']]);
             }
         }
 
@@ -1079,7 +1087,7 @@ class CacheService
             foreach ($queries as $query) {
                 $result[$query] = $collection->aggregate([['$match' => $filter], ['$unwind' => "\${$query}"], ['$group' => ['_id' => "\${$query}", 'count' => ['$sum' => 1]]]])->toArray();
             }
-        } else if ($collection instanceof ElasticSearchCollection === true) {
+        } else if ($collection instanceof ElasticSearchCollection === true || $collection instanceof PostgresqlCollection === true) {
             unset($filter['_queries']);
             $result = $collection->aggregate([$filter, $queries])->toArray();
         }
@@ -1286,7 +1294,7 @@ class CacheService
         $endpointArray['_id'] = $endpointArray['id'];
 
         if ($collection->findOneAndReplace(
-            ['id' => $endpoint->getId()->toString()],
+            ['_id' => $endpoint->getId()->toString()],
             $endpointArray,
             ['upsert' => true]
         )
@@ -1316,7 +1324,7 @@ class CacheService
 
         $collection = $this->client->endpoints->json;
 
-        $collection->findOneAndDelete(['id' => $endpoint->getId()->toString()]);
+        $collection->findOneAndDelete(['_id' => $endpoint->getId()->toString()]);
 
     }//end removeEndpoint()
 
@@ -1357,6 +1365,7 @@ class CacheService
 
         $collection = $this->client->endpoints->json;
 
+        // @TODO this must be more database-independent
         if (isset($filter['path']) === true) {
             $path             = $filter['path'];
             $filter['$where'] = "\"$path\".match(this.pathRegex)";

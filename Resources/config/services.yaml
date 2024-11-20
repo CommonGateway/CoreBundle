@@ -26,3 +26,15 @@ services:
         CommonGateway\CoreBundle\Installer\InstallerInterface:
             public: true
             tags: ['commongateway.installer']
+           
+    monolog.postgresql_connection:
+        class: Doctrine\DBAL\Connection
+        factory: Doctrine\DBAL\DriverManager::getConnection
+        arguments:
+            $params:
+                url: '%env(CACHE_URL)%'
+    monolog.postgresql_handler: 
+        class: CommonGateway\CoreBundle\Monolog\PostgresqlHandler
+        arguments:
+            $connection: '@monolog.postgresql_connection'
+            $level: '%log_level%'
