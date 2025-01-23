@@ -824,8 +824,6 @@ class RequestService
                 $statusCode = 502;
             }
 
-            var_dump('a');
-
             $content  = $this->serializeData(
                 [
                     'message' => $exception->getMessage(),
