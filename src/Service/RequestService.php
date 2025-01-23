@@ -214,7 +214,7 @@ class RequestService
      *
      * @return string The serialized data.
      */
-    public function serializeData(array $data, &$contentType): string
+    public function serializeData(array $data, &$contentType, ?string $xmlRootNode = null): string
     {
         $accept = 'json';
         if (isset($this->data['accept']) === true) {
@@ -226,7 +226,12 @@ class RequestService
             $endpoint = $this->data['endpoint'];
         }
 
-        $serializer = new Serializer([], [new XmlEncoder(), new CsvEncoder()]);
+        $encoderSettings = ['xml_encoding' => 'utf-8'];
+        if ($xmlRootNode) {
+            $encoderSettings['xml_root_node_name'] = $xmlRootNode;
+        }
+
+        $serializer = new Serializer([], [new XmlEncoder($encoderSettings), new CsvEncoder()]);
 
         // @TODO: Create hal and ld encoding.
         switch ($accept) {
@@ -277,11 +282,13 @@ class RequestService
      *
      * @return array The unserialized data.
      */
-    private function unserializeData(string $content, string $contentType): array
+    private function unserializeData(string $content, string $contentType, ?string &$rootNode = null): array
     {
         $xmlEncoder = new XmlEncoder([]);
 
         if (str_contains($contentType, 'xml') === true) {
+            $xml      = simplexml_load_string($content);
+            $rootNode = array_key_first($xml->getNamespaces()).":".$xml->getName();
             return $xmlEncoder->decode($content, 'xml');
         }
 
@@ -756,11 +763,18 @@ class RequestService
             }//end if
 
             $contentType = 'application/json';
+
             if (isset($result->getHeaders()['content-type'][0]) === true) {
                 $contentType = $result->getHeaders()['content-type'][0];
             }
 
-            $resultContent = $this->unserializeData($result->getBody()->getContents(), $contentType);
+            if (isset($result->getHeaders()['Content-Type'][0]) === true) {
+                $contentType = $result->getHeaders()['Content-Type'][0];
+            }
+
+            $xmlRootNode = null;
+
+            $resultContent = $this->unserializeData($result->getBody()->getContents(), $contentType, $xmlRootNode);
 
             // Handle _self metadata, includes adding dateRead
             if (isset($extend) === true) {
@@ -781,7 +795,7 @@ class RequestService
 
             // Let create a response from the guzzle call.
             $response = new Response(
-                $this->serializeData($resultContent, $contentType),
+                $this->serializeData($resultContent, $contentType, $xmlRootNode),
                 $result->getStatusCode(),
                 $headers
             );
@@ -815,7 +829,8 @@ class RequestService
                     'message' => $exception->getMessage(),
                     'body'    => ($body ?? "Can't get a response & body for this type of Exception: ").get_class($exception),
                 ],
-                $contentType
+                $contentType,
+                $xmlRootNode
             );
             $response = new Response($content, $statusCode, ($headers ?? ['Content-Type' => $contentType]));
         }//end try
