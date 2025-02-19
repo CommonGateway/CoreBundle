@@ -96,7 +96,7 @@ class ValueSubscriber implements EventSubscriberInterface
                     $userId = Uuid::fromString($this->session->get('user'));
                 }
 
-                $this->messageBus->dispatch(new ValueMessage($value->getObject()->getId(), $userId));
+                $this->messageBus->dispatch(new ValueMessage($value->getObject()->getId(), $userId, $this->session->get('application')));
             } catch (\Exception $exception) {
                 $this->logger->error("Error when trying to create a ValueMessage for Value {$value->getObject()->getId()}: ".$exception->getMessage());
             }

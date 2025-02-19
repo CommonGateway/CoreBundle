@@ -193,7 +193,7 @@ class ActionSubscriber implements EventSubscriberInterface
             } else {
                 $data = $event->getData();
                 unset($data['httpRequest']);
-                $this->messageBus->dispatch(new ActionMessage($action->getId(), $data, $currentCronJobThrow));
+                $this->messageBus->dispatch(new ActionMessage($action->getId(), $data, $currentCronJobThrow, $this->session->get('application')));
             }
 
             $this->handleActionIoFinish($action, $currentCronJobThrow);
