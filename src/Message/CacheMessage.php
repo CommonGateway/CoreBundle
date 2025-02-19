@@ -26,9 +26,10 @@ class CacheMessage
         return $this->objectEntityId;
 
     }//end getObjectEntityId()
-    
+
     public function getApplication(): ?string
     {
         return $this->application;
-    }
+
+    }//end getApplication()
 }//end class

@@ -57,9 +57,10 @@ class ValueMessage
         return $this->userId;
 
     }//end getUserId()
-    
+
     public function getApplication(): string
     {
         $this->application;
-    }
+
+    }//end getApplication()
 }//end class
