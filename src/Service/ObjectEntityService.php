@@ -5,6 +5,7 @@ namespace CommonGateway\CoreBundle\Service;
 use App\Entity\ObjectEntity;
 use App\Entity\Organization;
 use App\Entity\User;
+use App\Service\ApplicationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -63,7 +64,8 @@ class ObjectEntityService
     public function __construct(
         EntityManagerInterface $entityManager,
         Security $security,
-        SessionInterface $session
+        SessionInterface $session,
+        private readonly ApplicationService $applicationService
     ) {
         $this->entityManager = $entityManager;
         $this->security      = $security;
@@ -125,6 +127,8 @@ class ObjectEntityService
     {
         $user = $this->findCurrentUser();
 
+//        var_dump($user->getId());
+
         $object = $this->setOwner($object, $user);
         return $this->setOrganization($object, $user);
         // Do not persist here, because this triggers the subscriber that calls this setOwnerAndOrg() function.
@@ -144,6 +148,8 @@ class ObjectEntityService
         if ($object->getOwner() !== null) {
             return $object;
         }
+
+        $application = $this->applicationService->getApplication();
 
         // Find the correct owner to set.
         if ($user !== null) {
@@ -175,9 +181,13 @@ class ObjectEntityService
             return $object;
         }
 
+        $application = $this->applicationService->getApplication();
+
         // Find the correct Organization to set.
         if ($user !== null && $user->getOrganization() !== null) {
             $organization = $user->getOrganization();
+        } else if ($application !== null) {
+            $organization = $application->getOrganization();
         } else {
             // Default to the Default Organization.
             $organization = $this->entityManager->getRepository('App:Organization')->findOneBy(['reference' => $this::DEFAULTS['organization']]);
