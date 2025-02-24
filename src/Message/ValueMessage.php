@@ -61,5 +61,6 @@ class ValueMessage
     public function getApplication(): string
     {
         return $this->application;
-    }
+
+    }//end getApplication()
 }//end class

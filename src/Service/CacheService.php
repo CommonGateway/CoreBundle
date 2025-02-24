@@ -443,6 +443,7 @@ class CacheService
             foreach ($schemaRefs as $schemaRef) {
                 $filter['_self.schema.id']['$in'][] = $schemaRef;
             }
+
             $filter['_limit'] = $collection->count($filter);
 
             $objects = $collection->find($filter, [])->toArray();

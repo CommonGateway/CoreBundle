@@ -86,7 +86,7 @@ class ValueMessageHandler implements MessageHandlerInterface
         if ($message->getUserId() !== null) {
             $this->session->set('valueMessageUserId', $message->getUserId()->toString());
         }
-        
+
         if ($message->getApplication() !== null) {
             $this->session->set('application', $message->getApplication());
         }

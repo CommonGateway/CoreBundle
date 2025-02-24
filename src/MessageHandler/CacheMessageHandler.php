@@ -47,7 +47,7 @@ class CacheMessageHandler implements MessageHandlerInterface
     public function __invoke(CacheMessage $message): void
     {
         $object = $this->repository->find($message->getObjectEntityId());
-        
+
         if ($message->getApplication() !== null) {
             $this->session->set('application', $message->getApplication());
         }
