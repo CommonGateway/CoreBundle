@@ -880,7 +880,7 @@ class CacheService
         } else {
             return [];
         }
-        
+
         $total = $this->countObjectsInCache(filter: $filter);
 
         $results = $collection->find($filter, $options)->toArray();

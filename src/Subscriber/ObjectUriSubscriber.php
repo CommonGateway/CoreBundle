@@ -83,14 +83,14 @@ class ObjectUriSubscriber implements EventSubscriberInterface
         $object = $args->getObject();
         // if this subscriber only applies to certain entity types,
         if ($object instanceof ObjectEntity) {
-            try{
+            try {
                 $application = $this->applicationService->getApplication();
                 if ($object->getUri() === null
                     || str_contains($object->getUri(), $object->getSelf()) === false
                 ) {
                     $object->setUri('https://'.$application->getDomains()[0].$object->getSelf());
                 }
-            } catch(GatewayException $exception) {
+            } catch (GatewayException $exception) {
                 if ($object->getUri() === null
                     || str_contains($object->getUri(), $object->getSelf()) === false
                 ) {
