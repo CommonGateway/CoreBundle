@@ -284,13 +284,21 @@ class RequestService
      */
     private function unserializeData(string $content, string $contentType, ?string &$rootNode = null): array
     {
-        $xmlEncoder = new XmlEncoder(['as_collection' => true, 'remove_empty_tags' => false, 'reformat'=>false]);
+        $xmlEncoder = new XmlEncoder(['as_collection' => true, 'remove_empty_tags' => false, 'reformat' => false]);
         if (str_contains($contentType, 'xml') === true) {
-            $xml      = simplexml_load_string($content);
-            $namespaces = array_combine(array_map(function($key) { return '@xmlns:'.$key; }, array_keys($xml->getDocNamespaces(true))), $xml->getDocNamespaces(true));
-            $rootNode = array_key_first($xml->getNamespaces(true)).":".$xml->getName();
-            $decoded =            $xmlEncoder->decode($content, 'xml');
-            $decoded = array_merge($decoded, $namespaces);
+            $xml        = simplexml_load_string($content);
+            $namespaces = array_combine(
+                array_map(
+                    function ($key) {
+                        return '@xmlns:'.$key;
+                    },
+                    array_keys($xml->getDocNamespaces(true))
+                ),
+                $xml->getDocNamespaces(true)
+            );
+            $rootNode   = array_key_first($xml->getNamespaces(true)).":".$xml->getName();
+            $decoded    = $xmlEncoder->decode($content, 'xml');
+            $decoded    = array_merge($decoded, $namespaces);
             return $decoded;
         }
 
