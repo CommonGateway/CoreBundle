@@ -87,6 +87,10 @@ class ValueMessageHandler implements MessageHandlerInterface
             $this->session->set('valueMessageUserId', $message->getUserId()->toString());
         }
 
+        if ($message->getApplication() !== null) {
+            $this->session->set('application', $message->getApplication());
+        }
+
         try {
             if ($value instanceof Value === true) {
                 $this->valueService->connectSubObjects($value);

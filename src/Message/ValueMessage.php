@@ -29,7 +29,7 @@ class ValueMessage
      *
      * @param UuidInterface $valueId The id of the value to check./
      */
-    public function __construct(UuidInterface $valueId, ?UuidInterface $userId)
+    public function __construct(UuidInterface $valueId, ?UuidInterface $userId, private readonly string $application)
     {
         $this->valueId = $valueId;
         $this->userId  = $userId;
@@ -57,4 +57,10 @@ class ValueMessage
         return $this->userId;
 
     }//end getUserId()
+
+    public function getApplication(): string
+    {
+        return $this->application;
+
+    }//end getApplication()
 }//end class

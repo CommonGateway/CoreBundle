@@ -4,6 +4,8 @@
 namespace CommonGateway\CoreBundle\Subscriber;
 
 use App\Entity\ObjectEntity;
+use App\Exception\GatewayException;
+use App\Service\ApplicationService;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
@@ -40,7 +42,8 @@ class ObjectUriSubscriber implements EventSubscriberInterface
      */
     public function __construct(
         ParameterBagInterface $parameterBag,
-        SessionInterface $session
+        SessionInterface $session,
+        private ApplicationService $applicationService
     ) {
         $this->parameterBag = $parameterBag;
         $this->session      = $session;
@@ -80,8 +83,19 @@ class ObjectUriSubscriber implements EventSubscriberInterface
         $object = $args->getObject();
         // if this subscriber only applies to certain entity types,
         if ($object instanceof ObjectEntity) {
-            if ($object->getUri() === null || str_contains($object->getUri(), $object->getSelf()) === false) {
-                $object->setUri(rtrim($this->parameterBag->get('app_url'), '/').$object->getSelf());
+            try {
+                $application = $this->applicationService->getApplication();
+                if ($object->getUri() === null
+                    || str_contains($object->getUri(), $object->getSelf()) === false
+                ) {
+                    $object->setUri('https://'.$application->getDomains()[0].$object->getSelf());
+                }
+            } catch (GatewayException $exception) {
+                if ($object->getUri() === null
+                    || str_contains($object->getUri(), $object->getSelf()) === false
+                ) {
+                    $object->setUri(rtrim($this->parameterBag->get('app_url'), '/').$object->getSelf());
+                }
             }
 
             return;

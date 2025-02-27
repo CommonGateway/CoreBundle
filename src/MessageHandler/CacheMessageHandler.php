@@ -48,6 +48,10 @@ class CacheMessageHandler implements MessageHandlerInterface
     {
         $object = $this->repository->find($message->getObjectEntityId());
 
+        if ($message->getApplication() !== null) {
+            $this->session->set('application', $message->getApplication());
+        }
+
         try {
             if ($object instanceof ObjectEntity) {
                 $this->cacheService->cacheObject($object);

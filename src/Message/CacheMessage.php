@@ -15,7 +15,7 @@ class CacheMessage
 
     private UuidInterface $objectEntityId;
 
-    public function __construct(UuidInterface $actionId)
+    public function __construct(UuidInterface $actionId, private readonly string $application)
     {
         $this->objectEntityId = $actionId;
 
@@ -26,4 +26,10 @@ class CacheMessage
         return $this->objectEntityId;
 
     }//end getObjectEntityId()
+
+    public function getApplication(): ?string
+    {
+        return $this->application;
+
+    }//end getApplication()
 }//end class
