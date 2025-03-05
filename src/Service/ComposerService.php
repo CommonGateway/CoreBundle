@@ -335,7 +335,7 @@ class ComposerService
     {
         $finder = new Finder();
 
-        $files = $finder->in('..')->files()->name('composer.lock')->exclude('vendor');
+        $files = $finder->in('.')->files()->name('composer.lock')->exclude('vendor');
         if (count($files) === 0) {
             return [];
         }
