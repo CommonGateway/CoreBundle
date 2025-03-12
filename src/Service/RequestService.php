@@ -1846,15 +1846,16 @@ class RequestService
         $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $configuration['source']]);
 
         if (isset($configuration['endpoint']) === true && $configuration['endpoint'] !== null) {
-            if(isset($parameters['path']['{route}']) === true) {
+            if (isset($parameters['path']['{route}']) === true) {
                 $originalPath = $parameters['path']['{route}'];
             } else {
                 $originalPath = '';
             }
+
             $parameters['path']['{route}'] = $configuration['endpoint'].$originalPath;
         }
 
-        if(isset($configuration['useContentType']) === true && $configuration['useContentType'] === false) {
+        if (isset($configuration['useContentType']) === true && $configuration['useContentType'] === false) {
             unset($parameters['headers']['content-type'], $parameters['headers']['Content-Type']);
         }
 

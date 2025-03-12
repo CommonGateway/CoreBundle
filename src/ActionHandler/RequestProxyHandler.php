@@ -34,12 +34,13 @@ class RequestProxyHandler implements ActionHandlerInterface
             'title'      => 'SearchRequestHandler',
             'required'   => [],
             'properties' => [
-                'source' => [
+                'source'         => [
                     'type'        => 'url',
                     'description' => 'The reference to the source to proxy data to.',
                     'example'     => 'https://common-gateway.nl/testproxy.proxy.json',
                     'nullable'    => true,
-                ],                'endpoint' => [
+                ],
+                'endpoint'       => [
                     'type'        => 'string',
                     'description' => 'The reference to the source to proxy data to.',
                     'example'     => '/v1/api/zaken',
