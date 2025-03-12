@@ -229,6 +229,8 @@ class RequestService
         $encoderSettings = ['xml_encoding' => 'utf-8'];
         if ($xmlRootNode) {
             $encoderSettings['xml_root_node_name'] = $xmlRootNode;
+        } else {
+            $encoderSettings['xml_root_node_name'] = 'SOAP-ENV:Envelope';
         }
 
         $serializer = new Serializer([], [new XmlEncoder($encoderSettings), new CsvEncoder()]);
@@ -803,9 +805,13 @@ class RequestService
                 unset($headers['Content-Length']);
             }
 
+            $serializedData = $this->serializeData($resultContent, $contentType, $xmlRootNode);
+
+            $headers['content-type'] = $contentType;
+
             // Let create a response from the guzzle call.
             $response = new Response(
-                $this->serializeData($resultContent, $contentType, $xmlRootNode),
+                $serializedData,
                 $result->getStatusCode(),
                 $headers
             );
@@ -1838,6 +1844,19 @@ class RequestService
     public function proxyRequestHandler(array $parameters, array $configuration): array
     {
         $source = $this->entityManager->getRepository('App:Gateway')->findOneBy(['reference' => $configuration['source']]);
+
+        if (isset($configuration['endpoint']) === true && $configuration['endpoint'] !== null) {
+            if(isset($parameters['path']['{route}']) === true) {
+                $originalPath = $parameters['path']['{route}'];
+            } else {
+                $originalPath = '';
+            }
+            $parameters['path']['{route}'] = $configuration['endpoint'].$originalPath;
+        }
+
+        if(isset($configuration['useContentType']) === true && $configuration['useContentType'] === false) {
+            unset($parameters['headers']['content-type'], $parameters['headers']['Content-Type']);
+        }
 
         return ['response' => $this->proxyHandler($parameters, $configuration, $source)];
 
