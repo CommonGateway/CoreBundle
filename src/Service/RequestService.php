@@ -840,7 +840,7 @@ class RequestService
                     'body'    => ($body ?? "Can't get a response & body for this type of Exception: ").get_class($exception),
                 ],
                 $contentType,
-                $xmlRootNode
+                isset($xmlRootNode) === true ? $xmlRootNode : null
             );
             $response = new Response($content, $statusCode, ($headers ?? ['Content-Type' => $contentType]));
         }//end try
