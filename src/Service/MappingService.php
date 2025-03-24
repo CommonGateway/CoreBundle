@@ -280,7 +280,7 @@ class MappingService
             $cast           = 'setNullIfValue';
         } else if (str_starts_with($cast, 'castStrToTypeIf==') === true) {
             $castStrToTypeIf = substr($cast, 17);
-            $cast       = 'castStrToTypeIf';
+            $cast            = 'castStrToTypeIf';
         } else if (str_starts_with($cast, 'countValue:') === true) {
             $countValue = substr($cast, 11);
             $cast       = 'countValue';
@@ -394,12 +394,12 @@ class MappingService
                 $castIfTypes = explode(",", $castStrToTypeIf);
                 if (is_numeric($value) === true) {
                     // First check if it's a BSN number
-                    if (in_array('bsn', $castIfTypes) && $this->isValidBsn((string)$value)) {
+                    if (in_array('bsn', $castIfTypes) && $this->isValidBsn((string) $value)) {
                         // Keep BSN as string to preserve leading zeros and format
                         $value = (string) $value;
                         break;
                     }
-                    
+
                     // If not a BSN, check if integer casting is requested
                     if (in_array('int', $castIfTypes) || in_array('integer', $castIfTypes)) {
                         $value = (int) $value;
@@ -413,7 +413,7 @@ class MappingService
                     $value = (bool) $value;
                     break;
                 }
-            }
+            }//end if
             break;
         case 'countValue':
             if (isset($countValue) === true
@@ -516,19 +516,21 @@ class MappingService
         if (preg_match('/^\d{8,9}$/', $bsn) === false) {
             return false;
         }
-        
+
         // Pad 8-digit BSNs with leading zero to make it 9 digits
         $bsn = str_pad($bsn, 9, '0', STR_PAD_LEFT);
-        
+
         // Calculate weighted sum according to 11-proof
         $sum = 0;
         for ($i = 0; $i < 8; $i++) {
-            $sum += (int)$bsn[$i] * (9 - $i);
+            $sum += ((int) $bsn[$i] * (9 - $i));
         }
+
         // Last digit has weight -1
-        $sum -= (int)$bsn[8];
-        
+        $sum -= (int) $bsn[8];
+
         // Valid BSN if sum is divisible by 11
         return ($sum % 11) === 0;
-    }
+
+    }//end isValidBsn()
 }//end class
