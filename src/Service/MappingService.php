@@ -278,6 +278,9 @@ class MappingService
         } else if (str_starts_with($cast, 'setNullIfValue==') === true) {
             $setNullIfValue = substr($cast, 16);
             $cast           = 'setNullIfValue';
+        } else if (str_starts_with($cast, 'castStrToTypeIf==') === true) {
+            $castStrToTypeIf = substr($cast, 17);
+            $cast       = 'castStrToTypeIf';
         } else if (str_starts_with($cast, 'countValue:') === true) {
             $countValue = substr($cast, 11);
             $cast       = 'countValue';
@@ -385,12 +388,40 @@ class MappingService
                 $value = null;
             }
             break;
+        case 'castStrToTypeIf':
+            if (isset($castStrToTypeIf) === true) {
+                // Parse the comma-separated type casting options
+                $castIfTypes = explode(",", $castStrToTypeIf);
+                if (is_numeric($value) === true) {
+                    // First check if it's a BSN number
+                    if (in_array('bsn', $castIfTypes) && $this->isValidBsn((string)$value)) {
+                        // Keep BSN as string to preserve leading zeros and format
+                        $value = (string) $value;
+                        break;
+                    }
+                    
+                    // If not a BSN, check if integer casting is requested
+                    if (in_array('int', $castIfTypes) || in_array('integer', $castIfTypes)) {
+                        $value = (int) $value;
+                        break;
+                    }
+                }
+
+                // Handle boolean casting when value is already a boolean
+                if ((in_array('bool', $castIfTypes) || in_array('boolean', $castIfTypes)) && is_bool($value) === true) {
+                    // Explicitly cast to ensure it's a proper boolean type
+                    $value = (bool) $value;
+                    break;
+                }
+            }
+            break;
         case 'countValue':
             if (isset($countValue) === true
                 && empty($countValue) === false
                 && $dotArray->has($countValue) === true
                 && is_countable($dotArray->get($countValue)) === true
             ) {
+                // Count the number of items in the specified array
                 $value = count($dotArray->get($countValue));
             }
             break;
@@ -471,4 +502,33 @@ class MappingService
         return $coordinateArray;
 
     }//end coordinateStringToArray()
+
+    /**
+     * Checks if a string is a valid BSN number using the "11-proof" check.
+     *
+     * @param string $bsn The BSN number to validate
+     *
+     * @return bool True if BSN is valid, false otherwise
+     */
+    private function isValidBsn(string $bsn): bool
+    {
+        // BSN must be 8 or 9 digits
+        if (preg_match('/^\d{8,9}$/', $bsn) === false) {
+            return false;
+        }
+        
+        // Pad 8-digit BSNs with leading zero to make it 9 digits
+        $bsn = str_pad($bsn, 9, '0', STR_PAD_LEFT);
+        
+        // Calculate weighted sum according to 11-proof
+        $sum = 0;
+        for ($i = 0; $i < 8; $i++) {
+            $sum += (int)$bsn[$i] * (9 - $i);
+        }
+        // Last digit has weight -1
+        $sum -= (int)$bsn[8];
+        
+        // Valid BSN if sum is divisible by 11
+        return ($sum % 11) === 0;
+    }
 }//end class
