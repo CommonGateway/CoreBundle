@@ -286,7 +286,7 @@ class RequestService
     {
         $xmlEncoder = new XmlEncoder(['as_collection' => true, 'remove_empty_tags' => false, 'reformat' => false]);
         if (str_contains($contentType, 'xml') === true) {
-            $xml        = simplexml_load_string($content);
+            $xml        = simplexml_load_string($content, options: LIBXML_PARSEHUGE);
             $namespaces = array_combine(
                 array_map(
                     function ($key) {
