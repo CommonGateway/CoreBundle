@@ -402,6 +402,9 @@ class MappingService
             $value = ($value / 100);
             $value = number_format($value, 2, ',', '.');
             break;
+        case 'auto':
+            $value = $this->autoCast($value);
+            break;
         default:
             isset($this->style) === true && $this->style->info('Trying to cast to an unsupported cast type: '.$cast);
             break;
@@ -413,6 +416,78 @@ class MappingService
         }
 
     }//end handleCast()
+
+    /**
+     * Check if a string is a dutch BSN (social security number)
+     *
+     * @param string $value The value to check.
+     * @return bool
+     */
+    private function bsnCheck(string $value): bool
+    {
+        if (ctype_digit($value) === false) {
+            return false;
+        }
+
+        if (strlen($value) > 9 || strlen($value) < 8) {
+            return false;
+        }
+
+        $value = str_pad(
+            string: $value,
+            length: 9,
+            pad_string: 0,
+            pad_type: STR_PAD_LEFT,
+        );
+
+        $control          = 0;
+        $reversedIterator = 9;
+
+        foreach(str_split($value) as $character) {
+            // Calculate the multiplier based on position. If the reversedIterator is 1, the multiplier is -1,
+            // else it is 9 - the position in the string
+            $multiplier = -1;
+            if ($reversedIterator > 1) {
+                $multiplier = $reversedIterator;
+            }
+
+            // Add the character multiplied by the multiplier to the control number
+            $control += ($character * $multiplier);
+
+            // Diminish the reversedIterator by 1.
+            $reversedIterator--;
+        }
+
+        // returns true if the modulo 11 of the control number is 0
+        return ($control % 11) === 0;
+    }
+
+    /**
+     * Detects if a value contains an integer (non BSN), boolean or null, and if so, casts it to that data type.
+     *
+     * @param mixed $value The incoming value.
+     * @return mixed The casted value.
+     */
+    private function autoCast (mixed $value) : mixed
+    {
+        if (is_string($value) === false) {
+            return $value;
+        }
+
+        if (ctype_digit($value) === true && $this->bsnCheck($value) === false) {
+            return (int) $value;
+        }
+
+        if ($value === 'true') {
+            return true;
+        } elseif ($value === 'false') {
+            return false;
+        } elseif ($value === 'null') {
+            return null;
+        }
+
+        return $value;
+    }
 
     /**
      * Checks if all keys in multi-dimensional array are null.
