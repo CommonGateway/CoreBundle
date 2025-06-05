@@ -420,7 +420,7 @@ class MappingService
     /**
      * Check if a string is a dutch BSN (social security number)
      *
-     * @param string $value The value to check.
+     * @param  string $value The value to check.
      * @return bool
      */
     private function bsnCheck(string $value): bool
@@ -443,7 +443,7 @@ class MappingService
         $control          = 0;
         $reversedIterator = 9;
 
-        foreach(str_split($value) as $character) {
+        foreach (str_split($value) as $character) {
             // Calculate the multiplier based on position. If the reversedIterator is 1, the multiplier is -1,
             // else it is 9 - the position in the string
             $multiplier = -1;
@@ -460,15 +460,16 @@ class MappingService
 
         // returns true if the modulo 11 of the control number is 0
         return ($control % 11) === 0;
-    }
+
+    }//end bsnCheck()
 
     /**
      * Detects if a value contains an integer (non BSN), boolean or null, and if so, casts it to that data type.
      *
-     * @param mixed $value The incoming value.
+     * @param  mixed $value The incoming value.
      * @return mixed The casted value.
      */
-    private function autoCast (mixed $value) : mixed
+    private function autoCast(mixed $value) : mixed
     {
         if (is_string($value) === false) {
             return $value;
@@ -480,14 +481,15 @@ class MappingService
 
         if ($value === 'true') {
             return true;
-        } elseif ($value === 'false') {
+        } else if ($value === 'false') {
             return false;
-        } elseif ($value === 'null') {
+        } else if ($value === 'null') {
             return null;
         }
 
         return $value;
-    }
+
+    }//end autoCast()
 
     /**
      * Checks if all keys in multi-dimensional array are null.
