@@ -337,7 +337,7 @@ class EndpointService
         case 'text/xml':
         case 'application/xml':
         case 'xml':
-            $xmlEncoder = new XmlEncoder();
+            $xmlEncoder = new XmlEncoder(['load_options' => LIBXML_PARSEHUGE]);
 
             return $xmlEncoder->decode($this->request->getContent(), 'xml');
         default:
