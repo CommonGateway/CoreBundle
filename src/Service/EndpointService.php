@@ -551,14 +551,22 @@ class EndpointService
             $this->logger->debug('EndpointService->getNormalPath(): '.$exception->getMessage());
 
             // Todo: When an id is not given the last element of the path array should be removed to ensure the arrays are of the same length.
-            array_pop($path);
-            $combinedArray = array_combine($path, explode('/', $pathRaw));
+            if (count(explode('/', $pathRaw)) > count($path)) {
+                $combinedArray = array_combine($path, explode('/', $pathRaw, count($path)));
+            } else {
+                array_pop($path);
+                $combinedArray = array_combine($path, explode('/', $pathRaw));
+            }
         }
 
         if ($combinedArray === false) {
-            // Todo: When an id is not given the last element of the path array should be removed to ensure the arrays are of the same length.
-            array_pop($path);
-            $combinedArray = array_combine($path, explode('/', $pathRaw));
+            // When an id is not given the last element of the path array should be removed to ensure the arrays are of the same length.
+            if (count(explode('/', $pathRaw)) > count($path)) {
+                $combinedArray = array_combine($path, explode('/', $pathRaw, count($path)));
+            } else {
+                array_pop($path);
+                $combinedArray = array_combine($path, explode('/', $pathRaw));
+            }
         }
 
         if ($combinedArray === false) {

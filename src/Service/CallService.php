@@ -348,7 +348,7 @@ class CallService
                 'Request failed with error '.$exception,
                 [
                     'sourceCall' => $this->sourceCallLogData(['method' => $method, 'url' => $url, 'response' => $response ?? null], $config),
-                ]
+                ],
             );
 
             if (empty($response) === false) {
@@ -501,6 +501,8 @@ class CallService
                 try {
                     $body               = $this->mappingService->mapping($mapping, $body);
                     $config[$configKey] = \Safe\json_encode($body);
+
+                    unset($config['headers']['Content-Type'], $config['headers']['Accept'], $config['headers']['accept'], $config['headers']['content-type']);
 
                     $config['headers']['content-type'] = 'application/json';
                 } catch (Exception | LoaderError | SyntaxError $exception) {
