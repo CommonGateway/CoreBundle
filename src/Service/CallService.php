@@ -348,7 +348,7 @@ class CallService
                 'Request failed with error '.$exception,
                 [
                     'sourceCall' => $this->sourceCallLogData(['method' => $method, 'url' => $url, 'response' => $response ?? null], $config),
-                ]
+                ],
             );
 
             if (empty($response) === false) {
@@ -501,6 +501,8 @@ class CallService
                 try {
                     $body               = $this->mappingService->mapping($mapping, $body);
                     $config[$configKey] = \Safe\json_encode($body);
+
+                    unset($config['headers']['Content-Type'], $config['headers']['Accept'], $config['headers']['accept'], $config['headers']['content-type']);
 
                     $config['headers']['content-type'] = 'application/json';
                 } catch (Exception | LoaderError | SyntaxError $exception) {
@@ -742,17 +744,17 @@ class CallService
 
         // This if is statement prevents binary code from being used a string.
         if (in_array(
-            $contentType,
-            [
-                'application/pdf',
-                'application/pdf; charset=utf-8',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8',
-                'application/msword',
-                'image/jpeg',
-                'image/png',
-            ]
-        ) === false
+                $contentType,
+                [
+                    'application/pdf',
+                    'application/pdf; charset=utf-8',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8',
+                    'application/msword',
+                    'image/jpeg',
+                    'image/png',
+                ]
+            ) === false
         ) {
             $this->callLogger->debug('Response content: '.$responseBody);
         }
@@ -766,28 +768,28 @@ class CallService
         }
 
         switch ($contentType) {
-        case 'text/plain':
-            return $responseBody;
-        case 'text/yaml':
-        case 'text/x-yaml':
-        case 'text/yaml; charset=utf-8':
-            return $yamlEncoder->decode($responseBody, 'yaml');
-        case 'text/xml':
-        case 'text/xml; charset=utf-8':
-        case 'application/pdf':
-        case 'application/pdf; charset=utf-8':
-        case 'application/msword':
-        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8':
-        case 'image/jpeg':
-        case 'image/png':
-            $this->callLogger->debug('Response content: binary code..');
-            return base64_encode($responseBody);
-        case 'application/xml':
-        case 'application/xml; charset=utf-8':
-            return $xmlEncoder->decode($responseBody, 'xml');
-        case 'application/json':
-        case 'application/json; charset=utf-8':
+            case 'text/plain':
+                return $responseBody;
+            case 'text/yaml':
+            case 'text/x-yaml':
+            case 'text/yaml; charset=utf-8':
+                return $yamlEncoder->decode($responseBody, 'yaml');
+            case 'text/xml':
+            case 'text/xml; charset=utf-8':
+            case 'application/pdf':
+            case 'application/pdf; charset=utf-8':
+            case 'application/msword':
+            case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8':
+            case 'image/jpeg':
+            case 'image/png':
+                $this->callLogger->debug('Response content: binary code..');
+                return base64_encode($responseBody);
+            case 'application/xml':
+            case 'application/xml; charset=utf-8':
+                return $xmlEncoder->decode($responseBody, 'xml');
+            case 'application/json':
+            case 'application/json; charset=utf-8':
         default:
             $result = json_decode($responseBody, true);
         }//end switch
