@@ -7,8 +7,6 @@ use Twig\TwigFunction;
 
 class CallExtension extends AbstractExtension
 {
-
-
     public function getFunctions()
     {
         return [
@@ -16,6 +14,4 @@ class CallExtension extends AbstractExtension
         ];
 
     }//end getFunctions()
-
-
 }//end class
