@@ -290,6 +290,10 @@ class RequestService
             $namespaces = array_combine(
                 array_map(
                     function ($key) {
+                        if ($key === '') {
+                            return '@xmlns';
+                        }
+
                         return '@xmlns:'.$key;
                     },
                     array_keys($xml->getDocNamespaces(true))
