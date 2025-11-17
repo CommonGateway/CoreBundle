@@ -293,6 +293,7 @@ class RequestService
                         if ($key === '') {
                             return '@xmlns';
                         }
+
                         return '@xmlns:'.$key;
                     },
                     array_keys($xml->getDocNamespaces(true))

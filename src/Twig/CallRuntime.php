@@ -10,15 +10,12 @@ use Twig\Extension\RuntimeExtensionInterface;
 
 class CallRuntime implements RuntimeExtensionInterface
 {
-
-
     public function __construct(
         private readonly CallService $callService,
         private readonly GatewayResourceService $resourceService
     ) {
 
     }//end __construct()
-
 
     /**
      * Call source of given id or reference
@@ -27,7 +24,7 @@ class CallRuntime implements RuntimeExtensionInterface
      *
      * @return array The dot aray.
      */
-    public function call(string $sourceId, string $endpoint, string $method='GET', array $configuration=[]): array
+    public function call(string $sourceId, string $endpoint, string $method = 'GET', array $configuration = []): array
     {
         $source = $this->resourceService->getSource($sourceId, 'common-gateway/zgw-to-zds-bundle');
 
@@ -35,6 +32,4 @@ class CallRuntime implements RuntimeExtensionInterface
         return $this->callService->decodeResponse($source, $response);
 
     }//end call()
-
-
 }//end class
