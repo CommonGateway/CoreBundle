@@ -226,13 +226,15 @@ class RequestService
             $endpoint = $this->data['endpoint'];
         }
 
-        if($xmlRootNode === null && in_array('http://schemas.xmlsoap.org/soap/envelope/', $data) === true){
+        if ($xmlRootNode === null && in_array('http://schemas.xmlsoap.org/soap/envelope/', $data) === true) {
             $nsRef = array_search(needle: 'http://schemas.xmlsoap.org/soap/envelope/', haystack: $data);
-            [$xmlns, $ns] = explode(separator: ':', string: $nsRef, limit: 2);
+            [
+                $xmlns,
+                $ns,
+            ]      = explode(separator: ':', string: $nsRef, limit: 2);
 
             $xmlRootNode = "$ns:Envelope";
         }
-
 
         $encoderSettings = ['xml_encoding' => 'utf-8'];
         if ($xmlRootNode) {
