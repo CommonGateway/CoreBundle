@@ -817,7 +817,7 @@ class RequestService
                 unset($headers['Content-Length']);
             }
 
-            if ($data['accept'] !== $headers['content-type'][0]) {
+            if (isset($headers['content-type']) === false || $data['accept'] !== $headers['content-type'][0]) {
                 $headers['content-type'] = $data['accept'];
             }
 
